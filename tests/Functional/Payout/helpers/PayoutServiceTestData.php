@@ -2655,6 +2655,27 @@ return [
         ],
     ],
 
+    'testFreePayoutMigrationAdminActionForMerchantWithOnboardingTime' => [
+        'request'  => [
+            'url'     => '/admin/payouts/free_payout_migration',
+            'method'  => 'post',
+            'content' => [
+                EntityConstants::ACTION           => EntityConstants::ENABLE,
+                'ids' => [
+                    [
+                        Entity::MERCHANT_ID => '10000000000000'
+                    ]
+                ],
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'total_count' => 1,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testBasDetailsStatusUpdateAdminAction' => [
         'request'  => [
             'url'     => '/admin/payouts/free_payout_migration',

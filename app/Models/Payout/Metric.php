@@ -137,6 +137,12 @@ final class Metric
     // Get Payout By Id
     const GET_PAYOUT_BY_ID_FLOW = 'payout_by_id_flow';
 
+    // Payouts Service Dual Write Legacy Flow Metric
+    const PAYOUTS_SERVICE_DUAL_WRITE_LEGACY_FLOW = 'payouts_service_dual_write_legacy_flow';
+
+    // Payouts Service Dual Write New Flow Metric
+    const PAYOUTS_SERVICE_DUAL_WRITE_NEW_FLOW = 'payouts_service_dual_write_new_flow';
+
     // Dimension constants
     const SOURCE         = 'source';
     const BATCH          = 'batch';
@@ -157,6 +163,10 @@ final class Metric
     // FUND loading metric
     const FUND_LOADING_VA_CALLBACK = 'fund_loading_va_callback';
     const FUND_LOADING_VA_CALLBACK_FAILURE = 'fund_loading_va_callback_failure';
+
+    //Gauge Metrics
+    const BENE_BANK_UP_REDIS_KEY_UNSET = 'bene_bank_up_redis_key_unset';
+    const BENE_BANK_DOWN_REDIS_KEY_SET = 'bene_bank_down_redis_key_set';
 
 
     public static function pushStatusChangeMetrics(Entity $payout, string $previousStatus = null)

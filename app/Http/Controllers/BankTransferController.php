@@ -87,7 +87,14 @@ class BankTransferController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->processFile($input, Batch\Type::ECOLLECT_RBL);
+        $batchType = Batch\Type::ECOLLECT_RBL;
+
+        if (isset($input['file_type'])  && ($input['file_type'] == 'collectx'))
+        {
+            $batchType = Batch\Type::ECOLLECT_RBL_BANKING;
+        }
+
+        $response = $this->service()->processFile($input, $batchType);
 
         return ApiResponse::json($response);
     }

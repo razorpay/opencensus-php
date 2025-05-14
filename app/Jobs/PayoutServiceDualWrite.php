@@ -10,6 +10,7 @@ use RZP\Constants\Metric;
 use RZP\Models\Payout\Core;
 use RZP\Models\Payout\Entity;
 use RZP\Services\RazorXClient;
+use RZP\Models\Payout as Payout;
 use RZP\Models\BankingAccountStatement;
 
 class PayoutServiceDualWrite extends Job
@@ -87,6 +88,11 @@ class PayoutServiceDualWrite extends Job
                 Trace::ERROR,
                 TraceCode::PAYOUT_SERVICE_DUAL_WRITE_FAILURE,
                 $this->params);
+
+            $this->trace->count(Payout\Metric::PAYOUTS_SERVICE_DUAL_WRITE_LEGACY_FLOW, [
+                Metric::LABEL_MESSAGE => "Payouts Service Dual Write Legacy Flow Failed",
+                Metric:: LABEL_ERROR_CODE => $exception->getCode(),
+            ]);
 
             $this->checkRetry();
         }

@@ -116,7 +116,7 @@ class OrderController extends Controller
             $this->trace->info(TraceCode::ORDER_SEGMENT_EVENT_PUSH_FAILED, []);
         }
 
-        $this->pushForBarricade($data);
+      //  $this->pushForBarricade($data);
 
         return ApiResponse::json($data);
     }

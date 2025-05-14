@@ -68,6 +68,8 @@ class PGRouter
 
     const PGRouterFetchPayment = 'v1/payments/';
 
+    const PGRouterInternalFetchPayment = 'v1/internal/payments/';
+
     const PGRouterFetchCard    = 'v1/cards/';
 
     const PGRouterInitiatePayment = 'v1/payments/initiate';
@@ -145,7 +147,6 @@ class PGRouter
         Requests::GET.'_'.self::PGRouterPaymentCancel               => false,
         Requests::GET.'_'.self::PGRouterPaymentVerify               => false,
         Requests::GET.'_'.self::PGRouterFetchCard                   => false,
-        Requests::GET.'_'.self::PGRouterFetchOrderPayments          => false,
         Requests::GET.'_'.self::PGRouterFetchPayment                => false,
         Requests::GET.'_'.self::PGRouterFetchOrder                  => false,
         Requests::PATCH.'_'.self::PGRouterFetchOrder                => false,
@@ -533,6 +534,12 @@ class PGRouter
                         (new Payment\Entity)->modifyInput($input);
 
                         $paymentEntity = (new Payment\Entity)->forceFill($input);
+
+                        if ((isset($payment['data']['upi']) === true) and
+                                (isset($payment['data']['upi']['flow']) === true))
+                        {
+                            $paymentEntity->setAttribute(Payment\Entity::FLOW, $payment['data']['upi']['flow']);
+                        }
                     }
 
                     if (($card !== null) and ($withCard === true))
@@ -559,17 +566,18 @@ class PGRouter
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
         }
-        $endpoint = 'v1/payments/' . $id;
+
+        $endpoint = 'v1/internal/payments/' . $id;
+        $this->currentEndPoint = self::PGRouterInternalFetchPayment;
 
         if (empty($merchantId) === false)
         {
             $endpoint .= '?merchant_id='.$merchantId;
         }
 
-        $this->currentEndPoint = self::PGRouterFetchPayment;
-
         $card = null;
         $emiPlan = null;
+        $discount = null;
 
         $response = $this->sendRequest($endpoint, Requests::GET, [], false, 2, true);
 
@@ -667,6 +675,20 @@ class PGRouter
                 }
             }
 
+            if (isset($response['body']['data']['payment']['offers']))
+            {
+                $discountArray = [
+                    'payment_id' => $response['body']['data']['payment']['id'],
+                    'offer_id' => $response['body']['data']['payment']['offer']['offer_id'],
+                    'amount' => $response['body']['data']['payment']['offer']['discount'],
+                    // this is only to maintain backward compatibility with api code,
+                    // these values should not be used anywhere
+                    'id' => $response['body']['data']['payment']['id'],
+                    'order_id' => $response['body']['data']['payment']['id'],
+                ];
+
+                $discount= (new \RZP\Models\Discount\Entity)->forcefill($discountArray);
+            }
 
             $payment = (new Payment\Entity)->forceFill($response['body']['data']['payment']);
 
@@ -678,6 +700,12 @@ class PGRouter
                 (new Payment\Entity)->modifyInput($input);
 
                 $payment = (new Payment\Entity)->forceFill($input);
+
+                if ((isset($response['body']['data']['upi']) === true) and
+                    (isset($response['body']['data']['upi']['flow']) === true))
+                {
+                    $payment->setAttribute(Payment\Entity::FLOW, $response['body']['data']['upi']['flow']);
+                }
             }
 
             if ($card !== null)
@@ -698,6 +726,11 @@ class PGRouter
             if ($payment->isFailed() === false)
             {
                 $payment->setErrorNull();
+            }
+
+            if ($discount !== null)
+            {
+                $payment->discount = $discount;
             }
 
             return $payment;

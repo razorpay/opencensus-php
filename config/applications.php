@@ -89,6 +89,7 @@ return [
     'emi' => [
         'password'            => env('EMI_FILE_PASSWORD'),
         'yesb_encryption_key' => env('YESB_ENCRYPTION_KEY'),
+        'aubl_cc_emi_file_password'=>env('AUBL_CC_EMI_FILE_PASSWORD')
     ],
 
     'cardsettlement' => [
@@ -582,8 +583,12 @@ return [
     'ezetap-api' => [
         'key'       => 'ezetap-api',
         'secret'    =>  env('EZETAP_API_SECRET'),
-        'url' =>  env('EZETAP_API_URL'),
-        'mock'      => env('EZETAP_DEVICE_SERVICE_MOCK', false),
+    ],
+    'ezetap_device_gatway' => [
+        'url'           => env('EZETAP_DEVICE_GATEWAY_URL'),
+        'username'      => env('EZETAP_DEVICE_GATEWAY_USERNAME'),
+        'password'      => env('EZETAP_DEVICE_GATEWAY_PASSWORD'),
+        'mock'          => env('EZETAP_DEVICE_GATEWAY_MOCK', false),
     ],
     'pcp_service' => [
         'secret'    =>  env('PCP_SERVICE_SECRET'),
@@ -1520,6 +1525,21 @@ return [
         'secret'        => env('PAYMENT_METHODS_API_SECRET'),
     ],
 
+    'payment_methods_service' => [
+        'live'          => [
+            'password'      => env('PAYMENT_METHODS_SERVICE_LIVE_PASSWORD'),
+            'url'           => env('PAYMENT_METHODS_SERVICE_LIVE_URL'),
+            'user'          => env('PAYMENT_METHODS_SERVICE_LIVE_USER'),
+        ],
+        'test'          => [
+            'password'      => env('PAYMENT_METHODS_SERVICE_TEST_PASSWORD'),
+            'url'           => env('PAYMENT_METHODS_SERVICE_TEST_URL'),
+            'user'          => env('PAYMENT_METHODS_SERVICE_TEST_USER'),
+        ],
+        'read_experiment' => env('PAYMENT_METHODS_SERVICE_READ_EXPERIMENT'),
+        'timeout'         => env('PAYMENT_METHODS_SERVICE_TIMEOUT', 100)
+    ],
+
     'pos_app' => [
       'secret' => env('POS_APP_SECRET'),
     ],
@@ -2204,4 +2224,8 @@ return [
             'test' => env('PAYMENTS_BANK_TRANSFER_SERVICE_TEST_URL'),
         ],
     ],
+
+    'identity_provider' => [
+        'secret' => env('APP_IDP_SECRET'),
+    ]
 ];

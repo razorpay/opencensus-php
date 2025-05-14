@@ -310,10 +310,26 @@ class Service extends Base\Service
                 'input'       => $input,
             ]
         );
+        $merchantId = $this->merchant->getId();
 
-        $transfer =  $this->repo
-                           ->transfer
-                           ->findByPublicIdAndMerchant($id, $this->merchant);
+        $isExpEnabled = $this->isPatchTransferExpEnabled($merchantId, $input);
+
+        $transfer = $this->repo->transfer->findByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($isExpEnabled && $transfer->isExternal())
+        {
+            // make request to micro service
+            $resp = App::getFacadeRoot()['route']->patchTransfer($id,$input);
+
+            $this->trace->info(
+                TraceCode::PATCH_TRANSFER_VIA_ROUTE_SERVICE,
+                [
+                    'input'      => $input,
+                    'response'   => $resp,
+                ]
+            );
+            return $resp;
+        }
 
         $transfer = $this->core->edit($transfer, $input);
 
@@ -2626,6 +2642,15 @@ class Service extends Base\Service
 
     public function createTransactionForTransfer(array $input)
     {
+        $action = $input['action'] ?? '';
+
+        // Reusing the transaction create endpoint as a temporary solution for
+        // pushing the rearch transfers to ES
+        if ($action === 'sync_to_es')
+        {
+            return $this->core->syncRearchTransfersToEs($input);
+        }
+
         return $this->core->createInternalTransactionForTransfer($input);
     }
 
@@ -2790,6 +2815,41 @@ class Service extends Base\Service
         RuntimeManager::setMaxExecTime(600);
     }
 
+    public function isPatchTransferExpEnabled(string $merchantId, array $transferInput): bool
+    {
+        if ($this->mode === Mode::TEST && app()->runningUnitTests() === false)
+        {
+            return false;
+        }
+
+        try
+        {
+            $properties = [
+                'id'            => Base\UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.patch_transfer_rearch_exp_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::PATCH_TRANSFER_REARCH_SPLITZ_EXP_RESULT, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.patch_transfer_rearch_exp_id') ?? null
+            ]);
+
+            return false;
+        }
+    }
     public function isDirectTransferRearchExpEnabled(string $merchantId, array $transferInput): bool
     {
         if ($this->mode === Mode::TEST && app()->runningUnitTests() === false)

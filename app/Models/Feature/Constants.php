@@ -2442,6 +2442,12 @@ class Constants
      */
     const AUTO_CLOSURE_CBK_MF_MX = 'auto_closure_cbk_mf_mx';
 
+    /**
+     * This feature flag checks if link_and_pay for a wallet is enabled or not
+     * This allows wallet tokens to be stored, and allows paying directly if their wallet is already linked
+     */
+    const WALLET_LINK_AND_PAY = 'wallet_link_and_pay';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,

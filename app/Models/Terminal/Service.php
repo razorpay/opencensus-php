@@ -114,22 +114,10 @@ class Service extends Base\Service
 
         $data = $terminals->toArrayAdmin($subMerchantFlag);
 
-        // proxy code
-        $mode  = $this->mode ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS_MERCHANT_TERMINAL_FETCH", $mode);
-
-        if ($variantFlag === 'proxy'){
-
             $content = ["merchant_ids" => [$merchant->getId()]];
 
             $content["sub_merchant"] = $subMerchantFlag;
-
-            $razorxResponse = $this->app->razorx->getTreatment($mid, RazorxTreatment::REMOVE_GET_TERMINALS_PROXY_INVALID_FILTERS, $mode);
-
-            if($razorxResponse === 'control') {
                 $content["statuses"] = ["activated", "deactivated"];
-            }
 
             $content["deleted"] = true;
 
@@ -157,9 +145,6 @@ class Service extends Base\Service
 
             return $resData;
         }
-
-        return $data;
-    }
 
     public function getTerminal($mid, $tid)
     {

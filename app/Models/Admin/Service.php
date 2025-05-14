@@ -488,7 +488,7 @@ class Service extends Base\Service
 
         $entityObject = new $entityClass;
 
-        if ($entityObject->getIncrementing() === false)
+        if ($entityObject->getIncrementing() === false && $entity !== Entity::IIN)
         {
             $id = $entityClass::verifyIdAndSilentlyStripSign($id);
         }

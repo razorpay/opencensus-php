@@ -44,4 +44,23 @@ class ValidateVpaData extends Base\Mock\Server
             'success' => true
         ];
     }
+
+    public function upi_yesbank($entities)
+    {
+        return [
+            'data' =>
+                [
+                    'isVpaValid' => 'Y',
+                    'vpa' => '7262093972.stage@rzp',
+                    'payer_name' => 'MYBANKTESTCUSTOMER',
+                    'statusDesc' => 'VPAisavailablefortransaction',
+                    'errCode' => 'MD525',
+                    '_raw' => ''
+                ],
+            'error' => null,
+            'success' => true,
+            'mozart_id' => '',
+            'external_trace_id' => '',
+        ];
+    }
 }

@@ -5676,6 +5676,7 @@ GROUP BY
             ->addSelect($insuranceRepo->dbColumn(Insurance\Entity::STATUS) . ' as insurance_status')
             ->addSelect($insuranceRepo->dbColumn(Insurance\Entity::CLAIM_STATUS) . ' as insurance_claim_status')
             ->addSelect($insuranceRepo->dbColumn(Insurance\Entity::CLAIM_HISTORY) . ' as insurance_claim_history')
+            ->addSelect($insuranceRepo->dbColumn(Insurance\Entity::INSURANCE_PROVIDER) . ' as insurance_provider')
             ->leftJoin(
                 $insuranceTable,
                 function ($join)

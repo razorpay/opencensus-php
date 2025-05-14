@@ -8,6 +8,8 @@ use Mail;
 use Cache;
 use RZP\Http\Controllers\BankTransferController;
 use RZP\Models\Admin\Service;
+use RZP\Models\BankTransfer\Entity;
+use RZP\Models\BankTransfer\Processor;
 use RZP\Models\Feature;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Terminal\Type;
@@ -28,6 +30,7 @@ use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 use RZP\Models\BankTransfer\Service as BankTransferService;
+use RZP\Trace\TraceCode;
 
 
 class IdfcBankTransferTest extends TestCase
@@ -67,6 +70,31 @@ class IdfcBankTransferTest extends TestCase
         $this->fixtures->on('live')->merchant->edit('BankAccountMer', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
         $this->createTerminals();
         $this->bankAccount = $this->createVirtualAccount();
+
+        // Add the missing method to the xpayrollMock
+        $this->xpayrollMock = $this->getMockBuilder(\stdClass::class)
+            ->addMethods(['sendPayrollTpvRequestAndGetResponse'])
+            ->getMock();
+
+        $this->traceMock = $this->getMockBuilder(\stdClass::class)
+            ->addMethods(['info'])
+            ->getMock();
+
+        $this->processor = $this->getMockBuilder(Processor::class)
+            ->disableOriginalConstructor()
+            ->addMethods(['app'])
+            ->getMock();
+
+        // Use reflection to set protected properties
+        $reflection = new \ReflectionClass($this->processor);
+
+        $traceProperty = $reflection->getProperty('trace');
+        $traceProperty->setAccessible(true);
+        $traceProperty->setValue($this->processor, $this->traceMock);
+
+        $appProperty = $reflection->getProperty('app');
+        $appProperty->setAccessible(true);
+        $appProperty->setValue($this->processor, ['xpayroll' => $this->xpayrollMock]);
     }
 
     protected function createVirtualAccount($mode = 'test', $merchantId = '10000000000000', $additionalFields = [])
@@ -1069,6 +1097,64 @@ class IdfcBankTransferTest extends TestCase
         $this->assertEquals( "Failure",$response['statusDesc']);
         $this->assertEquals("1001", $response['errorCode']);
         $this->assertEquals("INVALID_DATA", $response['errorDesc']);
+    }
+
+    public function testHandlePayrollTpvValidationFlowValidResponse()
+    {
+        $bankTransfer = $this->createMock(Entity::class);
+        $merchantID = 'merchant123';
+        $balanceID = 'balance123';
+        $isValidationFlow = true;
+
+        $this->xpayrollMock->expects($this->once())
+            ->method('sendPayrollTpvRequestAndGetResponse')
+            ->with($bankTransfer, $this->anything())
+            ->willReturn(['is_valid' => true]);
+
+        $this->traceMock->expects($this->once())
+            ->method('info')
+            ->with(TraceCode::TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED);
+
+        $result = $this->processor->handlePayrollTpv($bankTransfer, $merchantID, $balanceID, $isValidationFlow);
+
+        $this->assertTrue($result);
+    }
+
+    public function testHandlePayrollTpvValidationFlowInvalidResponse()
+    {
+        $bankTransfer = $this->createMock(Entity::class);
+        $merchantID = 'merchant123';
+        $balanceID = 'balance123';
+        $isValidationFlow = true;
+
+        $this->xpayrollMock->expects($this->once())
+            ->method('sendPayrollTpvRequestAndGetResponse')
+            ->with($bankTransfer, $this->anything())
+            ->willReturn(['is_valid' => false]);
+
+        $this->traceMock->expects($this->once())
+            ->method('info')
+            ->with(TraceCode::NON_TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED);
+
+        $result = $this->processor->handlePayrollTpv($bankTransfer, $merchantID, $balanceID, $isValidationFlow);
+
+        $this->assertFalse($result);
+    }
+
+    public function testHandlePayrollTpvNonValidationFlow()
+    {
+        $bankTransfer = $this->createMock(Entity::class);
+        $merchantID = 'merchant123';
+        $balanceID = 'balance123';
+        $isValidationFlow = false;
+
+        $this->traceMock->expects($this->once())
+            ->method('info')
+            ->with(TraceCode::TPV_SKIP_FOR_PAYROLL_IN_NOTIFICATION_API);
+
+        $result = $this->processor->handlePayrollTpv($bankTransfer, $merchantID, $balanceID, $isValidationFlow);
+
+        $this->assertTrue($result);
     }
 
 }

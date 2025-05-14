@@ -14,9 +14,12 @@ class Constants
     const PHANTOM_ONBOARDING  = 'phantom_onboarding';
     const UNBOUNCE              = 'unbounce';
 
+    const WORKFLOW_DETAILS_OWNER_SERVICE = "workflow_details_owner_service";
     const CLIENT_IP       = 'ip';
     const G_CLICK_ID      = 'gclid';
     const SERVICE         = 'service';
+
+    const USER_SIGNUP_STATE = 'user_signup_state';
     const SERVICE_PGOS    = 'pgos';
     const SERVICE_API     = 'api';
     const G_CLIENT_ID     = '_ga';
@@ -40,6 +43,8 @@ class Constants
     const WORKFLOW_TYPE = 'workflow_type';
 
     const WORKFLOW_DETAILS = 'workflow_details';
+
+    const WORKFLOW_DETAILS_V2 = 'workflow_details_v2';
 
     const PRODUCT  = "product";
 
@@ -74,6 +79,8 @@ class Constants
 
     const SUBMERCHANT_ONBOARDING = 'submerchant_onboarding';
 
+    const PRODUCT_BANKING_ONBOARDING ='banking_onboarding';
+
     const PRODUCT_WORKFLOW_TYPE_TEMPLATE = '%s_workflow_type';
 
     const CURLEC_LINKED_ACCOUNT_ONBOARDING = "curlec_linked_account_onboarding";
@@ -81,6 +88,10 @@ class Constants
     const PGOS_ENABLED_SIGNUP_CAMPAIGNS = [self::ASSISTED_ONBOARDING, self::PARTNER_ASSISTED_ONBOARDING, self::I18N_MY_SIGNUP, self::RIZE_INCORPORATION, self::SINGAPORE_SIGNUP] ;
 
     const CROSS_BORDER_FLOW = 'cross_border_flow';
+
+    const MERGED_OBJECT = 'merged_object';
+
+    const FETCHED_FROM_ONBOARDING_DETAILS = 'fetched_from_onboarding_details';
 
     const SIGNUP_CAMPAIGN_ONBOARDING_MAPPING = [
         self::RIZE_INCORPORATION => [

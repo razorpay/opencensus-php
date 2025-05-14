@@ -23,6 +23,12 @@ class Validator extends Base\Validator
     const CREATE_NETWORK_TOKEN                          = 'create_network_token';
     const CREATE_NETWORK_TOKEN_CONTINUITY               = 'create_network_token_continuity';
     const CREATE_NETWORK_TOKEN_CONTINUITY_CARD          = 'create_network_token_continuity_card';
+
+    const CREATE_RECURRING_TOKEN_CONTINUITY_OPTIMIZER_MANDATE = 'create_recurring_token_continuity_optimizer_mandate';
+
+    const CREATE_OPTIMIZER_TOKEN_CREATE_FIELDS = 'create_optimizer_token_create_fields';
+
+    const CREATE_OPTIMIZER_RECURRING_TOKEN_NOTES = 'create_optimizer_recurring_token_notes';
     const CREATE_NETWORK_TOKEN_CONTINUITY_ADDITIONAL_DETAIL = 'create_network_token_continuity_additional_detail';
     const CREATE_NETWORK_TOKEN_RUPAY                    = 'create_network_token_rupay';
     const CREATE_NETWORK_TOKEN_AMEX                    = 'create_network_token_amex';
@@ -163,6 +169,32 @@ class Validator extends Base\Validator
         'provider_reference_id1'       => 'required',
         'provider_reference_id2'       => 'required',
     ];
+
+    protected static $createRecurringTokenContinuityOptimizerMandateRules = [
+        'terminal_id'       => 'required',
+        'mandate_id'       => 'required',
+        'customer_id'       => 'required',
+        'optimizer_mandate_continuity'       => 'sometimes|boolean',
+        'fields'       => 'required',
+    ];
+
+    protected static $createOptimizerTokenCreateFieldsRules = [
+        'notes'       => 'required',
+        'recurring'       => 'required',
+        'terminal_id'       => 'required',
+        'max_amount'       => 'required',
+        'recurring_status'       => 'required',
+        'frequency'       => 'required',
+        'method'       => 'required',
+        'expire_at'       => 'required',
+        'status'       => 'required',
+    ];
+
+    protected static $createOptimizerRecurringTokenNotesRules = [
+        'mandate_id'       => 'required',
+        'source'       => 'required',
+    ];
+
 
     protected static $createNetworkTokenRupayRules = [
         Entity::CARD                 => 'required|array',

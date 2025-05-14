@@ -69,8 +69,8 @@ class Core extends QrCode\Core
         {
             $deviceEntity = $this->app['pos.deviceservice']->fetchDevice($qrCode->getDeviceId());
 
-            if (empty($deviceEntity['storeId']) === false) {
-                $qrCode->setStoreId($deviceEntity['storeId']);
+            if (empty($deviceEntity['store_id']) === false) {
+                $qrCode->setStoreId($deviceEntity['store_id']);
             }
         }
 
@@ -488,8 +488,8 @@ class Core extends QrCode\Core
         {
             $deviceEntity = $this->app['pos.deviceservice']->fetchDevice($device_id);
 
-            if (empty($deviceEntity['storeId']) === false){
-                $qrCode->setStoreId($deviceEntity['storeId']);
+            if (empty($deviceEntity['store_id']) === false){
+                $qrCode->setStoreId($deviceEntity['store_id']);
             }
         }
 

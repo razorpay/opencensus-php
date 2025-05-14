@@ -23,6 +23,8 @@ class CapitalEarlySettlementClient
 
     const GET_FEATURE_CONFIG = 'feature_configs';
 
+    const GET_MERCHANT_BALANCE_BY_TYPE = 'balances?type=%s';
+
     const GET_FUND_ACCOUNT = 'fund_accounts';
 
     const DUAL_WRITE_FUND_ACCOUNT = 'fund_accounts/dual_write';
@@ -119,6 +121,21 @@ class CapitalEarlySettlementClient
         );
     }
 
+    public function getMerchantBalanceByType($type, $merchantId)
+    {
+        $url = sprintf(self::GET_MERCHANT_BALANCE_BY_TYPE, $type);
+
+        return $this->sendRequestAndParseResponse($url,
+            [],
+            [
+                'X-Auth-Type'    => 'internal',
+                'X-Service-Name' => 'api',
+                'X-Merchant-Id' => $merchantId
+            ],
+            'GET'
+        );
+    }
+      
     public function getFundAccount($merchantId)
     {
         $url = self::GET_FUND_ACCOUNT . '?' . http_build_query(['merchant_id' => $merchantId]);

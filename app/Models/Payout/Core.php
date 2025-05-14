@@ -5443,11 +5443,18 @@ class Core extends Base\Core
                 'request_data' => json_encode(['merchant_id' => $payout->getMerchantId()])
             ];
 
+            // Experiment for PS event push feature
             $isPushToQueueForAccStSourceExperimentEnabled = $this->isSplitzExperimentEnable($properties, 'variables', TraceCode::ACCOUNT_STATEMENTS_SOURCE_EVENT_SPLITZ_ERROR);
-            $isCAPayout = $payout->balance->isAccountTypeDirect();
+            $isPayoutService = $payout->getIsPayoutService();
+            $isCAPayout = $payout->balance ->isAccountTypeDirect();
 
-            if ($isPushToQueueForAccStSourceExperimentEnabled && $isCAPayout) {
-                $this->pushToAccountServiceQueue($payout);
+            // Only push for direct payouts
+            if ($isCAPayout) {
+                // If experiment is ON, push only for API payouts
+                // If experiment is OFF, push for all direct payouts
+                if (!$isPushToQueueForAccStSourceExperimentEnabled || !$isPayoutService) {
+                    $this->pushToAccountServiceQueue($payout);
+                }
             }
         } catch (\Throwable $ex) {
             $this->trace->traceException(
@@ -7944,11 +7951,25 @@ class Core extends Base\Core
                                 if (in_array($beneBankIfsc, array_keys($eventConfigFromFTS[self::BENEFICIARY]), true) === true)
                                 {
                                     unset($eventConfigFromFTS[self::BENEFICIARY][$beneBankIfsc]);
+
+                                    $this->trace->gauge(Metric::BENE_BANK_UP_REDIS_KEY_UNSET, time(),
+                                        [
+                                            'bene_code' => $beneBankIfsc,
+                                            'downtime_id' => $input['payload']['id'],
+                                        ]
+                                    );
                                 }
                             }
                             else
                             {
                                 $eventConfigFromFTS[self::BENEFICIARY][$beneBankIfsc] = array('status' => $status);
+
+                                $this->trace->gauge(Metric::BENE_BANK_DOWN_REDIS_KEY_SET, time(),
+                                    [
+                                        'bene_code' => $beneBankIfsc,
+                                        'downtime_id' => $input['payload']['id'],
+                                    ]
+                                );
                             }
 
                             (new Admin\Service)->setConfigKeys(
@@ -11955,7 +11976,7 @@ class Core extends Base\Core
         {
             $liteBalances = $this->repo->balance->getMerchantBalancesByTypeAndAccountType(
                 $merchantID, Balance\Type::BANKING, AccountType::SHARED, $this->mode);
-            
+
             $validLiteAccounts = count($liteBalances);
         }
 

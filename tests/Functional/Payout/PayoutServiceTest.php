@@ -7484,6 +7484,133 @@ class PayoutServiceTest extends TestCase
         $this->assertNotContains(Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArray);
     }
 
+    public function testFreePayoutMigrationAdminActionForMerchantWithOnboardingTime()
+    {
+        $this->mockPayoutServiceFreePayoutMigration();
+
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number'   => '2224440041626905',
+            ], 'live')->first();
+
+
+        $this->fixtures->on('live')->edit(
+            'balance',
+            $balance->getId(),
+            [
+                'account_type' => 'direct',
+            ]
+        );
+
+        $this->fixtures->create(
+            'counter',
+            [
+                'balance_id'   =>  $balance->getId(),
+                'account_type' => 'direct',
+            ]
+        );
+
+        $this->fixtures->on('live')->create('settings', [
+            SettingsEntity::ENTITY_ID   => $balance->getId(),
+            SettingsEntity::ENTITY_TYPE => EntityConstants::BALANCE,
+            SettingsEntity::MODULE      => FreePayout::FREE_PAYOUT,
+            SettingsEntity::KEY         => FreePayout::FREE_PAYOUTS_COUNT,
+            SettingsEntity::VALUE       => '250',
+        ]);
+
+        $this->fixtures->on('live')->create('settings', [
+            SettingsEntity::ENTITY_ID   => $balance->getId(),
+            SettingsEntity::ENTITY_TYPE => EntityConstants::BALANCE,
+            SettingsEntity::MODULE      => FreePayout::FREE_PAYOUT,
+            SettingsEntity::KEY         => FreePayout::FREE_PAYOUTS_SUPPORTED_MODES,
+            SettingsEntity::VALUE       => 'IMPS,NEFT',
+        ]);
+
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::LEDGER_REVERSE_SHADOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+
+
+        $feature = $this->getDbEntity('feature',
+            [
+                'entity_id'   => '10000000000000',
+                'entity_type' => EntityConstants::MERCHANT,
+                'name'        => Feature\Constants::PAYOUT_SERVICE_ENABLED,
+            ],
+            'live')->toArray();
+
+        $this->fixtures->on('live')->edit(
+            'feature',
+            $feature['id'],
+            [
+                'name' => 'random_feature',
+            ]
+        );
+
+        $liveFeaturesArrayBeforeTest = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+        $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayBeforeTest);
+        $this->assertNotContains(Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayBeforeTest);
+        $this->assertNotContains(Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArrayBeforeTest);
+        $this->assertNotContains(Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArrayBeforeTest);
+
+        $bankingAccount = $this->getDbEntities('banking_accounts',
+            [
+                'account_number'   => '2224440041626905',
+            ], 'live')->first();
+
+
+        $psBankingAccountData = [
+            'id'          => 'randomid111123',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $this->bankingBalance->getId(),
+            'channel' => $this->bankingBalance->getChannel(),
+            'status'    => 'active',
+            'account_number' => $this->bankingBalance->getAccountNumber(),
+            'account_type' => 'direct',
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 0,
+            'created_at'  => Carbon::now(Timezone::IST)->getTimestamp(),
+            'updated_at'  => Carbon::now(Timezone::IST)->getTimestamp(),
+        ];
+
+        \DB::connection('test')->table('ps_banking_accounts')->insert($psBankingAccountData);
+
+
+        $this->testData[__FUNCTION__]['request']['content']['ids'][0][Entity::BALANCE_ID] = $balance->getId();
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $liveFeaturesArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+
+
+        $balanceId = $balance->getId();
+        $psBankingAccount = get_object_vars(\DB::connection('test')->select("select * from ps_banking_accounts where balance_id = '$balanceId'")[0]);
+
+        $this->assertEquals($this->bankingBalance->getCreatedAt(), $psBankingAccount['created_at']);
+        $this->assertEquals( 1, $psBankingAccount['payout_service_enabled']);
+        $this->assertContains(Feature\Constants::LEDGER_REVERSE_SHADOW, $liveFeaturesArray);
+        $this->assertContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArray);
+        $this->assertContains(Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArray);
+        $this->assertNotContains(Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArray);
+    }
+
     public function testFreePayoutMigrationAdminActionWithLedgerReverseShadowNotAssignedForCAMerchant()
     {
         $this->mockPayoutServiceFreePayoutMigration();

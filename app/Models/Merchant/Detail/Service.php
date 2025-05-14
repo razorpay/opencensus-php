@@ -6,7 +6,9 @@ use App;
 use Config;
 use DateTime;
 use DOMDocument;
+use Lib\PhoneBook;
 use RZP\Http\RequestHeader;
+use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Services\KafkaProducer;
 use RZP\lib\TemplateEngine;
 use Illuminate\Support\Str;
@@ -14,6 +16,7 @@ use RZP\Constants\Environment;
 use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
+use RZP\Models\DeviceDetail\Core as DeviceDetailCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -143,6 +146,8 @@ class Service extends Base\Service
     const BAD_REQUEST_MSG_BUSINESS_GSTIN_MISMATCH = 'bad_request: The given GSTIN does not belong to the Business PAN provided. Please provide a different GSTIN';
     const SHARED_MERCHANT_ID = '100000Razorpay';
 
+    const MUTEX_LOCK_ACQUIRED = 'mutex_lock_acquired';
+
     protected $core;
 
     protected $methodsCore;
@@ -234,15 +239,38 @@ class Service extends Base\Service
         return $response;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function fetchMerchantDetailsWithFilterQueryParam(string $filter, $merchantId): array
     {
         // more cases for query param filter can occur in future
         switch($filter) {
             case DetailConstants::ONBOARDING_META:
                 $activationStatus = $this->merchant->merchantDetail->getActivationStatus();
+
+                $workflowDetails = $workflowDetailsV2 = $workflowType = $source = null;
+
                 $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchantId);
-                $workflowType = $userDeviceDetail ? $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE) : null;
-                $workflowDetails = $userDeviceDetail ? $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_DETAILS) : null;
+
+                if (empty($userDeviceDetail) === false) {
+
+                    $fetchedFromOnboardingDetails = false;
+
+                    $workflowDetailsResponse = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_DETAILS, $fetchedFromOnboardingDetails, false);
+
+                    $workflowType = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
+
+                    if ($fetchedFromOnboardingDetails) {
+
+                        $workflowDetailsV2 = $workflowDetailsResponse;
+
+                    } else {
+
+                        $workflowDetails = $workflowDetailsResponse;
+                    }
+                }
+
                 $isDedupeMatched = $this->dedupeCore->isMerchantImpersonated($this->merchant);
                 $isDedupeBlocked = $this->dedupeCore->isDedupeBlocked($this->merchant);
                 $dedupe = [
@@ -253,15 +281,30 @@ class Service extends Base\Service
                 $activationFormMilestone = $this->merchant->merchantDetail->getActivationFormMilestone();
                 $isFormSubmitted = $this->merchant->merchantDetail->isSubmitted();
 
-                return [
+                $response = [
                     MerchantDetailEntity::ACTIVATION_STATUS => $activationStatus,
                     DeviceDetailConstants::WORKFLOW_TYPE    => $workflowType,
-                    DeviceDetailConstants::WORKFLOW_DETAILS => $workflowDetails,
                     DetailConstants::DEDUPE                 => $dedupe,
                     DetailConstants::IS_FORM_LOCKED         => $isFormLocked,
                     Constants::MILESTONE                    => $activationFormMilestone,
                     DetailConstants::IS_FORM_SUBMITTED      => $isFormSubmitted
                 ];
+
+                if ($workflowDetailsV2 != null) {
+                    $response[DeviceDetailConstants::WORKFLOW_DETAILS_V2] = $workflowDetailsV2;
+                } else {
+                    $response[DeviceDetailConstants::WORKFLOW_DETAILS] = $workflowDetails ?? null;
+                }
+                $properties = [
+                    'id'            => $merchantId,
+                    'experiment_id' => $this->app['config']->get('app.workflow_segregation_store_user_signup_state'),
+                ];
+                $shouldStoreUserSignupState = (new MerchantCore())->isSplitzExperimentEnable($properties,'enable');
+                if ($shouldStoreUserSignupState) {
+                    $response[DeviceDetailConstants::USER_SIGNUP_STATE] = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::USER_SIGNUP_STATE) ?? "";
+                }
+
+                return $response;
         }
 
         return [];
@@ -330,7 +373,8 @@ class Service extends Base\Service
 
         $response[DetailConstants::RISK_DETAILS] = $additionalDetails[DetailConstants::RISK_DETAILS] ?? null;
 
-        if ($this->pgosProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($this->merchant) === true)
+        $indiaModularResult=$this->pgosProxyController->getIndiaModularMerchantResult($this->merchant);
+        if (($indiaModularResult[DetailConstants::IS_MODULAR_INDIA]??false) === true)
         {
             $response[DetailConstants::ADDITIONAL_ONBOARDING_DETAILS] = $additionalDetails[DetailConstants::PG_ONBOARDING] ?? null;
         }
@@ -2809,6 +2853,8 @@ class Service extends Base\Service
                 $this->applyReferralPartnerWithRetry($subMerchant, $referralInput);
 
             }
+
+            $this->verifyUserDetailsForCustomInviteFlow($merchant, $input);
 
             $this->saveMerchantDetailForPreSignUp($input);
 
@@ -5446,6 +5492,20 @@ class Service extends Base\Service
      */
     public function submitMerchantInternal($merchantId, $input)
     {
+        // mutex lock is added for both onboarding save and submit merchant internal.
+        // due to following flow: onboarding_save (API) -> onboarding_save (PGOS) -> submit_merchant_internal (API),
+        // it is possible that submit_merchant_internal throws an error due to mutex already acquired by onboarding_save
+        // we are passing a boolean flow to skip mutex lock acquire.
+        if ($input[self::MUTEX_LOCK_ACQUIRED] === true)
+        {
+            $this->trace->info(TraceCode::MUTEX_ACQUIRE_SKIPPED_FOR_SUBMIT_MERCHANT_INTERNAL, [
+                'merchant_id'               => $merchantId,
+                'reason'                    => 'mutex acquired by onboarding_save',
+            ]);
+
+            return $this->handleSubmitMerchantInternal($merchantId, $input);
+        }
+
         if (empty($merchantId) == false and $this->core->shouldApplyMutexOnMerchantEntitiesUpdate($merchantId)) {
 
             return $this->mutex->acquireAndRelease(
@@ -6191,5 +6251,53 @@ class Service extends Base\Service
         }
 
         unset($input['type']);
+    }
+
+    protected function verifyUserDetailsForCustomInviteFlow($merchant, &$input): void
+    {
+        $orgId = $merchant->getOrgId();
+
+        $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, PermissionName::CUSTOM_INVITE_MERCHANT_FLOW);
+
+        $vasOrgFeatureEnabled = $this->merchant->org->isFeatureEnabled(FeatureConstants::VAS_ORG_IDENTIFIER);
+
+        $originProduct = $this->auth->getRequestOriginProduct();
+
+        if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true) and (isset($input[Entity::CONTACT_MOBILE]) === true))
+        {
+            $user = $this->merchant->primaryOwner($originProduct);
+
+            $userContactMobile = $user->getContactMobile() ?? null;
+
+            if(isset($userContactMobile) === false)
+            {
+                (new User\Validator)->validateMobileNumberUnique($input);
+
+                $phoneNumber = new PhoneBook($input[Entity::CONTACT_MOBILE]);
+
+                $input[Entity::CONTACT_MOBILE] = $phoneNumber->format(PhoneBook::E164);
+            }
+            else
+            {
+                $validMobileNumberFormats = (new PhoneBook($input[Entity::CONTACT_MOBILE]))->getMobileNumberFormats();
+
+                // Skip updating contact mobile in user if already present.
+                if(in_array($userContactMobile, $validMobileNumberFormats, true) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'New mobile no cannot be updated against existing user');
+                }
+
+                $input[Entity::CONTACT_MOBILE] = $userContactMobile;
+
+                $merchantContactMobile = $this->merchant->merchantDetail->getContactMobile();
+
+                // Skip contact mobile update in user and merchant details if already present.
+                if(isset($merchantContactMobile) === true)
+                {
+                    unset($input[Entity::CONTACT_MOBILE]);
+                }
+            }
+        }
     }
 }

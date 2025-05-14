@@ -115,7 +115,7 @@ class ValidationTest extends TestCase
             $this->input['cvv'] = $values[1];
 
             $this->card->build($this->input);
-            $core->fillNetworkDetails($this->card, $this->input);
+            $core->fillNetworkDetails($this->card, $this->input, $merchant);
 
             $this->assertEquals($this->card->getNetwork(), $values[2]);
             $this->assertEquals($this->card->getType(), $values[3]);

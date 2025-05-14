@@ -3552,6 +3552,45 @@ class FundAccountValidationTest extends TestCase
         return $favId;
     }
 
+    public function testFavNameNotSet_FtsWebhookWithBeneNameAndInInitiatedState()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->testFundAccValidationWithAccountNumberAndBankAccount();
+
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $favId = $fav->getId();
+
+        $eventTestDataKey = 'testFiringOfWebhookOnFAVCompletionWithStork';
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $fta->getId(),
+            [
+                'utr'    => '933815233814',
+                'is_fts' => 1,
+            ]);
+
+        $this->expectWebhookEventWithContents('fund_account.validation.completed', $eventTestDataKey);
+
+        $this->triggerFlowToUpdateFavWithNewState($favId, 'INITIATED', beneName: 'TestName');
+
+        $fav = $this->getDbEntityById('fund_account_validation', $favId);
+
+        $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
+
+        $this->assertEquals('initiated', $fta->getStatus());
+
+        $this->assertEquals('created', $fav->getStatus());
+
+        $this->assertNull($fav->getRegisteredName());
+
+        return $favId;
+    }
+
     public function testWebhookFiringFundAccountValidationFailed()
     {
         $ledgerSnsPayloadArray = [];

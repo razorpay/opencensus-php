@@ -2,7 +2,10 @@
 namespace RZP\Tests\Unit\Models\Payment;
 
 use Carbon\Carbon;
+use Mockery;
 use RZP\Constants\Timezone;
+use RZP\Http\Middleware\AdminAccess;
+use RZP\Models\Customer\Repository;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Method;
 use RZP\Models\RewardPoint\Entity;
@@ -157,5 +160,53 @@ class EntityTest extends TestCase
         $payment = $this->fixtures->create('payment:captured');
 
         $this->assertEquals(false, $payment->hasReward());
+    }
+
+    public function testCustomerLazyRead()
+    {
+        $mockCustomerRepo = Mockery::mock('\RZP\Models\Customer\Repository', [$this->app]);
+        $mockCustomerEntity = new \RZP\Models\Customer\Entity();
+        $mockCustomerId = '100000customer';
+        $mockCustomerEntity->fill([
+            'id' => $mockCustomerId,
+            'name' => 'RzpCustomerName',
+            'email' => 'RzpCustomer@email.com',
+            'contact' => '9999999999',
+            'merchant_id' => '100000Razorpay'
+        ]);
+        $mockCustomerRepo->shouldReceive('find')->with($mockCustomerId)->andReturn($mockCustomerEntity);
+
+        $mockRepoManager = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app]);
+        $this->app->instance('repo', $mockRepoManager);
+        $mockRepoManager->shouldReceive('driver')->with('customer')->andReturn($mockCustomerRepo);
+
+
+        $payment = $this->payment;
+        $payment->setAttribute('customer_id', $mockCustomerId);
+        $this->assertEquals($mockCustomerEntity, $payment->customer);
+    }
+
+    public function testGlobalCustomerLazyRead()
+    {
+        $mockCustomerRepo = Mockery::mock('\RZP\Models\Customer\Repository', [$this->app]);
+        $mockCustomerEntity = new \RZP\Models\Customer\Entity();
+        $mockCustomerId = '100000customer';
+        $mockCustomerEntity->fill([
+            'id' => $mockCustomerId,
+            'name' => 'RzpCustomerName',
+            'email' => 'RzpCustomer@email.com',
+            'contact' => '9999999999',
+            'merchant_id' => '100000Razorpay'
+        ]);
+        $mockCustomerRepo->shouldReceive('find')->with($mockCustomerId)->andReturn($mockCustomerEntity);
+
+        $mockRepoManager = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app]);
+        $this->app->instance('repo', $mockRepoManager);
+        $mockRepoManager->shouldReceive('driver')->with('customer')->andReturn($mockCustomerRepo);
+
+
+        $payment = $this->payment;
+        $payment->setAttribute('global_customer_id', $mockCustomerId);
+        $this->assertEquals($mockCustomerEntity, $payment->globalCustomer);
     }
 }

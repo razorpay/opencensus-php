@@ -2833,7 +2833,7 @@ class AdminTest extends TestCase
     {
         return $this->fixtures->create('admins_meta', [
             'admin_id'          => $adminId,
-            'unique_identifier' => 'xv6vxwe7',
+            'unique_identifier' => 'xv6vxwe7@axisbank.com',
             'auth_mode'         => 'adfs'
         ]);
     }

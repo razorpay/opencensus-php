@@ -21,6 +21,7 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use Throwable;
 use RZP\Models\Customer\Token\Metric;
+use RZP\Models\Card;
 
 class SavedCardTokenisationJob extends Job
 {
@@ -259,6 +260,13 @@ class SavedCardTokenisationJob extends Job
 
             $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_SUCCESS, $card);
 
+            $this->deleteDuplicateJuspayTokens([
+                Token\Entity::TOKEN => $token->getId(),
+                Token\Entity::CARD => $card,
+                Token\Entity::CUSTOMER_ID => $token->getCustomerId(),
+                Token\Entity::MERCHANT_ID => $this->merchantId
+            ]);
+
             $this->delete();
 //            (new Token\Metric())->pushMigrateMetrics($token,Metric::SUCCESS);
             return;
@@ -495,5 +503,84 @@ class SavedCardTokenisationJob extends Job
         }
 
         return $partialPayload;
+    }
+
+    /**
+     * Fetches all tokens for a customer and deletes any token that has the same fingerprint
+     * as the current token and is of type juspay
+     *
+     * @param array $input Input containing token_id and customer_id
+     * @return void
+     */
+    protected function deleteDuplicateJuspayTokens($input)
+    {
+
+        $this->trace->info(TraceCode::DUPLICATE_TOKEN_DELETE, [
+            'customer_id' => $input[Token\Entity::CUSTOMER_ID],
+            'merchant_id' => $input[Token\Entity::MERCHANT_ID],
+            'token_id' => $input[Token\Entity::TOKEN],
+        ]);
+
+        // Validate required input parameters
+        if (empty($input[Token\Entity::CARD]) === true || 
+            empty($input[Token\Entity::CUSTOMER_ID]) === true ||
+            empty($input[Token\Entity::TOKEN]) === true ||
+            empty($input[Token\Entity::MERCHANT_ID]) === true) {
+                $this->trace->error(TraceCode::DUPLICATE_TOKEN_DELETE_ERROR,
+                [
+                    'error' => 'Token, Card, Merchant ID and Customer ID are required'
+                ]
+            );
+        }
+
+        // Get the current token's card
+        $currentCard = $input[Token\Entity::CARD];
+        $currentTokenId = $input[Token\Entity::TOKEN];
+        $merchantId = $input[Token\Entity::MERCHANT_ID];
+
+        if ($currentCard === null || $currentTokenId === null) {
+            return;
+        }
+
+        // Get the current token's fingerprint
+        $currentFingerprint = $currentCard->getGlobalFingerPrint();
+
+        if (empty($currentFingerprint) === true) {
+            return;
+        }
+
+        // Get all tokens for the customer
+        $customer = $this->repoManager->customer->findById($input[Token\Entity::CUSTOMER_ID]);
+        $tokens = $this->repoManager->token->getByMethodAndCustomerId(Token\Entity::CARD, $customer);
+
+        foreach ($tokens as $token) {
+            // Skip the current token
+            if ($token->getId() === $currentTokenId) {
+                continue;
+            }
+
+            $card = $token->card;
+
+            if ($card === null) {
+                continue;
+            }
+
+            // Check if token is of type juspay and has matching fingerprint
+            if ($card->getVault() === Card\Vault::JUSPAY && 
+                $card->getGlobalFingerPrint() === $currentFingerprint) {
+
+                $this->trace->info(
+                    TraceCode::DUPLICATE_TOKEN_DELETE_SUCCESS,
+                    [
+                        'token_id' => $token->getId(),
+                        'customer_id' => $customer->getId(),
+                        'merchant_id' => $merchantId,
+                    ]
+                );
+
+                // Delete the duplicate token
+                $this->repoManager->token->deleteOrFail($token);
+            }
+        }
     }
 }

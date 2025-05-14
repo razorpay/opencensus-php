@@ -14,6 +14,7 @@ use RZP\Models\Card as Card;
 use RZP\Models\Order\ProductType;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Order as Order;
 
 class Service extends Base\Service
 {
@@ -222,21 +223,84 @@ class Service extends Base\Service
 
     public function validateCheckoutOffers($input)
     {
-        $applicableOffers = $this->validatePlatformOffer($input);
+        $applicableOffers = [];
 
-        if (sizeof($applicableOffers) > 0)
+        $shouldFallback = false;
+
+        try
         {
-            return $applicableOffers;
+            if ($this->core->shouldRouteToOffersEngineForCreation(
+                $this->merchant->getId(), Constants::OE_VALIDATE_DUMMY_ORDER_EXP) === true)
+            {
+                (new Validator())->validateInput('validate_checkout_offers', $input);
+
+                if (isset($input['order_id']))
+                {
+                    $this->trace->info(TraceCode::OE_VALIDATE_DUMMY_ORDER_EXP_LOGS, [
+                        'order_id_found' => true,
+                        'order_id'       => $input['order_id'],
+                    ]);
+                    $orderEntity = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
+                }
+                else
+                {
+                    $offer = $this->repo->offer->findByPublicId($input['offers'][0]);
+
+                    if ((isset($offer) === false) or
+                        ($offer->isPlatformOffer() === false) or
+                        ($offer->getOfferType() !== Constants::CASHBACK_OFFER))
+                    {
+                        $shouldFallback = true;
+                    }
+
+                    // Create dummy order
+                    $orderEntity = new Order\Entity();
+                    $orderEntity->setAmount($input['amount']);
+                    $orderEntity->setAttribute(Order\Entity::CURRENCY, 'INR');
+
+                    $this->trace->info(TraceCode::OE_VALIDATE_DUMMY_ORDER_EXP_LOGS, [
+                        'order_id_found' => false,
+                        'amount'    => $orderEntity->getAmount(),
+                        'currency' => $orderEntity->getCurrency(),
+                    ]);
+                }
+
+            }
+            else
+            {
+                $shouldFallback = true;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $shouldFallback = true;
         }
 
-        (new Validator())->validateInput('validate_checkout_offers', $input);
+        if ($shouldFallback === true)
+        {
 
-        $orderEntity = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
+            $this->trace->info(TraceCode::OE_VALIDATE_API_FALLBACK_TRIGGERED, [
+                'merchant' => $this->merchant->getId(),
+                'input'    => $input,
+            ]);
+
+            $applicableOffers = $this->validatePlatformOffer($input);
+
+            if (sizeof($applicableOffers) > 0)
+            {
+                return $applicableOffers;
+            }
+
+            (new Validator())->validateInput('validate_checkout_offers', $input);
+
+            $orderEntity = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
+        }
 
         if (isset($input["card"]["number"]) === false and isset($input["card"]["token"]) === false)
         {
             return $applicableOffers;
         }
+
         $cardNumber = null;
 
         if (isset($input["card"]["token"]) === true)

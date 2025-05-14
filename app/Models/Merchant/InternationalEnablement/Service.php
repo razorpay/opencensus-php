@@ -105,6 +105,8 @@ class Service extends Base\Service
     {
         $version = 'v1';
 
+        unset($input['async_cross_border_workflow_create']);
+
         if (((isset($input[Constants::VERSION])) === true) and
             ($input[Constants::VERSION] === 'v2'))
         {

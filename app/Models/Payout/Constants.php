@@ -154,4 +154,7 @@ class Constants
     const AMOUNT                  = 'amount';
     const BALANCE_ID              = 'balance_id';
     const PROCESS_TYPE_KAFKA_EVENT_VIA_PS = "kafka_event_via_ps";
+    const NAME_MATCHING_THRESHOLD_DEFAULT = 75;
+    const CONFIG_VALUE_SETTINGS = 'config_value';
+    const PHONE_NUMBER_PAYOUTS = 'phone_number_payout';
 }

@@ -2192,7 +2192,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'unique_identifier' => 'xv6vxwe7',
+                'unique_identifier' => 'xv6vxwe7@axisbank.com',
                 'full_name'         => 'John Doe',
                 'email'             => 'john.doe@axis.com',
                 'user_roles'        => [
@@ -2356,7 +2356,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'unique_identifier' => 'xv6vxwe7',
+                'unique_identifier' => 'xv6vxwe7@axisbank.com',
                 'full_name'         => 'Test User',
                 'email'             => 'testadmin@axis.com',
                 'user_roles'        => [
@@ -2415,7 +2415,7 @@ return [
         ],
         'response' => [
             'content' =>  [
-                'unique_identifier' => 'xv6vxwe7',
+                'unique_identifier' => 'xv6vxwe7@axisbank.com',
                 'full_name' => 'Test User',
                 'email' => 'testadmin@axis.com',
                 'account_status' => 'enable',

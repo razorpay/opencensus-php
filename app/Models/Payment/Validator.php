@@ -167,7 +167,7 @@ class Validator extends Base\Validator
         'authentication.provider_data.auth_type'                     => 'required_if:application,visasafeclick|string|max:10',
         'authentication.provider_data.product_transaction_id'        => 'sometimes_if:application,visasafeclick|max:60|string',
         'authentication.provider_data.product_merchant_reference_id' => 'sometimes_if:application,visasafeclick|max:48|string',
-        'authentication.authentication_channel'                      => 'sometimes_if:method,card|string|in:browser,app',
+        'authentication.authentication_channel'                      => 'sometimes_if:method,card,emi|string|in:browser,app',
         'browser'                                                    => 'sometimes|array',
         'browser.java_enabled'                                       => 'sometimes|boolean',
         'browser.language'                                           => 'sometimes|string',

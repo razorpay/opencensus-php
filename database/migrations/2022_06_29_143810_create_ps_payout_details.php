@@ -42,6 +42,8 @@ class CreatePsPayoutDetails extends Migration
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
+
+            $table->char('beneficiary_bank_code', 4)->default(null);
         });
     }
 

@@ -3448,6 +3448,85 @@ return [
         ],
     ],
 
+    'testUpdateMerchantDetailsForNewUser' => [
+        'request' => [
+            'content' => [
+                "contact_mobile" => "1111222233",
+                "contact_name" => "Rohan kumar",
+                "transaction_volume" => 2,
+                "department"    => "7",
+                "business_type" => "1"
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'     => "1",
+                'transaction_volume'=> "2",
+                'department'        => "7",
+                'contact_name'      => "Rohan kumar",
+                'business_name'     => "Rohan kumar",
+                'contact_mobile'    => "+911111222233",
+                'contact_email'     => "banking-pod2969@razorpay.com"
+            ],
+        ],
+    ],
+
+    'testUpdateUserDetailsWithNonUniqueContactNo' => [
+        'request' => [
+            'content' => [
+                "contact_mobile" => "912233776658",
+                "contact_name" => "Rohan kumar",
+                "transaction_volume" => 2,
+                "department"    => "7",
+                "business_type" => "1"
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The contact mobile has already been taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateUserDetailsForExistingUser' => [
+        'request' => [
+            'content' => [
+                "contact_mobile" => "912233116654",
+                "contact_name" => "Rohan kumar",
+                "transaction_volume" => 2,
+                "department"    => "7",
+                "business_type" => "1"
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'New mobile no cannot be updated against existing user',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testPutPreSignupDetailsForNeostone' => [
         'request' => [
             'content' => [

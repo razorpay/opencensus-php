@@ -2,6 +2,9 @@
 
 namespace RZP\Mail\Invoice;
 
+use Razorpay\Trace\Logger as Trace;
+use RZP\Http\Request\Requests;
+use RZP\Mail\Base\Stork;
 use RZP\Models\Merchant;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
@@ -138,18 +141,45 @@ class MerchantIssued extends Mailable
     {
         $app = \App::getFacadeRoot();
 
-        $isStorkEmailVIAEnabled = $this->isSendingPaymentLinkMailsSupported($this->data['merchant']['id'],$this->view);
+        $isEmailViaStorkEnabled = $this->isSendingPaymentLinkMailsSupported($this->data['merchant']['id'],$this->view);
 
         $traceData = [
             'merchant_id' => $this->data['merchant']['id'],
             'view' => $this->view,
             'data' => $this->data,
-            'isStorkEmailVIAEnabled' => $isStorkEmailVIAEnabled
+            'isStorkEmailVIAEnabled' => $isEmailViaStorkEnabled
         ];
 
         $app['trace']->info(TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_VIA_SPLITZ_MERCHANT_ISSUED , $traceData);
 
-        return $isStorkEmailVIAEnabled;
+        if ($this->fileData !== null && $this->fileData['path'] !== null && $isEmailViaStorkEnabled)
+        {
+            try
+            {
+                $params = $this->getParamsForFile();
+                $path = $this->fileData['path'];
+                $file_id = (new Stork($this->mode, $this->originProduct))->getFileId($params,$path);
+
+                if (!empty($file_id))
+                {
+                    $this->fileData['file_id'] = $file_id;
+
+                    return $isEmailViaStorkEnabled;
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $app['trace']->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::GET_FILE_ID_EXCEPTION,
+                    ['file_data' => $this->fileData]
+                );
+                return false;
+            }
+        }
+
+        return false;
     }
 
     protected function getParamsForStork(): array
@@ -158,7 +188,23 @@ class MerchantIssued extends Mailable
             'template_name' => $this->view,
             'template_namespace' => 'payments_payment_links',
             'org_id' => $this->data['org']['id'],
-            'params' => $this->data
+            'params' => $this->data,
+            'attachments' => [
+                [
+                    "file_id" => $this->fileData['file_id'],
+                    "display_name" => $this->fileData['name'],
+                    "extension" => "pdf"
+                ]
+            ]
+        ];
+    }
+    protected function getParamsForFile(): array
+    {
+        return [
+            'channel'            => 'email',
+            'owner_id'           => $this->mid,
+            'owner_type'         => 'merchant',
+            'url_count'          => '1'
         ];
     }
 

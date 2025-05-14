@@ -5,6 +5,7 @@ namespace RZP\Models\Base\Traits;
 use App;
 use RZP\Constants\Metric;
 use RZP\Exception;
+use RZP\Http\RequestHeader;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
@@ -318,6 +319,38 @@ trait ExternalRepo
                 {
                     return $this->fetchExternalEntity($id, "", $params);
                 }
+            }
+            catch (\Throwable $e) {}
+        }
+
+        try
+        {
+            return $this->findOrFailByPublicIdWithParamsArchived($id, $params);
+        }
+        catch (\Throwable $outerEx)
+        {
+            try
+            {
+                if ($this->validateExternalFetchEnabledForLaPayment() === true)
+                {
+                    return $this->fetchExternalLinkedAccountPaymentEntity($id, "");
+                }
+            }
+            catch (\Throwable $innerEx) {}
+
+            throw $outerEx;
+        }
+    }
+
+    public function findOrFailByPublicIdWithParamsForApiPaymentFetch($id, array $params, string $connectionType = null): PublicEntity
+    {
+        $this->entityName = $this->entity;
+
+        if ($this->entity === Entity::PAYMENT)
+        {
+            try
+            {
+                return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
             }
             catch (\Throwable $e) {}
         }

@@ -923,11 +923,20 @@ class Validator extends Base\Validator
     ];
 
     protected static $mandateContinuityTypeRowRules = [
-        Header::MANDATE_CONTINUITY_JUSPAY_TOKEN_ID            => 'required|string',
-        Header::MANDATE_CONTINUITY_TRANSACTION_ID             => 'sometimes|nullable|string',
-        Header::MANDATE_CONTINUITY_DATE_CREATED_UTC           => 'sometimes|nullable|string',
-        Header::MANDATE_CONTINUITY_EXTERNAL_PA_MANDATE_ID     => 'sometimes|nullable|string',
-        Header::MANDATE_CONTINUITY_TERMINAL_ID                => 'sometimes|nullable|string',
+        Header::MANDATE_CONTINUITY_JUSPAY_MANDATE_ID            => 'required|string',
+        Header::MANDATE_CONTINUITY_EPG_TXN_ID                   => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_DATE_CREATED_UTC             => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_RZP_MERCHANT_ID              => 'sometimes|nullable|string',
+        Header::MANDATE_CONTINUITY_PG_MANDATE_ID                => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_GATEWAY                      => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_RZP_TERMINAL_ID              => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_MAX_AMOUNT                   => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_START_DATE                   => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_EXPIRY_DATE                  => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_METHOD                       => 'sometimes|nullable',
+        Header::MANDATE_CONTINUITY_CUSTOMER_NAME                => 'sometimes|nullable|string',
+        Header::MANDATE_CONTINUITY_CUSTOMER_EMAIL               => 'sometimes|nullable|string',
+        Header::MANDATE_CONTINUITY_CUSTOMER_CONTACT             => 'sometimes|nullable',
     ];
 
     protected static $tokenContinuityTypeRowRules = [
@@ -957,7 +966,7 @@ class Validator extends Base\Validator
         Header::CUSTOMER_MIGRATION_MOBILE_NUMBER            => 'sometimes|nullable|string',
         Header::CUSTOMER_MIGRATION_MERCHANT_ID             => 'sometimes|nullable|string',
     ];
-    
+
 
     protected static $sendMailRules = [
         Entity::BATCH            => 'required|array|custom',
@@ -3363,7 +3372,7 @@ class Validator extends Base\Validator
     public function validateTokenContinuityEntries(array &$entries, array $params, ME $merchant)
     {
         foreach ($entries as $entry) {
-            $this->validateInput('tokenContinuityTypeRowRules', $entry);;
+            $this->validateInput('tokenContinuityTypeRow', $entry);;
         }
     }
 

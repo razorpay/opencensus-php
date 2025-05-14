@@ -1089,6 +1089,7 @@ class Header
     const PRICING_RULE_PROCURER                  = 'procurer';
     const PRICING_RULE_UPDATE                   = 'update';
     const PRICING_RULE_FEE_BEARER               = 'fee_bearer';
+    const PRICING_RULE_CHANNEL                = 'channel';
 
     // Loc withdrawals
 
@@ -1221,6 +1222,8 @@ class Header
     const  RBL_ECOLLECT_CREDIT_ACCOUNT_NUMBER       = 'CREDIT_ACCOUNT_NUMBER';
     const  RBL_ECOLLECT_CORPORATE_CODE              = 'CORPORATE_CODE';
     const  RBL_ECOLLECT_SENDER_INFORMATION          = 'SENDER_INFORMATION';
+
+    const RBL_ECOLLECT_TRANSACTION_ID               = 'TRANS_ID';
 
     const  AXIS_ECOLLECT_MESSAGE_TYPE               = 'Message Type';
     const  AXIS_ECOLLECT_UTR_NUMBER                 = 'UTR Number';
@@ -1908,12 +1911,22 @@ class Header
 
     // headers for mandate continuity
 
-    const MANDATE_CONTINUITY_JUSPAY_TOKEN_ID = 'mandate_id';
-    const MANDATE_CONTINUITY_TRANSACTION_ID = 'epg_txn_id';
-    const MANDATE_CONTINUITY_EXTERNAL_PA_MANDATE_ID = 'external_pa_mandate_id';
-    const MANDATE_CONTINUITY_TERMINAL_ID = 'terminal_id';
-
+    const MANDATE_CONTINUITY_JUSPAY_MANDATE_ID = 'juspay_mandate_id';
+    const MANDATE_CONTINUITY_EPG_TXN_ID = 'epg_txn_id';
     const MANDATE_CONTINUITY_DATE_CREATED_UTC = 'date_created_utc';
+    const MANDATE_CONTINUITY_RZP_MERCHANT_ID = 'rzp_merchant_id';
+    const MANDATE_CONTINUITY_GATEWAY = 'gateway';
+    const MANDATE_CONTINUITY_RZP_TERMINAL_ID = 'rzp_terminal_id';
+    const MANDATE_CONTINUITY_PG_MANDATE_ID = 'pg_mandate_id';
+    const MANDATE_CONTINUITY_MAX_AMOUNT = 'max_amount';
+    const MANDATE_CONTINUITY_START_DATE = 'start_date';
+    const MANDATE_CONTINUITY_EXPIRY_DATE = 'expiry_date';
+    const MANDATE_CONTINUITY_METHOD = 'method';
+    const MANDATE_CONTINUITY_CUSTOMER_NAME = 'customer_name';
+    const MANDATE_CONTINUITY_CUSTOMER_EMAIL = 'customer_email';
+    const MANDATE_CONTINUITY_CUSTOMER_CONTACT = 'customer_contact';
+
+
 
     // headers for merchant onboarding
     const CUSTOMER_MIGRATION_JUSPAY_CUSTOMER_ID = 'juspay_customer_id';
@@ -5775,6 +5788,46 @@ class Header
             ],
         ],
 
+        Type::ECOLLECT_RBL_BANKING => [
+            self::INPUT => [
+                self::RBL_ECOLLECT_TRANSACTION_TYPE,
+                self::RBL_ECOLLECT_AMOUNT,
+                self::RBL_ECOLLECT_UTR_NUMBER,
+                self::RBL_ECOLLECT_RRN_NUMBER,
+                self::RBL_ECOLLECT_SENDER_IFSC,
+                self::RBL_ECOLLECT_SENDER_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_SENDER_ACCOUNT_TYPE,
+                self::RBL_ECOLLECT_SENDER_NAME,
+                self::RBL_ECOLLECT_BENEFICIARY_ACCOUNT_TYPE,
+                self::RBL_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_BENENAME,
+                self::RBL_ECOLLECT_CREDIT_DATE,
+                self::RBL_ECOLLECT_CREDIT_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_CORPORATE_CODE,
+                self::RBL_ECOLLECT_SENDER_INFORMATION,
+                self::RBL_ECOLLECT_TRANSACTION_ID,
+            ],
+            self::OUTPUT => [
+                self::RBL_ECOLLECT_TRANSACTION_TYPE,
+                self::RBL_ECOLLECT_AMOUNT,
+                self::RBL_ECOLLECT_UTR_NUMBER,
+                self::RBL_ECOLLECT_RRN_NUMBER,
+                self::RBL_ECOLLECT_SENDER_IFSC,
+                self::RBL_ECOLLECT_SENDER_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_SENDER_ACCOUNT_TYPE,
+                self::RBL_ECOLLECT_SENDER_NAME,
+                self::RBL_ECOLLECT_BENEFICIARY_ACCOUNT_TYPE,
+                self::RBL_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_BENENAME,
+                self::RBL_ECOLLECT_CREDIT_DATE,
+                self::RBL_ECOLLECT_CREDIT_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_CORPORATE_CODE,
+                self::RBL_ECOLLECT_SENDER_INFORMATION,
+                self::RBL_ECOLLECT_TRANSACTION_ID,
+                self::STATUS,
+            ],
+        ],
+
         Type::ECOLLECT_AXIS => [
             self::INPUT => [
                 self::AXIS_ECOLLECT_MESSAGE_TYPE,
@@ -7740,11 +7793,20 @@ class Header
         ],
         Type::MANDATE_CONTINUITY => [
             self::INPUT => [
-                self::MANDATE_CONTINUITY_JUSPAY_TOKEN_ID,
-                self::MANDATE_CONTINUITY_TRANSACTION_ID,
+                self::MANDATE_CONTINUITY_JUSPAY_MANDATE_ID,
+                self::MANDATE_CONTINUITY_EPG_TXN_ID,
                 self::MANDATE_CONTINUITY_DATE_CREATED_UTC,
-                self::MANDATE_CONTINUITY_EXTERNAL_PA_MANDATE_ID,
-                self::MANDATE_CONTINUITY_TERMINAL_ID
+                self::MANDATE_CONTINUITY_RZP_MERCHANT_ID,
+                self::MANDATE_CONTINUITY_PG_MANDATE_ID,
+                self::MANDATE_CONTINUITY_GATEWAY,
+                self::MANDATE_CONTINUITY_RZP_TERMINAL_ID,
+                self::MANDATE_CONTINUITY_MAX_AMOUNT,
+                self::MANDATE_CONTINUITY_START_DATE,
+                self::MANDATE_CONTINUITY_EXPIRY_DATE,
+                self::MANDATE_CONTINUITY_METHOD,
+                self::MANDATE_CONTINUITY_CUSTOMER_NAME,
+                self::MANDATE_CONTINUITY_CUSTOMER_EMAIL,
+                self::MANDATE_CONTINUITY_CUSTOMER_CONTACT,
             ],
             self::OUTPUT => [],
         ],
@@ -7962,6 +8024,10 @@ class Header
             if (in_array(self::PRICING_RULE_FEE_BEARER, $actualHeaders, true) === true)
             {
                 $expectedHeaders[] = self::PRICING_RULE_FEE_BEARER;
+            }
+            if(in_array(self::PRICING_RULE_CHANNEL, $actualHeaders, true) === true)
+            {
+                $expectedHeaders[] = self::PRICING_RULE_CHANNEL;
             }
         }
 

@@ -225,6 +225,8 @@ trait Authorize
 
         $this->pushCardMetaDataEvent($input, $payment);
 
+        $this->pushOfferMetrics($input, $payment);
+
         $authPaymentData = $this->gatewayRelatedProcessing($payment, $input, $gatewayInput);
 
         // creating invoice entity for opgsp payment requires payment entity
@@ -1607,6 +1609,25 @@ trait Authorize
 
         $this->segment->trackPayment($payment, TraceCode::TERMINAL_FAILURE, $traceData);
 
+        if ($payment->getMethod() === Method::CARD &&
+            $payment->getRecurringType() === Payment\RecurringType::AUTO) {
+            $properties = [
+                "id" => $payment->getMerchantId(),
+                'experiment_name' => 'card_auto_recurring_retry',
+                'request_data' => json_encode(['merchant_id' => $payment->getMerchantId()])
+            ];
+            $splitzResponse = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable') === true ;
+
+            $this->trace->info(TraceCode::CARD_RECURRING_CASCADING_RETRY, [
+                'payment_id' => $payment->getId(),
+                'splitzResponse' => $splitzResponse,
+                'exception' =>$e->getDataAsString()
+            ]);
+            if($splitzResponse){
+               return true;
+            }
+        }
+
         // retry only if it is safe to do so
         return ((property_exists($e, 'safeRetry') === true) and
                 ($e->getSafeRetry() === true));
@@ -2345,20 +2366,7 @@ trait Authorize
                 $payment->merchant->isRazorpayOrgId() === true and
                 $payment->card->getNetwork() === Network::getFullName(Network::MC)))
         {
-            $variant = $this->app->razorx->getTreatment($this->request->getTaskId(), Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_MC, $this->mode);
-
-            $this->trace->info(TraceCode::GATEWAY_CAPTURE_RAZORX_VARIANT, [
-                'payment_id'     => $payment->getId(),
-                'merchant_id'    => $payment->getMerchantId(),
-                'razorx_variant' => $variant,
-            ]);
-
-            if (strtolower($variant) === 'on')
-            {
-                return true;
-            }
-
-            return false;
+            return true;
         }
 
         if(($payment->isGatewayCaptured() === false) and
@@ -9708,8 +9716,8 @@ trait Authorize
         (new Payment\Metric)->pushAuthMetrics($this->payment);
 
         $this->eventPaymentAuthorized();
-
-        $this->publishMessageToSqsBarricade($this->payment);
+         //         Removing this as we are not using barricade anymore
+       // $this->publishMessageToSqsBarricade($this->payment);
 
         $this->notifyIfCardSaved();
 
@@ -10103,7 +10111,19 @@ trait Authorize
 
         $order = $payment->order;
 
-        $discountAmount = $this->offer->getDiscountAmountForPayment($order->getAmount(), $payment);
+        $oeBenefitsExpEnabled = (new Offer\Core())->shouldUseBenefitsFromOffersEngine($this->merchant->getMerchantId());
+
+        if ($oeBenefitsExpEnabled)
+        {
+            $discountAmount = $this->app["offers_engine"]->getTotalDiscountApplied(
+                $payment->getOffer()->getPublicId(), $payment->getPublicId(),$order->getPublicId());
+        }
+        else
+        {
+            $discountAmount = $this->offer->getDiscountAmountForPayment($order->getAmount(), $payment);
+
+        }
+
 
         $discountInput = [
             Discount\Entity::AMOUNT => $discountAmount,
@@ -12703,7 +12723,7 @@ trait Authorize
                     [
                         'payment_id'        => $payment->getId(),
                         'late_authorize'    => $wasFailed,
-                ]);
+                    ]);
 
                 $this->createLedgerEntriesForGatewayCaptureOnAuthorize($payment);
             }
@@ -14525,6 +14545,13 @@ trait Authorize
         else
         {
             (new Address\Core)->edit($tokenBillingAddress, $billingAddressToSave);
+        }
+    }
+    protected function pushOfferMetrics($input, Payment\Entity $payment)
+    {
+        if (empty($input['offer_id']) === false)
+        {
+            (new Payment\Metric)->pushOfferMetrics($payment,$input);
         }
     }
 

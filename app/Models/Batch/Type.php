@@ -210,6 +210,8 @@ class Type
 
     const ECOLLECT_RBL          = 'ecollect_rbl';
 
+    const ECOLLECT_RBL_BANKING = 'ecollect_rbl_banking';
+
     const ECOLLECT_AXIS         = 'ecollect_axis';
 
     const ECOLLECT_AXIS_BANKING = 'ecollect_axis_banking';
@@ -385,6 +387,7 @@ class Type
         self::MERCHANT_CAPITAL_TAGS,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
+        self::ECOLLECT_RBL_BANKING,
         self::ECOLLECT_AXIS,
         self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
@@ -634,6 +637,7 @@ class Type
         self::RECURRING_CHARGE_BSE,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
+        self::ECOLLECT_RBL_BANKING,
         self::ECOLLECT_AXIS,
         self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
@@ -733,6 +737,7 @@ class Type
         self::RECURRING_CHARGE_BSE,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
+        self::ECOLLECT_RBL_BANKING,
         self::ECOLLECT_AXIS,
         self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
@@ -868,6 +873,7 @@ class Type
         self::PARTNER_SUBMERCHANTS               => Name::ADMIN_MANAGE_PARTNERS,
         self::ECOLLECT_ICICI                     => Name::ECOLLECT_ICICI_BATCH_UPLOAD,
         self::ECOLLECT_RBL                       => Name::ECOLLECT_RBL_BATCH_UPLOAD,
+        self::ECOLLECT_RBL_BANKING               => Name::ECOLLECT_RBL_BANKING_BATCH_UPLOAD,
         self::ECOLLECT_AXIS                      => Name::ECOLLECT_AXIS_BATCH_UPLOAD,
         self::ECOLLECT_AXIS_BANKING              => Name::ECOLLECT_AXIS_BANKING_BATCH_UPLOAD,
         self::ECOLLECT_YESBANK                   => Name::ECOLLECT_YESBANK_BATCH_UPLOAD,

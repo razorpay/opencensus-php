@@ -1128,6 +1128,7 @@ class CustomerTest extends TestCase
             'insured_entity_type' => 'payment',
             'status'              => 'insured',
             'claim_status'        => 'opened',
+            'insurance_provider' => 'razorpay',
             'claim_history'       => json_encode([
                 [
                     "reason" => "invalid claim",
@@ -1144,6 +1145,7 @@ class CustomerTest extends TestCase
         $this->fixtures->create('insurance', [
             'insured_entity_id'   => $order->getId(),
             'insured_entity_type' => 'order',
+            'insurance_provider' => 'symbo',
             'status'              => 'created',
         ]);
 
@@ -1179,6 +1181,8 @@ class CustomerTest extends TestCase
 
         $this->assertEquals('insured', $insuranceDetails[$payment1->getPublicId()]['status']);
 
+        $this->assertEquals('razorpay', $insuranceDetails[$payment1->getPublicId()]['provider']);
+
         $this->assertEquals('opened', $insuranceDetails[$payment1->getPublicId()]['claim_status']);
 
         $this->assertEquals($expectedClaimHistory[0], $insuranceDetails[$payment1->getPublicId()]['claim_history'][0]);
@@ -1186,6 +1190,8 @@ class CustomerTest extends TestCase
         $this->assertEquals($expectedClaimHistory[1], $insuranceDetails[$payment1->getPublicId()]['claim_history'][1]);
 
         $this->assertEquals('created', $insuranceDetails[$payment2->getPublicId()]['status']);
+
+        $this->assertEquals('symbo', $insuranceDetails[$payment2->getPublicId()]['provider']);
 
         $this->assertNull($insuranceDetails[$payment2->getPublicId()]['claim_status']);
 
@@ -1539,6 +1545,7 @@ class CustomerTest extends TestCase
             'insured_entity_type' => 'payment',
             'status'              => 'insured',
             'claim_status'        => 'opened',
+            'insurance_provider'  => 'razorpay',
         ]);
 
         $this->fixtures->create('insurance', [
@@ -1569,6 +1576,8 @@ class CustomerTest extends TestCase
         $this->assertEquals('insured', $insuranceDetails[$payment1->getPublicId()]['status']);
 
         $this->assertEquals('opened', $insuranceDetails[$payment1->getPublicId()]['claim_status']);
+
+        $this->assertEquals('razorpay', $insuranceDetails[$payment1->getPublicId()]['provider']);
     }
 
     public function testFetchPaymentByContactOnSupportPageWhenUserLoggedInExpectsPaymentsWithCustomerContact()

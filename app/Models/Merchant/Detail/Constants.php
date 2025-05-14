@@ -149,6 +149,10 @@ class Constants
     const RISK_DETAILS                      = 'risk_details';
     const ADDITIONAL_ONBOARDING_DETAILS     = 'additional_onboarding_details';
     const PG_ONBOARDING                     = 'pg_onboarding';
+    const NON_MODULAR_VERSION               = 'non-modular';
+    const MODULAR_VERSION_V1                = 'v1';
+    const PRODUCT                           = 'PRODUCT';
+    const CROSS_BORDER_ONBOARDING           = 'cross_border_onboarding';
     const MANUAL_REKYC                      = "manual_rekyc";
     const REKYC_STATUS                      = "rekyc_status";
     const BDD_VERIFICATION_STATUS           = "bdd_verification_status";
@@ -253,6 +257,8 @@ class Constants
     const PAYMENT_STATUS               = 'payment_status';
     const INVOICE_SENT                 = 'invoice_sent';
     const FEE_BASED_GATING_DESCRIPTION = 'Fee for KYC verification request';
+    const FEE_COLLECTION_PAYMENT_TYPE = 'payment_type';
+    CONST MO_FEE_COLLECTION_PAYMENT_TYPE = 'mo_fee_collection';
 
     const CATEGORY_MODULE_PLACEMENT    = 'category_module_placement';
 
@@ -934,5 +940,7 @@ class Constants
     const DEDUPE_IS_UNDER_REVIEW        = "is_under_review";
     const IS_FORM_LOCKED                = "is_form_locked";
     const IS_FORM_SUBMITTED             = "is_form_submitted";
+    const IS_MODULAR_INDIA = "is_modular";
+    const MODULAR_PRODUCT_INDIA = "product";
 }
 

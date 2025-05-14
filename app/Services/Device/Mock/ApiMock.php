@@ -22,8 +22,8 @@ class ApiMock extends Api
     public function fetchDevice(string $deviceId) : array
     {
         return [
-            "storeId"=> "store_123",
-            "deviceId" => "device_123",
+            "store_id"=> "store_123",
+            "device_id" => "device_123",
         ];
     }
 }

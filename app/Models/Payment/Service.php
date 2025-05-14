@@ -9,6 +9,7 @@ use Crypt;
 use Config;
 use Monolog\Logger;
 use RZP\Constants\Metric as Metrics;
+use RZP\Jobs\PaymentFetchByIdParity;
 use RZP\Http\RequestHeader;
 use RZP\Jobs\OrderPaymentsParity;
 use RZP\Listeners\ApiEventSubscriber;
@@ -1615,6 +1616,12 @@ class Service extends Base\Service
                         $payment->setAmountCaptured($paymentMap['amount_captured']);
                     }
 
+                    if ((isset($paymentMap['flow']) === true) and
+                        ($paymentMap['method'] === Payment\Method::UPI))
+                    {
+                        $payment->setAttribute(Entity::FLOW, $paymentMap['flow']);
+                    }
+
                     return $payment;
                 },
                 20,
@@ -2567,7 +2574,7 @@ class Service extends Base\Service
         }
         catch (\Throwable $ex)
         {
-            $this->trace->error(TraceCode::ORDER_PAYMENTS_PARITY_SPLITZ_FAILURE, [
+            $this->trace->error(TraceCode::PAYMENT_FETCH_MULTIPLE_PARITY_SPLITZ_FAILURE, [
                 "error" => $ex->getMessage(),
             ]);
 
@@ -2816,6 +2823,7 @@ class Service extends Base\Service
     public function fetch(string $id, array $input = []): array
     {
         $id = Entity::stripSignWithoutValidation($id);
+        $callbackPresent = false;
 
         $showSettlementHoldStatus = false;
 
@@ -2867,7 +2875,16 @@ class Service extends Base\Service
             }
         }
 
-        $payment = $this->repo->payment->findOrFailByPublicIdWithParams($id, $input);
+        $isApiPaymentFetchRequestFromPgRouter = $this->app['request']->headers->get(RequestHeader::X_PG_ROUTER_API_PAYMENT);
+
+        if ($isApiPaymentFetchRequestFromPgRouter === "true")
+        {
+            $payment = $this->repo->payment->findOrFailByPublicIdWithParamsForApiPaymentFetch($id, $input);
+        }
+        else
+        {
+            $payment = $this->repo->payment->findOrFailByPublicIdWithParams($id, $input);
+        }
 
         $paymentMerchantId = $payment->getMerchantId();
 
@@ -2892,12 +2909,6 @@ class Service extends Base\Service
             $this->addDashboardFlags($entity, $payment, $input);
         }
 
-        if (isset($entity['upi']) and
-            ($payment->isRoutedThroughPaymentsUpiPaymentService() === true ||
-             $payment->getCpsRoute() === Payment\Entity::REARCH_UPI_PAYMENT_SERVICE)
-        ) {
-            $entity['upi']['flow'] = $payment->getFlow();
-        }
 
         if (isset($entity['card']) and
            ($payment->isRoutedThroughCardPayments() === true || ($payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE))
@@ -2932,6 +2943,7 @@ class Service extends Base\Service
         {
             if($this->app['basicauth']->isPrivateAuth())
             {
+                $callbackPresent = true;
                 $secret = $this->app->config->get('app.key');
                 $hash = hash_hmac('sha1', $payment->getPublicId(), $secret);
                 if(isset($payment['cps_route']) && $payment['cps_route'] === 5)
@@ -2967,7 +2979,77 @@ class Service extends Base\Service
             $entity['transaction'] = null;
         }
 
+        $this->trace->count(Metric::PAYMENT_FETCH_BY_ID_DISTRIBUTION, [
+            'private'          => $this->app['basicauth']->isPrivateAuth(),
+            'app'              => $this->app['basicauth']->getInternalApp(),
+            'proxy'            => $this->app['basicauth']->isProxyAuth(),
+            'callbackPresent'  => $callbackPresent,
+        ]);
+
+        if ($this->checkSplitzForPaymentFetchByIdParity() === true)
+        {
+            $config  = $this->app['config']->get('applications.route');
+            $passport = $this->app['basicauth']->getPassportJwt($config['url']);
+
+            $input["payment_id"] = $id;
+            $input["passport"] = $passport;
+            $input["cps_route"] = $payment['cps_route'];
+            $input["callbackPresent"] = $callbackPresent;
+            $input["ip"] = $this->app['request']->getClientIp();
+            $input["isPrivate"] = $this->app['basicauth']->isPrivateAuth();
+            $input["isProxyAuth"] = $this->app['basicauth']->isProxyAuth();
+            $input["internalApp"] = $this->app['basicauth']->getInternalApp();
+
+            $this->pushPaymentFetchByIdForParity($payment, $input);
+        }
+
         return $entity;
+    }
+
+    public function checkSplitzForPaymentFetchByIdParity(): bool
+    {
+        try
+        {
+            $properties = [
+                "id" => UniqueIdEntity::generateUniqueId(),
+                "experiment_id" => $this->app['config']->get('app.payment_fetch_by_id_parity_producer'),
+            ];
+
+            $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'allow');
+
+            return $variant;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::PAYMENT_FETCH_BY_ID_PARITY_SPLITZ_FAILURE, [
+                "error" => $ex->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    public function pushPaymentFetchByIdForParity($payments, $input)
+    {
+        try
+        {
+            $microtime = microtime(true);
+
+            // Convert seconds to milliseconds
+            $milliseconds = round($microtime * 1000);
+
+            PaymentFetchByIdParity::dispatchNow($this->mode, $input, $payments, $milliseconds);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                500,
+                TraceCode::PAYMENT_FETCH_BY_ID_PARITY_EXCEPTION,
+                [
+                    "message" => $ex->getMessage()
+                ]);
+        }
     }
 
     public function getPaymentTimeline(string $id, array $input = []): array
@@ -9649,6 +9731,12 @@ class Service extends Base\Service
 
         if (empty($userStores)){
             unset($input['store_ids']);
+            return;
+        }
+
+        // If storeIds is empty, use all available userStores
+        if (empty($storeIds)) {
+            $input['store_ids'] = $userStores;
             return;
         }
 

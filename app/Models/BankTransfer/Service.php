@@ -226,8 +226,8 @@ class Service extends Base\Service
         {
             $this->trace->error(
                 TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR, [
-                    'Request' => $input
-                ]);
+                'Request' => $input
+            ]);
 
             throw new Exception\BadRequestValidationFailureException(TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR);
         }
@@ -1908,7 +1908,7 @@ class Service extends Base\Service
                 if (!$isFundingDetailsEmpty && isset($response['data']['funding_accounts'][0]['account_number'])) {
                     $isFundingAccountNumberEmpty = empty($response['data']['funding_accounts'][0]['account_number']);
                 }
-                
+
                 if ($isFundingDetailsEmpty || $isFundingAccountNumberEmpty) {
                     // Response is again empty, retry as per retryLimit
                     $this->trace->info(TraceCode::B2B_BANK_EMPTY_ACCOUNT_RETURNED_FROM_CURRENCY_CLOUD, [
@@ -1932,7 +1932,7 @@ class Service extends Base\Service
         if ($funding_accounts == null) {
             throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_INTL_BANK_TRANSFER_ACCOUNT_DOES_NOT_EXIST, null,
                 [
-                    'error_data' => $ex->getData() ?? [],
+                    'error_msg' => "Funding Account is Null Despite Multiple Retries",
                 ]);
         }
 
@@ -1969,7 +1969,7 @@ class Service extends Base\Service
             'street' => $merchantDetail->getBusinessRegisteredAddress(),
             'city' => $merchantDetail->getBusinessRegisteredCity(),
             'state' => $merchantDetail->getBusinessRegisteredState(),
-            'country' => $merchantDetail->getBusinessRegisteredCountry() ?? "IN",
+            'country' => "IN",
             'pin' => $merchantDetail->getBusinessRegisteredPin(),
         ];
 
@@ -2139,6 +2139,11 @@ class Service extends Base\Service
                 if ($payment->getReference16() != null or
                     !$merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B) or
                     ($addresses->isEmpty() === true)) {
+
+                    $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                        'flow' => TraceCode::B2B_TRANSFER_COMPLETION_PENDING,
+                    ]);
+
                     $this->trace->info(TraceCode::B2B_TRANSFER_COMPLETION_PENDING, [
                         'payment_id' => $payment->getId(),
                         'payment_transfer_id' => $payment->getReference16(),
@@ -2181,6 +2186,11 @@ class Service extends Base\Service
                     'currency' => $response['data']['currency'],
                 ]);
             } catch (\Exception $ex) {
+
+                $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                    'flow' => TraceCode::B2B_SETTLEMENT_TO_RZP_PARENT_ACCOUNT_FAILED,
+                ]);
+
                 $this->trace->traceException(
                     $ex,
                     null,
@@ -2491,6 +2501,18 @@ class Service extends Base\Service
 
         $response = $this->app->mozart->sendMozartRequest('payments', Constants\Entity::CURRENCY_CLOUD, 'get_sender_detail', $request);
 
+        if (!isset($response)) {
+            $this->trace->info(TraceCode::B2B_FUNDS_ARRIVED_NOTIFICATION_PROCESSING_FAILURE, [
+                'txn_id'     => $input['related_entity_id'],
+                'contact_id' => $mii->getReferenceId(),
+            ]);
+
+            $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                'flow'        => TraceCode::B2B_FUNDS_ARRIVED_NOTIFICATION_PROCESSING_FAILURE,
+                'err_msg'     => "Gateway response is empty",
+            ]);
+        }
+
         $payments = $this->core->createAndAuthorizePaymentForIntlBankTransfer($response['data'], $merchantId, $input);
 
         return [
@@ -2504,6 +2526,18 @@ class Service extends Base\Service
         $reason = $input['reason'];
 
         if (isset($reason) === false || empty($reason) === true) {
+
+            $this->trace->info(TraceCode::B2B_TRANSFER_COMPLETED_NOTIFICATION_PROCESSING_FAILURE, [
+                'reason' => $reason,
+            ]);
+
+            $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                [
+                    'flow' => TraceCode::B2B_TRANSFER_COMPLETED_NOTIFICATION_PROCESSING_FAILURE,
+                    'error_desc' => 'reason field is not present',
+                ]
+            ]);
+
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DATA_TAMPERED, null, [
                 'reason' => $input['reason'],
             ]);
@@ -2523,6 +2557,19 @@ class Service extends Base\Service
             ['type' => Address\Type::BILLING_ADDRESS]);
 
         if ($addresses->isEmpty() === true) {
+
+            $this->trace->info(TraceCode::B2B_TRANSFER_COMPLETED_NOTIFICATION_PROCESSING_FAILURE, [
+                'payment_id' => $payment_id,
+            ]);
+
+            $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                [
+                    'flow' => TraceCode::B2B_TRANSFER_COMPLETED_NOTIFICATION_PROCESSING_FAILURE,
+                    'error_desc' => 'Address not present',
+                    'error_code' => 'BAD_REQUEST_ERROR',
+                ]
+            ]);
+
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null,
                 [
                     'error_desc' => 'Address not present',
@@ -2965,6 +3012,11 @@ class Service extends Base\Service
                     CrossBorderCommonUseCases::sendSlackNotification(
                         $paymentId, $merchantId, $priority, "", WorkflowBuilder\Constants::REJECTED);
                 } catch (\Throwable $e) {
+
+                    $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                        'flow'        => TraceCode::B2B_WORKFLOW_CREATION_REQUEST_FAILED,
+                    ]);
+
                     $this->trace->traceException($e, Trace::ERROR, TraceCode::CROSS_BORDER_INVOICE_WORKFLOW_NOTIFICATION_FAILED,
                         [
                             'payload' => $this->payload,

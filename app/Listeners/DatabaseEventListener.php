@@ -93,7 +93,6 @@ class DatabaseEventListener
                                 'time' => $event->time,
                             ]);
                     }
-
                 }
             }
         } catch (\Throwable $e) {

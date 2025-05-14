@@ -79,6 +79,8 @@ final class RazorxTreatment
     //It is used to maintain backward compatibility for fav composite api response.
     const FAV_COMPOSITE_SERVICE_FORWARDING = 'fav_composite_service_forwarding';
 
+    const PAYOUT_LINKS_IP_WHITELIST = 'payout_links_ip_whitelist';
+
     // Decide whom to use k8s batch upload job instead of queue worker
     const K8S_BATCH_TREATMENT   = 'k8s-batch-upload';
 
@@ -192,6 +194,8 @@ final class RazorxTreatment
 
     // Expt to use transactions table if count is 1
     const LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE = 'ledger_reverse_shadow_latest_txn_balance';
+
+    const LEDGER_TRANSACTION_ASYNC_WEBHOOK_BT = 'ledger_transaction_async_webhook_bt';
 
     // Fetch balance from ledger TiDB
     const LEDGER_BALANCE_FETCH_FROM_TIDB = 'ledger_balance_fetch_from_tidb';

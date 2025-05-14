@@ -77,7 +77,7 @@ class Service {
         return $this->sendRequest(sprintf(self::CMS_ROUTES['update_customer_by_reference_id'], $customerId), 'patch', $payload);
     }
 
-    public function listCustomers($params = [])
+    public function listCustomers($params = [], $useReplica = false)
     {
         // Remove keys if their values are null
         $filteredParams = array_filter($params, function ($value) {
@@ -86,11 +86,29 @@ class Service {
 
         $url = self::CMS_ROUTES['list_customers'];
         if (count($filteredParams) > 0)
+            $url .= '?';
+
+        $paramsWithoutIds = array_diff_key($filteredParams, ['ids' => '']);
+        if (count($paramsWithoutIds) > 0)
+            $url .= http_build_query($paramsWithoutIds);
+
+        if (array_key_exists('ids', $filteredParams) and is_array($filteredParams['ids']) and count($filteredParams['ids']) > 0)
         {
-            // Add query string params
-            $url .= '?' . http_build_query($filteredParams);
+            if (count($paramsWithoutIds) > 0)
+                $url .= '&';
+
+            foreach ($filteredParams['ids'] as $id)
+                $url .= 'ids=' . $id . '&';
+
+            // Remove last '&'
+            $url = substr($url, 0, -1);
         }
-        return $this->sendRequest($url, 'get');
+
+        $customHeaders = [];
+        if ($useReplica)
+            $customHeaders = ['X-Db-Instance' => 'reader'];
+
+        return $this->sendRequest($url, 'get', customHeaders: $customHeaders);
     }
 
     /**
@@ -104,7 +122,7 @@ class Service {
      * @throws ServerErrorException
      */
 
-    public function sendRequest($url, $method, array $inputData = [])
+    public function sendRequest($url, $method, array $inputData = [], $customHeaders = [])
     {
         $baseUrl = $this->baseUrl;
         $key = $this->key;
@@ -126,7 +144,7 @@ class Service {
             $data = json_encode($inputData);
         }
 
-        $headers = [];
+        $headers = $customHeaders;
 
         $headers['Content-Type'] = 'application/json';
 
@@ -150,33 +168,20 @@ class Service {
 
         $response = $this->sendCMSRequest($request,$success);
 
-        if ($success) {
-            if ($response->status_code !== 200) {
-                $traceData = [
-                    'body' => $response->body,
-                    'status_code' => $response->status_code
-                ];
-                $this->trace->error(TraceCode::CMS_REQUEST_ERROR, $traceData);
-            }
-            else
-            {
-                $decodedResponse = json_decode($response->body, true);
-
-                $decodedResponse = $decodedResponse ?? [];
-
-                //check if $response is a valid json
-                if (json_last_error() !== JSON_ERROR_NONE)
-                {
-                    $this->trace->error(TraceCode::CMS_INVALID_JSON_RESPONSE,
-                        [
-                            'body' => $response->body,
-                            'status_code' => $response->status_code
-                        ]);
-                }
-                else
-                    return  $decodedResponse;
-            }
+        if ($success and $response->status_code == 200)
+        {
+            $decodedResponse = json_decode($response->body, true);
+            return $decodedResponse ?? [];
         }
+
+        $this->trace->info(TraceCode::CMS_REQUEST_ERROR,[
+            'success' => $success,
+            'status_code' => $response ? $response->status_code : "",
+            'body' => $response ? $response->body: "",
+        ]);
+
+        if ($success and $response->status_code == 400)
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
 
         throw new Exception\ServerErrorException("Request Failed to CMS",ErrorCode::SERVER_ERROR_INVALID_RESPONSE,[]);
     }
@@ -230,5 +235,10 @@ class Service {
         );
 
         return $response;
+    }
+
+    protected function isValidJson(string $string): bool {
+        json_decode($string);
+        return json_last_error() === JSON_ERROR_NONE;
     }
 }

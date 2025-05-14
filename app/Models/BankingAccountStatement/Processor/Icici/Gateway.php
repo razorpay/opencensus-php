@@ -47,9 +47,21 @@ class Gateway extends BaseProcessor
     const ICICI_STATEMENT_FETCH_API_MAX_RECORDS = 200;
 
     /**
-     * NEFT credit remarks => "NEFT-RETURN-23629988951DC-AYUSH MITTAL-ACCOUNT DOES NOT EXIST  R03"
-     * utr is 023629988951
+     *  NEFT credit remarks => "NEFT-RETURN-ICICN42025030751922184-LENarendraGa-Closed Account Number  AC04",
+     *  utr is ICICN42025030751922184
+     *  NEFT credit remarks => "NEFT-RETURN-23629988951DC-AYUSH MITTAL-ACCOUNT DOES NOT EXIST  R03"
+     *  utr is 023629988951
+     *  NEFT credit remarks => "NEFT-AXISCN0118376057-RAZORPAY SOFTWARE PRIVATE LIMITED-RAZORPAY SOFTWARE PVT L",
+     *  utr is AXISCN0118376057
      */
+    const CREDIT_REGEX_NEFT = [
+        '/^NEFT-RETURN-(ICIC.*?)-/',
+        '/^NEFT-RETURN-(.*?)-/',
+        '/^NEFT-(.*?)-/'];
+    /**
+     *   NEFT credit remarks => "NEFT-RETURN-23629988951DC-AYUSH MITTAL-ACCOUNT DOES NOT EXIST  R03"
+     *   utr is 023629988951
+    */
     const CREDIT_REGEX_NEFT_RETURN = '/^NEFT-RETURN-(.*?)-/';
 
     /**
@@ -58,8 +70,8 @@ class Gateway extends BaseProcessor
      *  IMPS credit remarks => "FT-MMT/IMPS/312113616259/APILkK97uHZ9EWx/DIPANKARSA/FSFB0000001",
      *  IMPS credit remarks => "MMT/IMPS/105400750777/TestIciciProd06/harsh     /HDFC0000004",
      *  IMPS credit remarks => "MMT IMPS 212211671710 APIJQFQgSvI8qvN MR SATYANAR  SBIN0003281",
-     *  NEFT credit remarks => "NEFT-AXISCN0118376057-RAZORPAY SOFTWARE PRIVATE LIMITED-RAZORPAY SOFTWARE PVT L",
      *  IFT credit remarks  => "INF/INFT/025802182571/Razorpay curren/CAMPUS CONNECT",
+     *  UPI credit remarks  => "UPI/RVSL509437768158/frapp wallet /aniruddhsingh16//ICIRZPUPITRANSFERQEpGt3SvOsGbMDDUEr"
      *  UPI credit remarks  => "UPI/115421282359/UPI/praveenraam06-1/DBS Bank India",
      *  RTGS credit remarks => "RTGS-AUBLR12021123000584069-FINAVRIO TECHNOLOGY PRIVATE LIMITED-212121133524511",
      *  BIL credit remarks  => "BIL/INFT/000270116851/Paid up capital/ CHIRAG V"
@@ -70,8 +82,8 @@ class Gateway extends BaseProcessor
         '/^FT-MMT\/IMPS\/(.*?)\//',
         '/^MMT\/IMPS\/(.*?)\//',
         '/^MMT IMPS ([0-9]{12}) /',
-        '/^NEFT-(.*?)-/',
         '/^INF\/INFT\/(.*?)\//',
+        '/UPI\/RVSL(.*?)\//',
         '/^UPI\/(.*?)\//',
         '/^RTGS-(.*?)-/',
         '/^BIL\/INFT\/(.*?)\//'
@@ -1181,15 +1193,21 @@ class Gateway extends BaseProcessor
     {
         $description = $basEntity->getDescription();
 
-        $regex = self::CREDIT_REGEX_NEFT_RETURN;
+        $regexes = self::CREDIT_REGEX_NEFT;
 
-        if (($match = preg_match($regex, $description, $matches)) === 1)
-        {
-            $utr = $matches[1];
+        foreach ($regexes as $regex){
+            if (($match = preg_match($regex, $description, $matches)) === 1)
+            {
+                $utr = $matches[1];
 
-            $utr = '0' . substr($utr, 0, strlen($utr) - 2);
+                if($regex == self::CREDIT_REGEX_NEFT_RETURN){
 
-            return $utr;
+                    $utr = '0' . substr($utr, 0, strlen($utr) - 2);
+
+                }
+
+                return $utr;
+            }
         }
 
         $regexes = self::CREDIT_REGEX;

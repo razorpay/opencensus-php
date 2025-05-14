@@ -206,6 +206,8 @@ class Events
         self::PARTNER_SUBMERCHANT_POS_NC_COUNT_1_ONBOARDING_PAUSE                   => 'send_partner_submerchant_needs_clarification_communications',
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE                           => 'under_review_communications_from_api_exp_id',
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE                        => 'under_review_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITH_DEVICE                          => 'kyc_qualified_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITHOUT_DEVICE                       => 'kyc_qualified_communications_from_api_exp_id',
         self::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE                               => 'rejected_communications_from_api_exp_id',
         self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE                            => 'rejected_communications_from_api_exp_id',
         self::IN_PERSON_MERCHANT_NC_COUNT_1_WITH_DEVICE                             => 'needs_clarification_communications_from_api_exp_id',
@@ -313,6 +315,8 @@ class Events
         self::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE                 => 'send_partner_submerchant_needs_clarification_communications',
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE                   => 'under_review_communications_from_api_exp_id',
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE                => 'under_review_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITH_DEVICE                  => 'kyc_qualified_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITHOUT_DEVICE               => 'kyc_qualified_communications_from_api_exp_id',
         self::IN_PERSON_MERCHANT_REJECTED_WITH_DEVICE                       => 'rejected_communications_from_api_exp_id',
         self::IN_PERSON_MERCHANT_REJECTED_WITHOUT_DEVICE                    => 'rejected_communications_from_api_exp_id',
         self::IN_PERSON_MERCHANT_NC_COUNT_1_WITH_DEVICE                     => 'needs_clarification_communications_from_api_exp_id',
@@ -654,6 +658,8 @@ class Events
         self::IN_PERSON_MERCHANT_NC_COUNT_1_WITHOUT_DEVICE                  => 'needs_clarification_communications_from_api_exp_id',
         self::IN_PERSON_MERCHANT_NC_COUNT_2_WITH_DEVICE                     => 'needs_clarification_communications_from_api_exp_id',
         self::IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE                  => 'needs_clarification_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITH_DEVICE                  => 'kyc_qualified_communications_from_api_exp_id',
+        self::IN_PERSON_MERCHANT_KYC_QUALIFIED_WITHOUT_DEVICE               => 'kyc_qualified_communications_from_api_exp_id',
     ];
 
     const EMAIL_CC = [

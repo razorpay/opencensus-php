@@ -4,9 +4,12 @@ namespace RZP\Reconciliator\Base\SubReconciliator;
 
 use App;
 
+use RZP\Constants\Entity as E;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
+use RZP\Models\Transaction\ReconciledType;
+use RZP\Reconciliator\Base\Foundation\SubReconciliate;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Batch\Entity;
@@ -485,6 +488,17 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
             $this->refund->reload();
             $this->refund->transaction()->associate($transaction);
         }
+
+        $this->trace->info(TraceCode::NFC_RECON_REFUND_DATA, [
+            "refund_id"      => $this->refund->getId(),
+            'payment_id'    => $this->refund->payment->getId(),
+        ]);
+
+        $time = time();
+        $reconData = [];
+        $reconData[BaseReconciliate::RECONCILED_AT] = $time;
+        $reconData[BaseReconciliate::RECONCILED_TYPE] = ReconciledType::MIS;
+        (new SubReconciliate())->sendRefundReconNFCDataToCLS($this->refund->getId(), $reconData);
 
         $this->persistReconciledAt($this->refund);
 

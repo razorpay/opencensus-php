@@ -86,6 +86,8 @@ class Entity extends Base\PublicEntity
     const INSTANT  = 'instant';
     const DEFERRED = 'deferred';
 
+    const CLUBBED = 'clubbed';
+
     //Attribute lengths
     const NAME_LENGTH               = 50;
     const PAYMENT_METHOD_LENGTH     = 30;
@@ -112,6 +114,8 @@ class Entity extends Base\PublicEntity
     const UPI = 'upi';
 
     const INSTRUMENTS = 'instruments';
+
+    const RULES = 'rules';
 
     // This denotes `multiple` payment methods for an offer entity
     const MULTIPLE = 'multiple';
@@ -682,6 +686,15 @@ class Entity extends Base\PublicEntity
         return $this->getDiscountedAmount($amount, $percentDiscount);
     }
 
+    public function calculateDiscountedAmountFromCalculatedBenefits($orderAmount, $calculatedBenefits)
+    {
+        if (isset($calculatedBenefits[Constants::TOTAL_DISCOUNT]))
+        {
+            $orderAmount = $orderAmount - $calculatedBenefits[Constants::TOTAL_DISCOUNT];
+        }
+        return $orderAmount;
+
+    }
     public function checkDiscountMismatch($apiDiscount, $oeBenefits): bool
     {
         $stringDisc = strval($apiDiscount);

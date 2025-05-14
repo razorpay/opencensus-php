@@ -63,7 +63,7 @@ class Gateway extends BaseProcessor
 
     // sample NEFT - NEFT/000119662132/maYANK SHARMA
     // sample RTGS - RTGS/UTIBH20106341692/RAZORPAY SOFTWARE PRIVATE LI
-    const NEFT_RTGS_DEBIT_REGEX = '/^(RTGS\/|NEFT\/)(.*?)(\/)/';
+    const NEFT_RTGS_DEBIT_REGEX = '/^(RTGS\/|NEFT\/)(?:SFMS RTN\/)?(.*?)(\/)/';
 
     const OFFSET_FOR_SAVING_RECORD = 60;
 

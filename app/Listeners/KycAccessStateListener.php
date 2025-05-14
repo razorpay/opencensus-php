@@ -108,7 +108,7 @@ class KycAccessStateListener extends BaseListener
 
         $this->trace->info(TraceCode::KYC_ACCESS_STATE_ROUTE_JOB_NAME, ['routeOrJob' => $routeOrJob]);
 
-        $blacklistedRouteAndJob = ["internal_upsert_partner_kyc_access", 'partnerships_outbox_event_handler_job'];
+        $blacklistedRouteAndJob = ["internal_upsert_partner_kyc_access", 'worker:partnerships_outbox_event_handler_job'];
 
         return (array_key_exists($routeOrJob, $blacklistedRouteAndJob));
     }

@@ -20,6 +20,7 @@ use RZP\Models\OfflinePayment;
 use RZP\Models\Order\Repository as OrderRepository;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Constants\Entity as ConstantsEntity;
 
 /**
@@ -31,7 +32,7 @@ use RZP\Constants\Entity as ConstantsEntity;
  */
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes, AsvGetAttribute;
+    use SoftDeletes, AsvGetAttribute, CmsGetAttribute;
     use NotesTrait;
     use HasBalance;
 
@@ -673,7 +674,7 @@ class Entity extends Base\PublicEntity
         {
             if (empty($value) === false)
             {
-                $sanitizedValue = trim(substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $value), 0, 39));
+                $sanitizedValue = trim(substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $value), 0, 40));
 
                 if (strlen($sanitizedValue) > 2)
                 {

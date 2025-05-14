@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FeeRecovery;
 
+use DB;
 use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\Reversal;
@@ -15,7 +16,7 @@ class Repository extends Base\Repository
      * Used after creation of fee_recovery payout. Function updates the status, attempt number and recovery_payout_id
      * so that we can map which fee_recovery payout was made for a list of payoutIds/reversalIds
      *
-     * @param $entityIdList
+     * @param $idList
      * @param $entityType
      * @param $type
      * @param $feeRecoveryPayoutId
@@ -24,28 +25,25 @@ class Repository extends Base\Repository
      *
      * @return mixed
      */
-    public function updateBulkStatusAndRecoveryPayoutId($entityIdList,
+    public function updateBulkStatusAndRecoveryPayoutId($idList,
                                                         $entityType,
                                                         $type,
                                                         $feeRecoveryPayoutId,
-                                                        $status,
-                                                        $currentAttemptNumber)
+                                                        $status)
     {
         $dataToUpdate = [
             Entity::RECOVERY_PAYOUT_ID  => $feeRecoveryPayoutId,
             Entity::STATUS              => $status,
-            Entity::ATTEMPT_NUMBER      => $currentAttemptNumber + 1,
+            Entity::ATTEMPT_NUMBER      => DB::raw(Entity::ATTEMPT_NUMBER . ' + 1'),
         ];
 
+        $idColumn               = $this->dbColumn(Entity::ID);
         $typeColumn             = $this->dbColumn(Entity::TYPE);
-        $entityIdColumn         = $this->dbColumn(Entity::ENTITY_ID);
         $entityTypeColumn       = $this->dbColumn(Entity::ENTITY_TYPE);
-        $attemptNumberColumn    = $this->dbColumn(Entity::ATTEMPT_NUMBER);
 
         return $this->newQuery()
-                    ->whereIn($entityIdColumn, $entityIdList)
+                    ->whereIn($idColumn, $idList)
                     ->where($entityTypeColumn, '=', $entityType)
-                    ->where($attemptNumberColumn, '=', $currentAttemptNumber)
                     ->where($typeColumn, '=', $type)
                     ->update($dataToUpdate);
     }

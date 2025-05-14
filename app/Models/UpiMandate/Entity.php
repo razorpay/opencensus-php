@@ -7,11 +7,12 @@ use RZP\Models\Order;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Constants\Entity as ConstantsEntity;
 
 class Entity extends Base\PublicEntity
 {
-    use AsvGetAttribute;
+    use AsvGetAttribute, CmsGetAttribute;
 
     const ORDER_ID             = 'order_id';
     const MAX_AMOUNT           = 'max_amount';

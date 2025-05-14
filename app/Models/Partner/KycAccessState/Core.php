@@ -20,6 +20,9 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Notifications\Onboarding\Events as OnboardingEvents;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\MerchantApplications as MerchantApplications;
+
 
 class Core extends Base\Core
 {
@@ -262,14 +265,27 @@ class Core extends Base\Core
         $this->trace->count(PartnerMetric::PARTNER_KYC_NOTIFICATION_TOTAL, $dimensions);
     }
 
-    public function confirmRequestForSubMerchantKyc(array $input)
+    public function confirmRequestForSubMerchantKyc(array $input,MerchantEntity $partner)
     {
+        $merchantApplicationCore = new MerchantApplications\Core();
+        $appType = $merchantApplicationCore->getDefaultAppTypeForPartner($partner);
         $accessRequest = new Base\PublicCollection();
-
-        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
 
         if (isset($input[Entity::APPROVE_TOKEN]) === true)
         {
+            if (isset($input[Constants::CREATE_CONSENT]) && $input[Constants::CREATE_CONSENT]) {
+                try {
+                    $this->generateConsentInPRTSOrFail($partner, $input); 
+                } catch (\Throwable $e) {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::CONSENT_CREATION_PARTNERSHIPS_ERROR,
+                        ['message' => $e->getMessage()]
+                    );
+                    $this->trace->count(PartnerMetric::CONSENT_GENERATE_FAILURE_TOTAL);
+                }
+            }
             $accessRequest = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityIdAndToken($input[Entity::PARTNER_ID], $input[Entity::ENTITY_ID], 'approve_token', $input[Entity::APPROVE_TOKEN]);
         }
         
@@ -303,7 +319,7 @@ class Core extends Base\Core
             $subMerchantKycAccess->setRejectTokenNull();
             $subMerchantKycAccess->setApproveTokenNull();
 
-            $accessMap     = (new AccessMap\Repository)->fetchSubMerchantReferredByPartner($input[Entity::ENTITY_ID], $input[Entity::PARTNER_ID]);
+            $accessMap     = (new AccessMap\Repository)->fetchSubMerchantReferredByPartner($input[Entity::ENTITY_ID], $input[Entity::PARTNER_ID], $appType);
             $accessMapping = (new AccessMap\Repository)->findMerchantAccessMapOnEntityId($input[Entity::ENTITY_ID], $accessMap['application_id'], 'application');
 
             $accessMapping->setHasKycAccess();
@@ -332,6 +348,69 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::PARTNER_KYC_ACCESS__REQUEST, ['events_data' => $eventData]);
 
         return $subMerchantKycAccess;
+    }
+
+    private function generateConsentInPRTSOrFail(MerchantEntity $partner, array $input): void
+    {
+        $partnerId = $partner->getId();
+        $partnerType = $partner->getPartnerType();
+        $merchantId = $input[Entity::ENTITY_ID];
+        $this->createKycAccessConsent($partnerId, $merchantId, $partnerType);
+        $this->createPartnerTermsConsent($merchantId);
+    }
+
+    private function createConsentPayload(string $merchantId, string $eventName, string $partnerId = ''): array
+    {
+        $baseMetadata = ['consent_timestamp' => time()];
+    
+        $consentInput = [
+            'merchant_id' => $merchantId,
+            'event_name'  => $eventName,
+            'metadata'    => $baseMetadata,
+        ];
+    
+        if (in_array($eventName, [
+            Constants::PARTNER_KYC_ACCESS_CONSENT_FOR_RESELLER,
+            Constants::PARTNER_KYC_ACCESS_CONSENT_FOR_AGGREGATOR,
+        ], true)) {
+            $consentInput['entity_type'] = 'partner';
+            $consentInput['entity_id']   = $partnerId ?? '';
+        }
+    
+        return $consentInput;
+    }
+    
+
+    private function createKycAccessConsent(string $partnerId, string $merchantId, string $partnerType): void
+    {
+        $consentInput = $this->createConsentPayload(
+            $merchantId,
+            $this->getKycAccessConsentEventName($partnerType),
+            $partnerId
+        );
+
+
+        app('partnerships')->createConsent($consentInput);
+    }
+
+    private function createPartnerTermsConsent(string $merchantId): void
+    {
+        $consentInput = $this->createConsentPayload(
+            $merchantId,
+            Constants::L2_CONSENT_EVENT
+        );
+        app('partnerships')->createConsent($consentInput);
+    }
+    private function getKycAccessConsentEventName(string $partnerType): string
+    {
+        switch ($partnerType) {
+            case MerchantConstants::RESELLER:
+                return Constants::PARTNER_KYC_ACCESS_CONSENT_FOR_RESELLER;
+            case MerchantConstants::AGGREGATOR:
+                return Constants::PARTNER_KYC_ACCESS_CONSENT_FOR_AGGREGATOR;
+            default:
+                throw new \InvalidArgumentException("Invalid partner type: $partnerType");
+        }
     }
 
     public function createRequestKycAndConfirmKycAccess(array $input)

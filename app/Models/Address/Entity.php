@@ -3,9 +3,11 @@
 namespace RZP\Models\Address;
 
 use RZP\Constants;
-use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Customer\Account\SplitzExperimentEvaluator;
+use RZP\Models\Customer\ImplicitJoinHelper;
 
 class Entity extends Base\PublicEntity
 {
@@ -250,6 +252,16 @@ class Entity extends Base\PublicEntity
     public function getContact()
     {
         return $this->getAttribute(self::CONTACT);
+    }
+
+    public function getSourceAttribute()
+    {
+        if ($this->getEntityType() === E::CUSTOMER && (new SplitzExperimentEvaluator())->isLazyReadOverrideToCmsEnabled($this->entity))
+        {
+            return (new ImplicitJoinHelper())->getCustomerAttributeByCustomerId($this, 'source', 'getEntityId');
+        }
+
+        return parent::getRelationValue('source');
     }
 
     // ----------------------------------- END GETTERS -----------------------------------

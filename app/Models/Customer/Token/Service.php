@@ -1534,18 +1534,23 @@ class Service extends Base\Service
             Card\Entity::GLOBAL_FINGERPRINT     => $card->getGlobalFingerPrint() ?? "",
         ];
 
-        if ( $card->getVault() === Card\Vault::HDFC)
+        if ( $card->getVault() === Card\Vault::JUSPAY)
         {
-            $input = $this->getAdditionalDinersCardInputForRearch($token,$input);
-
-            $this->trace->info(
-                TraceCode::DINERS_TOKENISED_PAYMENT_TRACE,
-                [
-                    'token_reference_number' => $input[E::TOKEN_REFERENCE_NUMBER],
-                    'token_requestor_id'     => $input[E::TOKEN_REFERENCE_ID],
-                ]);
-
+            $input[Card\Entity::VAULT] = Card\Vault::JUSPAY;
         }
+
+        if ( $card->getVault() === Card\Vault::HDFC)
+                {
+                    $input = $this->getAdditionalDinersCardInputForRearch($token,$input);
+
+                    $this->trace->info(
+                        TraceCode::DINERS_TOKENISED_PAYMENT_TRACE,
+                        [
+                            'token_reference_number' => $input[E::TOKEN_REFERENCE_NUMBER],
+                            'token_requestor_id'     => $input[E::TOKEN_REFERENCE_ID],
+                        ]);
+
+                }
 
 
         if(isset($cryptogram["cvv"]) === true && Card\Network::getFullName(Network::AMEX) === $card->getNetwork())
@@ -3167,6 +3172,10 @@ class Service extends Base\Service
 
     public function createTokenOptimizerInternal($input)
     {
+        if (empty($input['optimizer_mandate_continuity']) === false && $input['optimizer_mandate_continuity'] === true)
+        {
+            return $this->createTokenForOptimizerMandateContinuityFlow($input);
+        }
 
         if (empty($input['payment_id']) === true)
         {
@@ -3210,6 +3219,7 @@ class Service extends Base\Service
                 "terminal_id" => $updateDetails['terminal_id'],
                 "max_amount" => $updateDetails['max_amount'],
                 "frequency" => $updateDetails['frequency'],
+                "expired_at" => $updateDetails['expire_at'],
             ];
 
             $clonedToken = $tokenCore->create($customer, $createInput, null, false);
@@ -3273,5 +3283,38 @@ class Service extends Base\Service
         );
 
         return $data;
+    }
+
+    public function createTokenForOptimizerMandateContinuityFlow($input)
+    {
+
+        (new Validator)->validateInput(Validator::CREATE_RECURRING_TOKEN_CONTINUITY_OPTIMIZER_MANDATE, $input);
+
+        (new Validator)->validateInput(Validator::CREATE_OPTIMIZER_TOKEN_CREATE_FIELDS, $input['fields']);
+
+        (new Validator)->validateInput(Validator::CREATE_OPTIMIZER_RECURRING_TOKEN_NOTES, $input['fields']['notes']);
+
+        $updateDetails = $input['fields'];
+
+        $tokenCore = (new Token\Core);
+
+        $customer = $this->repo->customer->findOrFail($input['customer_id']);
+
+        $createInput = [
+            "method" => $updateDetails['method'],
+            "terminal_id" => $updateDetails['terminal_id'],
+            "max_amount" => $updateDetails['max_amount'],
+            "frequency" => $updateDetails['frequency'],
+            "expired_at" => $updateDetails['expire_at'],
+            "start_time" => $updateDetails['start_time'],
+        ];
+
+        $clonedToken = $tokenCore->create($customer, $createInput, null, false);
+
+        $clonedToken->setOptimizerMandateDetails($updateDetails);
+
+        $this->repo->token->saveOrFail($clonedToken);
+
+        return $clonedToken->toArrayPublic();
     }
 }

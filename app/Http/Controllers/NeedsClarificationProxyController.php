@@ -7,6 +7,8 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Core;
 use RZP\Exception\BadRequestException;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Detail\Constants as MerchantDetailConstants;
+
 
 class NeedsClarificationProxyController extends MerchantOnboardingProxyController
 {
@@ -19,13 +21,13 @@ class NeedsClarificationProxyController extends MerchantOnboardingProxyControlle
     const MERCHANT_NC_REVAMP_ELIGIBILITY_ADMIN              = 'merchant_nc_revamp_eligibility_admin';
     const MERCHANT_UPDATE_CLARIFICATIONS                    = 'merchant_update_clarifications';
     const MERCHANT_ACTIVATION_DOCUMENT_TYPE                 = 'merchant_activation_document_type';
-    
+
     // constants for mock repsponse
     const MSG              = 'msg';
     const CODE             = 'code';
     const DOWNSTREAM_STATUS_CODE = 'downstream_status_code';
     const META             = 'meta';
-    
+
 
 
     const MERCHANT_ROUTES = [
@@ -76,7 +78,7 @@ class NeedsClarificationProxyController extends MerchantOnboardingProxyControlle
         $this->setPathTimeoutMap(self::PATH_TIMEOUT_MAP);
 
     }
-    
+
     protected function pgosMockResponses(string $routeKey)
     {
         //mocking default response based on RouteKey
@@ -88,12 +90,12 @@ class NeedsClarificationProxyController extends MerchantOnboardingProxyControlle
                 self::DOWNSTREAM_STATUS_CODE => 500,
                 self::META                   => ["cause" => "errors.Error"]
             ],
-            
+
             default => null,
         };
     }
-    
-    
+
+
     public function handlePGOSProxyRequests($routeKey, $payload, $merchant, $ignoreRoutingConditions = false)
     {
         $merchantId = $merchant->getMerchantId();
@@ -118,7 +120,16 @@ class NeedsClarificationProxyController extends MerchantOnboardingProxyControlle
 
         $route = $this->getRoute($twirpPath);
 
-        $headers = $this->getHeadersForDashboardRequest($payload);
+        $productType = '';
+        if ($routeKey==self::MERCHANT_ACTIVATION_CLARIFICATIONS_SAVE || $routeKey==self::MERCHANT_ACTIVATION_CLARIFICATION_FETCH)
+        {
+            $productType = $this->getIndiaModularMerchantResult( $merchant)[MerchantDetailConstants::MODULAR_PRODUCT_INDIA] ?? 'non_modular';
+            $this->trace->info(TraceCode::PRODUCT_TYPE_INDIA_PG_OR_CB_INDIA_MODULAR, [
+                'productType' => $productType,
+            ]);
+        }
+
+        $headers = $this->getHeadersForDashboardRequest($payload, '', $productType);
 
         $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
             'route' => $route,

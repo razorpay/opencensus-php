@@ -1426,7 +1426,33 @@ class ApiEventSubscriber extends Base\Core
     {
         if ($payout->isOfMerchantTransaction() === true)
         {
-            (new Transaction\Notifier($payout->transaction, $this->event))->notify();
+            try
+            {
+                $txn = $payout->transaction;
+                if ((empty($txn) === true) and $payout->isBalanceAccountTypeShared())
+                {
+                    $txn = (new Transaction\Ledger\Core())->findByIdFromLedger($payout->getTransactionId(), $payout->getMerchantId());
+                }
+                if (empty($txn) === false)
+                {
+                    (new Transaction\Notifier($txn, $this->event))->notify();
+                }
+                else
+                {
+                    $this->trace->info(TraceCode::PAYOUT_TRANSACTION_NOTIFY_TRANSACTION_NOT_FOUND, [
+                        'payout_id' => $payout->getId(),
+                        'payout_event' => 'processed',
+                    ]);
+                }
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->error(TraceCode::PAYOUT_TRANSACTION_NOTIFY_FAILURE, [
+                    'payout_id' => $payout->getId(),
+                    'error_message' => $e->getMessage(),
+                    'event' => 'processed'
+                ]);
+            }
         }
 
         $payload = $this->getPayoutPayload($payout);
@@ -1468,11 +1494,37 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onPayoutReversed(Payout\Entity $payout)
     {
-         if (($payout->isOfMerchantTransaction() === true) and
+        if (($payout->isOfMerchantTransaction() === true) and
              ($payout->isBalanceAccountTypeDirect() === false))
-         {
-             (new Transaction\Notifier($payout->transaction, $this->event))->notify();
-         }
+        {
+            try
+            {
+                $txn = $payout->transaction;
+                if(empty($txn) === true)
+                {
+                    $txn = (new Transaction\Ledger\Core())->findByIdFromLedger($payout->getTransactionId(), $payout->getMerchantId());
+                }
+                if(empty($txn) === false)
+                {
+                    (new Transaction\Notifier($txn, $this->event))->notify();
+                }
+                else
+                {
+                    $this->trace->info(TraceCode::PAYOUT_TRANSACTION_NOTIFY_TRANSACTION_NOT_FOUND, [
+                        'payout_id' => $payout->getId(),
+                        'payout_event' => 'reversed',
+                    ]);
+                }
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->error(TraceCode::PAYOUT_TRANSACTION_NOTIFY_FAILURE, [
+                    'payout_id' => $payout->getId(),
+                    'error_message' => $e->getMessage(),
+                    'event' => 'reversed'
+                ]);
+            }
+        }
 
         $payload = $this->getPayoutPayload($payout);
         $this->dispatchEventToStork($payload);
@@ -2448,12 +2500,16 @@ class ApiEventSubscriber extends Base\Core
             $card = $payment->card;
             $expiryMonth = str_pad($card->getExpiryMonth(), 2, '0', STR_PAD_LEFT);
 
-            $payload['card'] = [
+            $cardDetails = $card->toArrayPublic();
+
+            $cardFormatted = [
                 'number'  => '**** **** **** ' . $card->getLast4(),
                 'expiry'  => $expiryMonth . '/' . $card->getExpiryYear(),
                 'network' => $card->getNetworkCode(),
                 'color'   => $card->getNetworkColorCode()
             ];
+
+            $payload['card'] = array_merge($cardDetails, $cardFormatted);
         }
 
         if ($payment->hasInvoice() === true)

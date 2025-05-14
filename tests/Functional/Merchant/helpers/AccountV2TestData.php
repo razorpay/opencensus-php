@@ -3570,4 +3570,415 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_VPA,
         ]
     ],
+    'testSuccessfulAccountCreationMalaysia' => [
+    'request'  => [
+        'url'     => '/v2/accounts',
+        'method'  => 'POST',
+        'content' => [
+            'email' => 'malaysiasaksham@example.com',
+            'phone' => '60123456789',
+            'type'  => 'route',
+            'legal_business_name' => 'Bunga Raya Sdn Bhd',
+            'business_type'       => 'partnership',
+            'contact_name'        => 'Ahmad bin Hassan',
+            'profile' => [
+                'category'    => 'healthcare',
+                'subcategory' => 'clinic',
+                'addresses'   => [
+                    'registered' => [
+                        'street1'     => 'No. 25, Jalan Bukit Bintang',
+                        'street2'     => 'Kawasan Perniagaan',
+                        'city'        => 'Malacca City',
+                        'state'       => 'Malacca',
+                        'postal_code' => 75000,
+                        'country'     => 'my'
+                    ]
+                ]
+            ]
+        ],
+    ],
+    'response' => [
+        'status_code' => 201
+    ]
+    ],
+
+    'testInvalidStateMalaysia' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'email' => 'malaysiasaksham@example.com',
+                'phone' => '60123456789',
+                'type'  => 'route',
+                'legal_business_name' => 'Bunga Raya Sdn Bhd',
+                'business_type'       => 'partnership',
+                'contact_name'        => 'Ahmad bin Hassan',
+                'profile' => [
+                    'category'    => 'healthcare',
+                    'subcategory' => 'clinic',
+                    'addresses'   => [
+                        'registered' => [
+                            'street1'     => 'No. 25, Jalan Bukit Bintang',
+                            'street2'     => 'Kawasan Perniagaan',
+                            'city'        => 'Malacca City',
+                            'state'       => 'WrongState',
+                            'postal_code' => 75000,
+                            'country'     => 'my'
+                        ]
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'State name entered is incorrect. Please provide a correct state name.',
+                    'field'       => 'state'
+                ]
+            ]
+        ]
+    ],
+
+    'testInvalidEmailMalaysia' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'email' => 'not-an-email',
+                'phone' => '60123456789',
+                'type'  => 'route',
+                'legal_business_name' => 'Bunga Raya Sdn Bhd',
+                'business_type'       => 'partnership',
+                'contact_name'        => 'Ahmad bin Hassan',
+                'profile' => [
+                    'category'    => 'healthcare',
+                    'subcategory' => 'clinic',
+                    'addresses'   => [
+                        'registered' => [
+                            'street1'     => 'No. 25, Jalan Bukit Bintang',
+                            'street2'     => 'Kawasan Perniagaan',
+                            'city'        => 'Malacca City',
+                            'state'       => 'Malacca',
+                            'postal_code' => 75000,
+                            'country'     => 'my'
+                        ]
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'The email must be a valid email address.',
+                    'field'       => 'email'
+                ]
+            ]
+        ]
+    ],
+
+    'testDuplicateEmailMalaysia' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'email' => 'existing@example.com',
+                'phone' => '60123456789',
+                'type'  => 'route',
+                'legal_business_name' => 'Duplicate Merchant',
+                'business_type'       => 'partnership',
+                'contact_name'        => 'Saksham Duplicate',
+                'profile' => [
+                    'category'    => 'healthcare',
+                    'subcategory' => 'clinic',
+                    'addresses'   => [
+                        'registered' => [
+                            'street1'     => 'No. 1, Test Street',
+                            'street2'     => 'Block A',
+                            'city'        => 'Kuala Lumpur',
+                            'state'       => 'Selangor',
+                            'postal_code' => 50000,
+                            'country'     => 'my'
+                        ]
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Merchant email already exists for account - 4mE83JZX3tF8oH',
+                    'field'       => 'email'
+                ]
+            ]
+        ]
+    ],
+
+    'testInvalidBusinessTypeMalaysia' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'email' => 'malaysia-biztype@example.com',
+                'phone' => '60123456789',
+                'type'  => 'route',
+                'legal_business_name' => 'Wrong Type Co.',
+                'business_type'       => 'partnership and sons',
+                'contact_name'        => 'Ahmad bin Hassan',
+                'profile' => [
+                    'category'    => 'healthcare',
+                    'subcategory' => 'clinic',
+                    'addresses'   => [
+                        'registered' => [
+                            'street1'     => 'No. 25, Jalan Bukit Bintang',
+                            'street2'     => 'Kawasan Perniagaan',
+                            'city'        => 'Malacca City',
+                            'state'       => 'Malacca',
+                            'postal_code' => 75000,
+                            'country'     => 'my'
+                        ]
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Invalid business type: partnership and sons',
+                    'field'       => 'business_type'
+                ]
+            ]
+        ]
+    ],
+
+    'testInvalidPincodeMalaysia' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'email' => 'malaysia-pincode@example.com',
+                'phone' => '60123456789',
+                'type'  => 'route',
+                'legal_business_name' => 'Invalid Pincode Corp',
+                'business_type'       => 'partnership',
+                'contact_name'        => 'Ahmad bin Hassan',
+                'profile' => [
+                    'category'    => 'healthcare',
+                    'subcategory' => 'clinic',
+                    'addresses'   => [
+                        'registered' => [
+                            'street1'     => 'No. 25, Jalan Bukit Bintang',
+                            'street2'     => 'Kawasan Perniagaan',
+                            'city'        => 'Malacca City',
+                            'state'       => 'Malacca',
+                            'postal_code' => 'INVALID',
+                            'country'     => 'my'
+                        ]
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Invalid country pin passed',
+                ]
+            ]
+        ]
+    ],
+    'testSuccessfulStakeholderCreationMalaysia' => [
+    'request' => [
+        'url'    => '/v2/accounts/acc_Q8ZCAKrQueU3dZ/stakeholders',
+        'method' => 'POST',
+        'content' => [
+            'name' => 'Gaurav Kumar t',
+            'email' => 'gaurav.kumar@example.com',
+            'addresses' => [
+                'residential' => [
+                    'street'      => '506, Koramangala 1st block',
+                    'city'        => 'malacca city',
+                    'state'       => 'malacca',
+                    'postal_code' => '43200',
+                    'country'     => 'MY'
+                ]
+            ],
+            'notes' => [
+                'random_key' => 'random_value'
+            ]
+        ],
+    ],
+    'response' => [
+        'status_code' => 200
+    ]
+    ],
+    'testInvalidStateInStakeholderMalaysia' => [
+    'request' => [
+        'url'    => '/v2/accounts/acc_Q8ZCAKrQueU3dZ/stakeholders',
+        'method' => 'POST',
+        'content' => [
+            'name' => 'Gaurav Kumar t',
+            'email' => 'gaurav.kumar@example.com',
+            'addresses' => [
+                'residential' => [
+                    'street'      => '506, Koramangala 1st block',
+                    'city'        => 'malacca city',
+                    'state'       => 'Jakarta',
+                    'postal_code' => '43200',
+                    'country'     => 'MY'
+                ]
+            ]
+        ]
+    ],
+    'response' => [
+        'status_code' => 400,
+        'content' => [
+            'error' => [
+                'code'        => 'BAD_REQUEST_ERROR',
+                'description' => 'Not a valid state: Jakarta',
+                'field'       => 'state'
+            ]
+        ]
+    ]
+    ],
+    'testInvalidEmailInStakeholderMalaysia' => [
+    'request' => [
+        'url'    => '/v2/accounts/acc_Q8ZCAKrQueU3dZ/stakeholders',
+        'method' => 'POST',
+        'content' => [
+            'name' => 'Gaurav Kumar t',
+            'email' => 'invalid-email',
+            'addresses' => [
+                'residential' => [
+                    'street'      => '506, Koramangala 1st block',
+                    'city'        => 'malacca city',
+                    'state'       => 'malacca',
+                    'postal_code' => '43200',
+                    'country'     => 'MY'
+                ]
+            ]
+        ]
+    ],
+    'response' => [
+        'status_code' => 400,
+        'content' => [
+            'error' => [
+                'code'        => 'BAD_REQUEST_ERROR',
+                'description' => 'The email must be a valid email address.',
+                'field'       => 'email'
+            ]
+        ]
+    ]
+    ],
+    'testInvalidBICMalaysia' => [
+    'request' => [
+        'url'    => '/v2/accounts/acc_Q8ZNcH0tCg2a6t/products/acc_prd_Q8ZSfH734T4cxD/',
+        'method' => 'PATCH',
+        'content' => [
+            'settlements' => [
+                'account_number'    => '47291836509284715028364957102836495',
+                'beneficiary_name'  => 'Gaurav Kumar',
+                'bank_branch_code'  => 'INVALIDCODE'
+            ],
+            'tnc_accepted' => true
+        ]
+    ],
+    'response' => [
+        'status_code' => 400,
+        'content' => [
+            'error' => [
+                'code'        => 'BAD_REQUEST_ERROR',
+                'description' => 'Invalid Bank Code',
+            ]
+        ]
+    ]
+    ],
+    'testEmptyIFSCFallbackMalaysia' => [
+    'request' => [
+        'url'    => '/v2/accounts/acc_Q8ZNcH0tCg2a6t/products/acc_prd_Q8ZSfH734T4cxD/',
+        'method' => 'PATCH',
+        'content' => [
+            'settlements' => [
+                'account_number'    => '47291836509284715028364957102836495',
+                'ifsc_code'         => '',
+                'beneficiary_name'  => 'Gaurav Kumar',
+                'bank_branch_code'  => 'MBBEMYKL'
+            ],
+            'tnc_accepted' => true
+        ]
+    ],
+    'response' => [
+        'status_code' => 200,
+        'content' => [
+            'active_configuration' => [
+                'settlements' => [
+                    'account_number'    => '47291836509284715028364957102836495',
+                    'ifsc_code'         => 'SBIN0001234',
+                    'beneficiary_name'  => 'Gaurav Kumar',
+                    'bank_branch_code'  => 'MBBEMYKL'
+                ]
+            ]
+        ]
+    ]
+    ],
+    'testLongAccountNumberMalaysia' => [
+    'request' => [
+        'url'    => '/v2/accounts/acc_Q8ZNcH0tCg2a6t/products/acc_prd_Q8ZSfH734T4cxD/',
+        'method' => 'PATCH',
+        'content' => [
+            'settlements' => [
+                'account_number'    => str_repeat('9', 36),
+                'beneficiary_name'  => 'Gaurav Kumar',
+                'bank_branch_code'  => 'MBBEMYKL'
+            ],
+            'tnc_accepted' => true
+        ]
+    ],
+    'response' => [
+        'status_code' => 400,
+        'content' => [
+            'error' => [
+                'code'        => 'BAD_REQUEST_ERROR',
+                'description' => 'The bank account number must be between 5 and 35 characters.',
+                'field'       => 'bank_account_number'
+            ]
+        ]
+    ]
+    ],
+    'testHappyFlowProductMalaysia' => [
+    'request' => [
+        'url'    => '/v2/accounts/acc_QB0N7lQOsSTUql/products/acc_prd_QB0OKAXMBlkeve/',
+        'method' => 'PATCH',
+        'content' => [
+            'settlements' => [
+                'account_number'    => '47291836509284715028364957102836495',
+                'beneficiary_name'  => 'Gaurav Kumar',
+                'bank_branch_code'  => 'MBBEMYKL'
+            ],
+            'tnc_accepted' => true
+        ]
+    ],
+    'response' => [
+        'status_code' => 200,
+        'content' => [
+            'requested_configuration' => [],
+            'active_configuration' => [
+                'settlements' => [
+                    'account_number'    => '47291836509284715028364957102836495',
+                    'ifsc_code'         => 'SBIN0001234',
+                    'beneficiary_name'  => 'Gaurav Kumar',
+                    'bank_branch_code'  => 'MBBEMYKL'
+                ]
+            ]
+        ]
+    ]
+    ],
 ];
