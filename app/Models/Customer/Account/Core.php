@@ -40,6 +40,7 @@ use RZP\Models\Merchant\Merchant1ccConfig;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService\Client;
 use RZP\Http\Request\Requests;
 use RZP\Services\CMS as CMSService;
+use RZP\Models\Insurance\Entity as InsuranceEntity;
 
 class Core extends Base\Core
 {
@@ -2038,6 +2039,7 @@ class Core extends Base\Core
         if (!empty($payment['insurance_status']))
         {
             $formattedPaymentDetails['insurance']['status'] = $payment['insurance_status'];
+            $formattedPaymentDetails['insurance']['provider'] = $payment[InsuranceEntity::INSURANCE_PROVIDER];
         }
         if (!empty($payment['insurance_claim_status']))
         {
