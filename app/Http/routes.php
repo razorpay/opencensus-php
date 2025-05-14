@@ -347,6 +347,10 @@ Route::group(['middleware' => ['auth.internal']], function()
     Route::post('/{mode}/transactions/{resource}', 'TransactionController@postIndex')->name('transactions_post_index');
 });
 
+Route::group(['middleware' => ['auth.internal', 'internal_session']], function() {
+    Route::post('/internal/session', 'UserController@createSession')->name('internal_create_session');
+});
+
 Route::group(['middleware' => ['auth.cron']], function()
 {
     Route::post('/{mode}/analytics/aggregations/day', 'AdminController@updateDayAggregations')

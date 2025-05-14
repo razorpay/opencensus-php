@@ -16,8 +16,16 @@ class InternalAuth {
      */
     public function handle($request, Closure $next)
     {
-        if (($_SERVER['PHP_AUTH_USER'] !== config('api.auth_user')) or
-        ($_SERVER['PHP_AUTH_PW'] !== config('api.auth_pass')))
+        // Check against API credentials
+        $isApiAuth = ($_SERVER['PHP_AUTH_USER'] === config('api.auth_user')) &&
+                    ($_SERVER['PHP_AUTH_PW'] === config('api.auth_pass'));
+        
+        // Check against IDP credentials
+        $isIdpAuth = ($_SERVER['PHP_AUTH_USER'] === config('idp.auth_user')) &&
+                    ($_SERVER['PHP_AUTH_PW'] === config('idp.auth_pass'));
+        
+        // If neither auth is valid, return unauthorized
+        if (!$isApiAuth && !$isIdpAuth)
         {
             return Response::json(array('success' => false, 'errors' => ['Unauthorised']));
         }

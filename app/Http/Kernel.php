@@ -68,6 +68,17 @@ class Kernel extends HttpKernel {
             \App\Http\Middleware\AuthenticateOauth::class,
             \App\Http\Middleware\CacheControl::class,
         ],
+
+        'internal_session' => [
+            \App\Http\Middleware\Cors::class,
+            \App\Http\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \App\Http\Middleware\SetApiHeaders::class,
+            \App\Http\Middleware\VerifyCsrfToken::class,
+            \App\Http\Middleware\CacheControl::class,
+            \App\Edge\Middleware\RegionCookieHandler::class,
+        ],
     ];
 
     /**

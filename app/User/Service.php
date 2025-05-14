@@ -54,6 +54,7 @@ use App\Constants\Constants as AppConstants;
 use App\Admin\ApiPromiseAny as ApiPromiseAny;
 use function PHPUnit\Framework\at;
 use App\Base\UniqueIdEntity;
+use Illuminate\Support\Facades\Validator as LaravelValidator;
 
 const EVENT_TRIGGER_COUNT = 1;
 class Service extends Base\Service
@@ -4896,5 +4897,43 @@ class Service extends Base\Service
             UserConstants::CURLEC_PROD,
             UserConstants::CURLEC_COM
         ];
+    }
+
+    /**
+     * Generate a session from payload data instead of user credentials
+     * This method is used by internal services to create a session for a user
+     *
+     * @param array $input The payload data containing user_id and optional merchant_id
+     * @return array [error, data, httpCode]
+     */
+    public function generateSessionFromPayload(array $input)
+    {
+        // Validate user ID
+        $validator = LaravelValidator::make($input, [
+            'id' => 'required',
+        ], [
+            'id.required' => 'User ID is required',
+        ]);
+
+        if ($validator->fails()) {
+            return [[$validator->errors()->first('id')], null, 400];
+        }
+
+        $logged_in_via = isset($input["email"]) ? Constants::EMAIL : Constants::CONTACT_MOBILE;
+        try {
+            // Create a GenericUser object from the payload using Helper
+            $genericUser = (new Helper)->createdGenericUser($input);
+
+            // Create session response
+            return $this->handleLoginResponse(null, $genericUser,  $logged_in_via, 200, $input);
+        } catch (\Exception $e) {
+            $this->trace->error(TraceCode::INTERNAL_GENERATE_SESSION_FAILED, [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return [['An error occurred while generating the session'], null, 500];
+        }
     }
 }

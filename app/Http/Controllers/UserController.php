@@ -2591,4 +2591,37 @@ class UserController extends Controller
         
         return $baseUrl;
     }
+
+    /**
+     * Generate a session from payload data instead of user credentials
+     * This is an internal endpoint that can only be accessed by internal services
+     *
+     * Security: This endpoint is protected by InternalAuth middleware which verifies
+     * the request comes from a trusted internal service using basic authentication
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function createSession()
+    {
+        $input = Input::all();
+
+        $this->trace->info(TraceCode::INTERNAL_GENERATE_SESSION, [
+            'id' => $input['id'] ?? null,
+        ]);
+
+        try {
+            // Generate session from payload
+            list($error, $data, $httpCode) = $this->userService->generateSessionFromPayload($input);
+
+            return AppResponse::jsonResponse($error, $data, $httpCode);
+        } catch (\Exception $e) {
+            $this->trace->error(TraceCode::INTERNAL_GENERATE_SESSION_FAILED, [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return AppResponse::jsonResponse(['An error occurred while creating the session'], null, 500);
+        }
+    }
 }

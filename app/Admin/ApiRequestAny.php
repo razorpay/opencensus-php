@@ -147,7 +147,8 @@ class ApiRequestAny
         'engage',
         'dcs',
         'admin/offers',
-        'admin/usage-limits'
+        'admin/usage-limits',
+        'idp'
     ];
 
     /**
