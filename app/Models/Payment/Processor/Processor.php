@@ -697,7 +697,8 @@ class Processor
     protected static $cardRecurringInitialRoutes = [
         'payment_create_ajax',
         'payment_create_checkout',
-        'payment_create_private_json'
+        'payment_create_private_json',
+        'payment_create_private_old',
     ];
 
     protected static $cardRecurringAutoRoutes = [
