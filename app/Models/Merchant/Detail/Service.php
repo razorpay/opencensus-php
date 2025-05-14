@@ -251,6 +251,8 @@ class Service extends Base\Service
 
                 $workflowDetails = $workflowDetailsV2 = $workflowType = $source = null;
 
+                $userSignupState = "";
+
                 $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchantId);
 
                 if (empty($userDeviceDetail) === false) {
@@ -269,6 +271,8 @@ class Service extends Base\Service
 
                         $workflowDetails = $workflowDetailsResponse;
                     }
+
+                    $userSignupState = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::USER_SIGNUP_STATE);
                 }
 
                 $isDedupeMatched = $this->dedupeCore->isMerchantImpersonated($this->merchant);
@@ -301,7 +305,7 @@ class Service extends Base\Service
                 ];
                 $shouldStoreUserSignupState = (new MerchantCore())->isSplitzExperimentEnable($properties,'enable');
                 if ($shouldStoreUserSignupState) {
-                    $response[DeviceDetailConstants::USER_SIGNUP_STATE] = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::USER_SIGNUP_STATE) ?? "";
+                    $response[DeviceDetailConstants::USER_SIGNUP_STATE] =  $userSignupState;
                 }
 
                 return $response;
