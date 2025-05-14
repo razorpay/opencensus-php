@@ -384,6 +384,26 @@ class Repository extends Base\Repository
         // To fetch just CAW tokens we check entity_type is NULL as using `!=` with WHERE clause excludes null entries
         $query = $query->whereNull(Token\Entity::ENTITY_TYPE);
 
+        if ((new Customer\Account\SplitzExperimentEvaluator())->isLazyReadOverrideToCmsEnabled('token'))
+        {
+            $query = $this->buildFetchQuery($query, $input);
+            $tokens = $query->get();
+            $customerIds = [];
+            foreach ($tokens as $t)
+                $customerIds[] = $t->getCustomerId();
+
+            $customers = (new Customer\Repository())->fetchByMerchantIdAndIds($merchantId, $customerIds);
+
+            $customersById = [];
+            foreach ($customers as $customer)
+                $customersById[$customer->getId()] = $customer;
+
+            foreach ($tokens as $t)
+                $t->customer()->associate($customersById[$t->getCustomerId()]);
+
+            return $tokens;
+        }
+
         $query = $query->with('customer');
 
         $query = $this->buildFetchQuery($query, $input);

@@ -1201,6 +1201,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CUSTOMER_NOT_FOUND                                    = 'CUSTOMER_NOT_FOUND';
     const CUSTOMER_CREATE                                       = 'CUSTOMER_CREATE';
+    const CUSTOMER_READ_FROM_API_DB                             = 'CUSTOMER_READ_FROM_API_DB';
 
     const CUSTOMER_CREATE_REQUEST_CTX                           = 'CUSTOMER_CREATE_REQUEST_CTX';
     const CUSTOMER_CREATE_REQUEST_SUCCESS                       = 'CUSTOMER_CREATE_REQUEST_SUCCESS';

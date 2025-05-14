@@ -5,6 +5,8 @@ namespace RZP\Models\Customer;
 use RZP\Base\BuilderEx;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\DbQueryException;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Base;
 use RZP\Models\Base\Collection;
 use RZP\Models\Base\PublicCollection;
@@ -31,21 +33,23 @@ class Repository extends Base\Repository
     {
         // Check if query can be served by DB.
         // It should not contain any params other than "count" and "skip"
-        $allowedKeys = ['count', 'skip'];
+        $allowedKeys = ['count', 'skip', 'email', 'contact'];
         $invalidKeys = array_diff(array_keys($params), $allowedKeys);
         if (!empty($invalidKeys))
             return parent::fetch($params, $merchantId, $connectionType);
 
         $merchant = $this->repo->merchant->find($merchantId);
         $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled($merchant);
-        $this->logMethodCall(__FUNCTION__, ['merchant_id' => $merchantId, 'should_read_via_cms' => $shouldReadViaCMS]);
+        $this->logMethodCall(__FUNCTION__, ['merchant_id' => $merchantId, 'should_read_via_cms' => $shouldReadViaCMS, 'params' => $params]);
         if ($shouldReadViaCMS)
         {
             $response = $this->app['cms']->listCustomers(
                 [
                     'merchant_id' => $merchantId,
                     'count' => $params['count'],
-                    'skip' => $params['skip']
+                    'skip' => $params['skip'],
+                    'contact' => $params['contact'],
+                    'email' => $params['email']
                 ]
             );
             return (new Customer\Account\Transformations)->convertListResponseToPublicCollection($response);
@@ -187,6 +191,10 @@ class Repository extends Base\Repository
     public function findOrFailPublic($id, $columns = ['*'], string $connectionType = null): Entity
     {
         $this->logMethodCall(__FUNCTION__, ['customer_id' => $id, 'connection_type' => $connectionType]);
+
+        if (is_null($id))
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+
         $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled(null);
         if ($shouldReadViaCMS)
         {
@@ -194,13 +202,13 @@ class Repository extends Base\Repository
             {
                 return $this->getCustomerEntityFromCMS($id);
             }
-            catch (\Exception) {
-                /* This exception can occur when
-                    1. CMS responds with "ID does not exist"
-                    2. Request to CMS fails [Expected in geos where CMS is not yet deployed]
-                */
+            catch (ServerErrorException)
+            {
+                // this exception can occur when request to CMS fails [Expected in geos where CMS is not yet deployed]
             }
         }
+
+        $this->trace->warning(TraceCode::CUSTOMER_READ_FROM_API_DB, ['customer_id' => $id, 'method' => __FUNCTION__]);
         return parent::findOrFailPublic($id, $columns, $connectionType);
     }
 
@@ -297,22 +305,26 @@ class Repository extends Base\Repository
 
     public function find($id, $columns = array('*'), string $connectionType = null)
     {
-        $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled(null);
-        $this->logMethodCall(__FUNCTION__, [ 'id' => $id, 'connection_type' => $connectionType, 'should_create_via_cms' => $shouldReadViaCMS]);
+        $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled($this->merchant);
+        if (is_null($id))
+            return null;
+
+        $this->logMethodCall(__FUNCTION__, [ 'id' => $id, 'connection_type' => $connectionType, 'should_read_via_cms' => $shouldReadViaCMS]);
         if ($shouldReadViaCMS)
         {
             try
             {
                 return $this->getCustomerEntityFromCMS($id);
             }
-            catch (\Exception) {
-                /* This exception can occur when
-                    1. CMS responds with "ID does not exist"
-                    2. Request to CMS fails [Expected in geos where CMS is not yet deployed]
-                */
+            catch (BadRequestException){
+                return null;
+            }
+            catch (ServerErrorException) {
+                // This exception can occur when request to CMS fails [Expected in geos where CMS is not yet deployed]
             }
         }
 
+        $this->trace->warning(TraceCode::CUSTOMER_READ_FROM_API_DB, ['customer_id' => $id, 'method' => __FUNCTION__]);
         return parent::find($id, $columns, $connectionType);
     }
 
@@ -326,20 +338,21 @@ class Repository extends Base\Repository
     {
         $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled(null);
         $this->logMethodCall(__FUNCTION__, [ 'customer_id' => $id, 'connection_type' => $connectionType, 'should_read_via_cms' => $shouldReadViaCMS]);
+        if (is_null($id))
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+
         if ($shouldReadViaCMS)
         {
             try
             {
                 return $this->getCustomerEntityFromCMS($id);
             }
-            catch (\Exception) {
-                /* This exception can occur when
-                    1. CMS responds with "ID does not exist"
-                    2. Request to CMS fails [Expected in geos where CMS is not yet deployed]
-                */
+            catch (ServerErrorException) {
+                // This exception can occur when request to CMS fails [Expected in geos where CMS is not yet deployed]
             }
         }
 
+        $this->trace->warning(TraceCode::CUSTOMER_READ_FROM_API_DB, ['customer_id' => $id, 'method' => __FUNCTION__]);
         return parent::findOrFail($id, $columns, $connectionType);
     }
 
@@ -397,29 +410,21 @@ class Repository extends Base\Repository
         $this->logMethodCall(__FUNCTION__, [ 'ids' => $ids, 'should_read_via_cms' => $shouldReadViaCMS]);
         if ($shouldReadViaCMS)
         {
-            try
-            {
-                $collection = new Collection();
-                foreach ($ids as $id) {
-                    $cust = $this->findOrFail($id);
-                    $collection->push($cust);
-                }
+            $collection = new Collection();
+            foreach ($ids as $id) {
+                $cust = $this->findOrFail($id);
+                $collection->push($cust);
+            }
 
-                return array_map(
-                    function($v)
-                    {
-                        return $this->serializeForIndexing($v);
-                    },
-                    $collection->all());
-            }
-            catch (\Exception) {
-                /* This exception can occur when
-                    1. CMS responds with "ID does not exist"
-                    2. Request to CMS fails [Expected in geos where CMS is not yet deployed]
-                */
-            }
+            return array_map(
+                function($v)
+                {
+                    return $this->serializeForIndexing($v);
+                },
+                $collection->all());
         }
 
+        $this->trace->warning(TraceCode::CUSTOMER_READ_FROM_API_DB, ['customer_ids' => $ids, 'method' => __FUNCTION__]);
         return parent::findManyForIndexingByIds($ids);
     }
 
@@ -542,25 +547,26 @@ class Repository extends Base\Repository
     // behaviour: does not throw exception, either the entity or null
     public function findById($id, $columns = ['*'])
     {
+        $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled(null);
+        $this->logMethodCall(__FUNCTION__, [ 'customer_id' => $id, 'should_read_via_cms' => $shouldReadViaCMS]);
         if (is_null($id))
             return null;
 
-        $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled(null);
-        $this->logMethodCall(__FUNCTION__, [ 'customer_id' => $id, 'should_read_via_cms' => $shouldReadViaCMS]);
         if ($shouldReadViaCMS)
         {
             try
             {
                 return $this->getCustomerEntityFromCMS($id);
             }
-            catch (\Exception) {
-                /* This exception can occur when
-                    1. CMS responds with "ID does not exist"
-                    2. Request to CMS fails [Expected in geos where CMS is not yet deployed]
-                */
+            catch (BadRequestException) {
+                return null;
+            }
+            catch (ServerErrorException) {
+                // This exception can occur when request to CMS fails [Expected in geos where CMS is not yet deployed]
             }
         }
 
+        $this->trace->warning(TraceCode::CUSTOMER_READ_FROM_API_DB, ['customer_id' => $id, 'method' => __FUNCTION__]);
         return $this->newQuery()
             ->select($columns)
             ->find($id);
@@ -712,6 +718,30 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function fetchByMerchantIdAndIds($merchantId, $customerIds): array
+    {
+        $allCustomers = [];
+
+        foreach (array_chunk($customerIds, 100) as $chunk) {
+            $response = $this->app['cms']->listCustomers(
+                [
+                    'merchant_id' => $merchantId,
+                    'ids' => $chunk,
+                ],
+                true
+            );
+
+            foreach ($response['items'] as $item)
+            {
+                $c = new Customer\Entity();
+                (new Customer\Account\Transformations)->fillV2CustomerInfoInCustomerEntity($c, $item);
+                $allCustomers[] = $c;
+            }
+        }
+
+        return $allCustomers;
+    }
+
 
     protected function logMethodCall(string $methodName, $extra = [], $opType = 'read')
     {
@@ -728,19 +758,11 @@ class Repository extends Base\Repository
 
     /**
      * @throws BadRequestException
+     * @throws ServerErrorException
      */
     protected function getCustomerEntityFromCMS($id, $merchantId = null): Entity
     {
-        try
-        {
-            $responseData = $this->app['cms']->getCustomerById($id);
-        }
-        catch (\Exception)
-        {
-            // TODO: This will return 400 even when CMS returns 500. Fix exception handling.
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
-        }
-
+        $responseData = $this->app['cms']->getCustomerById($id);
         if (!is_null($merchantId) && $responseData['merchant_id'] != $merchantId)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
