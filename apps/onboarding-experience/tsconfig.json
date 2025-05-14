@@ -7,7 +7,7 @@
     "paths": {
       "@libs/shared-qsuite/playwright": ["libs/shared-qsuite/dist/playwright.cjs.js"],
       "@federated/apps/shell/*": ["apps/shell/src/client/exposed/*"],
-      "@FTUX/*": ["apps/onboarding-experience/src/pages/FTUX/*"],
+      "@FTUX/*": ["apps/onboarding-experience/src/app/FTUX/*"],
       "@libs/shared-types": ["libs/shared-types/src/common/index.ts"],
       "@libs/shared-types/la": ["libs/shared-types/src/dashboards/la/index.ts"],
       "@libs/shared-types/payments": ["libs/shared-types/src/dashboards/payments/index.ts"],

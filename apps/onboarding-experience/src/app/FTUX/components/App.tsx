@@ -38,7 +38,7 @@ const ELEMENTS_MAP: Record<HOMEPAGE_ELEMENTS, ReactNode> = {
  * Home component - Main layout for the FTUX (First Time User Experience) page
  * Renders different sections based on the user's onboarding state
  */
-const Home = () => {
+const App = () => {
   // Get the current homepage state which determines which elements to show
   const homepageState = useHomepageState();
 
@@ -63,4 +63,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default App;

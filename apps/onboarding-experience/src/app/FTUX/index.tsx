@@ -1,13 +1,13 @@
 import React from 'react';
 import { Wrapper } from 'apps/onboarding-experience/src/container';
-import Home from './Home';
+import FTUXApp from '@FTUX/components/App';
 import MerchantProvider from '@FTUX/context/MerchantProvider';
 
 const FTUX = () => {
   return (
     <Wrapper>
       <MerchantProvider>
-        <Home />
+        <FTUXApp />
       </MerchantProvider>
     </Wrapper>
   );

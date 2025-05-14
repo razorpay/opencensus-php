@@ -4,7 +4,7 @@ import renderWithWrappers from 'apps/onboarding-experience/src/services/test/ren
 import AddWebsiteNudge from '../index';
 
 // Mock the PitchProducts component
-jest.mock('@FTUX/Home/PitchProducts', () => ({
+jest.mock('@FTUX/components/PitchProducts', () => ({
   __esModule: true,
   default: jest.fn().mockImplementation(({ title, subtitle, products }) => (
     <div data-testid="pitch-products">

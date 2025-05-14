@@ -16,9 +16,9 @@ import {
   ActionListItemAsset,
   CardBody,
 } from '@razorpay/blade/components';
-import ShopifyLogo from 'apps/onboarding-experience/src/common/assets/ShopifyLogo.svg';
-import WoocommerceLogo from 'apps/onboarding-experience/src/common/assets/WoocommerceLogo.svg';
-import WixLogo from 'apps/onboarding-experience/src/common/assets/WixLogo.svg';
+import ShopifyLogo from 'apps/onboarding-experience/src/assets/ShopifyLogo.svg';
+import WoocommerceLogo from 'apps/onboarding-experience/src/assets/WoocommerceLogo.svg';
+import WixLogo from 'apps/onboarding-experience/src/assets/WixLogo.svg';
 
 export const TOP_THREE_PLUGINS = [
   {

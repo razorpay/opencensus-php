@@ -3,9 +3,9 @@ import { Badge, DotIcon } from '@razorpay/blade/components';
 import { useStore } from '@federated/apps/shell/commonStore';
 import { AccordionDataType } from '@FTUX/types/homepage';
 import { getAccordionWebsiteTitle } from '@FTUX/utils/homepage';
-import AddWebsite from '@FTUX/Home/AccordionSection/AddWebsite';
-import PaymentGateway from '@FTUX/Home/AccordionSection/PaymentGateway';
-import AcceptTransactions from '@FTUX/Home/AccordionSection/AcceptTransactions';
+import AddWebsite from '@FTUX/components/AccordionSection/AddWebsite';
+import PaymentGateway from '@FTUX/components/AccordionSection/PaymentGateway';
+import AcceptTransactions from '@FTUX/components/AccordionSection/AcceptTransactions';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
 
 const useAccordionSectionData = (): { activeStep: number; accordionData: AccordionDataType[] } => {

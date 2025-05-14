@@ -1,7 +1,7 @@
 import React from 'react';
 import { screen, waitFor } from 'apps/onboarding-experience/src/services/test/jest-utils';
 import renderWithWrappers from 'apps/onboarding-experience/src/services/test/renderWithWrappers';
-import Home from '../index';
+import Home from '../App';
 import { HOMEPAGE_ELEMENTS } from '@FTUX/types/homepage';
 
 // Mock the useHomepageState hook

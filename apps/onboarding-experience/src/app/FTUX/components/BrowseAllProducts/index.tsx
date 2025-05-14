@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Button, Text } from '@razorpay/blade/components';
-import ChatHelp from '@FTUX/assets/ChatHelp.svg';
+import ChatHelp from 'apps/onboarding-experience/src/assets/ChatHelp.svg';
 
 const BrowseAllProducts = () => {
   return (

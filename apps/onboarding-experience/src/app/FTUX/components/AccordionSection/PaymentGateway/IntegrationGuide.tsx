@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect, Suspense, lazy } from 'react';
 import { Box, Link, Divider, Text, EditIcon, LayersIcon } from '@razorpay/blade/components';
 import { PAYMENT_CHANNEL_OPTIONS } from 'apps/onboarding-experience/src/common/types/merchant';
-import IntegrationOptionIcon from '@FTUX/assets/IntegrationOption.svg';
+import IntegrationOptionIcon from 'apps/onboarding-experience/src/assets/IntegrationOption.svg';
 import SelectableOptionCard from 'apps/onboarding-experience/src/common/components/SelectableOptionCard';
 import { getSpecificPlatformType } from 'apps/onboarding-experience/src/common/utils/merchant';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';

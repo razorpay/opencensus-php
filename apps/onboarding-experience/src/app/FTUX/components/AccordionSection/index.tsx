@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Heading, Badge } from '@razorpay/blade/components';
 import useAccordionSectionData from '@FTUX/hooks/useAccordionSectionData';
-import AccordionHeaderBg from '@FTUX/assets/AccordionHeaderBg.svg';
+import AccordionHeaderBg from 'apps/onboarding-experience/src/assets/AccordionHeaderBg.svg';
 import CollectPaymentsAccordion from './CollectPaymentsAccordion';
 
 const AccordionSection = () => {

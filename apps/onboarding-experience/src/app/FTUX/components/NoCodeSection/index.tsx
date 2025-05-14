@@ -1,7 +1,7 @@
 import React from 'react';
 import { SparklesIcon, ArrowUpRightIcon, ClockIcon } from '@razorpay/blade/components';
-import PitchProducts from '@FTUX/Home/PitchProducts';
-import ProductCardImg from '@FTUX/assets/CardBanner.svg';
+import PitchProducts from '@FTUX/components/PitchProducts';
+import ProductCardImg from 'apps/onboarding-experience/src/assets/CardBanner.svg';
 
 const NocodeSection = () => {
   const noCodeSuggestions = [
