@@ -184,7 +184,7 @@ export function initSentry(appName) {
           switch (sentryOp) {
             case 'pageload':
             case 'browser.paint':
-              return 0.3;
+              return 0.2;
             case 'measure':
             case 'ui.react.mount':
               return 0.1;
@@ -192,18 +192,20 @@ export function initSentry(appName) {
             case 'ui.task':
             case 'ui.react.render':
               return 0.01;
-            case 'http.client':
-            case 'http.graphql.query':
-            case 'http.graphql.mutation':
-            case 'http.graphql.subscription':
             case 'ui.react.update':
             case 'ui.update':
             case 'ui.action':
               return 0.001;
             case 'resource.script':
             case 'resource.link':
-            case 'navigation':
               return 0.0001;
+            case 'navigation':
+              return 0.00001;
+            case 'http.client':
+            case 'http.graphql.query':
+            case 'http.graphql.mutation':
+            case 'http.graphql.subscription':
+              return 0.000001;
             default:
               return 0;
           }
