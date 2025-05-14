@@ -5406,6 +5406,8 @@ class Route
 
 
     public static $private = [
+        'offer_fetch_multiple',
+        'offer_create',
         'internal_order_payments',
         'collect_info_merchant_details_patch',
         'payouts_merchant_smart_routing_summary',
@@ -7775,7 +7777,6 @@ class Route
         'pos_fetch_subm_device_config',
         'pos_fetch_subm_all_device_orders',
         'pos_fetch_subm_latest_order',
-        'offer_create',
         'offer_update',
         'offer_fetch_multiple',
         'offer_fetch_subscription',
@@ -13438,7 +13439,6 @@ class Route
             'oauth_token_revoke',
             'oauth_fetch_submerchant_applications',
             'oauth_application_access_revoke',
-            'offer_create',
             'offer_fetch_by_id',
             'offer_fetch_multiple',
             'offer_fetch_subscription',
@@ -15616,7 +15616,6 @@ class Route
             'oauth_token_revoke',
             'oauth_fetch_submerchant_applications',
             'oauth_application_access_revoke',
-            'offer_create',
             'offer_create_bulk',
             'offer_fetch_by_id',
             'offer_fetch_multiple',

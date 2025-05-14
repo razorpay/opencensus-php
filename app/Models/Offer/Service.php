@@ -150,7 +150,7 @@ class Service extends Base\Service
         // NOTE - not handling this as part of offers decomp as we are not migrating
         // all the offers to OE, only active offers are being migrated but dashboard
         // needs to show all the offers created by the merchant.
-        $offers = $this->repo->offer->fetch($input, $this->merchant->getId());
+        $offers = $this->repo->offer->fetch($input, $input['merchant_id'] ?? "");
 
         return $offers->toArrayProxy();
     }

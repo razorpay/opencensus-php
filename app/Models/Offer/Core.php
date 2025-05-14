@@ -1176,10 +1176,10 @@ class Core extends Base\Core
 
                 $this->traceNonExistingIins($offer, $merchant);
 
-                if ($this->shouldRouteToOffersEngine() === true)
-                {
-                    $this->offersEngine->createOffer($offer, $subscriptionInput ?? [], $input);
-                }
+//                if ($this->shouldRouteToOffersEngine() === true)
+//                {
+//                    $this->offersEngine->createOffer($offer, $subscriptionInput ?? [], $input);
+//                }
           }
         );
         return $offer;

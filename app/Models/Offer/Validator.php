@@ -74,7 +74,7 @@ class Validator extends Base\Validator
         'page'              => 'required|int|min:1|max:1000',
         'page_size'         => 'required|int|min:1|max:50',
         'from'              => 'sometimes|epoch',
-        'to'                => 'sometimes|epoch'
+        'to'                => 'sometimes|epoch',
     ];
 
     protected static $adminFetchRules = [
