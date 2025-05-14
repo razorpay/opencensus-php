@@ -841,7 +841,7 @@ return [
         ],
     ],
 
-    'testCreateMerchantWithWorkflowCreate' => [
+    'testCreateMerchantWithoutWorkflowCreate' => [
         'request' => [
             'url'       => '/users/merchants',
             'method'    => 'POST',
@@ -1099,7 +1099,25 @@ return [
         ],
     ],
 
-    'testCreateMerchantWithoutWorkflowCreate' => [
+    'testCreateMerchantWithWorkflowCreate' => [
+        'request' => [
+            'url'       => '/users/merchants',
+            'method'    => 'POST',
+            'content'   => [
+                'country_code'  =>  'IN',
+                'signup_campaign' => 'easy_onboarding',
+                'workflow_type' => 'MODULAR_ONBOARDING',
+                'product' => 'pos_onboarding',
+                'skip_workflow_create' => true
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+            ],
+        ],
+    ],
+
+    'testCreateMerchantWithWorkflowCreateAndUserSingupStateExpTurnedOff' => [
         'request' => [
             'url'       => '/users/merchants',
             'method'    => 'POST',

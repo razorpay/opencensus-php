@@ -1892,7 +1892,7 @@ class UserTest extends TestCase
         $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
     }
 
-    public function testCreateMerchantWithWorkflowCreate()
+    public function testCreateMerchantWithoutWorkflowCreate()
     {
         $user = $this->fixtures->create('user');
         $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
@@ -2023,7 +2023,7 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateMerchantWithoutWorkflowCreate()
+    public function testCreateMerchantWithWorkflowCreate()
     {
         $user = $this->fixtures->create('user');
         $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
@@ -2035,6 +2035,8 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
 
+        $this->mockAllSplitzTreatment();
+
         $this->ba->dashboardGuestAppAuth();
         $response = $this->startTest();
 
@@ -2044,18 +2046,51 @@ class UserTest extends TestCase
         $this->assertEquals(1, $merchantUsers->count());
 
         $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
-        $merchant = DB::table('merchants')->where('id', '=', $merchantUserEntry->merchant_id)->first();
-
-        // If user doesn't have a merchant (considered fresh signup), we use the user's email to create the merchant
-        $this->assertEquals($user['email'], $merchant->email);
-
         // Payload assertion
         $this->assertEquals($response['user_id'], $user['id']);
         $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
 
         //workflow assertion
-        $userDeviceDetailsEntry = DB::table('user_device_detail')->where('merchant_id', '=', $merchantUserEntry->merchant_id);
-        $this->assertEmpty($userDeviceDetailsEntry->metadata);
+        $userDeviceDetailsEntry = DB::table('user_device_details')->where('merchant_id', '=', $merchantUserEntry->merchant_id)->first();
+        $this->assertEquals('{"user_signup_state": "mid_created"}', $userDeviceDetailsEntry->metadata);
+    }
+
+    public function testCreateMerchantWithWorkflowCreateAndUserSingupStateExpTurnedOff()
+    {
+        $user = $this->fixtures->create('user');
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        // Deleting the newly create merchant details so that user appears as fresh signup
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->mockAllSplitzTreatment([
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ]);
+
+        $this->ba->dashboardGuestAppAuth();
+        $response = $this->startTest();
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        // No merchant associated previously
+        $this->assertEquals(1, $merchantUsers->count());
+
+        $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+        // Payload assertion
+        $this->assertEquals($response['user_id'], $user['id']);
+        $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
+
+        //workflow assertion
+        $userDeviceDetailsEntry = DB::table('user_device_details')->where('merchant_id', '=', $merchantUserEntry->merchant_id)->first();
+        $this->assertEquals('[]', $userDeviceDetailsEntry->metadata);
     }
 
     public function testCreateMerchantForNewUserWithMobileNumber()

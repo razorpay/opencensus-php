@@ -1474,4 +1474,6 @@ return array(
 
     'block_competitor_application' => env('BLOCK_COMPETITOR_APPLICATION'),
 
+    'workflow_segregation_store_user_signup_state' => env('WORKFLOW_SEGREGATION_STORE_USER_SIGNUP_STATE'),
+
 );

@@ -2616,7 +2616,20 @@ class Service extends Base\Service
                 DeviceDetail\Entity::USER_ID            => $user['id'],
                 DeviceDetail\Entity::SIGNUP_CAMPAIGN    => $signupCampaign,
             ];
-
+            $merchantCore = new Merchant\Core();
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.workflow_segregation_store_user_signup_state'),
+            ];
+            $shouldStoreUserSignupState = $merchantCore->isSplitzExperimentEnable($properties,'enable');
+            if ($skipWorkflowCreate && $shouldStoreUserSignupState) {
+                // preserving user_signup_state inorder to identify the merchant state in usl, if user_signup_state is
+                // mid_created and FE doesn't receive workflow_details_v2 in onboarding Meta then FE will redirect merchants
+                // to Payment channel screen to create workflow.
+                $ddInput[DeviceDetail\Entity::METADATA] = [
+                    DeviceDetailConstants::USER_SIGNUP_STATE => 'mid_created'
+                ];
+            }
             (new DeviceDetail\Core)->createDeviceDetail($ddInput);
         }
 

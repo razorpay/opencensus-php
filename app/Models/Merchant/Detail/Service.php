@@ -295,6 +295,14 @@ class Service extends Base\Service
                 } else {
                     $response[DeviceDetailConstants::WORKFLOW_DETAILS] = $workflowDetails ?? null;
                 }
+                $properties = [
+                    'id'            => $merchantId,
+                    'experiment_id' => $this->app['config']->get('app.workflow_segregation_store_user_signup_state'),
+                ];
+                $shouldStoreUserSignupState = (new MerchantCore())->isSplitzExperimentEnable($properties,'enable');
+                if ($shouldStoreUserSignupState) {
+                    $response[DeviceDetailConstants::USER_SIGNUP_STATE] = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::USER_SIGNUP_STATE) ?? "";
+                }
 
                 return $response;
         }
