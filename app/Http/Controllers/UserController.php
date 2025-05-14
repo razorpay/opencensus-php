@@ -137,7 +137,15 @@ class UserController extends Controller
 
         if ($data === null)
         {
-            return false;
+            $env = \App::environment();
+
+            // for production env default behaviour will be false in case of splitz call failures
+            if ($env === 'production' || $env === 'canary'){
+                return false;
+            }
+            // for non production env default behaviour will be true in case of splitz call failures
+            return true;
+
         }
 
         return ($data['variables'][0]['value'] ?? null) === 'on';
@@ -2561,34 +2569,34 @@ class UserController extends Controller
         $parsedUrl = parse_url($currentUrl);
         $baseHost = $parsedUrl['host'] ?? '';
         $baseUrl = 'https://' . $baseHost;
-        
+
         // Extract query parameters
         parse_str($parsedUrl['query'] ?? '', $queryParams);
-        
+
         // Return original URL if we don't have exactly one 'next' parameter
         if (count($queryParams) !== 1 || !isset($queryParams['next'])) {
             return $currentUrl;
         }
-        
+
         $nextParam = urldecode($queryParams['next']);
-        
+
         // Handle relative URLs
         if (!str_starts_with($nextParam, 'https')) {
             return $baseUrl . '/' . ltrim($nextParam, '/');
         }
-        
+
         // Handle https URLs - check if trusted
         $host = null;
         if ($this->queryParamHasTrustedUrl($nextParam, $host)) {
             return $nextParam;
         }
-        
+
         // Log and return base URL for untrusted domains
         $this->trace->info(TraceCode::INVALID_DOMAIN_REDIRECT, [
             'attempted_redirect' => $nextParam,
             'invalid_domain' => $host,
         ]);
-        
+
         return $baseUrl;
     }
 
