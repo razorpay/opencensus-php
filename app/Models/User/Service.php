@@ -66,6 +66,7 @@ use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 use RZP\User\Constants as UserConstants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Environment;
+use RZP\Models\Base\PublicCollection;
 
 use function Clue\StreamFilter\append;
 
@@ -4694,30 +4695,45 @@ class Service extends Base\Service
 
         if (isset($input['user_ids']) === true and empty($input['user_ids']) === false)
         {
-            $users = $this->repo->user->getMultipleUsersByIDs($input['user_ids']);
+            $users = $this->repo->user->getMultipleUsersByIDsV2($input['user_ids']);
 
             foreach ($users as $user) {
-                $userMapping[$user['id']] = $user;
+                $userMapping[$user['id']] = $user->toArray();
+                $userMapping[$user['id']]['is_password_set'] = $user->getPassword() !== null;
             }
         }
 
         if (isset($input['user_emails']) === true and empty($input['user_emails']) === false)
         {
-            $users = $this->repo->user->getMultipleUsersByEmails($input['user_emails']);
+            $users = $this->repo->user->getMultipleUsersByEmailsV2($input['user_emails']);
 
             foreach ($users as $user) {
-                $userMapping[$user['email']] = $user;
+                $userMapping[$user['email']] = $user->toArray();
+                $userMapping[$user['email']]['is_password_set'] = $user->getPassword() !== null;
             }
         }
 
         // Fetch users by mobile numbers if provided
         if (isset($input['user_contacts']) === true and empty($input['user_contacts']) === false)
         {
-            $users = $this->repo->user->getMultipleUsersByMobiles($input['user_contacts']);
+            $mobiles = $input['user_contacts'];
+            $phoneMap = [];
+            $totalPhoneFormats = new PublicCollection();
+            foreach ($mobiles as $mobile)
+            {
+                $formats = (new PhoneBook($mobile))->getMobileNumberFormats();
+                foreach ($formats as $format) {
+                    $totalPhoneFormats->push($format);
+                    $phoneMap[$format] = $mobile;
+                }
+            }
+            $users = $this->repo->user->getMultipleUsersByMobilesV2($totalPhoneFormats->toArray());
 
             foreach ($users as $user)
             {
-                $userMapping[$user[Entity::CONTACT_MOBILE]] = $user;
+                $phone = $phoneMap[$user[Entity::CONTACT_MOBILE]];
+                $userMapping[$phone] = $user->toArray();
+                $userMapping[$phone]['is_password_set'] = $user->getPassword() !== null;
             }
         }
 

@@ -22,6 +22,7 @@ use RZP\Mail\User\Otp;
 use RZP\Models\Feature;
 use RZP\Mail\User\Login;
 use RZP\Models\User\Constants;
+use RZP\Models\User\Entity;
 use RZP\Models\User\Role;
 use Razorpay\OAuth\Client;
 use RZP\Constants\Product;
@@ -29,7 +30,6 @@ use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
-use RZP\Models\User\Entity;
 use RZP\Mail\User\OtpSignup;
 use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
@@ -17291,44 +17291,40 @@ class UserTest extends TestCase
 
         $user2 = $this->fixtures->create('user', [
             Entity::NAME => 'testUserA',
-            Entity::CONTACT_MOBILE => '9876543211',
+            Entity::CONTACT_MOBILE => '+919876543211',
             Entity::EMAIL => 'user2@razorpay.com',
             Entity::PASSWORD => 'hello123',
             ENTITY::CONTACT_MOBILE_VERIFIED => true
         ]);
 
+        $user3 = $this->fixtures->create('user', [
+            Entity::NAME => 'testUserA',
+            Entity::CONTACT_MOBILE => '+91 9876543212',
+            Entity::EMAIL => 'user3@razorpay.com',
+            Entity::PASSWORD => 'hello123',
+            ENTITY::CONTACT_MOBILE_VERIFIED => true
+        ]);
+
+        $contacts = ["+919876543210","+91 9876543211", "9876543212"];
         $testData = &$this->testData[__FUNCTION__];
-        $testData['request']['content']['user_contacts'][0] = $user1->getContactMobile();
-        $testData['request']['content']['user_contacts'][1] = $user2->getContactMobile();
+        $testData['request']['content']['user_contacts'][0] = $contacts[0];
+        $testData['request']['content']['user_contacts'][1] = $contacts[1];
+        $testData['request']['content']['user_contacts'][2] = $contacts[2];
+
 
         $response = $this->startTest($testData);
 
-        $this->assertEquals($user1->getName(), $response[$user1->getContactMobile()]['name']);
-        $this->assertEquals($user2->getName(), $response[$user2->getContactMobile()]['name']);
+        $this->assertEquals($user1->getName(), $response[$contacts[0]]['name']);
+        $this->assertEquals($user2->getName(), $response[$contacts[1]]['name']);
+        $this->assertEquals($user3->getName(), $response[$contacts[2]]['name']);
 
-        $this->assertEquals($user1->getEmail(), $response[$user1->getContactMobile()]['email']);
-        $this->assertEquals($user2->getEmail(), $response[$user2->getContactMobile()]['email']);
+        $this->assertEquals($user1->getEmail(), $response[$contacts[0]]['email']);
+        $this->assertEquals($user2->getEmail(), $response[$contacts[1]]['email']);
+        $this->assertEquals($user3->getEmail(), $response[$contacts[2]]['email']);
 
-        $requestWithOnlyContacts = [
-            'user_contacts' => [
-                $user1->getContactMobile(),
-                $user2->getContactMobile(),
-            ]
-        ];
-
-        $request = [
-            'url'       => '/users_internal',
-            'method'    => 'POST',
-            'content'   => $requestWithOnlyContacts
-        ];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertEquals($user1->getName(), $response[$user1->getContactMobile()]['name']);
-        $this->assertEquals($user2->getName(), $response[$user2->getContactMobile()]['name']);
-
-        $this->assertEquals($user1->getEmail(), $response[$user1->getContactMobile()]['email']);
-        $this->assertEquals($user2->getEmail(), $response[$user2->getContactMobile()]['email']);
+        $this->assertEquals(true, $response[$contacts[0]]['is_password_set']);
+        $this->assertEquals(true, $response[$contacts[1]]['is_password_set']);
+        $this->assertEquals(true, $response[$contacts[2]]['is_password_set']);
     }
 
     public function testResellerPartnerMerchantRegister()
