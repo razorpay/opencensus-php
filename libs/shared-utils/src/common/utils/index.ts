@@ -207,3 +207,4 @@ export {
   type SearchVisibilityProps,
 } from './searchVisibility';
 export { isBillMeOnlyUser } from './isBillMeOnlyUser';
+export { shareContent } from './shareContent';

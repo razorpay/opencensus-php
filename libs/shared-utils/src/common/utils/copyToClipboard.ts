@@ -1,8 +1,3 @@
-/* TODO : Create a common share util in which first sharing panel
-  from navigator share is used & if not present then copyToClipboard 
-  is kept as a fallback.
-*/
-
 /**
  * Fallback method to copy text to clipboard by creating a temporary textarea element.
  * This is used for environments where `navigator.clipboard.writeText` might not be available.

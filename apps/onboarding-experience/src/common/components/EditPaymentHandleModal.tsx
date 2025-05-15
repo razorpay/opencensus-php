@@ -50,7 +50,10 @@ const EditPaymentHandleModal = ({
     } catch (error) {
       showNotification({
         type: 'error',
-        message: 'An error occured while updating the payment handle!',
+        message:
+          error instanceof Error && !!error.message
+            ? error.message
+            : 'An error occured while updating the payment handle!',
       });
     } finally {
       setIsSubmitting(false);

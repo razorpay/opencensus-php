@@ -229,7 +229,9 @@ describe('EditPaymentHandleModal', () => {
 
   it('shows error notification when update fails', async () => {
     mockGetPaymentHandleAvailability.mockResolvedValue(true);
-    mockHandleUpdatePaymentHandle.mockRejectedValue(new Error('Update failed'));
+    mockHandleUpdatePaymentHandle.mockRejectedValue(
+      new Error('An error occured while updating the payment handle!'),
+    );
 
     await act(async () => {
       renderWithWrappers(<EditPaymentHandleModal {...defaultProps} />);

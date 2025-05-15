@@ -10,10 +10,11 @@ import {
   ShareIcon,
   CheckIcon,
 } from '@razorpay/blade/components';
-import { copyToClipboard, isMobileDevice } from '@libs/shared-utils';
+import { copyToClipboard, isMobileDevice, shareContent } from '@libs/shared-utils';
 import useMerchantPaymentHandle from 'apps/onboarding-experience/src/common/hooks/useMerchantPaymentHandle';
-import EditPaymentHandleModal from 'apps/onboarding-experience/src/common/components/EditPaymentHandleModal';
+import SharePaymentHandleModal from 'apps/onboarding-experience/src/common/components/SharePaymentHandleModal';
 import { removePaymentHandleSlugPrefix } from 'apps/onboarding-experience/src/common/utils/paymentHandle';
+import EditPaymentHandleModal from 'apps/onboarding-experience/src/common/components/EditPaymentHandleModal';
 import { useStore } from '@federated/apps/shell/commonStore';
 
 /**
@@ -27,12 +28,14 @@ function PaymentHandleActions() {
     paymentHandleData,
     isPaymentHandleLoading,
     fetchPaymentHandle,
+    mutateEncryptedAmount,
     updatePaymentHandle,
     fetchHandleSuggestions,
     fetchHandleAvailability,
   } = useMerchantPaymentHandle();
   const showNotification = useStore((state) => state.showNotification);
   const [isCopied, setIsCopied] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Extract active payment handle and URL from the response data
@@ -40,18 +43,52 @@ function PaymentHandleActions() {
   const activeHandleUrl = paymentHandleData?.merchantPaymentHandle?.paymentHandle?.url;
 
   /**
+   * Handles sharing of payment handle URL with optional amount parameter
+   * - Mobile: Uses native share functionality
+   * - Desktop: Copies to clipboard with copy feedback
+   */
+  const handlePaymentShare = async ({ amount }: { amount?: string }): Promise<void> => {
+    if (!activeHandleUrl) {
+      throw new Error('No Payment handle present!');
+    }
+    let shareLink = activeHandleUrl;
+    /**
+     * If amount is provided,it is encrypted using mutateEncryptedAmount
+     *    - On success: Creates a new URL with encrypted amount
+     *    - Else Throws error
+     */
+    if (amount) {
+      try {
+        const resp = await mutateEncryptedAmount({ amount });
+        if (!resp?.merchantPaymentHandleEncryptedAmount?.success) {
+          throw new Error(
+            'An error occured while generating payment share link - Please try again later!',
+          );
+        }
+        shareLink = `${activeHandleUrl}?amount=${resp.merchantPaymentHandleEncryptedAmount.encryptedAmount}`;
+      } catch (error) {
+        throw new Error(
+          'An error occured while generating payment share link - Please try again later!',
+        );
+      }
+    }
+    /**
+     * Copies/Shares the payment handle URL based on the device type
+     */
+    if (isMobile) {
+      await shareContent({ url: shareLink, title: 'Accept payments with your payment handle' });
+      copyToClipboard(shareLink);
+    } else {
+      copyToClipboard(shareLink);
+    }
+  };
+
+  /**
    * Copies payment handle URL to clipboard and updates UI state
    */
-  const handleCopy = async () => {
-    try {
-      copyToClipboard(activeHandleUrl || '');
-      setIsCopied(true);
-    } catch (error: unknown) {
-      showNotification({
-        color: 'negative',
-        message: 'Unable to copy the payment handle!',
-      });
-    }
+  const handleCopy = () => {
+    copyToClipboard(activeHandleUrl || '');
+    setIsCopied(true);
   };
 
   const getHandleSuggestions = async () => {
@@ -78,10 +115,10 @@ function PaymentHandleActions() {
     try {
       const resp = await updatePaymentHandle({ handle });
       if (!resp?.merchantPaymentHandleUpdate?.success) {
-        throw new Error('Unexpected error while updating payment handle!');
+        throw new Error('Unable to update payment handle!');
       }
     } catch (err) {
-      throw new Error('Unable to update payment handle!');
+      throw new Error('Unexpected error while updating payment handle! - Please try again later!');
     }
   };
 
@@ -150,12 +187,20 @@ function PaymentHandleActions() {
         />
         <Link
           isDisabled={!activeHandle || isPaymentHandleLoading}
+          onClick={() => setIsShareModalOpen(true)}
           size="large"
           children={isMobile ? 'Share' : ''}
           icon={ShareIcon}
           color="neutral"
         />
       </Box>
+      {isShareModalOpen && (
+        <SharePaymentHandleModal
+          paymentUrl={activeHandleUrl as string}
+          onDismiss={() => setIsShareModalOpen(false)}
+          onPaymentShare={handlePaymentShare}
+        />
+      )}
       {isEditModalOpen && (
         <EditPaymentHandleModal
           onDismiss={() => setIsEditModalOpen(false)}
