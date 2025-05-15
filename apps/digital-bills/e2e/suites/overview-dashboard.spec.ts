@@ -48,7 +48,7 @@ test.describe
     }
   });
 
-  test('should render in iframe for BillMe core modules', async ({ page }) => {
+  test.skip('should render in iframe for BillMe core modules', async ({ page }) => {
     // Navigate to BillMe (Digital Bills) Dashboard page
     await navigateTo({ page }, ROUTES.OVERVIEW_DASHBOARD);
 

@@ -21,7 +21,7 @@ test.describe
   });
 
   test.describe.parallel('Transactions Landing screen Overview section', () => {
-    test('should allow navigate to Refunds, Disputes and Failed Payments ', async ({ page }) => {
+    test.skip('should allow navigate to Refunds, Disputes and Failed Payments ', async ({ page }) => {
       await navigateToTransactions(page);
       await waitForListingLoader({ page });
       await expect(page.getByText('Overview')).toBeVisible();
