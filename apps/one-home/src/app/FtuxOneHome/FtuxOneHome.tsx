@@ -3,7 +3,9 @@ import {
   BottomSheet,
   BottomSheetBody,
   BottomSheetFooter,
+  BottomSheetHeader,
   Box,
+  Button,
   Modal,
   ModalBody,
   ModalFooter,
@@ -13,7 +15,7 @@ import { getItem, setItem } from 'common/utils/localStorage';
 import { FtuxConsentBody, FtuxConsentFooter } from './components/FtuxConsent';
 import { FtuxConsentOptOutBody, FtuxConsentOptOutFooter } from './components/FtuxOptOutConsent';
 import { FtuxHandlers } from './types';
-import { analyticsTrack, getCommonAnalyticsProperties } from '@libs/shared-utils';
+import useOneHomeAnalytics from '../../hooks/useOneHomeAnalytics';
 
 // Configuration for different modal states
 const consentConfig = {
@@ -38,6 +40,7 @@ const FtuxOneHome = (): React.ReactElement | null => {
   const { theme } = useTheme();
   const { matchedDeviceType } = useBreakpoint({ breakpoints: theme.breakpoints });
   const isMobile = matchedDeviceType === 'mobile';
+  const { trackOneHomeAnalytics } = useOneHomeAnalytics();
 
   const [modalState, setModalState] = useState<'consent' | 'optOut' | null>(null);
 
@@ -53,20 +56,17 @@ const FtuxOneHome = (): React.ReactElement | null => {
     setModalState('optOut');
     setItem('hasUserInteractedWithHomeConsent', 'true');
   };
+
   const handleProceedClick = () => {
-    analyticsTrack({
+    trackOneHomeAnalytics({
       objectName: 'one home consent proceed',
       actionName: 'clicked',
-      screen: 'home page',
-      properties: {
-        ...getCommonAnalyticsProperties((window as any).rzp_user),
-      },
     });
-
     setItem('isOneHomeConsentAccepted', 'true');
     setItem('hasUserInteractedWithHomeConsent', 'true');
     setModalState(null);
   };
+
   const handleGoBackClick = () => setModalState('consent');
 
   // Handlers object to be passed to components dynamically
@@ -75,15 +75,12 @@ const FtuxOneHome = (): React.ReactElement | null => {
   // If no active modal, return null
   if (!modalState) return null;
 
-  return isMobile ? (
-    <BottomSheet isOpen={!!modalState}>
-      <BottomSheetBody>{consentConfig[modalState].body}</BottomSheetBody>
-      <BottomSheetFooter>{consentConfig[modalState].footer(handlers)}</BottomSheetFooter>
-    </BottomSheet>
-  ) : (
+  //TODO: Bottomsheet is not working on mobile if default state is open, removing it for now
+  //Slack: https://razorpay.slack.com/archives/C06F9MYVBR7/p1747224046006079
+  return (
     <Modal isOpen={!!modalState} onDismiss={() => {}} size="small">
-      <ModalBody>{consentConfig[modalState].body}</ModalBody>
-      <ModalFooter>{consentConfig[modalState].footer(handlers)}</ModalFooter>
+      <ModalBody>{consentConfig[modalState]?.body}</ModalBody>
+      <ModalFooter>{consentConfig[modalState]?.footer(handlers)}</ModalFooter>
     </Modal>
   );
 };

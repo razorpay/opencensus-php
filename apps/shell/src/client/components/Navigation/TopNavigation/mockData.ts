@@ -374,6 +374,46 @@ export const tempMockResponseForTabs = {
           },
           styles: null,
         },
+        {
+          id: '252',
+          type: 'top_navigation_item',
+          title: 'Partners',
+          description: "India's most comprehensive partner program for payments and beyond",
+          handler_id: 'more_partners_one_navigation',
+          components: [
+            {
+              id: '2521',
+              type: 'modal',
+              title: '',
+              background_img: '',
+              handler_id: 'partners_modal',
+              description: '',
+              inherit_rule: true,
+              inputs: [],
+              components: [],
+              alias: 'partners_onboarding_modal',
+              analytics: {
+                enabled: true,
+              },
+              metadata: {
+                shared_id: 'partners_onboarding_modal',
+              },
+            },
+          ],
+          data: {
+            navigation_data: {
+              default_item: false,
+              icon: 'UsersIcon',
+            },
+          },
+          alias: 'more_partners_top_navigation_item',
+          analytics: {
+            enabled: true,
+          },
+          metadata: {
+            shared_id: 'partners_top_navigation_item',
+          },
+        },
       ],
       alias: 'more_navigation_item',
       analytics: {

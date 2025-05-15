@@ -1,5 +1,4 @@
 import React from 'react';
-import { useStore } from '@apps/shell/src/client/store/commonStore';
 import { Alert, Box, Button, Heading, InfoIcon, Text } from '@razorpay/blade/components';
 import { useNavigate } from 'react-router-dom';
 import { FtuxOptOutFooterProps } from '../types';
@@ -29,16 +28,13 @@ export const FtuxConsentOptOutBody = (): React.ReactElement => {
 export const FtuxConsentOptOutFooter = ({
   onGoBack,
 }: FtuxOptOutFooterProps): React.ReactElement => {
-  const { user } = useStore((state) => state['session']);
   const navigate = useNavigate();
 
   const handleGoBackClick = () => {
     onGoBack();
   };
   const handleDeclineClick = () => {
-    const product = user.product;
-    if (product === 'primary') navigate('/dashboard');
-    else if (product === 'banking') navigate('/banking');
+    navigate('/dashboard');
   };
 
   return (

@@ -212,23 +212,12 @@ const CriticalActions: React.FC = () => {
   const isShowAllVisible = !isMobile && !error && drawerCriticalActions.length;
 
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
     if (!criticalActionsList.length && !isLoading && !error) {
       setCriticalActionsDisplay({
         showCriticalSection: false,
         showNoActionAlert: true,
       });
-      timer = setTimeout(() => {
-        setCriticalActionsDisplay({
-          showCriticalSection: false,
-          showNoActionAlert: false,
-        });
-      }, 5000);
     }
-
-    return () => {
-      clearTimeout(timer);
-    };
   }, [isLoading, criticalActionsList.length]);
 
   useEffect(() => {

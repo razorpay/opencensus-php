@@ -78,6 +78,7 @@ export const getProducts = ({ data }: { data: any }) => {
       const moreItems = component.components.map((subComponent) => ({
         id: subComponent.id,
         alias: subComponent.alias,
+        sharedId: subComponent.metadata?.shared_id,
         title: subComponent.title,
         description: subComponent.description,
         icon: PRODUCT_ICON_MAP[subComponent.data?.navigation_data?.icon],
@@ -97,6 +98,7 @@ export const getProducts = ({ data }: { data: any }) => {
       acc.push({
         id: component.id,
         alias: component.alias,
+        sharedId: component.metadata?.shared_id,
         title: component.title,
         description: component.description,
         icon: PRODUCT_ICON_MAP[component.data?.navigation_data?.icon],

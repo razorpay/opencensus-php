@@ -190,7 +190,10 @@ export type NonInsightCardStaticData = {
 };
 
 export interface LockedCardProp extends InsightCardHeaderProp {}
-export interface EmptyCardProp extends InsightCardHeaderProp {}
+export interface EmptyCardProp extends InsightCardHeaderProp {
+  cardType: InsightCardType | OtherInsightCardType;
+  dataSummary?: DataSummary;
+}
 
 export type InsightCardHeaderProp = {
   insightsStaticData: InsightCardStaticData;

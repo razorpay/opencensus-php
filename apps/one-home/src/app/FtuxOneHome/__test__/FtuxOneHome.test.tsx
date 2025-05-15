@@ -17,6 +17,15 @@ jest.mock('@libs/shared-utils', () => {
   };
 });
 
+jest.mock('@apps/one-home/src/hooks/useOneHomeAnalytics', () => {
+  return {
+    __esModule: true,
+    default: jest.fn(() => ({
+      trackOneHomeAnalytics: jest.fn(),
+    })),
+  };
+});
+
 describe('FtuxOneHome Component', () => {
   beforeEach(() => {
     jest.clearAllMocks(); // Reset mocks before each test

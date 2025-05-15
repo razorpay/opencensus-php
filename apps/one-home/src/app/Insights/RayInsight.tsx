@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Text, Divider, Badge, RayIcon, Avatar } from '@razorpay/blade/components';
+import { Box, Text, Divider, Badge, RayIcon, Avatar, Tooltip } from '@razorpay/blade/components';
 import { staticContent } from './constants';
 import { InsightCardRayProp } from './types';
 import { generateRayInsightContent } from './utils';
@@ -34,9 +34,16 @@ const RayInsight = ({
       </Box>
       <Box display="flex" alignItems="flex-start" gap="spacing.5">
         <Avatar icon={insightsStaticData.defaultIcon} size="large" />
-        <Text size="medium" weight="medium" color="surface.text.gray.muted">
-          {rayInsightContent}
-        </Text>
+        <Tooltip content={rayInsightContent} placement="bottom">
+          <Text
+            truncateAfterLines={3}
+            size="medium"
+            weight="medium"
+            color="surface.text.gray.muted"
+          >
+            {rayInsightContent}
+          </Text>
+        </Tooltip>
       </Box>
     </>
   );

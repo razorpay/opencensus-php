@@ -159,17 +159,18 @@ const InsightCardContent = ({ cardType, isMobile, dataSummary }: InsightCardCont
               {Math.abs(percentage_change)}% {amountSuffixText}
             </Text>
           ) : (
-            <Heading size="medium" color={trendColour} weight="semibold" display="flex">
+            <Text variant="body" size="medium" color={trendColour} weight="semibold" display="flex">
               {Math.abs(percentage_change)}%&nbsp;
-              <Heading
+              <Text
+                variant="body"
                 display={{ base: 'none', m: 'none', l: 'block' }}
                 size="medium"
                 color={trendColour}
                 weight="semibold"
               >
                 {amountSuffixText}
-              </Heading>
-            </Heading>
+              </Text>
+            </Text>
           )}
         </Box>
       )}
@@ -261,6 +262,8 @@ const InsightCardWithErrorBoundary = ({
         isMobile={isMobile}
         componentData={componentData}
         analytics={analytics}
+        cardType={cardType}
+        dataSummary={dataSummary}
       />
     );
   }

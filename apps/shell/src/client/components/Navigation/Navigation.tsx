@@ -21,12 +21,7 @@ export const ConnectedNavigationContainer = ({ children }): JSX.Element => {
   );
 
   return (
-    <Box
-      backgroundColor="surface.background.gray.subtle"
-      height="100vh"
-      display="flex"
-      flexDirection="column"
-    >
+    <Box backgroundColor="#E3EAF3" height="100vh" display="flex" flexDirection="column">
       <Suspense fallback={null}>
         <TopNavigation />
       </Suspense>

@@ -18,11 +18,14 @@ export const SyncProductStore: React.FC = () => {
 
   const handleProductSelect = () => {
     const selectedProduct = products.find((product) => {
-      if (product.alias === activeProductAlias) {
+      if (product.alias === activeProductAlias || product.sharedId === activeProductAlias) {
         return true;
       }
       if (product.type === 'more_navigation_item') {
-        return product.components.find((moreProduct) => moreProduct.alias === activeProductAlias);
+        return product.components.find(
+          (moreProduct) =>
+            moreProduct.alias === activeProductAlias || moreProduct.sharedId === activeProductAlias,
+        );
       }
       return false;
     });
