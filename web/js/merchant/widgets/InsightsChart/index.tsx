@@ -4,7 +4,7 @@ import moment from 'moment';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { useSplitzService } from 'common/splitz';
-import { isDateRangeForInsightChartsEnabled } from 'merchant/containers/Home/RTUX/utils';
+import { isDateRangeForInsightChartsEnabled, isOmniHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 import { InsightsChartProps } from 'merchant/widgets/InsightsChart/types';
 import {
   InsightsChartContentWrapper,
@@ -35,6 +35,7 @@ const InsightsChartWidget: React.FC<InsightsChartProps> = ({
   const splitz = useSplitzService();
 
   const isDatePickerEnabled = isDateRangeForInsightChartsEnabled(splitz?.abExperiments);
+  const isOmniHomepage = isOmniHomepageEnabled(splitz?.abExperiments);
   const input = inputs.find((input) => input.type === 'select');
   const defaultValue =
     variables?.date_time?.quick ||
@@ -93,13 +94,13 @@ const InsightsChartWidget: React.FC<InsightsChartProps> = ({
   if (components.length === 0 && !(isLoading || isRetrying)) return null;
 
   return (
-    <InsightsChartWrapper title={title}>
+    <InsightsChartWrapper title={title} isOmniHomepage={isOmniHomepage}>
       <InsightsChartHeaderWrapper>
         <Heading size="medium" marginRight="spacing.5">
           {title}
         </Heading>
         <Box display="flex" gap="12px" flexWrap="wrap" justifyContent="flex-end">
-          {input &&
+          {input && input.values.length > 0 &&
             renderInput({
               widget: input,
               value: date,

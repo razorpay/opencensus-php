@@ -36,19 +36,20 @@ export const durationOptionsSubtextMap: Record<Exclude<DateRangeValues, 'custom_
 interface InsightsChartWrapperProps {
   children: React.ReactNode;
   title: string;
+  isOmniHomepage: boolean;
 }
 
-export const InsightsChartWrapper = ({ children, title }: InsightsChartWrapperProps) => (
+export const InsightsChartWrapper = ({ children, title, isOmniHomepage }: InsightsChartWrapperProps) => (
   <Box
     display="flex"
     testID={`widget-${title}`}
     flexDirection="column"
     gap="spacing.5"
     padding="spacing.7"
-    marginX={{ base: 'spacing.0', m: 'spacing.6' }}
+    marginX={{ base: 'spacing.0', m: isOmniHomepage ? 'spacing.0' : 'spacing.6' }}
     backgroundColor="surface.background.gray.intense"
-    borderRadius="large"
-    elevation="lowRaised"
+    borderRadius={isOmniHomepage ? 'none' : 'large'}
+    elevation={isOmniHomepage ? 'none' : 'lowRaised'}
   >
     {children}
   </Box>

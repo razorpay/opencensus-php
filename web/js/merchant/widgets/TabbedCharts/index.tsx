@@ -3,7 +3,7 @@ import { Box, Heading } from '@razorpay/blade/components';
 import moment from 'moment';
 
 import { useSplitzService } from 'common/splitz';
-import { isDateRangeForInsightChartsEnabled } from 'merchant/containers/Home/RTUX/utils';
+import { isDateRangeForInsightChartsEnabled, isOmniHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 import { ErrorState } from 'merchant/widgets/common/ErrorState';
 import { DateRangeValues } from 'merchant/widgets/common/Select/types';
 import { renderInput } from 'merchant/widgets/common/utils';
@@ -31,6 +31,7 @@ export const TabbedCharts: React.FC<TabbedChartsProps> = ({
   const splitz = useSplitzService();
 
   const isDatePickerEnabled = isDateRangeForInsightChartsEnabled(splitz?.abExperiments);
+  const isOmniHomepage = isOmniHomepageEnabled(splitz?.abExperiments);
   const input = inputs.find((input) => input.type === 'select');
   const defaultValue =
     variables?.date_time?.quick ||
@@ -91,15 +92,17 @@ export const TabbedCharts: React.FC<TabbedChartsProps> = ({
       key={`widget-${id}`}
       testID={`widget-${title}`}
       minWidth="spacing.0"
-      marginX={{ base: 'spacing.0', m: 'spacing.6' }}
+      marginX={{ base: 'spacing.0', m: isOmniHomepage ? 'spacing.0' : 'spacing.6' }}
       flexGrow="1"
       display="flex"
       flexDirection="column"
       gap="spacing.5"
       padding={['spacing.6', 'spacing.0', 'spacing.6', 'spacing.0']}
       backgroundColor="surface.background.gray.intense"
-      borderRadius="large"
+      borderRadius={isOmniHomepage ? 'none' : 'large'}
       elevation="lowRaised"
+      borderTopLeftRadius={isOmniHomepage ? 'medium' : 'large'}
+      borderTopRightRadius={isOmniHomepage ? 'medium' : 'large'}
     >
       <Box
         display="flex"
@@ -111,7 +114,7 @@ export const TabbedCharts: React.FC<TabbedChartsProps> = ({
       >
         <Heading size="medium">{title}</Heading>
         <Box display="flex" gap="12px" flexWrap="wrap" justifyContent="flex-end">
-          {input &&
+          {input && input.values.length > 0 &&
             renderInput({
               widget: input,
               value: date,

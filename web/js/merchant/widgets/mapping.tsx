@@ -46,6 +46,18 @@ const CampaignHero = lazy(() =>
   })),
 );
 
+const BusinessPerformance = lazy(() =>
+  import('merchant/widgets/BusinessPerformance').then((module) => ({
+    default: module.BusinessPerformance,
+  })),
+);
+    
+const InsightsForYou = lazy(() =>
+  import('merchant/widgets/InsightsForYou').then((module) => ({
+    default: module.InsightsForYou,
+  })),
+);
+
 const withWidgetErrorBoundary = (Component) => (props) =>
   (
     <ErrorBoundary
@@ -66,6 +78,8 @@ const widgetKeyToComponentMapping = {
   d2c_widget: SteppedSplitPane,
   layout: Layout,
   campaignhq_banners: CampaignHero,
+  business_performance: BusinessPerformance,
+  insights_for_you: InsightsForYou,
 };
 
 Object.keys(widgetKeyToComponentMapping).forEach((key) => {

@@ -1589,6 +1589,22 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
+        {
+          uniqueHashKey: 'omni_homepage_enabled',
+          experimentId: {
+            beta: 'QRcUAztWw6MDWd',
+            production: 'QRcWcVft0HooqA',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
       ],
     },
     {

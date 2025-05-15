@@ -43,3 +43,7 @@ export const useIsRTUXHomepageEnabled = (): boolean => {
 export const isDateRangeForInsightChartsEnabled = (abExperiments: any = {}): boolean => {
   return isExperimentEnabled(abExperiments.date_range_insight_charts);
 };
+
+export const isOmniHomepageEnabled = (abExperiments: any = {}): boolean => {
+  return isExperimentEnabled(abExperiments.omni_homepage_enabled);
+};

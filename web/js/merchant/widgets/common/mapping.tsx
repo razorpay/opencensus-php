@@ -12,6 +12,8 @@ const Button = lazy(() =>
   })),
 );
 
+const BaseSelect = lazy(() => import('merchant/widgets/common/BaseSelect'));
+
 const Select = lazy(() => import('./Select'));
 
 export const commonWidgetKeyToComponentMapping = {
@@ -21,4 +23,5 @@ export const commonWidgetKeyToComponentMapping = {
 
 export const inputKeyToComponentMapping = {
   select: (props): JSX.Element => <Select {...props} />,
+  'base-select': (props): JSX.Element => <BaseSelect {...props} />,
 };

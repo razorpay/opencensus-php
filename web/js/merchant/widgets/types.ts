@@ -40,6 +40,9 @@ export interface RetryWidgetProps {
   // using a different schema, to abstract the actual request payload, and make inner components simpler
   id: string;
   date_time?: DateTime;
+  store_ids?: string[];
+  payment_source?: string;
+  filter_selected?: string;
 }
 
 export interface WidgetRequestPayload {

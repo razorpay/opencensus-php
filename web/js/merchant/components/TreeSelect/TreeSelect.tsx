@@ -20,14 +20,16 @@ const TreeSelect: React.FC<TreeSelectProps> = ({
   maxTagCountToShow = 5,
   maxTagTextLength = 20,
   label = 'Select Items',
+  labelColor = 'surface.text.gray.normal',
+  labelSize = 'medium',
 }) => {
   return (
     <Box width="100%">
       <Text
         variant="body"
-        size="medium"
+        size={labelSize}
         weight="semibold"
-        color="surface.text.gray.normal"
+        color={labelColor}
         marginBottom="spacing.3"
       >
         {label}

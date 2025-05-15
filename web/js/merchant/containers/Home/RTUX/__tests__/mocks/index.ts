@@ -2058,3 +2058,162 @@ export const D2C_WIDGET_MOCK_RESPONSE = {
     enabled: true,
   },
 } as const;
+
+export const INSIGHTS_FOR_YOU_MOCK_RESPONSE = {
+  id: '191',
+  type: 'insights_for_you',
+  title: 'Insights for you',
+  background_img: '',
+  actions: [],
+  inputs: [
+    {
+      type: 'select',
+      values: ['today', 'last_7_days', 'last_30_days'],
+      default_value: 'last_7_days',
+      name: 'date',
+    },
+    {
+      type: 'all_filters_button',
+      values: ['All Filters'],
+      default_value: '',
+      name: 'all_filters',
+    },
+  ],
+  components: [
+    {
+      id: '1911',
+      type: 'payment_source_filter',
+      title: 'Source',
+      actions: [],
+      inputs: [
+        {
+          type: 'select',
+          values: ['online_in_person', 'online', 'in_person'],
+          default_value: 'online',
+          name: 'payment_source',
+        },
+      ],
+      components: [],
+      data: {
+        cards: [],
+      },
+      analytics: {
+        enabled: true,
+      },
+      styles: null,
+    },
+    {
+      id: '1912',
+      type: 'hierarchy_level',
+      title: 'Hierarchy Level',
+      actions: [],
+      inputs: [],
+      components: [],
+      data: {
+        merchant_store_hierarchy: {
+          storeHierarchy: [
+            {
+              store_id: 'karnataka-store',
+              name: 'karnataka-store',
+              type: 'store',
+              parent_group_id: 'karnataka',
+              group_id: 'a',
+            },
+            {
+              store_id: '',
+              name: 'Rajasthan',
+              type: 'state',
+              parent_group_id: 'india',
+              group_id: 'rajasthan',
+            },
+          ],
+        },
+        cards: [],
+      },
+      analytics: {
+        enabled: true,
+      },
+      styles: null,
+    },
+    {
+      id: '1913',
+      type: 'payments_data',
+      title: '',
+      background_img: '',
+      actions: [],
+      inputs: [
+        { type: 'select', values: [], default_value: 'last_7_days', name: 'date' },
+        { type: 'select', values: [], default_value: 'online', name: 'payment_source' },
+      ],
+      components: [
+        PAYMENTS_OVERVIEW_MOCK_RESPONSE,
+        INSIGHTS_CHART_MOCK_RESPONSE,
+        {
+          id: '19133',
+          type: 'business_performance',
+          title: 'In Person Business Performance',
+          actions: [],
+          inputs: [
+            {
+              type: 'base-select',
+              values: ['no_of_payments', 'gmv'],
+              default_value: 'no_of_payments',
+              name: 'View By:',
+            },
+          ],
+          components: [
+            {
+              id: '191331',
+              type: 'business_performance_section',
+              title: 'Top Performing Stores',
+              variant: 'positive',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                cards: [
+                  { label: 'Test Store', value: '80.0k' },
+                  { label: 'karnataka-store', value: '20.0k' },
+                  { label: 'telangana-store', value: '20.0k' },
+                  { label: 'andhra-store', value: '20.0k' },
+                  { label: 'mp-store', value: '20.0k' },
+                ],
+              },
+              analytics: null,
+              styles: null,
+            },
+            {
+              id: '191332',
+              type: 'business_performance_section',
+              title: 'Bottom Performing Stores',
+              variant: 'negative',
+              actions: [],
+              inputs: [],
+              components: [],
+              data: {
+                cards: [
+                  {
+                    label: 'gujarat-store',
+                    value: '20.0k',
+                  },
+                ],
+              },
+              analytics: null,
+              styles: null,
+            },
+          ],
+          analytics: null,
+          styles: null,
+        },
+      ],
+      analytics: {
+        enabled: true,
+      },
+      styles: null,
+    },
+  ],
+  analytics: {
+    enabled: true,
+  },
+  styles: null,
+};

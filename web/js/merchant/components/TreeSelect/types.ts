@@ -3,6 +3,7 @@ import {
     SHOW_ALL as RC_SHOW_ALL,
     SHOW_CHILD as RC_SHOW_CHILD,
 } from 'rc-tree-select';
+import { TextProps } from '@razorpay/blade/components';
 
 export type TreeNode = {
     label: string;
@@ -27,4 +28,6 @@ placeholder?: string;
 maxTagCountToShow?: number;
 maxTagTextLength?: number;
 label?: string;
+labelColor?: TextProps<{ variant: 'body' }>['color'];
+labelSize?: TextProps<{ variant: 'body' }>['size'];
 }
