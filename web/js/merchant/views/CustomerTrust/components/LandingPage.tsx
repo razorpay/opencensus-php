@@ -1,5 +1,14 @@
 import React from 'react';
-import { Box, Heading, Text, Button, Alert, CheckIcon, InfoIcon } from '@razorpay/blade/components';
+import {
+  Box,
+  Heading,
+  Text,
+  Button,
+  Alert,
+  CheckIcon,
+  InfoIcon,
+  ArrowRightIcon,
+} from '@razorpay/blade/components';
 import {
   BUYER_PROTECT_BLOG,
   CUSTOMER_TRUST_BANNER,
@@ -7,20 +16,28 @@ import {
   MONEY_BACK_BADGE,
 } from 'merchant/views/CustomerTrust/constants';
 import { handleInterestedClick } from 'merchant/views/CustomerTrust/utils/helpers';
-import {
-  OnboardingStatus,
-  SetOnboardingStatus,
-} from 'merchant/views/CustomerTrust/types';
+import { OnboardingStatus, SetOnboardingStatus } from 'merchant/views/CustomerTrust/types';
 
 const LandingPage = ({
   onboardingStatus,
   setOnboardingStatus,
   show,
+  isSelfServeEnabled,
 }: {
   onboardingStatus: OnboardingStatus;
   setOnboardingStatus: SetOnboardingStatus;
-  show: any
+  show: any;
+  isSelfServeEnabled: boolean;
 }) => {
+  const showSelfServeOnboarding = isSelfServeEnabled && onboardingStatus !== 'deactivated';
+
+  const handlePrimaryButtonClick = () => {
+    if (showSelfServeOnboarding) {
+      setOnboardingStatus('in-progress');
+    } else {
+      handleInterestedClick(onboardingStatus, setOnboardingStatus, show);
+    }
+  };
 
   return (
     <Box
@@ -107,11 +124,11 @@ const LandingPage = ({
                 variant="primary"
                 size="medium"
                 isFullWidth
-                onClick={() =>
-                  handleInterestedClick(onboardingStatus, setOnboardingStatus, show)
-                }
+                onClick={handlePrimaryButtonClick}
+                icon={showSelfServeOnboarding ? ArrowRightIcon : undefined}
+                iconPosition="right"
               >
-                I am Interested
+                {showSelfServeOnboarding ? 'Setup now' : 'I am Interested'}
               </Button>
             )}
           </Box>

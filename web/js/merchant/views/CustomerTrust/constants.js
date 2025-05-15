@@ -20,3 +20,6 @@ export const MONEY_BACK_BADGE =
 
 export const CUSTOMER_TRUST_BANNER =
   'https://cdn.razorpay.com/static/assets/support-page/buyer-protect-banner.png';
+
+export const BUYER_PROTECT_SHOPIFY_INTEGRATION_GUIDE =
+  'https://razorpay.com/docs/payments/widgets/buyer-protection/shopify/';

@@ -8,7 +8,8 @@ describe('Landing page', () => {
       <LandingPage
         onboardingStatus={null}
         setOnboardingStatus={jest.fn()}
-        showNotification={jest.fn()}
+        show={jest.fn()}
+        isSelfServeEnabled={false}
       />,
     );
     expect(screen.getByText('Razorpay Buyer Protection')).toBeInTheDocument();
@@ -39,7 +40,8 @@ describe('Landing page', () => {
       <LandingPage
         onboardingStatus={null}
         setOnboardingStatus={jest.fn()}
-        showNotification={jest.fn()}
+        show={jest.fn()}
+        isSelfServeEnabled={false}
       />,
     );
     expect(screen.getByText('I am Interested')).toBeInTheDocument();
@@ -50,7 +52,8 @@ describe('Landing page', () => {
       <LandingPage
         onboardingStatus="interested"
         setOnboardingStatus={jest.fn()}
-        showNotification={jest.fn()}
+        show={jest.fn()}
+        isSelfServeEnabled={false}
       />,
     );
     expect(screen.getByText('I am Interested')).toBeInTheDocument();
@@ -61,7 +64,8 @@ describe('Landing page', () => {
       <LandingPage
         onboardingStatus="completed"
         setOnboardingStatus={jest.fn()}
-        showNotification={jest.fn()}
+        show={jest.fn()}
+        isSelfServeEnabled={false}
       />,
     );
     expect(screen.getByText('Interest Confirmed')).toBeInTheDocument();

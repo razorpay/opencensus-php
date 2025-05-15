@@ -1,5 +1,5 @@
 import { merchantFetch } from 'merchant/utils/ajax';
-import { FetchOnboardingResponse } from 'merchant/views/CustomerTrust/types';
+import { FetchOnboardingResponse, OnboardingStatus } from 'merchant/views/CustomerTrust/types';
 
 export const fetchOnboardingStatusApi = (): Promise<FetchOnboardingResponse> => {
   return merchantFetch({
@@ -18,12 +18,30 @@ export const postOnboardingStatusApi = (): Promise<FetchOnboardingResponse> => {
   });
 };
 
-export const updateOnboardingStatusApi = (): Promise<FetchOnboardingResponse> => {
+export const createOnboardingConsentApi = ({
+  pricing,
+}: {
+  pricing: number;
+}): Promise<FetchOnboardingResponse> => {
+  return merchantFetch({
+    url: 'dashboard/buyer_protection/consent',
+    method: 'post',
+    data: {
+      pricing,
+    },
+  });
+};
+
+export const updateOnboardingStatusApi = ({
+  status,
+}: {
+  status: OnboardingStatus;
+}): Promise<FetchOnboardingResponse> => {
   return merchantFetch({
     url: `dashboard/buyer_protection/onboarding`,
     method: 'patch',
     data: {
-      onboarding_status: 'completed',
+      onboarding_status: status,
     },
   });
 };

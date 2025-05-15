@@ -9,17 +9,16 @@ import {
   SetOnboardingStatus,
 } from 'merchant/views/CustomerTrust/types';
 
-export const handleFormSubmitted = async (
-  setOnboardingStatus: SetOnboardingStatus,
-  show: any
-) => {
+export const handleFormSubmitted = async (setOnboardingStatus: SetOnboardingStatus, show: any) => {
   try {
-    const response: FetchOnboardingResponse = await updateOnboardingStatusApi();
+    const response: FetchOnboardingResponse = await updateOnboardingStatusApi({
+      status: 'completed',
+    });
     if (response.success && response.data.onboarding_status === 'completed') {
       setOnboardingStatus('completed');
       show({
         type: 'informational',
-        content:  'Form submitted successfully!',
+        content: 'Form submitted successfully!',
         color: 'positive',
       });
     } else {
@@ -38,10 +37,7 @@ export const handleFormSubmitted = async (
   }
 };
 
-const handleFormPopup = (
-  setOnboardingStatus: SetOnboardingStatus,
-  show: any,
-) => {
+const handleFormPopup = (setOnboardingStatus: SetOnboardingStatus, show: any) => {
   const formId = 'YpJfvpE6';
   const formPopup = createPopup(formId, {
     hideHeaders: true,
@@ -55,7 +51,7 @@ const handleFormPopup = (
 export const handleInterestedClick = async (
   onboardingStatus: OnboardingStatus,
   setOnboardingStatus: SetOnboardingStatus,
-  show: any
+  show: any,
 ) => {
   if (onboardingStatus === 'interested') {
     show({
@@ -65,6 +61,32 @@ export const handleInterestedClick = async (
     handleFormPopup(setOnboardingStatus, show);
     return;
   }
+
+  if (onboardingStatus === 'deactivated') {
+    try {
+      const response: FetchOnboardingResponse = await updateOnboardingStatusApi({
+        status: 'interested',
+      });
+      if (response.success && response.data.onboarding_status === 'interested') {
+        setOnboardingStatus('interested');
+        handleFormPopup(setOnboardingStatus, show);
+      } else {
+        show({
+          type: 'informational',
+          content: 'Something went wrong. Please try again!',
+          color: 'negative',
+        });
+      }
+    } catch (e) {
+      show({
+        type: 'informational',
+        content: 'Something went wrong. Please try again!',
+        color: 'negative',
+      });
+    }
+    return;
+  }
+
   try {
     const response: FetchOnboardingResponse = await postOnboardingStatusApi();
     if (response.success && response.data.onboarding_status === 'interested') {

@@ -635,10 +635,7 @@ export default class User {
   }
 
   get isCustomerTrustEnabled() {
-    return (
-      this.isOrgRZP &&
-      this.isCountryIndia
-    );
+    return this.isOrgRZP && this.isCountryIndia;
   }
 
   get isPaymentPagesEnabled() {
@@ -2111,6 +2108,10 @@ export default class User {
 
   get isProductTourScreenHidden() {
     return this.isOrgFeatureEnabled('hide_product_tour_screens');
+  }
+
+  get isBuyerProtectionSelfServeEnabled() {
+    return this.isFeatureEnabled('buyer_protect_self_serve');
   }
 }
 

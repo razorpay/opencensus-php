@@ -194,7 +194,9 @@ function MerchantNavLinks(props) {
           icon="i i-customer-trust text-primary"
           to={routes.customerTrust}
           isNew={true}
-          additionalCondition={(currentUser) => currentUser.isCustomerTrustEnabled && showCustomerTrustTab}
+          additionalCondition={(currentUser) =>
+            currentUser.isCustomerTrustEnabled && showCustomerTrustTab
+          }
         />
 
         <MainNavLink
