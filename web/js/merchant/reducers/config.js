@@ -25,6 +25,7 @@ const UPDATE_BRAND_COLOR_CONTRAST = 'UPDATE_BRAND_COLOR_CONTRAST';
 const FETCH_INTERNATIONAL_PRODUCTS_STATUS = 'FETCH_INTERNATIONAL_PRODUCTS_STATUS';
 const REPLY_TO_CONVERSATION = 'REPLY_TO_CONVERSATION';
 const FETCH_SUPPORT_TICKETS = 'FETCH_SUPPORT_TICKETS';
+const FETCH_TICKETS_ELIGIBLE_FOR_ESCALATION = 'FETCH_TICKETS_ELIGIBLE_FOR_ESCALATION';
 const FETCH_ACTIVE_TICKETS = 'FETCH_ACTIVE_TICKETS';
 const REMOVE_LOGO = 'REMOVE_LOGO';
 const FETCH_FEATURE_STATUS = 'FETCH_FEATURE_STATUS';
@@ -40,7 +41,7 @@ const FETCH_MERCHANT_CHECKOUT_STYLING_CONFIG = 'FETCH_MERCHANT_CHECKOUT_STYLING_
 const FETCH_MERCHANT_CHECKOUT_PAYMENT_CONFIGS = 'FETCH_MERCHANT_CHECKOUT_PAYMENT_CONFIGS';
 const FETCH_MERCHANT_CHECKOUT_PAYMENT_METHOD_DETAILS =
   'FETCH_MERCHANT_CHECKOUT_PAYMENT_METHOD_DETAILS';
-const FETCH_MERCHANT_CHECKOUT_KEYLESS_HEADER='FETCH_MERCHANT_CHECKOUT_KEYLESS_HEADER'
+const FETCH_MERCHANT_CHECKOUT_KEYLESS_HEADER = 'FETCH_MERCHANT_CHECKOUT_KEYLESS_HEADER';
 const CREATE_MERCHANT_CHECKOUT_PAYMENT_CONFIG = 'CREATE_MERCHANT_CHECKOUT_PAYMENT_CONFIG';
 const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG = 'CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG';
 const CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_ERROR = 'CREATE_MERCHANT_CHECKOUT_BRAND_CONFIG_ERROR';
@@ -62,8 +63,22 @@ export const FETCH_TICKET =
 export const FETCH_TICKETS =
   'care_service/merchant/twirp/rzp.care.freshdesk.v1.FreshdeskService/GetTickets';
 
+const FETCH_TICKETS_ELIGIBLE_FOR_ESCALATION_API_URL =
+  'care_service/twirp/rzp.care.freshdesk.v1.FreshdeskService/GetEscalationEligibleTickets';
+
+const ESCALATE_TICKET_API_URL =
+  'care_service/twirp/rzp.care.freshdesk.v1.FreshdeskService/EscalateTicket';
+
 export const fetchConfigAjax = () => {
   return merchantFetch('account/config');
+};
+
+export const escalateTicketApiCall = (data) => {
+  return merchantFetch({
+    url: ESCALATE_TICKET_API_URL,
+    method: 'post',
+    data,
+  });
 };
 
 export const fetchSupportTicketsApiCall = (
@@ -356,6 +371,23 @@ export const fetchSupportTickets = (
       isPosMerchantActivated,
       isTicketPaginationEnabled,
     ),
+  };
+};
+
+export const fetchTicketsEligibleForEscalation = (merchantId, mode = 'live') => {
+  return {
+    type: FETCH_TICKETS_ELIGIBLE_FOR_ESCALATION,
+    payload: merchantFetch({
+      url: FETCH_TICKETS_ELIGIBLE_FOR_ESCALATION_API_URL,
+      method: 'post',
+      data: {
+        merchant: {
+          id: merchantId,
+        },
+        type: 'support_dashboard',
+        mode,
+      },
+    }),
   };
 };
 
@@ -744,7 +776,7 @@ export const fetchMerchantCheckoutKeylessHeader = () => {
     type: FETCH_MERCHANT_CHECKOUT_KEYLESS_HEADER,
     payload: merchantFetch('checkout/keyless_auth_dashboard'),
   };
-}
+};
 
 const initialState = {
   loading: true,
@@ -790,6 +822,11 @@ const initialState = {
     data: {},
     active: [],
   },
+  ticketsEligibleForEscalation: {
+    loading: false,
+    data: {},
+    error: null,
+  },
   internationalProductsStatus: {
     loading: false,
     data: {},
@@ -831,7 +868,7 @@ const initialState = {
     loading: true,
     data: null,
     error: null,
-  }
+  },
 };
 
 const defaultLocale = {
@@ -1047,6 +1084,41 @@ const configReducer = (state = initialState, action) => {
       S.error = true;
       return merge(state, {
         support_tickets: S,
+      });
+    }
+
+    case `${FETCH_TICKETS_ELIGIBLE_FOR_ESCALATION}::PENDING`: {
+      const ticketsEligibleForEscalation = deepClone(state.ticketsEligibleForEscalation);
+      ticketsEligibleForEscalation.loading = true;
+      return merge(state, {
+        ticketsEligibleForEscalation,
+      });
+    }
+
+    case `${FETCH_TICKETS_ELIGIBLE_FOR_ESCALATION}::SUCCESS`: {
+      const ticketsEligibleForEscalation = deepClone(state.ticketsEligibleForEscalation);
+
+      const transformedData = {};
+      action.payload?.data?.results?.forEach((item) => {
+        transformedData[item?.ticket_id] = {
+          reason_for_escalation: item?.reason_for_escalation,
+          is_escalated: item?.is_escalated,
+        };
+      });
+
+      ticketsEligibleForEscalation.data = transformedData || {};
+      ticketsEligibleForEscalation.loading = false;
+      return merge(state, {
+        ticketsEligibleForEscalation,
+      });
+    }
+
+    case `${FETCH_TICKETS_ELIGIBLE_FOR_ESCALATION}::ERROR`: {
+      const ticketsEligibleForEscalation = deepClone(state.ticketsEligibleForEscalation);
+      ticketsEligibleForEscalation.loading = false;
+      ticketsEligibleForEscalation.error = true;
+      return merge(state, {
+        ticketsEligibleForEscalation,
       });
     }
 
@@ -1363,15 +1435,15 @@ const configReducer = (state = initialState, action) => {
         loading: false,
         data: action.payload.data,
         error: null,
-      })
+      });
     }
 
     case `${FETCH_MERCHANT_CHECKOUT_KEYLESS_HEADER}::ERROR`: {
       return set(state, 'checkoutKeylessHeader', {
         loading: false,
         data: action.payload.data,
-        error: action.payload.errors
-      })
+        error: action.payload.errors,
+      });
     }
 
     case `${CREATE_MERCHANT_CHECKOUT_PAYMENT_CONFIG}::PENDING`: {
@@ -1394,7 +1466,7 @@ const configReducer = (state = initialState, action) => {
           if (config.is_default) {
             config.is_default = false;
           }
-          config.isConfigSetAsDefaultInitially = false
+          config.isConfigSetAsDefaultInitially = false;
         });
       }
       payloadConfig.isConfigSetAsDefaultInitially = isPayloadConfigDefault;

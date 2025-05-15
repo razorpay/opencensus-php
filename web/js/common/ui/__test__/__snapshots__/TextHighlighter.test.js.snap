@@ -19,6 +19,18 @@ exports[`TextHighlighter children should have background color applied and remov
         </span>
       </div>
     </div>
+    <div
+      class="BaseBox-bksIuc hlCpEz"
+      data-blade-component="toast-container"
+      pointer-events="none"
+    >
+      <div
+        class="BaseBox-bksIuc hUnYPb"
+        data-blade-component="base-box"
+        data-testid="toast-mouseover-container"
+        pointer-events="all"
+      />
+    </div>
   </div>
   <div
     class="LayerContext__LayerHost-sc-1aos3gl-0 cqBzuf"
@@ -47,6 +59,18 @@ exports[`TextHighlighter children should have background color applied and remov
         </span>
       </div>
     </div>
+    <div
+      class="BaseBox-bksIuc hlCpEz"
+      data-blade-component="toast-container"
+      pointer-events="none"
+    >
+      <div
+        class="BaseBox-bksIuc hUnYPb"
+        data-blade-component="base-box"
+        data-testid="toast-mouseover-container"
+        pointer-events="all"
+      />
+    </div>
   </div>
   <div
     class="LayerContext__LayerHost-sc-1aos3gl-0 cqBzuf"
@@ -74,6 +98,18 @@ exports[`TextHighlighter children should not have background color applied 1`] =
           Text Highlight
         </span>
       </div>
+    </div>
+    <div
+      class="BaseBox-bksIuc hlCpEz"
+      data-blade-component="toast-container"
+      pointer-events="none"
+    >
+      <div
+        class="BaseBox-bksIuc hUnYPb"
+        data-blade-component="base-box"
+        data-testid="toast-mouseover-container"
+        pointer-events="all"
+      />
     </div>
   </div>
   <div

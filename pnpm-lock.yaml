@@ -316,7 +316,7 @@ importers:
         version: 3.0.2(eslint-plugin-import@2.31.0)
       eslint-import-resolver-typescript:
         specifier: 3.6.1
-        version: 3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0)(eslint@8.47.0)
+        version: 3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-plugin-import@2.31.0)(eslint@8.47.0)
       eslint-plugin-i18n-rules:
         specifier: file:./plugins/i18n-rules
         version: file:plugins/i18n-rules
@@ -1444,8 +1444,8 @@ importers:
         specifier: npm:@razorpay/blade-old@0.0.1
         version: '@razorpay/blade-old@0.0.1(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@16.13.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))'
       '@razorpay/frontend-care':
-        specifier: 0.9.32
-        version: 0.9.32(1b25ede663b84ad7acc25b21b7389c23)
+        specifier: 0.9.33
+        version: 0.9.33(1b25ede663b84ad7acc25b21b7389c23)
       '@razorpay/i18nify-js':
         specifier: 1.12.3
         version: 1.12.3
@@ -1475,7 +1475,7 @@ importers:
         version: 0.29.10
       '@typescript-eslint/eslint-plugin':
         specifier: 5.59.0
-        version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2)
+        version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2)
       '@zip.js/zip.js':
         specifier: 2.7.41
         version: 2.7.41
@@ -1880,8 +1880,8 @@ importers:
         specifier: npm:@razorpay/blade-old@0.0.1
         version: '@razorpay/blade-old@0.0.1(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@16.13.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))'
       '@razorpay/frontend-care':
-        specifier: 0.9.32
-        version: 0.9.32(87b062754ee000f0676cc47d368fcc8d)
+        specifier: 0.9.33
+        version: 0.9.33(87b062754ee000f0676cc47d368fcc8d)
       '@razorpay/i18nify-js':
         specifier: 1.12.3
         version: 1.12.3
@@ -1914,7 +1914,7 @@ importers:
         version: 0.29.10
       '@typescript-eslint/eslint-plugin':
         specifier: 5.59.0
-        version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2)
+        version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2)
       '@zip.js/zip.js':
         specifier: 2.7.41
         version: 2.7.41
@@ -2325,8 +2325,8 @@ importers:
         specifier: npm:@razorpay/blade-old@0.0.1
         version: '@razorpay/blade-old@0.0.1(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@16.13.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))'
       '@razorpay/frontend-care':
-        specifier: 0.9.32
-        version: 0.9.32(87b062754ee000f0676cc47d368fcc8d)
+        specifier: 0.9.33
+        version: 0.9.33(87b062754ee000f0676cc47d368fcc8d)
       '@razorpay/i18nify-js':
         specifier: 1.12.3
         version: 1.12.3
@@ -2356,7 +2356,7 @@ importers:
         version: 0.29.10
       '@typescript-eslint/eslint-plugin':
         specifier: 5.59.0
-        version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2)
+        version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2)
       '@zip.js/zip.js':
         specifier: 2.7.41
         version: 2.7.41
@@ -2749,8 +2749,8 @@ importers:
         specifier: npm:@razorpay/blade-old@0.0.1
         version: '@razorpay/blade-old@0.0.1(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@16.13.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))'
       '@razorpay/frontend-care':
-        specifier: 0.9.32
-        version: 0.9.32(87b062754ee000f0676cc47d368fcc8d)
+        specifier: 0.9.33
+        version: 0.9.33(87b062754ee000f0676cc47d368fcc8d)
       '@razorpay/i18nify-js':
         specifier: 1.12.3
         version: 1.12.3
@@ -2780,7 +2780,7 @@ importers:
         version: 0.29.10
       '@typescript-eslint/eslint-plugin':
         specifier: 5.59.0
-        version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2)
+        version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2)
       '@zip.js/zip.js':
         specifier: 2.7.41
         version: 2.7.41
@@ -3173,8 +3173,8 @@ importers:
         specifier: npm:@razorpay/blade-old@0.0.1
         version: '@razorpay/blade-old@0.0.1(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@16.13.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))'
       '@razorpay/frontend-care':
-        specifier: 0.9.32
-        version: 0.9.32(87b062754ee000f0676cc47d368fcc8d)
+        specifier: 0.9.33
+        version: 0.9.33(87b062754ee000f0676cc47d368fcc8d)
       '@razorpay/i18nify-js':
         specifier: 1.12.3
         version: 1.12.3
@@ -3204,7 +3204,7 @@ importers:
         version: 0.29.10
       '@typescript-eslint/eslint-plugin':
         specifier: 5.59.0
-        version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2)
+        version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2)
       '@zip.js/zip.js':
         specifier: 2.7.41
         version: 2.7.41
@@ -3597,8 +3597,8 @@ importers:
         specifier: npm:@razorpay/blade-old@0.0.1
         version: '@razorpay/blade-old@0.0.1(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@16.13.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))'
       '@razorpay/frontend-care':
-        specifier: 0.9.32
-        version: 0.9.32(87b062754ee000f0676cc47d368fcc8d)
+        specifier: 0.9.33
+        version: 0.9.33(87b062754ee000f0676cc47d368fcc8d)
       '@razorpay/i18nify-js':
         specifier: 1.12.3
         version: 1.12.3
@@ -3628,7 +3628,7 @@ importers:
         version: 0.29.10
       '@typescript-eslint/eslint-plugin':
         specifier: 5.59.0
-        version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2)
+        version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2)
       '@zip.js/zip.js':
         specifier: 2.7.41
         version: 2.7.41
@@ -4021,8 +4021,8 @@ importers:
         specifier: npm:@razorpay/blade-old@0.0.1
         version: '@razorpay/blade-old@0.0.1(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@16.13.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))'
       '@razorpay/frontend-care':
-        specifier: 0.9.32
-        version: 0.9.32(87b062754ee000f0676cc47d368fcc8d)
+        specifier: 0.9.33
+        version: 0.9.33(87b062754ee000f0676cc47d368fcc8d)
       '@razorpay/i18nify-js':
         specifier: 1.12.3
         version: 1.12.3
@@ -4052,7 +4052,7 @@ importers:
         version: 0.29.10
       '@typescript-eslint/eslint-plugin':
         specifier: 5.59.0
-        version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2)
+        version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2)
       '@zip.js/zip.js':
         specifier: 2.7.41
         version: 2.7.41
@@ -4445,8 +4445,8 @@ importers:
         specifier: npm:@razorpay/blade-old@0.0.1
         version: '@razorpay/blade-old@0.0.1(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@16.13.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))'
       '@razorpay/frontend-care':
-        specifier: 0.9.32
-        version: 0.9.32(87b062754ee000f0676cc47d368fcc8d)
+        specifier: 0.9.33
+        version: 0.9.33(87b062754ee000f0676cc47d368fcc8d)
       '@razorpay/i18nify-js':
         specifier: 1.12.3
         version: 1.12.3
@@ -4476,7 +4476,7 @@ importers:
         version: 0.29.10
       '@typescript-eslint/eslint-plugin':
         specifier: 5.59.0
-        version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2)
+        version: 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2)
       '@zip.js/zip.js':
         specifier: 2.7.41
         version: 2.7.41
@@ -8399,6 +8399,11 @@ packages:
       react-native-svg: ^12.3.0
       react-native-tab-view: ^3.5.2
       styled-components: ^5
+    peerDependenciesMeta:
+      react-native:
+        optional: true
+      react-native-reanimated:
+        optional: true
 
   '@razorpay/blade@12.8.2':
     resolution: {integrity: sha512-H5d5oxM8dVsAXKaTfBcfHQW4806jDtTvZccnNEnNnB2W4gZr14T++rBGb1dHY5l9hp9BV9v072AJG8P6XOKyRw==, tarball: https://npm.pkg.github.com/download/@razorpay/blade/12.8.2/675b031080d5bdf1ed51c30783958d112a92d434}
@@ -8427,8 +8432,8 @@ packages:
       react-native-reanimated:
         optional: true
 
-  '@razorpay/frontend-care@0.9.32':
-    resolution: {integrity: sha512-dpit+PbsCOdI6MMZ6f8Eelu8xzuBpX5q38UptYLZbQjlYgLUEUjPAEFvyNI2aodLFQwWMjP3L84db8CLl6jSng==, tarball: https://npm.pkg.github.com/download/@razorpay/frontend-care/0.9.32/49ecece85ddf15cfe53bc6fb8bc1dfcf0f7e6b4c}
+  '@razorpay/frontend-care@0.9.33':
+    resolution: {integrity: sha512-3dnPW2fFKsB64nbkcOk4dLwbFDtccgwbwVunGag83muJz/7MoT5haKmVz+MiHL7ErGzEKnObLiQJzChB3ksTyQ==, tarball: https://npm.pkg.github.com/download/@razorpay/frontend-care/0.9.33/ac85206b94afacaf52428f1aab1007c6c004ce68}
     engines: {node: '>=16.13.1', npm: '>=8.1.2', yarn: '>=1.22.10'}
     peerDependencies:
       react: 17.0.2
@@ -30008,10 +30013,8 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
       react-hot-toast: 2.4.1(csstype@3.1.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      react-native: 0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
       react-native-gesture-handler: 2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-pager-view: 6.3.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-native-reanimated: 3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-svg: 12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-tab-view: 2.15.1(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-window: 1.8.11(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -30020,6 +30023,9 @@ snapshots:
       ts-deepmerge: 6.2.0
       universal-base64: 2.1.0
       use-presence: 1.3.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+    optionalDependencies:
+      react-native: 0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
+      react-native-reanimated: 3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
     transitivePeerDependencies:
       - '@types/react'
 
@@ -30044,10 +30050,8 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
       react-hot-toast: 2.4.1(csstype@3.1.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      react-native: 0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
       react-native-gesture-handler: 2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-pager-view: 6.3.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-native-reanimated: 3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-svg: 12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-tab-view: 2.15.1(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-window: 1.8.11(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -30056,6 +30060,9 @@ snapshots:
       ts-deepmerge: 6.2.0
       universal-base64: 2.1.0
       use-presence: 1.3.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+    optionalDependencies:
+      react-native: 0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
+      react-native-reanimated: 3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
     transitivePeerDependencies:
       - '@types/react'
 
@@ -30080,10 +30087,8 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
       react-hot-toast: 2.4.1(csstype@3.1.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      react-native: 0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
       react-native-gesture-handler: 2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-pager-view: 6.3.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-native-reanimated: 3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-svg: 12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-tab-view: 2.15.1(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-window: 1.8.11(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -30092,6 +30097,9 @@ snapshots:
       ts-deepmerge: 6.2.0
       universal-base64: 2.1.0
       use-presence: 1.3.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+    optionalDependencies:
+      react-native: 0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
+      react-native-reanimated: 3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
     transitivePeerDependencies:
       - '@types/react'
 
@@ -30116,10 +30124,8 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
       react-hot-toast: 2.4.1(csstype@3.1.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      react-native: 0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
       react-native-gesture-handler: 2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-pager-view: 6.3.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-native-reanimated: 3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-svg: 12.5.1(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-tab-view: 2.15.1(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-window: 1.8.11(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -30128,6 +30134,9 @@ snapshots:
       ts-deepmerge: 6.2.0
       universal-base64: 2.1.0
       use-presence: 1.3.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+    optionalDependencies:
+      react-native: 0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
+      react-native-reanimated: 3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
     transitivePeerDependencies:
       - '@types/react'
 
@@ -30152,10 +30161,8 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
       react-hot-toast: 2.4.1(csstype@3.1.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      react-native: 0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
       react-native-gesture-handler: 2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-pager-view: 6.3.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-native-reanimated: 3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-svg: 12.5.1(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-tab-view: 2.15.1(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-window: 1.8.11(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -30164,6 +30171,9 @@ snapshots:
       ts-deepmerge: 6.2.0
       universal-base64: 2.1.0
       use-presence: 1.3.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+    optionalDependencies:
+      react-native: 0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
+      react-native-reanimated: 3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
     transitivePeerDependencies:
       - '@types/react'
 
@@ -30204,7 +30214,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@razorpay/frontend-care@0.9.32(1b25ede663b84ad7acc25b21b7389c23)':
+  '@razorpay/frontend-care@0.9.33(1b25ede663b84ad7acc25b21b7389c23)':
     dependencies:
       '@razorpay/blade': 11.21.3(87307c93bf549f4f473d8a68afdac167)
       '@razorpay/i18nify-js': 1.12.3
@@ -30233,7 +30243,7 @@ snapshots:
       - styled-components
       - utf-8-validate
 
-  '@razorpay/frontend-care@0.9.32(87b062754ee000f0676cc47d368fcc8d)':
+  '@razorpay/frontend-care@0.9.33(87b062754ee000f0676cc47d368fcc8d)':
     dependencies:
       '@razorpay/blade': 11.21.3(4449895c399dd1bbabe2469e5b08a255)
       '@razorpay/i18nify-js': 1.12.3
@@ -30696,8 +30706,8 @@ snapshots:
       '@types/react': 17.0.1
       '@types/react-dom': 17.0.1
       '@types/react-native': 0.65.10
-      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@4.9.3)
-      '@typescript-eslint/parser': 5.59.0(eslint@8.47.0)(typescript@4.9.3)
+      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@4.9.3)
+      '@typescript-eslint/parser': 5.59.0(eslint@8.47.0)(typescript@5.5.2)
       aws-sdk: 2.1110.0
       bytes: 3.1.2
       chalk: 4.1.0
@@ -30935,7 +30945,7 @@ snapshots:
       '@types/react': 17.0.1
       '@types/react-dom': 17.0.1
       '@types/react-native': 0.65.10
-      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@4.9.3)
+      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@4.9.3)
       '@typescript-eslint/parser': 5.59.0(eslint@8.47.0)(typescript@4.9.3)
       aws-sdk: 2.1110.0
       bytes: 3.1.2
@@ -33417,13 +33427,13 @@ snapshots:
       '@babel/core': 7.17.8
       '@babel/eslint-parser': 7.24.1(@babel/core@7.17.8)(eslint@8.47.0)
       '@react-native-community/eslint-plugin': 1.3.0
-      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@4.9.3)
+      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@4.9.3)
       '@typescript-eslint/parser': 5.59.0(eslint@8.47.0)(typescript@4.9.3)
       eslint: 8.47.0
       eslint-config-prettier: 8.5.0(eslint@8.47.0)
       eslint-plugin-eslint-comments: 3.2.0(eslint@8.47.0)
       eslint-plugin-ft-flow: 2.0.3(@babel/eslint-parser@7.24.1(@babel/core@7.25.8)(eslint@8.47.0))(eslint@8.47.0)
-      eslint-plugin-jest: 26.9.0(@typescript-eslint/eslint-plugin@5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(jest@29.4.1(@types/node@18.16.9)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2)))(typescript@4.9.3)
+      eslint-plugin-jest: 26.9.0(@typescript-eslint/eslint-plugin@5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(jest@29.4.1(@types/node@18.16.9)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2)))(typescript@4.9.3)
       eslint-plugin-prettier: 4.2.1(eslint-config-prettier@8.5.0(eslint@8.47.0))(eslint@8.47.0)(prettier@2.8.4)
       eslint-plugin-react: 7.35.0(eslint@8.47.0)
       eslint-plugin-react-hooks: 4.6.0(eslint@8.47.0)
@@ -33445,7 +33455,7 @@ snapshots:
       eslint-config-prettier: 8.5.0(eslint@8.47.0)
       eslint-plugin-eslint-comments: 3.2.0(eslint@8.47.0)
       eslint-plugin-ft-flow: 2.0.3(@babel/eslint-parser@7.24.1(@babel/core@7.25.8)(eslint@8.47.0))(eslint@8.47.0)
-      eslint-plugin-jest: 26.9.0(@typescript-eslint/eslint-plugin@5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(jest@29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2)))(typescript@4.9.3)
+      eslint-plugin-jest: 26.9.0(@typescript-eslint/eslint-plugin@5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(jest@29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2)))(typescript@4.9.3)
       eslint-plugin-prettier: 4.2.1(eslint-config-prettier@8.5.0(eslint@8.47.0))(eslint@8.47.0)(prettier@2.8.4)
       eslint-plugin-react: 7.35.0(eslint@8.47.0)
       eslint-plugin-react-hooks: 4.6.0(eslint@8.47.0)
@@ -35765,6 +35775,25 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@typescript-eslint/eslint-plugin@5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2)':
+    dependencies:
+      '@eslint-community/regexpp': 4.10.0
+      '@typescript-eslint/parser': 5.59.0(eslint@8.47.0)(typescript@5.5.2)
+      '@typescript-eslint/scope-manager': 5.59.0
+      '@typescript-eslint/type-utils': 5.59.0(eslint@8.47.0)(typescript@5.5.2)
+      '@typescript-eslint/utils': 5.59.0(eslint@8.47.0)(typescript@5.5.2)
+      debug: 4.4.0(supports-color@8.1.1)
+      eslint: 8.47.0
+      grapheme-splitter: 1.0.4
+      ignore: 5.3.1
+      natural-compare-lite: 1.4.0
+      semver: 7.7.1
+      tsutils: 3.21.0(typescript@5.5.2)
+    optionalDependencies:
+      typescript: 5.5.2
+    transitivePeerDependencies:
+      - supports-color
+
   '@typescript-eslint/eslint-plugin@5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@4.9.3)':
     dependencies:
       '@eslint-community/regexpp': 4.10.0
@@ -35781,25 +35810,6 @@ snapshots:
       tsutils: 3.21.0(typescript@4.9.3)
     optionalDependencies:
       typescript: 4.9.3
-    transitivePeerDependencies:
-      - supports-color
-
-  '@typescript-eslint/eslint-plugin@5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2)':
-    dependencies:
-      '@eslint-community/regexpp': 4.10.0
-      '@typescript-eslint/parser': 5.59.0(eslint@8.47.0)(typescript@5.5.2)
-      '@typescript-eslint/scope-manager': 5.59.0
-      '@typescript-eslint/type-utils': 5.59.0(eslint@8.47.0)(typescript@5.5.2)
-      '@typescript-eslint/utils': 5.59.0(eslint@8.47.0)(typescript@5.5.2)
-      debug: 4.4.0(supports-color@8.1.1)
-      eslint: 8.47.0
-      grapheme-splitter: 1.0.4
-      ignore: 5.3.1
-      natural-compare-lite: 1.4.0
-      semver: 7.7.1
-      tsutils: 3.21.0(typescript@5.5.2)
-    optionalDependencies:
-      typescript: 5.5.2
     transitivePeerDependencies:
       - supports-color
 
@@ -41624,7 +41634,7 @@ snapshots:
   eslint-config-kentcdodds@20.4.0(eslint-import-resolver-typescript@3.6.1)(eslint@8.47.0)(jest@29.4.1(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@17.0.41)(typescript@5.5.2)))(typescript@5.5.2):
     dependencies:
       '@rushstack/eslint-patch': 1.10.2
-      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2)
+      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2)
       '@typescript-eslint/parser': 5.59.0(eslint@8.47.0)(typescript@5.5.2)
       eslint: 8.47.0
       eslint-config-prettier: 8.5.0(eslint@8.47.0)
@@ -41648,12 +41658,12 @@ snapshots:
   eslint-config-kentcdodds@20.4.0(eslint-import-resolver-typescript@3.6.1)(eslint@8.47.0)(jest@29.4.1(@types/node@18.16.9)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2)))(typescript@4.9.3):
     dependencies:
       '@rushstack/eslint-patch': 1.10.2
-      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@4.9.3)
+      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@4.9.3)
       '@typescript-eslint/parser': 5.59.0(eslint@8.47.0)(typescript@4.9.3)
       eslint: 8.47.0
       eslint-config-prettier: 8.5.0(eslint@8.47.0)
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint-import-resolver-typescript@3.6.1)(eslint@8.47.0)
-      eslint-plugin-jest: 26.9.0(@typescript-eslint/eslint-plugin@5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(jest@29.4.1(@types/node@18.16.9)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2)))(typescript@4.9.3)
+      eslint-plugin-jest: 26.9.0(@typescript-eslint/eslint-plugin@5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(jest@29.4.1(@types/node@18.16.9)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2)))(typescript@4.9.3)
       eslint-plugin-jest-dom: 4.0.3(eslint@8.47.0)
       eslint-plugin-jsx-a11y: 6.7.1(eslint@8.47.0)
       eslint-plugin-react: 7.35.0(eslint@8.47.0)
@@ -41676,8 +41686,8 @@ snapshots:
       '@typescript-eslint/parser': 5.59.0(eslint@8.47.0)(typescript@4.9.3)
       eslint: 8.47.0
       eslint-config-prettier: 8.5.0(eslint@8.47.0)
-      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-import-resolver-typescript@3.6.1)(eslint@8.47.0)
-      eslint-plugin-jest: 26.9.0(@typescript-eslint/eslint-plugin@5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(jest@29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2)))(typescript@4.9.3)
+      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint-import-resolver-typescript@3.6.1)(eslint@8.47.0)
+      eslint-plugin-jest: 26.9.0(@typescript-eslint/eslint-plugin@5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(jest@29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2)))(typescript@4.9.3)
       eslint-plugin-jest-dom: 4.0.3(eslint@8.47.0)
       eslint-plugin-jsx-a11y: 6.7.1(eslint@8.47.0)
       eslint-plugin-react: 7.35.0(eslint@8.47.0)
@@ -41701,7 +41711,7 @@ snapshots:
       eslint: 8.47.0
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0)(eslint@8.47.0)
-      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-import-resolver-typescript@3.6.1)(eslint@8.47.0)
+      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint-import-resolver-typescript@3.6.1)(eslint@8.47.0)
       eslint-plugin-jsx-a11y: 6.7.1(eslint@8.47.0)
       eslint-plugin-react: 7.35.0(eslint@8.47.0)
       eslint-plugin-react-hooks: 4.6.0(eslint@8.47.0)
@@ -41750,15 +41760,21 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.47.0):
+  eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-plugin-import@2.31.0)(eslint@8.47.0):
     dependencies:
-      debug: 3.2.7(supports-color@5.5.0)
-    optionalDependencies:
-      '@typescript-eslint/parser': 5.59.0(eslint@8.47.0)(typescript@4.9.3)
+      debug: 4.3.4
+      enhanced-resolve: 5.16.0
       eslint: 8.47.0
-      eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0)(eslint@8.47.0)
+      eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-import-resolver-typescript@3.6.1)(eslint@8.47.0)
+      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint-import-resolver-typescript@3.6.1)(eslint@8.47.0)
+      fast-glob: 3.3.2
+      get-tsconfig: 4.7.3
+      is-core-module: 2.13.1
+      is-glob: 4.0.3
     transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - eslint-import-resolver-node
+      - eslint-import-resolver-webpack
       - supports-color
 
   eslint-module-utils@2.12.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.47.0):
@@ -41768,7 +41784,7 @@ snapshots:
       '@typescript-eslint/parser': 5.59.0(eslint@8.47.0)(typescript@5.5.2)
       eslint: 8.47.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0)(eslint@8.47.0)
+      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-plugin-import@2.31.0)(eslint@8.47.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -41779,7 +41795,17 @@ snapshots:
       '@typescript-eslint/parser': 5.59.0(eslint@8.47.0)(typescript@4.9.3)
       eslint: 8.47.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0)(eslint@8.47.0)
+      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-plugin-import@2.31.0)(eslint@8.47.0)
+    transitivePeerDependencies:
+      - supports-color
+
+  eslint-module-utils@2.8.1(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-import-resolver-typescript@3.6.1)(eslint@8.47.0):
+    dependencies:
+      debug: 3.2.7(supports-color@5.5.0)
+    optionalDependencies:
+      '@typescript-eslint/parser': 5.59.0(eslint@8.47.0)(typescript@5.5.2)
+      eslint: 8.47.0
+      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-plugin-import@2.31.0)(eslint@8.47.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -41811,35 +41837,6 @@ snapshots:
       string-natural-compare: 3.0.1
 
   eslint-plugin-i18n-rules@file:plugins/i18n-rules: {}
-
-  eslint-plugin-import@2.31.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-import-resolver-typescript@3.6.1)(eslint@8.47.0):
-    dependencies:
-      '@rtsao/scc': 1.1.0
-      array-includes: 3.1.8
-      array.prototype.findlastindex: 1.2.5
-      array.prototype.flat: 1.3.2
-      array.prototype.flatmap: 1.3.2
-      debug: 3.2.7(supports-color@5.5.0)
-      doctrine: 2.1.0
-      eslint: 8.47.0
-      eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.47.0)
-      hasown: 2.0.2
-      is-core-module: 2.16.1
-      is-glob: 4.0.3
-      minimatch: 3.1.2
-      object.fromentries: 2.0.8
-      object.groupby: 1.0.3
-      object.values: 1.2.0
-      semver: 6.3.1
-      string.prototype.trimend: 1.0.8
-      tsconfig-paths: 3.15.0
-    optionalDependencies:
-      '@typescript-eslint/parser': 5.59.0(eslint@8.47.0)(typescript@4.9.3)
-    transitivePeerDependencies:
-      - eslint-import-resolver-typescript
-      - eslint-import-resolver-webpack
-      - supports-color
 
   eslint-plugin-import@2.31.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint-import-resolver-typescript@3.6.1)(eslint@8.47.0):
     dependencies:
@@ -41877,12 +41874,34 @@ snapshots:
       eslint: 8.47.0
       requireindex: 1.2.0
 
+  eslint-plugin-jest@26.9.0(@typescript-eslint/eslint-plugin@5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(jest@29.4.1(@types/node@18.16.9)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2)))(typescript@4.9.3):
+    dependencies:
+      '@typescript-eslint/utils': 5.62.0(eslint@8.47.0)(typescript@4.9.3)
+      eslint: 8.47.0
+    optionalDependencies:
+      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2)
+      jest: 29.4.1(@types/node@18.16.9)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2))
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
+  eslint-plugin-jest@26.9.0(@typescript-eslint/eslint-plugin@5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(jest@29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2)))(typescript@4.9.3):
+    dependencies:
+      '@typescript-eslint/utils': 5.62.0(eslint@8.47.0)(typescript@4.9.3)
+      eslint: 8.47.0
+    optionalDependencies:
+      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2)
+      jest: 29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2))
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
   eslint-plugin-jest@26.9.0(@typescript-eslint/eslint-plugin@5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(jest@29.4.1(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@17.0.41)(typescript@5.5.2)))(typescript@4.9.3):
     dependencies:
       '@typescript-eslint/utils': 5.62.0(eslint@8.47.0)(typescript@4.9.3)
       eslint: 8.47.0
     optionalDependencies:
-      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2)
+      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2)
       jest: 29.4.1(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@17.0.41)(typescript@5.5.2))
     transitivePeerDependencies:
       - supports-color
@@ -41893,30 +41912,8 @@ snapshots:
       '@typescript-eslint/utils': 5.62.0(eslint@8.47.0)(typescript@5.5.2)
       eslint: 8.47.0
     optionalDependencies:
-      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2)
+      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@4.9.3))(eslint@8.47.0)(typescript@5.5.2)
       jest: 29.4.1(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@17.0.41)(typescript@5.5.2))
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-
-  eslint-plugin-jest@26.9.0(@typescript-eslint/eslint-plugin@5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(jest@29.4.1(@types/node@18.16.9)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2)))(typescript@4.9.3):
-    dependencies:
-      '@typescript-eslint/utils': 5.62.0(eslint@8.47.0)(typescript@4.9.3)
-      eslint: 8.47.0
-    optionalDependencies:
-      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2)
-      jest: 29.4.1(@types/node@18.16.9)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2))
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-
-  eslint-plugin-jest@26.9.0(@typescript-eslint/eslint-plugin@5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(jest@29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2)))(typescript@4.9.3):
-    dependencies:
-      '@typescript-eslint/utils': 5.62.0(eslint@8.47.0)(typescript@4.9.3)
-      eslint: 8.47.0
-    optionalDependencies:
-      '@typescript-eslint/eslint-plugin': 5.59.0(@typescript-eslint/parser@5.59.0(eslint@8.47.0)(typescript@5.5.2))(eslint@8.47.0)(typescript@5.5.2)
-      jest: 29.7.0(@types/node@17.0.41)(babel-plugin-macros@3.1.0)(node-notifier@8.0.2)(ts-node@10.9.1(@swc/core@1.10.15(@swc/helpers@0.5.15))(@types/node@18.16.9)(typescript@5.5.2))
     transitivePeerDependencies:
       - supports-color
       - typescript

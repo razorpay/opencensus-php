@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { BladeProvider } from '@razorpay/blade/components';
+import { BladeProvider, ToastContainer } from '@razorpay/blade/components';
 import { bladeTheme, createTheme } from '@razorpay/blade/tokens';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
 import { Provider } from 'react-redux';
@@ -48,6 +48,7 @@ const Wrapper: React.FC<Props> = ({ context, children }) => {
           <AppProvider context={context}>
             <LayerProvider>
               <SnackbarProvider>{children}</SnackbarProvider>
+              <ToastContainer />
             </LayerProvider>
           </AppProvider>
         </ThemeProvider>

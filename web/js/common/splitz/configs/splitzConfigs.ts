@@ -1077,6 +1077,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'mx_ticket_escalation',
+        experimentId: {
+          beta: 'P3RRfp9aSjvJhe',
+          production: 'QUWjiDKqjkGVwh',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],
@@ -2714,27 +2730,6 @@ export const splitzConfig: SplitzInitConfig = {
           experimentId: {
             beta: 'PN6YUhAbo1OhDs',
             production: 'PNTXEM6WDiRrc1',
-          },
-          defaultVariant: {
-            name: 'variables',
-            variables: [
-              {
-                key: 'result',
-                value: 'off',
-              },
-            ],
-          },
-        },
-      ],
-    },
-    {
-      routesToMatch: ['/business-settings/ticket-support/*'],
-      abExperiments: [
-        {
-          uniqueHashKey: 'support_ticket_pagination',
-          experimentId: {
-            beta: 'P3RRfp9aSjvJhe',
-            production: 'P3ROFFQs4uE6FV',
           },
           defaultVariant: {
             name: 'variables',

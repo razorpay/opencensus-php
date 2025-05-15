@@ -7,7 +7,11 @@ import {
   STATUSES,
   sanitizeRaySubcategory,
   sanitizeTicketCategory,
+  trackEscalateNowButtonClicked,
+  trackEscalateNowButtonDisplayed,
 } from 'merchant/views/TicketSupport/utils';
+import { Button, Tooltip } from '@razorpay/blade/components';
+import { getResponseExpectedBy } from '../getResponseExpectedBy';
 
 const TicketCardHeader = ({ ticket }) => {
   const {
@@ -36,13 +40,45 @@ const TicketCardHeader = ({ ticket }) => {
 };
 
 export default class TicketBriefRevamped extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isEscalating: false,
+    };
+  }
+
+  isTicketEligibleForEscalation =
+    this.props.isTicketEligibleForEscalation && this.props.isTicketEscalationEnabled;
+
   componentDidMount() {
     window.rzpAnalytics?.({
       eventCategory: 'Ticket Dashboard',
       eventAction: 'ticket clicked',
       eventLabel: `Tickets`,
     });
+    if (this.isTicketEligibleForEscalation) {
+      trackEscalateNowButtonDisplayed(this.props.ticket, {
+        isEligible: this.props.isTicketEligibleForEscalation,
+        isMxEscalated: this.props.isTicketMxEscalated,
+        reasonForEscalation: this.props.reasonForEscalation,
+      });
+    }
   }
+
+  handleEscalateClick = (e, ticket) => {
+    e.preventDefault();
+    e.stopPropagation();
+    trackEscalateNowButtonClicked(ticket, {
+      isEligible: this.props.isTicketEligibleForEscalation,
+      isMxEscalated: this.props.isTicketMxEscalated,
+      reasonForEscalation: this.props.reasonForEscalation,
+    });
+    this.setState({ isEscalating: true });
+    this.props.escalateTicket(ticket).finally(() => {
+      this.setState({ isEscalating: false });
+    });
+    return false;
+  };
 
   render() {
     const ticket = this.props.ticket;
@@ -58,6 +94,10 @@ export default class TicketBriefRevamped extends React.Component {
     const ticketConversationUrl = user.isAccountAndSettingsRevampEnabled
       ? `/business-settings/${ticketConversationBaseUrl}`
       : ticketConversationBaseUrl;
+
+    const shouldShowETA =
+      getResponseExpectedBy(ticket)?.shouldShowEta || !this.props.isTicketEscalationEnabled;
+
     // only date showed here
     return (
       <Link to={ticketConversationUrl}>
@@ -86,11 +126,35 @@ export default class TicketBriefRevamped extends React.Component {
                           <span>Ticket # {ticket.ticket_id}</span>
                           <span className="ticket-detail-separator">•</span>
                           <span>Raised {formattedDate}</span>
+                          <span className="ticket-detail-separator">•</span>
+                          <TicketStatus ticket={ticket} shouldUseBladeBadge={true} />
                         </p>
                       </div>
-                      <div className="col-xs-2">
-                        <TicketStatus ticket={ticket} />
-                      </div>
+                      {this.isTicketEligibleForEscalation ? (
+                        <div
+                          className="col-xs-2"
+                          style={{ textAlign: 'right' }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        >
+                          <Tooltip
+                            content="This ticket is taking longer than expected to get resolved. You can escalate it, if you wish for a faster resolution."
+                            placement="bottom"
+                          >
+                            <Button
+                              variant="secondary"
+                              color="negative"
+                              size="small"
+                              onClick={(e) => this.handleEscalateClick(e, ticket)}
+                              isLoading={this.state.isEscalating}
+                            >
+                              Escalate now
+                            </Button>
+                          </Tooltip>
+                        </div>
+                      ) : null}
                       <div className="col-xs-12">
                         <div className="ticket-brief-desc-text">{ticket.description_text}</div>
                       </div>
@@ -120,11 +184,15 @@ export default class TicketBriefRevamped extends React.Component {
                           View Details
                         </b>
                       </p>
-                    ) : (
+                    ) : shouldShowETA ? (
                       <div className="Ticket-Status-Desc">
-                        <TicketBriefMessage ticketType={this.props.ticketType} ticket={ticket} />
+                        <TicketBriefMessage
+                          ticketType={this.props.ticketType}
+                          ticket={ticket}
+                          shouldShowResponseBy={this.props.isTicketEscalationEnabled}
+                        />
                       </div>
-                    )
+                    ) : null
                   ) : null}
                 </div>
               </div>

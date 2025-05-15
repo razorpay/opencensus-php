@@ -7,6 +7,7 @@ export interface LinkWidgetProps {
   action?: string;
   icon: string;
   icon_position: 'right' | 'left';
+  color?: LinkProps['color'];
   properties?: {
     variant?: LinkProps['variant'];
   };

@@ -7,12 +7,37 @@ import {
   getFormattedDate,
   getEscalationType,
 } from '../utils';
+import { getResponseExpectedBy } from 'merchant/views/TicketSupport/getResponseExpectedBy';
+
+import { Box, Text } from '@razorpay/blade/components';
+
+const ResponseExpectedBy = ({ ticket, shouldShowResponseBy }) => {
+  if (shouldShowResponseBy) {
+    const { responseBy, prefix } = getResponseExpectedBy(ticket);
+
+    return (
+      <Text size="small" color="surface.text.gray.muted" weight="medium">
+        {prefix}
+        {prefix ? ' ' : ''}
+        <b>{responseBy}</b>
+      </Text>
+    );
+  }
+
+  return (
+    <>
+      Response expected within&nbsp;<b>4-8 business hours</b>
+    </>
+  );
+};
 
 export default function TicketBriefMessage(props) {
+  const shouldShowResponseBy = props.shouldShowResponseBy;
   const ticketStatus = getTicketStatus(props.ticket);
   const ticketResponseArrivalType = getResponseArrivalType(props.ticket);
   const expectedResponseDate = getFormattedDate(new Date(props.ticket.fr_due_by));
   const isEscalated = getEscalationType(props.ticket) == 'escalated';
+
   return (
     <div className="Ticket-Brief-Message">
       {props.ticketType === 'agent' ? (
@@ -25,7 +50,7 @@ export default function TicketBriefMessage(props) {
           TICKET_STATUS_LABELS.IN_PROGRESS,
         ].includes(ticketStatus) ? (
         isEscalated ? (
-          <div className="Ticket-Brief-Message-Status-Desc">
+          <Box display="flex" flexDirection="row" alignItems="center">
             <span>
               <i className="i i-forward ticket-escalated-icon" />
               <Popover align="right" theme="dark">
@@ -34,13 +59,20 @@ export default function TicketBriefMessage(props) {
                 </PopoverBody>
               </Popover>
             </span>{' '}
-            Response expected within <b>4-8 business hours</b>
-          </div>
+            <ResponseExpectedBy ticket={props.ticket} shouldShowResponseBy={shouldShowResponseBy} />
+          </Box>
         ) : (
-          <div className="Ticket-Brief-Message-Status-Desc">
-            <i className="i i-clock ticket-message-icn" /> Response expected within{' '}
-            <b>4-8 business hours</b>
-          </div>
+          <Box display="flex" flexDirection="row" alignItems="center">
+            <Box>
+              <i className="i i-clock ticket-message-icn" />
+            </Box>
+            <Box>
+              <ResponseExpectedBy
+                ticket={props.ticket}
+                shouldShowResponseBy={shouldShowResponseBy}
+              />
+            </Box>
+          </Box>
         )
       ) : ticketResponseArrivalType === 'waiting-for-customer' ? (
         <div>Support agent is waiting for your reply.</div>

@@ -1,11 +1,20 @@
-import { statuses, workflowStatusClass, TICKET_STATUS_LABELS } from './data';
-import React from 'react';
+import {
+  statuses,
+  workflowStatusClass,
+  TICKET_STATUS_LABELS,
+  cssClassToBadgeVariant,
+} from './data';
+import { Badge } from '@razorpay/blade/components';
 
-const TicketStatus = ({ workflow, ticket } = {}) => {
+import React from 'react';
+import { isTicketMxEscalated } from '../utils';
+
+const TicketStatus = ({ workflow, ticket, shouldUseBladeBadge = false } = {}) => {
   const today = new Date();
   const dueDate = new Date(ticket?.fr_due_by || parseInt(workflow?.due_date, 10));
 
   let statusLabel = workflow?.state || statuses[ticket?.status]?.name;
+
   const isDelayed =
     [
       TICKET_STATUS_LABELS.BEING_PROCESSED,
@@ -14,12 +23,24 @@ const TicketStatus = ({ workflow, ticket } = {}) => {
     ].includes(statusLabel) && today > dueDate;
   const status = workflow?.state || statuses[ticket.status];
 
-  const cssClass = isDelayed
+  let cssClass = isDelayed
     ? workflowStatusClass[TICKET_STATUS_LABELS.DELAYED]
     : workflowStatusClass[status] || status?.class;
 
   statusLabel = isDelayed ? TICKET_STATUS_LABELS.IN_PROGRESS : statusLabel;
-  return <span className={`label ticket-status-label label-${cssClass}`}>{statusLabel}</span>;
+
+  if (isTicketMxEscalated(ticket)) {
+    statusLabel = TICKET_STATUS_LABELS.ESCALATED;
+    cssClass = 'danger';
+  }
+
+  return shouldUseBladeBadge ? (
+    <Badge color={cssClassToBadgeVariant[cssClass]} size="medium" emphasis="subtle">
+      {statusLabel}
+    </Badge>
+  ) : (
+    <span className={`label ticket-status-label label-${cssClass}`}>{statusLabel}</span>
+  );
 };
 
 export default TicketStatus;

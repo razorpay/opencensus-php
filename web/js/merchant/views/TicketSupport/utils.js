@@ -6,6 +6,7 @@ import { TICKET_BASE_URL } from 'merchant/reducers/config';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { getDeviceSource } from 'merchant/components/Support/getCommonSupportProperties';
 import { isExperimentEnabled } from 'common/splitz/utils';
+import { analyticsTrackWithUserInfo } from '@libs/shared-utils';
 
 const monthsMap = [
   'Jan',
@@ -155,10 +156,66 @@ export const createWorkFlowTicket = (workflow, user) => {
   });
 };
 
-export const isPaginationEnabled = (splitz) => {
-  const { abExperiments } = splitz || { abExperiments: { support_ticket_pagination: undefined } };
+export const isTicketMxEscalated = (ticket) => {
+  return ['IPT', 'SLA Breach'].includes(ticket?.custom_fields?.cf_merchant_dashboard_escalation);
+};
 
-  if (!abExperiments?.support_ticket_pagination) return false;
+export const isEligibleForEscalation = (ticketsEligibleForEscalation = {}, ticket) => {
+  const { is_escalated, reason_for_escalation } =
+    ticketsEligibleForEscalation?.[ticket?.ticket_id] || {};
 
-  return isExperimentEnabled(abExperiments.support_ticket_pagination);
+  const isMxEscalated = isTicketMxEscalated(ticket);
+
+  return {
+    isEligible: is_escalated === false && !isMxEscalated,
+    isMxEscalated,
+    reasonForEscalation: reason_for_escalation,
+  };
+};
+
+export const isMxTicketEscalationEnabled = (splitz) => {
+  const { abExperiments } = splitz || { abExperiments: { mx_ticket_escalation: undefined } };
+
+  if (!abExperiments?.mx_ticket_escalation) return false;
+
+  return isExperimentEnabled(abExperiments.mx_ticket_escalation);
+};
+
+const getCommonTicketProperties = (ticket) => {
+  return {
+    ticketId: ticket?.ticket_id,
+    ticketGroupId: ticket?.group_id,
+    ticketRequeserCategory: ticket?.custom_fields?.cf_new_requester_category,
+    ticketRequeserSubCategory: ticket?.custom_fields?.cf_new_requester_sub_category,
+    ticketRequeserItem: ticket?.custom_fields?.cf_new_requester_item,
+    ticketCategory: ticket?.custom_fields?.cf_new_category,
+    ticketSubCategory: ticket?.custom_fields?.cf_new_sub_category,
+    ticketFunction: ticket?.custom_fields?.cf_function,
+  };
+};
+
+export const trackEscalateNowButtonDisplayed = (ticket, properties = {}) => {
+  analyticsTrackWithUserInfo({
+    objectName: 'Escalate now button in Support History page',
+    actionName: 'Displayed',
+    screen: 'Support Tickets',
+    addUserProperties: true,
+    properties: {
+      ...getCommonTicketProperties(ticket),
+      ...properties,
+    },
+  });
+};
+
+export const trackEscalateNowButtonClicked = (ticket, properties = {}) => {
+  analyticsTrackWithUserInfo({
+    objectName: 'Escalate now button in Support History page',
+    actionName: 'Clicked',
+    screen: 'Support Tickets',
+    addUserProperties: true,
+    properties: {
+      ...getCommonTicketProperties(ticket),
+      ...properties,
+    },
+  });
 };

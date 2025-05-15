@@ -8,6 +8,7 @@ export const TICKET_STATUS_LABELS = {
   DELAYED: 'Delayed',
   REJECTED: 'Rejected',
   FAILED: 'Failed',
+  ESCALATED: 'Escalated',
 };
 export const statuses = {
   '2': {
@@ -54,6 +55,14 @@ export const statuses = {
     name: 'Loading..',
     class: 'pending',
   },
+};
+
+export const cssClassToBadgeVariant = {
+  pending: 'notice',
+  active: 'positive',
+  resolved: 'neutral',
+  danger: 'negative',
+  info: 'information',
 };
 
 export const workflowStatusClass = {

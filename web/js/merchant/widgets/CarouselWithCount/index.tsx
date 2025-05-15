@@ -9,6 +9,7 @@ import { useRetryWidget } from 'merchant/widgets/hooks';
 import { CommonWidgetProps } from 'merchant/widgets/types';
 import { getSubWidget } from 'merchant/widgets/CarouselWithCount/utils';
 import { getUcsAliasFromQueryKey, track } from 'merchant/widgets/utils';
+import { CarouselDataWidgetProps } from './subWidget/CarouselData/types';
 
 export const CarouselWithCountWidget: React.FC<
   CarouselWithCountWidgetProps & CommonWidgetProps
@@ -27,6 +28,9 @@ export const CarouselWithCountWidget: React.FC<
   const screen = getUcsAliasFromQueryKey(queryKey) ?? '';
   const widgetId = `merchantDashboard.${screen}.${type}.${id}`;
   const cardsHeadingList = components.map((component) => component?.title);
+  const cardsActionList = components.map(
+    (component) => (component as CarouselDataWidgetProps)?.action?.title || '',
+  );
 
   useEffect(() => {
     if (!isLoading && !isRetrying) {
@@ -36,6 +40,7 @@ export const CarouselWithCountWidget: React.FC<
         actionBy: widgetId,
         ...(error ? { error: `${error.message}` } : { count: components.length }),
         cardsHeadingList,
+        cardsActionList,
       };
       track({
         objectName: 'widget',

@@ -12,6 +12,7 @@ export const LinkWidget: React.FC<LinkWidgetProps> = ({
   action,
   icon,
   icon_position: iconPosition,
+  color,
   properties,
   action_params: params,
   analyticsProperties,
@@ -47,6 +48,7 @@ export const LinkWidget: React.FC<LinkWidgetProps> = ({
       icon={getActionWidgetIcon(icon)}
       iconPosition={iconPosition}
       onClick={handleLinkClick}
+      color={color || 'primary'}
     >
       {titleCase(title)}
     </Link>

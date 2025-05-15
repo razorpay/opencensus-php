@@ -9,8 +9,10 @@ import {
   QUERY_REQUEST_ROUTE_LINK__AGENT_NEW,
 } from './data';
 import { RouteGuard } from 'merchant/components/ShowWhen';
+import { useToast } from '@razorpay/blade/components';
 
 function TicketsContainer(props) {
+  const toast = useToast();
   const { user } = props;
   const supportQueruesRouteLink = user.isAccountAndSettingsRevampEnabled
     ? QUERY_ROUTE_LINK_MERCHANT_NEW
@@ -38,7 +40,7 @@ function TicketsContainer(props) {
           path=":ticketType"
           element={
             <RouteGuard>
-              <Tickets />
+              <Tickets toast={toast} />
             </RouteGuard>
           }
         />

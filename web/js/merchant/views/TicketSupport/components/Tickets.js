@@ -9,8 +9,17 @@ import Spinner from 'common/ui/Spinner';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getPosActivationStatus, isHelpWidgetDisabled } from 'merchant/components/Support/utils';
-import { fetchSupportTickets } from 'merchant/reducers/config';
-import { isPaginationEnabled, raiseTicket } from 'merchant/views/TicketSupport/utils';
+import {
+  fetchSupportTickets,
+  fetchTicketsEligibleForEscalation,
+  escalateTicketApiCall,
+} from 'merchant/reducers/config';
+import {
+  isEligibleForEscalation,
+  isMxTicketEscalationEnabled,
+  raiseTicket,
+} from 'merchant/views/TicketSupport/utils';
+import { getResponseExpectedBy } from 'merchant/views/TicketSupport/getResponseExpectedBy';
 
 import FailedScreen from './FailedScreen';
 import TicketBrief from './TicketBrief';
@@ -19,14 +28,18 @@ import { statuses, MAX_PAGE_SIZE } from './data';
 class Tickets extends React.Component {
   componentDidMount() {
     this.goNext(1, true);
+    if (this.isTicketEscalationEnabled()) {
+      this.props.fetchTicketsEligibleForEscalation(this.props.user.id, this.props.mode);
+    }
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.match.params.ticketType !== this.props.match.params.ticketType) {
       this.goNext(1, true);
-      if (this.isTicketPaginationEnabled()) {
-        this.setState((prevState) => ({ ...prevState, current_page: 1 }));
+      if (this.isTicketEscalationEnabled()) {
+        this.props.fetchTicketsEligibleForEscalation(this.props.user.id, this.props.mode);
       }
+      this.setState((prevState) => ({ ...prevState, current_page: 1 }));
     }
   }
 
@@ -35,7 +48,7 @@ class Tickets extends React.Component {
     current_page: 1,
   };
 
-  isTicketPaginationEnabled = () => isPaginationEnabled(this.props.splitz);
+  isTicketEscalationEnabled = () => isMxTicketEscalationEnabled(this.props.splitz);
 
   raiseTicket = () => {
     window.rzpAnalytics?.({
@@ -87,7 +100,7 @@ class Tickets extends React.Component {
           filter,
           isFetchTicketsApiMigrationActive,
           getPosActivationStatus(user, splitz) === 'activated',
-          this.isTicketPaginationEnabled(),
+          true,
         )
         .then(() => {
           window.rzpAnalytics?.({
@@ -108,6 +121,46 @@ class Tickets extends React.Component {
     }
   };
 
+  escalateTicket = (ticket) => {
+    return escalateTicketApiCall({
+      ticketId: ticket.ticket_id,
+      merchant: {
+        id: this.props.user.id,
+      },
+    })
+      .then((res) => {
+        if (res?.data?.isEscalationSuccess) {
+          const { responseBy, prefix, shouldShowEta } = getResponseExpectedBy(ticket, true);
+          this.goNext(1, true);
+          this.props.fetchTicketsEligibleForEscalation(this.props.user.id, this.props.mode);
+          this.props.toast?.show({
+            content: `Your ticket has been escalated for high priority resolution. Our team will get back to you ${
+              shouldShowEta ? `${prefix} ${responseBy}` : 'shortly'
+            }.`,
+            color: 'neutral',
+            duration: 2000,
+            autoDismiss: true,
+          });
+        } else {
+          this.props.toast?.show({
+            content: 'We are facing some issue at the moment. Please try again later.',
+            color: 'negative',
+            duration: 2000,
+            autoDismiss: true,
+          });
+        }
+      })
+      .catch((err) => {
+        this.props.toast?.show({
+          content:
+            err?.errors?.[0] || 'We are facing some issue at the moment. Please try again later.',
+          color: 'negative',
+          duration: 2000,
+          autoDismiss: true,
+        });
+      });
+  };
+
   showTickets = (totalTickets, currentPageTickets, user, createTicket) => {
     if (this.props.support_tickets.loading) {
       return null;
@@ -115,8 +168,7 @@ class Tickets extends React.Component {
 
     const NO_TICKETS_PRESENT =
       !this.props.support_tickets.loading &&
-      (totalTickets.length === 0 ||
-        (this.isTicketPaginationEnabled() && currentPageTickets.length === 0));
+      (totalTickets.length === 0 || currentPageTickets.length === 0);
 
     if (NO_TICKETS_PRESENT) {
       return (
@@ -175,6 +227,11 @@ class Tickets extends React.Component {
         )}
         <div>
           {OPEN_TICKETS.map((ticket, index) => {
+            const { isEligible, isMxEscalated, reasonForEscalation } = isEligibleForEscalation(
+              this.props.ticketsEligibleForEscalation?.data,
+              ticket,
+            );
+
             const isPosMerchant = getPosActivationStatus(user, this.props.splitz) === 'activated';
             if (ticket?.type === 'Ezetap' && !isPosMerchant) {
               return null;
@@ -185,6 +242,11 @@ class Tickets extends React.Component {
                 user={user}
                 last={index == currentPageTickets.length - 1}
                 ticket={ticket}
+                isTicketEligibleForEscalation={isEligible}
+                isTicketMxEscalated={isMxEscalated}
+                reasonForEscalation={reasonForEscalation}
+                escalateTicket={this.escalateTicket}
+                isTicketEscalationEnabled={this.isTicketEscalationEnabled()}
                 key={index}
               />
             );
@@ -267,7 +329,6 @@ class Tickets extends React.Component {
       this.props.support_tickets.loading || this.state.current_page === 10 || tickets.length === 0;
 
     const createTicket = raiseTicket;
-    const isTicketPaginated = this.isTicketPaginationEnabled();
 
     return (
       <>
@@ -285,7 +346,7 @@ class Tickets extends React.Component {
             </div>
           </div>
         </div>
-        {isTicketPaginated && !this.props.support_tickets.loading ? (
+        {!this.props.support_tickets.loading ? (
           <Box display="flex" gap="spacing.3" justifyContent="flex-end">
             <Button
               variant="secondary"
@@ -311,11 +372,13 @@ export default compose(
         ...state.session,
         ...state.config.config,
         support_tickets: state.config.support_tickets,
+        ticketsEligibleForEscalation: state.config.ticketsEligibleForEscalation,
         user: state.session.user,
       };
     },
     {
       fetchSupportTickets,
+      fetchTicketsEligibleForEscalation,
     },
   ),
   withRouter,

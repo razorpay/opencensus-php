@@ -21,6 +21,18 @@ exports[`FullPageCover should render 1`] = `
         </div>
       </div>
     </div>
+    <div
+      class="BaseBox-bksIuc hlCpEz"
+      data-blade-component="toast-container"
+      pointer-events="none"
+    >
+      <div
+        class="BaseBox-bksIuc hUnYPb"
+        data-blade-component="base-box"
+        data-testid="toast-mouseover-container"
+        pointer-events="all"
+      />
+    </div>
   </div>
   <div
     class="LayerContext__LayerHost-sc-1aos3gl-0 cqBzuf"
