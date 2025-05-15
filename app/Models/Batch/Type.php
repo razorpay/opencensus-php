@@ -198,6 +198,8 @@ class Type
 
     const CAPITAL_MERCHANT_ELIGIBILITY_CONFIG = 'capital_merchant_eligibility_config';
 
+    const OFFERS_ENGINE_MERCHANT_RAMP_CONTROL = 'offers_engine_merchant_ramp_control';
+
     const MERCHANT_CAPITAL_TAGS = 'merchant_capital_tags';
 
     const EARLY_SETTLEMENT_TRIAL = 'early_settlement_trial';
@@ -445,6 +447,7 @@ class Type
         self::MANDATE_CONTINUITY,
         self::TOKEN_CONTINUITY,
         self::CUSTOMER_MIGRATION,
+        self::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL
     ];
 
     /**
@@ -653,6 +656,7 @@ class Type
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
+        self::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL,
         self::EARLY_SETTLEMENT_TRIAL,
         self::MERCHANT_CAPITAL_TAGS,
         self::PARTNER_SUBMERCHANT_INVITE,
@@ -822,6 +826,7 @@ class Type
         self::MANDATE_CONTINUITY,
         self::TOKEN_CONTINUITY,
         self::CUSTOMER_MIGRATION,
+        self::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -938,6 +943,7 @@ class Type
         self::MANDATE_CONTINUITY                      => Name::ADMIN_BATCH_CREATE,
         self::TOKEN_CONTINUITY                        => Name::ADMIN_BATCH_CREATE,
         self::CUSTOMER_MIGRATION                      => Name::ADMIN_BATCH_CREATE,
+        self::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL     => Name::ADMIN_BATCH_CREATE,
     ];
 
     public static $workflowApplicableBatchTypes = [
