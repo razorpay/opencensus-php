@@ -356,3 +356,15 @@ export {
   acronymsForShorteningText as acronyms,
   isElementXPercentInViewport,
 } from '@libs/shared-utils';
+
+/**
+ * Opens a URL in a new tab with secure window features.
+ * @param {string} url - The URL to open in a new tab
+ */
+export const openUrlInNewTab = (url: string) => {
+  window.open(
+    `${url}`,
+    '_blank',
+    'noreferrer noopener',
+  );
+};

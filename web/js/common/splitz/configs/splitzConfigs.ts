@@ -1574,6 +1574,22 @@ export const splitzConfig: SplitzInitConfig = {
           },
         },
         {
+          uniqueHashKey: 'enable_self_serve_rekyc',
+          experimentId: {
+            beta: 'Q8Go1LpLvcTRTV',
+            production: 'Q8GmN79q79RrII',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
           uniqueHashKey: 'enable_razorpay_rewind',
           experimentId: {
             beta: 'Pg2HiL6hjOzsAf',

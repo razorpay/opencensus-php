@@ -18,6 +18,7 @@ import { ResponsiveWrapper } from './styles';
 import DiwaliReportBanner from '../DiwaliReportBanner';
 import FestivalThemeBanner from '../FestivalThemeBanner';
 import { isEligibleForRazorpayRewind } from 'merchant/components/RazorpayRewind/utils';
+import {isEligibleForSelfServeRekyc} from 'merchant/components/SelfServeRekyc/utils';
 import FeedbackForm from './FeedbackForm';
 import { isRTUXLeftoutSegmentEnabled } from './utils';
 import { rtuxFeedbackFormKeys } from './FeedbackForm/utils';
@@ -36,6 +37,8 @@ const RazorpayRewind = lazy(
   () => import(/* webpackChunkName: 'payments-recap' */ 'merchant/components/RazorpayRewind'),
 );
 
+const SelfServeRekycNotifications = lazy(() => import( /* webpackChunkName: 'selfServeRekycBanner' */ 'merchant/components/SelfServeRekyc'));
+
 const RTUXHomepage = (): JSX.Element => {
   const {
     data: layoutData,
@@ -52,6 +55,7 @@ const RTUXHomepage = (): JSX.Element => {
   const widgetId = `merchantDashboard.${screen}`;
   const shouldShowReKycBanner = isEligibleForReKyc(splitz, user);
   const shouldShowRazorpayRewind = isEligibleForRazorpayRewind(splitz, user);
+  const shouldShowSelfServeRekycNotifications = isEligibleForSelfServeRekyc(splitz, user);
   const isRTUXLeftoutSegment = isRTUXLeftoutSegmentEnabled({ splitz });
   const isMobile = isMobileDevice();
 
@@ -137,6 +141,12 @@ const RTUXHomepage = (): JSX.Element => {
             <ReKycStatusBanner isRtux={true} />
           </Suspense>
         ) : null}
+        {
+          shouldShowSelfServeRekycNotifications ?
+          <Suspense fallback={null}>
+            <SelfServeRekycNotifications/>
+          </Suspense> : null
+        }
         {shouldShowRazorpayRewind ? (
           <Suspense fallback={null}>
             <RazorpayRewind isRtux={true} />
