@@ -100,10 +100,74 @@ class Service extends Base\Service
 
         (new Validator)->validateDefaultCloseBy($input);
 
-         $virtualAccount = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_SERVICE_CREATE], function() use($input, $customer, $order)
-         {
-             return $this->core->create($input, $this->merchant, $customer, $order);
-         });
+        // Call optimizer service to select provider
+        $optimizerService = new \RZP\Services\OptimizerCore\Service();
+        
+        try 
+        {
+            $paymentId = UniqueIdEntity::generateUniqueId();
+            $input['payment_id'] = $paymentId;
+            $input['method'] = 'bank_transfer';
+            $input['currency'] = 'INR';
+            $input['amount'] = $input['amount_expected'] ?? null;
+            $input['order_id'] = $order ? $order->getId() : null;
+            $data = [
+                'data' => [
+                    'merchant' => $this->merchant->toArray(),
+                    'order' => $order ? $order->toArray() : null,
+                    'input' => $input,
+                    'payment' => [
+                        'amount' => $input['amount_expected'] ?? null,
+                        'id' => $paymentId,
+                        'currency' => $input['currency'] ?? 'INR',
+                        'order_id' => $order ? $order->getId() : null,
+                        'method' => 'bank_transfer',
+                    ],
+                    'payment_id' => $paymentId,
+                    'merchant_id' => $this->merchant->getId(),
+                    'force_terminal_id' => $input['force_terminal_id'] ?? null,
+                    'method' => 'bank_transfer',
+                ]
+            ];
+            $providerResponse = $optimizerService->selectProvider($data);
+
+            $this->trace->info(TraceCode::OPTIMIZER_SELECT_PROVIDER_RESPONSE, [
+                'response' => $providerResponse
+            ]);
+
+            // If provider is an optimizer provider, process through optimizer service
+            if ($optimizerService->isOptimizerProvider($providerResponse))
+            {
+                $bankTransferResponse = $optimizerService->processBankTransfer([
+                    'merchant_id' => $this->merchant->getId(),
+                    'amount' => $input['amount_expected'] ?? null,
+                    'currency' => $input['currency'] ?? 'INR',
+                    'order_id' => $order ? $order->getId() : null,
+                    'provider' => $providerResponse
+                ]);
+
+                $this->trace->info(TraceCode::OPTIMIZER_BANK_TRANSFER_RESPONSE, [
+                    'response' => $bankTransferResponse
+                ]);
+
+                return $bankTransferResponse;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::OPTIMIZER_CORE_SERVICE_ERROR, [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // Continue with regular flow if optimizer service fails
+        }
+
+        // Regular virtual account creation flow
+        $virtualAccount = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_SERVICE_CREATE], function() use($input, $customer, $order)
+        {
+            return $this->core->create($input, $this->merchant, $customer, $order);
+        });
 
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_CREATED,
@@ -1726,7 +1790,7 @@ class Service extends Base\Service
 
         $response = $this->checkOfflineChallanForBankRequest($input,$response,$offlineChallan);
 
-     //   $virtualAccount = $this->repo->virtual_account->fetchByOfflineId($offlineChallan['id']);
+     //   $virtualAccount = $this->repo->virtual_account->fetchByOfflineId($offlineChallan['id']);*/
 
         $virtualAccount = $this->repo->virtual_account->find($offlineChallan['virtual_account_id']);
 

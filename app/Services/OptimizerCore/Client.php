@@ -44,6 +44,7 @@ class Client
             $this->app['trace']->info(TraceCode::OPTIMIZER_CORE_SERVICE_REQUEST, [
                 'url'   => $url,
                 'method' => $method,
+                'input' => $input,
             ]);
 
             $response = $this->makeRequest($url, $this->getHeaders(), $input, $method, $this->getOptions());
