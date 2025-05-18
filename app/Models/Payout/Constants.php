@@ -157,4 +157,7 @@ class Constants
     const NAME_MATCHING_THRESHOLD_DEFAULT = 75;
     const CONFIG_VALUE_SETTINGS = 'config_value';
     const PHONE_NUMBER_PAYOUTS = 'phone_number_payout';
+    const PAYEE_IFSC = 'payee_ifsc';
+    const PAYEE_BANK_NAME = 'payee_bank_name';
+    const FTA = 'fta';
 }
