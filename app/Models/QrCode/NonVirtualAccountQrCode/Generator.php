@@ -115,6 +115,7 @@ class Generator extends QrCode\Generator
 
             switch ($terminal->getGateway())
             {
+                case Gateway::HDFC_MINTOAK:
                 case Gateway::UPI_YESBANK:
                 {
 
@@ -259,6 +260,10 @@ class Generator extends QrCode\Generator
                 $refId = $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
                 break;
 
+            case Gateway::HDFC_MINTOAK:
+                $refId = $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
+                $qrCode->setReference($refId);
+                break;
             default:
                 $refId = self::TR_PREFIX . $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
         }
@@ -353,8 +358,18 @@ class Generator extends QrCode\Generator
         }
         else
         {
-            $gateway = Gateway::UPI_HDFCMINTOAK;
-            $params  = array(Terminal\Entity::VPA => $vpa);
+            $gateway = Gateway::HDFC_MINTOAK;
+            $notes = $qrCode->getNotes();
+            if (empty($notes['hdfc_mintoak_tid']) === true)
+            {
+                throw new Exception\LogicException(
+                    TraceCode::QR_CODE_UPI_QR_TERMINAL_NOT_FOUND_FOR_MERCHANT,
+                    Error\ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND,
+                    ['reason' => 'TID not present in QR code notes']
+                );
+            }
+
+            $params = array(Terminal\Entity::GATEWAY_MERCHANT_ID => $notes['hdfc_mintoak_tid']);
             $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $params);
 
             if (($terminal instanceof Terminal\Entity) === false)
@@ -1144,8 +1159,13 @@ class Generator extends QrCode\Generator
                         break; // Stop looping once the condition is met
                     }
                 }
+                $isMintoakSQR = false;
+                if(($terminal->getGateway() === Gateway::HDFC_MINTOAK) and $qrCode->getUsageType() === UsageType::MULTIPLE_USE)
+                {
+                    $isMintoakSQR = true;
+                }
 
-                if ($qrVariant and ($qrCode->getProvider() === Provider::UPI_QR))
+                if ($qrVariant and ($qrCode->getProvider() === Provider::UPI_QR) and $isMintoakSQR === false)
                 {
                     return $this->generateQrIntentUrlViaGatewayModule($qrCode, $terminal);
                 }
@@ -1300,6 +1320,9 @@ class Generator extends QrCode\Generator
         $qrCode->setReference($response[EntityConstants::QR_CODE][Entity::REFERENCE]);
         $qrCode->setQrString($response[EntityConstants::QR_CODE][Entity::QR_STRING]);
 
+        // Setting the notes for Mintoak
+        $this->getAndSetNotesForMintoak($qrCode, $terminal);
+
         // Returning the QR string as that is what is expected from this function
         return $response[EntityConstants::QR_CODE][Entity::QR_STRING];
     }
@@ -1395,11 +1418,11 @@ class Generator extends QrCode\Generator
         return Tags::UPI_VPA_REFERENCE . strlen($upiString) . $upiString;
     }
 
-    protected function getBharatQrCode($qrCode)
+    protected function getBharatQrCode($qrCode, $terminal = null)
     {
         $this->trace->info(TraceCode::GENERATE_BHARAT_QR_CODE, $qrCode->toArrayPublic());
 
-        $terminals = $this->getDedicatedTerminalForQrCreate($qrCode);
+        $terminals = $terminal === null ? $this->getDedicatedTerminalForQrCreate($qrCode) :  [0 => $terminal];
         $errorMessage = '';
         $errorCode    = '';
 
@@ -1458,6 +1481,17 @@ class Generator extends QrCode\Generator
         if (($errorMessage) !== '')
         {
             throw new BadRequestException($errorCode, $errorMessage);
+        }
+    }
+    protected function getAndSetNotesForMintoak($qrCode, $terminal)
+    {
+        $gateway = $terminal->getGateway();
+
+        if ($gateway === Gateway::HDFC_MINTOAK)
+        {
+            $qrCode->setNotes([
+                'hdfc_mintoak_tid' => $terminal->getGatewayMerchantId()
+            ]);
         }
     }
 }

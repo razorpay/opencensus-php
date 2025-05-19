@@ -197,6 +197,52 @@ class QrCodeRefactorTest extends TestCase
         $this->assertEquals(1, $count);
     }
 
+    public function testFetchQrCodeUsingDevice()
+    {
+        // These are used during assertions at the end of the test
+        $count = 0;
+
+        $this->mockMozartResponse(
+            count: $count
+        );
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 100,
+                'device_id'      => 'test_device_id',
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->ba->appAuth();
+
+        $responseData = $this->makeRequestAndGetContent(
+            [
+                'method' => 'POST',
+                'url' => '/payments/qr_codes/device/fetch',
+                'content' => [
+                    'device_id' => 'test_device_id',
+                ]
+            ]
+        );
+        // Assert structure and values in response
+        $this->assertEquals($qrCode->getId(), $responseData['id']);
+
+        $this->assertEquals('test_device_id', $responseData['device_id']);
+
+        $this->assertEquals(100, $responseData['amount']);
+
+        $this->assertEquals('LiveAccountMer', $responseData['merchant_id']);
+
+
+    }
+
     public function testCreateQrCodeViaRefactorFlowWithAllGatewaysDown()
     {
         // These are used during assertions at the end of the test

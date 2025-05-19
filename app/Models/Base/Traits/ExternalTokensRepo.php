@@ -7,6 +7,7 @@ use PHPUnit\Framework\Exception;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Services\Tokens;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Models\Customer\Token;
@@ -558,7 +559,7 @@ trait ExternalTokensRepo
         }
     }
 
-    public function getExternalTokensByCustomer($customer, $isPassUnusedRejectedTokensExperimentEnabled, $withVpas)
+    public function getExternalTokensByCustomer($customer, $isPassUnusedRejectedTokensExperimentEnabled, $withVpas, $skipUsedAt=false)
     {
         $this->entityName = $this->entity;
 
@@ -566,7 +567,7 @@ trait ExternalTokensRepo
             ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
             ->where(function($query) use ($isPassUnusedRejectedTokensExperimentEnabled)
             {
-                if (strtolower($isPassUnusedRejectedTokensExperimentEnabled) === 'on')
+                if ($isPassUnusedRejectedTokensExperimentEnabled === true)
                 {
                     $query->whereNull(Token\Entity::USED_AT)
                         ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::REJECTED);
@@ -597,7 +598,7 @@ trait ExternalTokensRepo
 
                 $class = Entity::getExternalRepoSingleton($this->entity);
 
-                $externalTokens = $class->fetchCustomerTokens($params);
+                $externalTokens = $class->fetchCustomerTokens($params, $skipUsedAt);
 
                 if(sizeof($externalTokens) > 0)
                 {
@@ -694,6 +695,40 @@ trait ExternalTokensRepo
         }
 
         parent::saveOrFail($token, $options);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function deleteOrFail($token)
+    {
+        try
+        {
+            parent::deleteOrFail($token);
+        }
+        catch(\Exception $ex)
+        {
+            try
+            {
+                $tokenID = $token->getId();
+
+                /** @var Tokens $externalRepo */
+                $externalRepo = Entity::getExternalRepoSingleton($this->entity);
+                $resp = $externalRepo->deleteTokensInternal($tokenID);
+                if ($resp['code'] == 200)
+                {
+                    return;
+                }
+            }
+            catch(\Exception $exExternal)
+            {
+                $this->trace->info(TraceCode::TOKENS_EXTERNAL_DELETE_FAILURE, [
+                    'exception_msg' => $exExternal->getMessage(),
+                ]);
+            }
+
+            throw $ex;
+        }
     }
 
     public function fetchExternalTokens($params, $input=[])

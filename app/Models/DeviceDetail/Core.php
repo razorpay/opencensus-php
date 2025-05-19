@@ -4,6 +4,7 @@ namespace RZP\Models\DeviceDetail;
 
 use RZP\Exception\LogicException;
 use Illuminate\Support\Facades\Cookie;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -131,4 +132,53 @@ class Core extends Base\Core
 
         return $deviceDetail;
     }
+
+    /**
+     * @throws \Throwable
+     */
+    public function fetchOnboardingWorkflowDataFromPGOS($merchantId): ?array
+    {
+        if (empty($merchantId)) {
+            return null;
+        }
+
+        $merchant = $this->repo->merchant->find($merchantId) ?? null;
+
+        $payload = [
+            'merchant_id' => $merchantId
+        ];
+
+        try {
+            $pgosProxyController = new MerchantOnboardingProxyController();
+            $pgosResponse = $pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::GET_MERCHANT_ONBOARDING_DETAILS, $payload, $merchant, true);
+
+            if (empty($pgosResponse)) {
+                throw new \Exception("PGOS response is empty");
+            }
+
+        } catch (\Throwable $e) {
+
+            $this->trace->error(TraceCode::PGOS_ONBOARDING_DETAILS_FETCH_ERROR, [
+                'merchant_id' => $merchantId,
+                'error'       => $e->getMessage(),
+            ]);
+
+            $errorData = json_decode($e->getMessage(), true);
+            if (isset($errorData['code']) && $errorData['code'] === 'internal' &&
+                isset($errorData['msg']) && $errorData['msg'] === 'db_error: record_not_found') {
+                return null;
+            }
+
+            throw $e;
+        }
+
+        $workflowDetails = $pgosResponse[Constants::WORKFLOW_DETAILS] ?? [];
+        $service = $pgosResponse[Constants::WORKFLOW_DETAILS_OWNER_SERVICE] ?? null;
+
+        return [
+            Constants::WORKFLOW_DETAILS_OWNER_SERVICE => $service,
+            Constants::WORKFLOW_DETAILS => $workflowDetails
+        ];
+    }
+
 }

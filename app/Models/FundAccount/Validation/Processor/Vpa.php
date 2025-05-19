@@ -303,7 +303,7 @@ class Vpa extends Base
 
             (new AdminService)->setConfigKeys([ConfigKey::RBL_VPA_VALIDATE_API_GATEWAY_AUTH_TOKEN => $tokenizedValue]);
 
-            return $token;
+            return $tokenizedValue;
         }
 
         return (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_VPA_VALIDATE_API_GATEWAY_AUTH_TOKEN]);

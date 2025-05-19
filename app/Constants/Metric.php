@@ -33,6 +33,7 @@ class Metric
     const ACS_SYNC_EVENT_PUBLISHED              = 'acs_sync_event_published';
     const ACS_SYNC_ALERT_EVENT_PUBLISH_FAILED   = 'acs_sync_alert_event_publish_failed';
     const ACS_SYNC_ALERT_UNKNOWN_TRIGGER        = 'acs_sync_alert_unknown_trigger';
+    const GET_DCC_INFO_COUNT                    = 'get_dcc_info_count';
     const ASV_SYNC_ACCOUNT_DEVIATION_TOTAL      = 'asv_sync_account_deviation_total';
     const ASV_ROLLBACK_EVENT_PUBLISHED          = 'asv_rollback_event_published';
     const ASV_ROLLBACK_EVENT_PUBLISH_FAILED     = 'asv_rollback_event_publish_failed';

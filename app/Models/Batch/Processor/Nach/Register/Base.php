@@ -55,6 +55,8 @@ abstract class Base extends BaseProcessor
         {
             $parsedData = $this->getDataFromRow($entry);
 
+            $this->verifyCaseAndSetPaymentId($parsedData);
+
             $payment = $this->fetchPaymentEntity($parsedData);
 
             if ($parsedData[self::TOKEN_STATUS] === Token\RecurringStatus::INITIATED)
@@ -257,6 +259,46 @@ abstract class Base extends BaseProcessor
         (new Token\Core)->updateTokenFromNachGatewayData($token, $tokenParams);
 
         $this->repo->saveOrFail($token);
+    }
+
+    protected function verifyCaseAndSetPaymentId(array &$data)
+    {
+        if ((empty($data[self::PAYMENT_ID]) === false) and
+            (Payment\Entity::verifyCapsId($data[self::PAYMENT_ID], false) === true))
+        {
+            try
+            {
+                $paymentId = $this->repo->payment->fetchPaymentIdsbyCapsPaymentIds([$data[self::PAYMENT_ID]],
+                    $this->gateway);
+
+                if(empty($paymentId))
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
+                        PublicErrorDescription::BAD_REQUEST_PAYMENT_NOT_FOUND,
+                        [
+                            'payment_id' => $data[self::PAYMENT_ID],
+                            'gateway'    => $this->gateway
+                        ]);
+                }
+
+                $data[self::PAYMENT_ID] = $paymentId[0];
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::NACH_RESPONSE_PAYMENT_ID_IN_UPPERCASE,
+                    [
+                        'payment_id' => $data[self::PAYMENT_ID],
+                        'gateway' => $this->gateway
+                    ]
+                );
+
+                throw $ex;
+            }
+        }
     }
 
     protected function shouldMarkProcessedOnFailures(): bool

@@ -47,6 +47,7 @@ use RZP\Models\Merchant\BusinessDetail as MBD;
 use RZP\Jobs\PartnerSubmerchantLinkingOauthJob;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\MerchantApplications\Repository as MerchantAppRepo;
 use RZP\Jobs\PartnerSubmerchantLinkingReferralJob;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -65,6 +66,7 @@ use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 use RZP\User\Constants as UserConstants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Environment;
+use RZP\Models\Base\PublicCollection;
 
 use function Clue\StreamFilter\append;
 
@@ -134,6 +136,8 @@ class Service extends Base\Service
             Org\Entity::HDFC_ORG_ID,
             Org\Entity::AXIS_ORG_ID,
             Org\Entity::YES_ORG_ID,
+            Org\Entity::INDUS_ORG_ID,
+            Org\Entity::IDFC_ORG_ID,
         ];
 
         $orgId = $this->app['basicauth']->getOrgId();
@@ -202,7 +206,7 @@ class Service extends Base\Service
 
         unset($input[DeviceDetail\Entity::SIGNUP_CAMPAIGN]);
 
-        $heimdallTokenData = $this->handleHeimdallInvitation($input);
+        $heimdallTokenData = $this->handleHeimdallInvitation($input, $user);
 
         $countryCode = $input['country_code'] ?? 'IN';
 
@@ -550,7 +554,7 @@ class Service extends Base\Service
         return ['user' => $user, 'invitation' => $invitation, 'invitationToken' => $invitationToken];
     }
 
-    protected function handleHeimdallInvitation(array &$input)
+    protected function handleHeimdallInvitation(array &$input, &$user = null)
     {
         $heimdallInvitationToken = $input['merchant_invitation'] ?? null;
 
@@ -569,6 +573,8 @@ class Service extends Base\Service
 
                 (new AdminLead\Service)->editInvitation(
                     $heimdallTokenData[AdminLead\Entity::ORG_ID], $heimdallTokenData[AdminLead\Entity::ID], $tokenSignUpInput);
+
+                $this->isUserExistsForCustomInvite($heimdallTokenData, $user);
             }
 
             unset($input['merchant_invitation']);
@@ -711,6 +717,23 @@ class Service extends Base\Service
             $orgID = $input[Merchant\Entity::ORG_ID];
         }
 
+        $requestedProduct =$input['product']??null;
+
+        //For X on USL if requested product is banking_onboarding then setting the originproduct and
+        //x_verify_email flag(used at multiple places for X) to true
+        if($requestedProduct == DeviceDetailConstants::PRODUCT_BANKING_ONBOARDING) {
+
+            $this->auth->setRequestOriginProduct(Product::BANKING);
+            $input[Entity::X_VERIFY_EMAIL]="true";
+        }
+
+        $this->trace->info(TraceCode::USER_REGISTER, [
+            'signup_source'          =>$input[DeviceDetail\Entity::SIGNUP_SOURCE],
+            'signup_campaign'        =>$input[DeviceDetail\Entity::SIGNUP_CAMPAIGN],
+            'merchant_product'       =>$this->auth->getRequestOriginProduct(),
+            'x_verify_email'         =>$input[Entity::X_VERIFY_EMAIL] ?? null,
+        ]);
+
         $merchantInputData = [
             Merchant\Entity::NAME          => $businessName,
             Merchant\Entity::SIGNUP_SOURCE => $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
@@ -757,6 +780,8 @@ class Service extends Base\Service
         $isRequestFromXVerifyEmail = $this->isRequestFromXVerifyEmail($input);
 
         $inputData = ["isRequestFromXVerifyEmail" => $isRequestFromXVerifyEmail];
+
+        $this->skipEmailUniquenessCheckForCustomInvite($user ,$merchantInputData, $inputData);
 
         return $this->createMerchantFromUser(
             $merchantInputData,
@@ -1071,29 +1096,23 @@ class Service extends Base\Service
         return in_array($product, [DeviceDetailConstants::PRODUCT_PG_ONBOARDING, DeviceDetailConstants::CROSS_BORDER_ONBOARDING, DeviceDetailConstants::SUBMERCHANT_ONBOARDING]);
     }
 
-    public function handlePGOSOnboarding(MerchantEntity $merchant, $signupCampaign, $countryCode, $input, $user)
+    private function shouldOnboardViaPGOSForNonOAuthMerchants(MerchantEntity $merchant, $signupCampaign, $countryCode): bool
     {
         $shouldOnboardViaPGOS = false;
 
+        if (in_array($signupCampaign, DeviceDetail\Constants::PGOS_ENABLED_SIGNUP_CAMPAIGNS))
+        {
+            return true;
+        }
+
         $merchantCore = new Merchant\Core();
 
-        $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? '';
-
-        $this->trace->info(TraceCode::PGOS_ONBOARDING, [
-            'merchant_id'    => $merchant->getId(),
-            'workflowType'   => $workflowType,
-            'signupCampaign' => $signupCampaign,
-            'countryCode'    => $countryCode,
-            'input'          => $input
-        ]);
-
-        //Determine whether onboarding should be done via PGOS or not
         if ($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING AND $countryCode === 'IN')
         {
 
             if ($merchantCore->isPOSSubMerchant($merchant))
             {
-                $shouldOnboardViaPGOS = true;
+                return true;
             }
             else
             {
@@ -1105,14 +1124,14 @@ class Service extends Base\Service
                 {
                     if ($merchantCore->isRegularMerchant($merchant))
                     {
-                        $shouldOnboardViaPGOS = true;
+                        return true;
                     }
                     else if (
                         $merchantCore->isRegularSubmerchant($merchant)
                         and $this->pgosProxyController->isPGOSEnabledForPGSubmerchant($merchant)
                     )
                     {
-                        $shouldOnboardViaPGOS = true;
+                        return true;
                     }
                 }
             }
@@ -1133,11 +1152,34 @@ class Service extends Base\Service
             }
         }
 
-        // TODO Phantom Onboarding should also go to PGOS
-        if (in_array($signupCampaign, DeviceDetail\Constants::PGOS_ENABLED_SIGNUP_CAMPAIGNS))
-        {
-            $shouldOnboardViaPGOS = true;
-        }
+        return $shouldOnboardViaPGOS;
+    }
+
+    private function shouldOnboardViaPGOSForOAuthMerchants($merchant, $input, $signupCampaign): bool
+    {
+        $countryCode = $input[Merchant\Entity::COUNTRY_CODE] ?? 'IN';
+
+        $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? '';
+
+        return (($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING
+            and (new Merchant\Core)->isRegularMerchant($merchant) === true
+            and $countryCode === 'IN') || ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING ||
+            $this->isAssistedOnboardingSignupCampaign($signupCampaign) ||
+            $signupCampaign === DeviceDetailConstants::RIZE_INCORPORATION));
+    }
+
+    public function handlePGOSOnboarding(MerchantEntity $merchant, $signupCampaign, $countryCode, $input, $user)
+    {
+        $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? '';
+
+        $this->trace->info(TraceCode::PGOS_ONBOARDING, [
+            'merchant_id'    => $merchant->getId(),
+            'workflowType'   => $workflowType,
+            'signupCampaign' => $signupCampaign,
+            'countryCode'    => $countryCode,
+            'input'          => $input
+        ]);
+
         if (empty(DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign]) === false)
         {
             $input[DeviceDetail\Constants::PRODUCT] = $input[DeviceDetail\Constants::PRODUCT] ?? (DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::PRODUCT] ?? '');
@@ -1145,11 +1187,11 @@ class Service extends Base\Service
             $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? (DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::WORKFLOW_TYPE] ?? '');
         }
 
+        $shouldOnboardViaPGOS = $this->shouldOnboardViaPGOSForNonOAuthMerchants($merchant, $signupCampaign, $countryCode);
         if ($workflowType === DeviceDetail\Constants::MODULAR_ONBOARDING)
         {
             $shouldOnboardViaPGOS = true;
         }
-
         if ($shouldOnboardViaPGOS === false)
         {
             return;
@@ -1410,13 +1452,7 @@ class Service extends Base\Service
         //Determine whether onboarding should be done via PGOS or not
         //Not checking the experiment here because FE checks the experiment
         //All merchants who onboard via OAuth and FE sends signup campaign as EASY_ONBOARDING, needs to be onboarded via PGOS
-        if (($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING
-            and (new Merchant\Core)->isRegularMerchant($merchant) === true
-                and $countryCode === 'IN') ||
-            ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING ||
-            $this->isAssistedOnboardingSignupCampaign($signupCampaign) ||
-            $signupCampaign === DeviceDetailConstants::RIZE_INCORPORATION))
-
+        if ($this->shouldOnboardViaPGOSForOAuthMerchants($merchant, $input, $signupCampaign))
         {
             $shouldOnboardViaPGOS = true;
         }
@@ -2507,6 +2543,11 @@ class Service extends Base\Service
      */
     public function createMerchantForUser(array $input, bool $isInternal=false): array
     {
+        // if skip_workflow_create is true then don't create
+        // workflow return after merchant is created
+        $skipWorkflowCreate = $input['skip_workflow_create'];
+        unset($input['skip_workflow_create']);
+
         if ($isInternal)
         {
             $this->validator->validateInput('createMerchantInternal', $input);
@@ -2575,8 +2616,35 @@ class Service extends Base\Service
                 DeviceDetail\Entity::USER_ID            => $user['id'],
                 DeviceDetail\Entity::SIGNUP_CAMPAIGN    => $signupCampaign,
             ];
-
+            $merchantCore = new Merchant\Core();
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.workflow_segregation_store_user_signup_state'),
+            ];
+            $shouldStoreUserSignupState = $merchantCore->isSplitzExperimentEnable($properties,'enable');
+            if ($skipWorkflowCreate && $shouldStoreUserSignupState) {
+                // preserving user_signup_state inorder to identify the merchant state in usl, if user_signup_state is
+                // mid_created and FE doesn't receive workflow_details_v2 in onboarding Meta then FE will redirect merchants
+                // to Payment channel screen to create workflow.
+                $ddInput[DeviceDetail\Entity::METADATA] = [
+                    DeviceDetailConstants::USER_SIGNUP_STATE => 'mid_created'
+                ];
+            }
             (new DeviceDetail\Core)->createDeviceDetail($ddInput);
+        }
+
+        if ($user[Entity::SIGNUP_VIA_EMAIL] === 1)
+        {
+            $this->signUpSuccess($user, false, Constants::PASSWORD, null, $merchantId);
+        }
+        else if (empty($user[Entity::OAUTH_PROVIDER]) === true)
+        {
+            $this->signUpSuccess($user, false, Constants::OTP, null, $merchantId);
+        }
+
+        if ($skipWorkflowCreate)
+        {
+            return $data;
         }
 
         // Start the onboarding of merchant via PGOS
@@ -2596,9 +2664,6 @@ class Service extends Base\Service
                     'error_message' => $exception->getMessage()
                 ]);
             }
-
-            $signupMethod = Constants::PASSWORD;
-            $this->signUpSuccess($user, false, $signupMethod, null, $merchantId);
         } else if (empty($user[Entity::OAUTH_PROVIDER]) === true) {
             $input[Entity::CONTACT_MOBILE] = $user[Entity::CONTACT_MOBILE];
             if (!$this->isAssistedOnboardingSignupCampaign($signupCampaign)) {
@@ -2614,12 +2679,31 @@ class Service extends Base\Service
                     ]);
                 }
             }
-
-            $signupMethod = Constants::OTP;
-            $this->signUpSuccess($user, false, $signupMethod, null, $merchantId);
         }
 
         return $data;
+    }
+
+    public function getOnboardingService($input): array {
+        $this->validator->validateInput('getOnboardingService', $input);
+        $userId = $input[Entity::USER_ID];
+        $merchantId = $input[Entity::MERCHANT_ID];
+
+        $user = $this->repo->user->findOrFail($userId);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        $shouldOnboardViaPGOS = false;
+
+        if ($user[Entity::SIGNUP_VIA_EMAIL] === 1)
+        {
+            $shouldOnboardViaPGOS = $this->shouldOnboardViaPGOSForOAuthMerchants($merchant, $input, $input[DeviceDetail\Entity::SIGNUP_CAMPAIGN]);
+        }
+        else if (empty($user[Entity::OAUTH_PROVIDER]) === true)
+        {
+            $shouldOnboardViaPGOS = $this->shouldOnboardViaPGOSForNonOAuthMerchants($merchant, $input[DeviceDetail\Entity::SIGNUP_CAMPAIGN], $input[Merchant\Entity::COUNTRY_CODE]);
+        }
+
+        $service = $shouldOnboardViaPGOS === true ? "pgos" : "api";
+        return ['service' => $service];
     }
 
     public function get(string $id, array $input = []): array
@@ -2720,6 +2804,14 @@ class Service extends Base\Service
                 {
                     $response[DeviceDetail\Entity::SIGNUP_CAMPAIGN] = null;
                 }
+            }
+        }
+
+        if ($this->auth->getInternalApp() === 'pgos')
+        {
+            if (empty($user[Entity::OAUTH_PROVIDER]) === false)
+            {
+                $response[Entity::OAUTH_PROVIDER] = json_decode($user[Entity::OAUTH_PROVIDER]);
             }
         }
 
@@ -3083,6 +3175,18 @@ class Service extends Base\Service
                             break;
                         case env('AXIS_ORG_ID'):
                             $unified_hostname = env('AXIS_ACCOUNTS_URL');
+                            break;
+                        case env('HDFC_ORG_ID'):
+                            $unified_hostname = env('HDFC_ACCOUNTS_URL');
+                            break;
+                        case env('YES_ORG_ID'):
+                            $unified_hostname = env('YES_ACCOUNTS_URL');
+                            break;
+                        case env('INDUS_ORG_ID'):
+                            $unified_hostname = env('INDUS_ACCOUNTS_URL');
+                            break;
+                        case env('IDFC_ORG_ID'):
+                            $unified_hostname = env('IDFC_ACCOUNTS_URL');
                             break;
                         case env('RAZORPAY_ORG_ID'):
                             $unified_hostname = env('RAZORPAY_ACCOUNTS_URL');
@@ -4604,19 +4708,45 @@ class Service extends Base\Service
 
         if (isset($input['user_ids']) === true and empty($input['user_ids']) === false)
         {
-            $users = $this->repo->user->getMultipleUsersByIDs($input['user_ids']);
+            $users = $this->repo->user->getMultipleUsersByIDsV2($input['user_ids']);
 
             foreach ($users as $user) {
-                $userMapping[$user['id']] = $user;
+                $userMapping[$user['id']] = $user->toArray();
+                $userMapping[$user['id']]['is_password_set'] = $user->getPassword() !== null;
             }
         }
 
         if (isset($input['user_emails']) === true and empty($input['user_emails']) === false)
         {
-            $users = $this->repo->user->getMultipleUsersByEmails($input['user_emails']);
+            $users = $this->repo->user->getMultipleUsersByEmailsV2($input['user_emails']);
 
             foreach ($users as $user) {
-                $userMapping[$user['email']] = $user;
+                $userMapping[$user['email']] = $user->toArray();
+                $userMapping[$user['email']]['is_password_set'] = $user->getPassword() !== null;
+            }
+        }
+
+        // Fetch users by mobile numbers if provided
+        if (isset($input['user_contacts']) === true and empty($input['user_contacts']) === false)
+        {
+            $mobiles = $input['user_contacts'];
+            $phoneMap = [];
+            $totalPhoneFormats = new PublicCollection();
+            foreach ($mobiles as $mobile)
+            {
+                $formats = (new PhoneBook($mobile))->getMobileNumberFormats();
+                foreach ($formats as $format) {
+                    $totalPhoneFormats->push($format);
+                    $phoneMap[$format] = $mobile;
+                }
+            }
+            $users = $this->repo->user->getMultipleUsersByMobilesV2($totalPhoneFormats->toArray());
+
+            foreach ($users as $user)
+            {
+                $phone = $phoneMap[$user[Entity::CONTACT_MOBILE]];
+                $userMapping[$phone] = $user->toArray();
+                $userMapping[$phone]['is_password_set'] = $user->getPassword() !== null;
             }
         }
 
@@ -4694,4 +4824,93 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * @param array{
+     *     id: int,
+     *     product: string,
+     *     product_restricted: bool,
+     *     DEFAULT_MERCHANT_ID : string
+     * } $input Associative array with specific fields
+     *
+     * @return array
+     * @throws BadRequestException
+     */
+    public function getMerchantsOfUser(string $id,array $input) : array
+    {
+            (new Validator)->validateInput('get_users_merchants', $input);
+
+            $user = $this->repo->user->findOrFail($id);
+
+            if (empty($user)){
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
+            }
+
+            // core->get gets list of merchants using using following params in the input
+            // DEFAULT_MERCHANT_ID - parsed and handled in side the core->get
+            // X-ORG-HOSTNAME - added to context from basic auth middleware and used inside core->get
+            $userMerchants = $this->core->get($user,true,$input);
+
+            if( empty($userMerchants['merchants']) || count($userMerchants['merchants']) == 0 ){
+                $userMerchants['merchants'] = [];
+                return $userMerchants;
+            }
+
+            //if intent is auth/login, select the merchants with which user can login
+            if ($input['intent'] == 'auth') {
+
+                $product = empty($input['product']) ? "" : $input['product'];
+                $merchants = $this->core->selectMerchantsToLogin($userMerchants['merchants'], $product);
+                $userMerchants['merchants'] = $merchants;
+                return $userMerchants;
+            }
+
+            $userMerchants['merchants'] = $userMerchants[Entity::MERCHANTS];
+
+            return $userMerchants;
+    }
+
+    public function isUserExistsForCustomInvite($heimdallTokenData, &$user): void
+    {
+        $orgID = $heimdallTokenData[AdminLead\Entity::ORG_ID];
+
+        Org\Entity::verifyIdAndSilentlyStripSign($orgID);
+
+        $org = $this->repo->org->findOrFailPublic($orgID);
+
+        $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgID, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+        $vasOrgFeatureEnabled = $org->isFeatureEnabled(FeatureConstant::VAS_ORG_IDENTIFIER);
+
+        if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true) and (empty($user) === true))
+        {
+            $user = optional($this->repo->user->getUserFromEmail(strtolower($heimdallTokenData[AdminLead\Entity::EMAIL])))->toArray();
+        }
+    }
+
+   public function skipEmailUniquenessCheckForCustomInvite($user, $merchantInputData, &$inputData): void
+   {
+       $merchantOrgId = $merchantInputData[Merchant\Entity::ORG_ID];
+
+       Org\Entity::verifyIdAndSilentlyStripSign($merchantOrgId);
+
+       $org = $this->repo->org->findOrFailPublic($merchantOrgId);
+
+       $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($merchantOrgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+       $vasOrgFeatureEnabled = $org->isFeatureEnabled(FeatureConstant::VAS_ORG_IDENTIFIER);
+
+       if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true))
+       {
+           $this->user = $this->repo->user->find($user[Entity::ID]);
+
+           // Set the user verified to skip email verification for customized invite flow.
+           if($this->user->getConfirmedAttribute() === false)
+           {
+               $this->confirm($this->user->id);
+           }
+
+           // Skip the uniqueness check for merchant email
+           $inputData [Merchant\Entity::SKIP_EMAIL_UNIQUENESS_CHECK ] = true;
+       }
+   }
 }

@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Cache;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Methods\PaymentMethodsService;
+use Razorpay\Trace\Logger as Trace;
 
 class Repository extends Base\Repository
 {
@@ -57,6 +59,15 @@ class Repository extends Base\Repository
         Entity::ZIP                    => 'sometimes|in:0,1',
     );
 
+    protected PaymentMethodsService $paymentMethodsService;
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->paymentMethodsService = $this->app['payment_methods_service'];
+        $this->trace = $this->app['trace'];
+    }
+
     public function fetchRouteName()
     {
         $app = App::getFacadeRoot();
@@ -70,21 +81,89 @@ class Repository extends Base\Repository
 
     public function getMethodsForMerchant(Merchant\Entity $merchant)
     {
-
         $metricData = [
-            'route' => $this->fetchRouteName(),
-            'function' => __FUNCTION__
+            'route'    => $this->fetchRouteName(),
+            'function' => __FUNCTION__,
         ];
 
-        $methods = $this->find($merchant->getId());
+        $merchantId = $merchant->getId();
 
+        // 1. Fetch methods from the database (current behavior)
+        $dbMethods = $this->find($merchantId);
+
+        $methods = null;
+        if ($this->paymentMethodsService->isMethodServiceReadEnabled()){
+            $serviceMethods = null;
+
+            try
+            {
+                // 2. Fetch methods from the payment_methods service
+                $path = sprintf('/v1/merchant/%s/api_methods', $merchantId);
+                $serviceMethods = $this->paymentMethodsService->fetchMethodsFromService($merchantId, $path);
+
+                // 3. Compare and decide
+                if ($dbMethods !== null)
+                {
+                    // Compare only if DB methods exist
+                    $areDifferent = $this->paymentMethodsService->areMethodsDifferent($serviceMethods, $dbMethods);
+                    $this->trace->count(Methods\Metric::PAYMENT_METHOD_DIFF_COUNT, ['diff'  => $areDifferent]);
+
+                    if ($areDifferent === false)
+                    {
+                        // No difference, prefer service methods
+                        $methods = $serviceMethods;
+                        $this->trace->info(TraceCode::PAYMENT_METHODS_USING_SERVICE_DATA, [
+                            'merchant_id' => $merchantId,
+                            'reason'      => 'No difference found between DB and Service.'
+                        ]);
+                    }
+                    else
+                    {
+                        // Difference found, use DB methods (current source of truth)
+                        $methods = $dbMethods;
+                        if ($serviceMethods != null){
+                            $this->trace->info(TraceCode::PAYMENT_METHODS_DIFF_FOUND, [
+                                'merchant_id' => $merchantId,
+                                'reason'      => 'Difference found between DB and Service. Using DB data.',
+                            ]);
+                        }
+                    }
+                }
+                else
+                {
+                    // DB methods don't exist, use service methods if fetched
+                    $methods = $serviceMethods;
+                    if ($methods !== null)
+                    {
+                        $this->trace->info(TraceCode::PAYMENT_METHODS_USING_SERVICE_DATA, [
+                            'merchant_id' => $merchantId,
+                            'reason'      => 'DB methods not found, using Service data.'
+                        ]);
+                    }
+                }
+            }
+            catch (\Throwable $e)
+            {
+                // Service call failed or comparison error, fallback to DB methods
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_METHODS_SERVICE_CALL_FAILED, [
+                    'merchant_id' => $merchantId,
+                    'fallback'    => 'Using DB methods data due to service error.'
+                ]);
+
+                $methods = $dbMethods; // Fallback to DB data
+            }
+        }else{
+            $methods = $dbMethods;
+        }
+
+        // 4. Associate merchant and set relation if methods found
         if ($methods !== null)
         {
             $methods->merchant()->associate($merchant);
-
             $merchant->setRelation('methods', $methods);
         }
 
+        // 5. Trace metric
         $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
 
         return $methods;

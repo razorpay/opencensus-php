@@ -14,6 +14,7 @@ use RZP\Models\Customer;
 use RZP\Models\PaperMandate;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Customer\Token;
 use RZP\Trace\TraceCode;
@@ -24,7 +25,7 @@ use RZP\Trace\TraceCode;
  */
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait, AsvGetAttribute;
+    use NotesTrait, AsvGetAttribute, CmsGetAttribute;
 
     use SoftDeletes;
 

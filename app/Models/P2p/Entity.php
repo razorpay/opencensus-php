@@ -4,6 +4,7 @@ namespace RZP\Models\P2p;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Models\Vpa;
 use RZP\Models\BankAccount;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,7 +14,7 @@ use RZP\Constants\Entity as ConstantsEntity;
 
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait, AsvGetAttribute;
+    use NotesTrait, AsvGetAttribute, CmsGetAttribute;
 
     const ID                  = 'id';
     const TXN_ID              = 'txn_id';

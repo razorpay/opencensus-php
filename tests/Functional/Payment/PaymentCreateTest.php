@@ -5894,6 +5894,72 @@ class PaymentCreateTest extends TestCase
         });
     }
 
+    public function testSGPaymentFailsWhenAmountExceedsMaximumAllowed()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::INTERNATIONAL => true,
+            MERCHANT::CONVERT_CURRENCY => true,
+            Merchant::COUNTRY_CODE => 'SG'
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '100100000';
+
+        $payment['currency'] = 'SGD';
+
+        $testData = $this->testData["testCreatePaymentWithAmountGreaterThanMaxAmountAndCurrencySGD"];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testSGPaymentWithValidAmount()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::INTERNATIONAL => true,
+            MERCHANT::CONVERT_CURRENCY => true,
+            Merchant::COUNTRY_CODE => 'SG'
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '1001';
+
+        $payment['currency'] = 'SGD';
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->assertEquals($paymentEntity["status"], "authorized");
+
+        $this->assertEquals($paymentEntity["currency"], "SGD");
+
+        $this->assertEquals($paymentEntity["amount"], 1001);
+    }
+
 
     public function testCreateInternationalPaymentWithAmountGreaterThanMaxAmount()
     {

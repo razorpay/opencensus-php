@@ -384,8 +384,13 @@ class Core extends Base\Core
         return $errorDetails;
     }
 
-    public function getNameScoreForValidation(string $name1, string $name2)
+    public function getNameScoreForValidation($name1, $name2)
     {
+        if (empty($name1) === true or empty($name2) === true)
+        {
+            return null;
+        }
+
         $first = strtolower(preg_replace('/\s+/', ' ', $name1));
 
         $second = strtolower(preg_replace('/\s+/', ' ', $name2));
@@ -1919,7 +1924,7 @@ class Core extends Base\Core
 
             $fav->setFTSTransferId($mapping[Entity::FTS_TRANSFER_ID]);
 
-            $this->updateWithDetailsBeforeFtaRecon($fav, $mapping);
+//            $this->updateWithDetailsBeforeFtaRecon($fav, $mapping);
 
             $this->updateStatusAfterFtaRecon($fav, $mapping);
     }

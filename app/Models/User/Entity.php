@@ -658,6 +658,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACCOUNT_LOCKED, $locked);
     }
 
+    /*
+    * Needs to be moved to user service as part of user merchant migration.
+    * */
     public function isSecondFactorAuthEnforced(): bool
     {
         return ($this->getAttribute(self::SECOND_FACTOR_AUTH_ENFORCED) === true);
@@ -683,6 +686,9 @@ class Entity extends Base\PublicEntity
         return Settings\Accessor::for($this, Settings\Module::USER);
     }
 
+    /*
+     * Needs to be moved to user service as part of user merchant migration.
+     * */
     protected function getSecondFactorAuthEnforcedAttribute(): bool
     {
         return ($this->getOrgEnforcedSecondFactorAuthAttribute() === true) or

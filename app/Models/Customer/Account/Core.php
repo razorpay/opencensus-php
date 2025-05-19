@@ -40,6 +40,7 @@ use RZP\Models\Merchant\Merchant1ccConfig;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService\Client;
 use RZP\Http\Request\Requests;
 use RZP\Services\CMS as CMSService;
+use RZP\Models\Insurance\Entity as InsuranceEntity;
 
 class Core extends Base\Core
 {
@@ -247,7 +248,8 @@ class Core extends Base\Core
     public function addGlobalCustomerIdViaCMS($merchantId, $localCustomer, $globalCustomerId)
     {
         $cmsService = new CMSService\Service($this->app);
-        $data = $cmsService->getCustomerByReferenceId($localCustomer->getId());
+        // Id and referenceId are same for RSPL customers
+        $data = $cmsService->getCustomerById($localCustomer->getId());
 
         $newCustomData = array_merge($data['custom_data'], ['global_customer_id' => $globalCustomerId]);
         $updatedCustomerV2 = $cmsService->updateCustomerByReferenceId($localCustomer->getId(), ['custom_data' => $newCustomData, 'merchant_id' => $merchantId]);
@@ -2037,6 +2039,7 @@ class Core extends Base\Core
         if (!empty($payment['insurance_status']))
         {
             $formattedPaymentDetails['insurance']['status'] = $payment['insurance_status'];
+            $formattedPaymentDetails['insurance']['provider'] = $payment[InsuranceEntity::INSURANCE_PROVIDER];
         }
         if (!empty($payment['insurance_claim_status']))
         {

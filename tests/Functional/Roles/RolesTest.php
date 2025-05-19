@@ -1682,6 +1682,15 @@ class RolesTest extends TestCase
         ], $res->toArray());
     }
 
+    public function testGetRoleUsingExperiment_Authz_Read_RoleDoesNotBelongToCAC()
+    {
+        $this->setMocksForLocateRoleUsingExperiment(false, false, true);
+
+        $res = (new RolesService())->getRoleUsingExperiment('sellerapp');
+
+        $this->assertEquals(null, $res);
+    }
+
     public function testGetRoleNameUsingExperiment()
     {
         // 1. create dependencies
@@ -1826,6 +1835,15 @@ class RolesTest extends TestCase
         $res = (new RolesService())->getAuthzRolesUsingExperiment('100customRole2');
 
         $this->assertEquals(['authz_role_name_1'], $res);
+    }
+
+    public function testGetAuthzRolesUsingExperiment_Authz_Read_RoleDoesNotBelongToCAC()
+    {
+        $this->setMocksForLocateRoleUsingExperiment(false, false, true);
+
+        $res = (new RolesService())->getAuthzRolesUsingExperiment('sellerapp');
+
+        $this->assertEquals([], $res);
     }
 
     public function testAdminAPIGetRole_RoleNotFound()
@@ -2162,6 +2180,13 @@ class RolesTest extends TestCase
 
             $this->assertEquals($expectedResponse, $response);
         }
+    }
+
+    public function testAdminAPIGetRoleSellerApp()
+    {
+        $res = (new \RZP\Models\AuthzAdmin\Service())->adminAPIGetRole('sellerapp', self::DEFAULT_X_MERCHANT_ID, false);
+
+        $this->assertEquals([], $res);
     }
 
     public function testFetchSelfRoleCACMigration()

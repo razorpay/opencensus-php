@@ -1125,6 +1125,10 @@ class InternationalStates
         Country::CH => self::SWITZERLAND,
     ];
 
+    public static $rowCountryStateMap = [
+        Country::MY => \RZP\Constants\MalaysianStates::class,
+        Country::IN => \RZP\Constants\IndianStates::class,
+    ];
 
     public static function getStatesByCode($country): array
     {

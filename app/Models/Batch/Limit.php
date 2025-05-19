@@ -68,6 +68,7 @@ class Limit
         'nach_debit_nach_citi'                      => 350000,
         'nach_debit_nach_icici'                     => 100000,
         Type::ECOLLECT_RBL                          => 100000,
+        Type::ECOLLECT_RBL_BANKING                  => 100000,
         Type::ECOLLECT_YESBANK                      => 100000,
         Type::ECOLLECT_AXIS                         => 100000,
         Type::ECOLLECT_AXIS_BANKING                 => 100000,
@@ -119,6 +120,9 @@ class Limit
         Type::UPDATE_ODS_MERCHANT_LIMITS            => 50000,
         Type::CREATE_GIFT_CARD_TRANSFERS            => 10000,
         Type::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2 => 50000,
+        Type::MANDATE_CONTINUITY                    => 1000000,
+        Type::TOKEN_CONTINUITY                    => 1000000,
+        Type::CUSTOMER_MIGRATION                    => 1000000,
     ];
 
     /**

@@ -108,7 +108,8 @@ class SqsRawJob extends SqsJob
     {
         if($commandName == 'RZP\\Jobs\\MerchantFirsDocuments' or
             $commandName == 'RZP\\Jobs\\ArtReconProcess' or
-            $commandName == 'RZP\\Jobs\\PayoutServiceDualWriteDirectPush')
+            $commandName == 'RZP\\Jobs\\PayoutServiceDualWriteDirectPush' or
+            $commandName == 'RZP\\Jobs\\XBalanceDualWrite' )
         {
             $payload = $body;
         }

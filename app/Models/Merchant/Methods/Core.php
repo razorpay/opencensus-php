@@ -91,7 +91,9 @@ class Core extends Base\Core
             CreditEmiProvider::ONECARD => '1',
             CreditEmiProvider::BAJAJ => '0',
             CreditEmiProvider::FDRL => '1',
-            CreditEmiProvider::IDFB => '1'
+            CreditEmiProvider::IDFB => '1',
+            CreditEmiProvider::AUBL => '1'
+
 
         ]
     ];
@@ -122,6 +124,7 @@ class Core extends Base\Core
             CardlessEmiProvider::TVSC => '0',
             CardlessEmiProvider::LIQUILOANS=>'0',
             CardlessEmiProvider::INSTANT_EMI => '0',
+            CardlessEmiProvider::SHOPSE => '0',
         ]
     ];
     const defaultPaylaterProvidersWhitelisted =[
@@ -1745,6 +1748,7 @@ class Core extends Base\Core
 
         $terminals = $terminals->toArray();
 
+
         if($this->mode === Mode::TEST && (empty($terminals)))
         {
             return $this->getProvidersforTestMode($method);
@@ -1824,6 +1828,7 @@ class Core extends Base\Core
 
                 $providers = array_unique(array_merge($providers,$terminalProviders));
             }
+
 
             $cardlessEmiProviders = $methods->getEnabledCardlessEmiProviders();
 

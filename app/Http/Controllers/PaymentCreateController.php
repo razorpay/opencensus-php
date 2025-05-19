@@ -681,6 +681,15 @@ class PaymentCreateController extends Controller
         {
             unset($input['view']);
         }
+        /*
+         * user_risk_providers_token is not expected in non-rearch flow,
+         * so we unset it if present
+         */
+
+        if (isset($input['user_risk_providers_token']) === true)
+        {
+            unset($input['user_risk_providers_token']);
+        }
 
         // Adding extra param to segregate payment_create events from calculate fees events
 
@@ -2254,10 +2263,12 @@ class PaymentCreateController extends Controller
     protected function returnMerchantFullRedirectView($data)
     {
         $merchant = $this->app['basicauth']->getMerchant();
-        if ($merchant->isFeatureEnabled(Feature::AUTH_SPLIT) !== true)
-        {
-            $this->pushForBarricade($data);
-        }
+//       Removing this as we are not using barricade anymore
+//      if ($merchant->isFeatureEnabled(Feature::AUTH_SPLIT) !== true)
+//         {
+//
+//              $this->pushForBarricade($data);
+//         }
 
         if (Payment\Gateway::isNachNbResponseFlow($data) === true)
         {

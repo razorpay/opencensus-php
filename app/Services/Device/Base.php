@@ -2,11 +2,7 @@
 
 namespace RZP\Services\Device;
 
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Http\Request\Requests;
-use RZP\Exception\ServerErrorException;
 
 class Base
 {
@@ -41,11 +37,11 @@ class Base
 
         $this->request = $app['request'];
 
-        $this->config = $app['config']->get('applications.ezetap-api');
+        $this->config = $app['config']->get('applications.ezetap_device_gatway');
 
-        $this->username = $this->config['key'];
+        $this->username = $this->config['username'];
 
-        $this->password = $this->config['secret'];
+        $this->password = $this->config['password'];
     }
 
     const TIMEOUT = 60;
@@ -54,103 +50,86 @@ class Base
 
     protected function sendRequest(string $method, string $url, array $data = [])
     {
-        $request = [
-            'url'     => $url,
-            'method'  => $method,
-            'content' => $data,
-            'headers' => [
-                self::TASK_ID             => $this->app['request']->getTaskId(),
-                self::AUTHORIZATION     => 'Basic '. base64_encode($this->username . ':' . $this->password)
-            ],
-        ];
 
-        if ($method !== Requests::GET)
-        {
-            $request['content'] = (empty($data) === false) ? json_encode($data) : [];
-        }
+        $body = json_encode([
+            "username" => $this->username,
+            "password" => $this->password
+        ]);
 
-        try {
-            $this->trace->info(TraceCode::DEVICE_SERVICE_REQUEST, [
-                'request' => $request
+        $ch = curl_init($url);
+
+        // Set custom request to GET
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+
+        // Attach body (even though it's non-standard for GET)
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+
+        // Set proper header format
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            self::TASK_ID . ': ' . $this->app['request']->getTaskId(),
+        ]);
+
+        // Return response instead of outputting
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        // Set timeouts
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, self::CONNECT_TIMEOUT);
+        curl_setopt($ch, CURLOPT_TIMEOUT, self::TIMEOUT);
+
+        // Log request
+        $this->trace->info(TraceCode::DEVICE_SERVICE_REQUEST, [
+            'url' => $url,
+            'method' => 'GET',
+            'body' => $body
+        ]);
+
+        // Execute request
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+
+        // Check for curl execution errors
+        if ($response === false) {
+            $this->trace->error(TraceCode::DEVICE_SERVICE_ERROR, [
+                'error' => $error,
+                'url' => $url
             ]);
-            $response = $this->sendRawRequest($request);
-            $this->trace->info(TraceCode::RESPONSE, [
-                'response' => $response
-            ]);
-        } catch (\Throwable $ex) {
-            $this->trace->traceException($ex);
+            curl_close($ch);
             return [];
         }
 
-        list($responseBody, $code) = $this->parseResponse($response);
+        $this->trace->info(TraceCode::RESPONSE, [
+            'response' => $response,
+            'httpCode' => $httpCode
+        ]);
 
-        if($code !== 200)
+        curl_close($ch);
+
+        if ($httpCode !== 200)
         {
             $this->trace->error(TraceCode::DEVICE_SERVICE_ERROR, [
-                'response' => $responseBody
+                'response' => $response,
+                'httpCode' => $httpCode
             ]);
 
             return [];
         }
 
-        return $responseBody;
-    }
+        // Decode response
+        $decodedResponse = json_decode($response, true);
 
-    protected function sendRawRequest($request)
-    {
-        try
-        {
-            $content = $request['content'];
-
-            if ($request['method'] === 'POST')
-            {
-                $content = json_encode($request['content']);
-            }
-
-            $response = Requests::request(
-                $request['url'],
-                $request['headers'],
-                $content,
-                $request['method']);
-
+        // Check if JSON decode failed
+        if ($decodedResponse === null && json_last_error() !== JSON_ERROR_NONE) {
+            $this->trace->error(TraceCode::DEVICE_SERVICE_ERROR, [
+                'error' => 'JSON decode error: ' . json_last_error_msg(),
+                'response' => $response
+            ]);
+            return [];
         }
-        catch(\Throwable $ex)
-        {
-            $this->trace->traceException($ex);
-
-            $this->throwServiceErrorException($ex);
-        }
-
-        return $response;
-    }
-
-    /**
-     * @throws ServerErrorException
-     */
-    protected function throwServiceErrorException(\Throwable $e)
-    {
-        $errorCode = ErrorCode::SERVER_ERROR_EZETAP_SERVICE_ERROR;
-
-        throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
-    }
-
-    protected function parseResponse($response): array
-    {
-        $code = null;
-
-        $body = null;
-
-        if($response !== null)
-        {
-            $code = $response->status_code;
-            $body = json_decode($response->body, true);
-        }
-
-        return [
-            'body' => $body,
-            'code' => $code,
-        ];
+        $this->trace->info(TraceCode::RESPONSE, [
+            'response' => $decodedResponse
+        ]);
+        return $decodedResponse;
     }
 }
-
-

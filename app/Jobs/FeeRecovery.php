@@ -144,7 +144,7 @@ class FeeRecovery extends Job
                 FeeRecoveryMetrics::CODE => $ex->getCode()
             ]);
 
-            if ($ex->getCode() === ErrorCode::BLACKLISTED_BALANCE_ID_DUE_TO_NEGATIVE_FEE_RECOVERY_AMOUNT) {
+            if ($ex->getCode() === ErrorCode::BAD_REQUEST_BLACKLISTED_BALANCE_ID_DUE_TO_NEGATIVE_FEE_RECOVERY_AMOUNT) {
                 $this->trace->traceException(
                     $ex,
                     Trace::CRITICAL,

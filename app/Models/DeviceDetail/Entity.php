@@ -2,7 +2,13 @@
 
 namespace RZP\Models\DeviceDetail;
 
+use App;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Detail\Metric;
+use RZP\Trace\TraceCode;
 
 class Entity extends Base\PublicEntity
 {
@@ -81,8 +87,81 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::METADATA);
     }
 
-    public function getValueFromMetaData($key){
-        $metaData   = $this->getAttribute(self::METADATA);
+    /**
+     * @throws ServerErrorException
+     */
+    public function getValueFromMetaData($key, &$fetchedFromOnboardingDetails = false, $transformToApiRes = true)
+    {
+        $app = App::getFacadeRoot();
+
+        $metaData = $this->getAttribute(self::METADATA);
+
+        $properties = [
+            'id'            => $this->getMerchantId(),
+            'experiment_id' => $app['config']->get('app.pgos_read_for_metadata_enabled'),
+        ];
+
+        $isPGOSReadForMetadataEnabled = (new \RZP\Models\Merchant\Core())->isSplitzExperimentEnable($properties,'enable');
+
+        if ($isPGOSReadForMetadataEnabled === true) {
+
+            if ($key === Constants::WORKFLOW_DETAILS || $key === Constants::SERVICE) {
+
+                try {
+
+                    $onboardingDetails = (new Core())->fetchOnboardingWorkflowDataFromPGOS($this->getMerchantId());
+
+                } catch (\Throwable $e) {
+
+                    throw new ServerErrorException(PublicErrorDescription::SERVER_ERROR, ErrorCode::SERVER_ERROR);
+
+                }
+
+                if (!empty($onboardingDetails) && array_get($onboardingDetails, Constants::WORKFLOW_DETAILS_OWNER_SERVICE) === Constants::SERVICE_PGOS) {
+
+                    if ($key === Constants::WORKFLOW_DETAILS) {
+
+                        if ($transformToApiRes === false && isset($onboardingDetails[Constants::WORKFLOW_DETAILS])) {
+
+                            $fetchedFromOnboardingDetails = true;
+
+                            $metaData[Constants::WORKFLOW_DETAILS] = $onboardingDetails[Constants::WORKFLOW_DETAILS];
+
+                        } else {
+
+                            $mergeRes = $this->mergeResponses($onboardingDetails, $metaData);
+
+                            $metaData = $mergeRes[Constants::MERGED_OBJECT];
+
+                            $fetchedFromOnboardingDetails = $mergeRes[Constants::FETCHED_FROM_ONBOARDING_DETAILS];
+                        }
+
+                    } else {
+
+                        $metaData[Constants::SERVICE] = Constants::SERVICE_PGOS;
+
+                    }
+
+                }
+
+            }
+
+        }
+
+        $app['trace']->info(TraceCode::GET_VALUE_FROM_METADATA, [
+            'merchant_id'                  => $this->getMerchantId(),
+            'metadata_key'                 => $key,
+            'metaData'                     => $metaData,
+            'fetchedFromOnboardingDetails' => $fetchedFromOnboardingDetails,
+        ]);
+
+        $metricData = [
+            'route' => $app['request.ctx']->getRoute(),
+            'source' => $fetchedFromOnboardingDetails ? "onboarding_details" : "user_device_detail",
+            'key' => $key
+        ];
+
+        $app['trace']->count(Metric::FETCH_WORKFLOW_DETAILS_SUCCESS, $metricData);
 
         $value = null;
 
@@ -104,4 +183,33 @@ class Entity extends Base\PublicEntity
 
         return false;
     }
+
+    private function mergeResponses(array $onboardingMetadata, array $uddMetadata): array
+    {
+        $mergedObject = $uddMetadata;
+
+        if (isset($onboardingMetadata[Constants::WORKFLOW_DETAILS]) && is_array($onboardingMetadata[Constants::WORKFLOW_DETAILS])) {
+
+            foreach ($onboardingMetadata[Constants::WORKFLOW_DETAILS] as $productKey => $value) {
+
+                if (is_array($value)) {
+
+                    $newKey = $productKey . '_' . 'workflow_type';
+
+                    $mergedObject[Constants::WORKFLOW_DETAILS] = [$newKey => !empty($value[Constants::WORKFLOW_TYPE]) ? $value[Constants::WORKFLOW_TYPE] : null];
+
+                    return [
+                        Constants::MERGED_OBJECT                     => $mergedObject,
+                        Constants::FETCHED_FROM_ONBOARDING_DETAILS   => true
+                    ];
+                }
+            }
+        }
+
+        return [
+            Constants::MERGED_OBJECT                     => $mergedObject,
+            Constants::FETCHED_FROM_ONBOARDING_DETAILS   => false
+        ];
+    }
+
 }

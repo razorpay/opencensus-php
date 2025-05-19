@@ -7,6 +7,7 @@ use Request;
 use ApiResponse;
 use RZP\Http\Route;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -14,6 +15,7 @@ use RZP\Http\OAuthScopes;
 use RZP\Http\RequestHeader;
 use RZP\Http\BasicAuth\BasicAuth;
 use Illuminate\Foundation\Application;
+use RZP\Models\Merchant\RazorxTreatment;
 use Illuminate\Http\Request as HttpRequest;
 use RZP\Models\Feature\Constants as Feature;
 
@@ -182,6 +184,18 @@ class MerchantIpFilter
             if ($service === null)
             {
                 return $isValidIp;
+            }
+
+            $requestPayload = [
+                "id" =>  $merchant->getId(),
+                "experiment_name" => RazorxTreatment::PAYOUT_LINKS_IP_WHITELIST,
+                'request_data'  => json_encode(['id' =>  $merchant->getId()])
+            ];
+
+            if($service == 'api_payout_links' and
+                (new Merchant\Core())->isSplitzExperimentEnable($requestPayload,
+                    RazorxTreatment::VARIANT_ENABLE) === false ){
+                return true;
             }
 
             /**

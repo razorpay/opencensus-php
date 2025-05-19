@@ -5719,9 +5719,9 @@ class Core extends Base\Core
         return $mapping->isNotEmpty();
     }
 
-    public function isMerchantReferredByPartner(string $merchantId, string $partnerId): bool
+    public function isMerchantReferredByPartner(string $merchantId, string $partnerId, string $appType): bool
     {
-        $mapping = (new AccessMap\Repository)->fetchSubMerchantReferredByPartner($merchantId, $partnerId);
+        $mapping = (new AccessMap\Repository)->fetchSubMerchantReferredByPartner($merchantId, $partnerId, $appType);
 
         return (empty($mapping) === false);
     }

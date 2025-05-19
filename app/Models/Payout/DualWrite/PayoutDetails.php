@@ -8,7 +8,8 @@ use RZP\Models\PayoutsDetails\Entity;
 class PayoutDetails extends Base
 {
     protected $columnsToUnset = [
-        Entity::ID
+        Entity::ID,
+        'beneficiary_bank_code',
     ];
 
     public function dualWritePSPayoutDetails(string $id)
@@ -57,9 +58,18 @@ class PayoutDetails extends Base
         }
 
         $psPayoutDetails = $payoutServicePayoutDetails[0];
+        $psPayoutDetailsArray = get_object_vars($psPayoutDetails);
+
+        // unsetting the columns as it present only in Payouts Service's payout_details not in API Monolith
+        unset($psPayoutDetailsArray['beneficiary_bank_code']);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SERVICE_DUAL_WRITE_PAYOUT_DETAILS_WITHOUT_BENEFICIARY_BANK_CODE_COLUMN,
+            ['payout_details' => $psPayoutDetailsArray]
+        );
 
         // converts the stdClass object into associative array.
-        $this->attributes = get_object_vars($psPayoutDetails);
+        $this->attributes = $psPayoutDetailsArray;
 
         $this->processModifications();
 

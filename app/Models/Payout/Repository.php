@@ -3114,6 +3114,14 @@ class Repository extends Base\Repository
                   ->select("select * from $tableName where id = '$id' limit 1");
     }
 
+    public function getPayoutServiceSettings(string $entityId, string $module)
+    {
+        $tableName = Table::SETTINGS;
+
+        return \DB::connection($this->getPayoutsServiceConnection())
+            ->select("select * from $tableName where entity_id = '$entityId' and module = '$module' limit 1");
+    }
+
     public function getPayoutServicePayoutIds(array $ids)
     {
         $tableName = Table::PAYOUT;

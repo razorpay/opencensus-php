@@ -6,13 +6,17 @@ use App;
 use Config;
 use DateTime;
 use DOMDocument;
+use Lib\PhoneBook;
 use RZP\Http\RequestHeader;
+use RZP\Models\Merchant\Detail\Metric as DetailMetric;
+use RZP\Services\KafkaProducer;
 use RZP\lib\TemplateEngine;
 use Illuminate\Support\Str;
 use RZP\Constants\Environment;
 use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
+use RZP\Models\DeviceDetail\Core as DeviceDetailCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -115,6 +119,7 @@ use RZP\Models\Transaction\Service as TransactionService;
 use GuzzleHttp\Client as HttpClient;
 use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\LegalDocumentBaseResponse;
+use RZP\Models\Workflow\Service\Workflow\Service as MakerCheckerWorkflowService;
 use RZP\Models\Merchant\Consent\Details\Entity as MerchantConsentDetails;
 use RZP\Models\Merchant\Consent\Entity as MerchantConsent;
 use RZP\Models\Merchant\Consent\Core as ConsentCore;
@@ -140,6 +145,8 @@ class Service extends Base\Service
     const BAD_REQUEST_MSG_OWNER_GSTIN_MISMATCH = 'bad_request: The given GSTIN does not belong to the Owner PAN provided. Please provide a different GSTIN';
     const BAD_REQUEST_MSG_BUSINESS_GSTIN_MISMATCH = 'bad_request: The given GSTIN does not belong to the Business PAN provided. Please provide a different GSTIN';
     const SHARED_MERCHANT_ID = '100000Razorpay';
+
+    const MUTEX_LOCK_ACQUIRED = 'mutex_lock_acquired';
 
     protected $core;
 
@@ -226,21 +233,48 @@ class Service extends Base\Service
 
         $response = [
             Merchant\Entity::ID                 => $this->merchant->getId(),
-            Entity::ACTIVATION_STATUS           => $merchantDetails->getActivationStatus(),
+            Entity::ACTIVATION_STATUS           => $merchantDetails->getActivationStatus()
         ];
 
         return $response;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function fetchMerchantDetailsWithFilterQueryParam(string $filter, $merchantId): array
     {
         // more cases for query param filter can occur in future
         switch($filter) {
             case DetailConstants::ONBOARDING_META:
                 $activationStatus = $this->merchant->merchantDetail->getActivationStatus();
+
+                $workflowDetails = $workflowDetailsV2 = $workflowType = $source = null;
+
+                $userSignupState = "";
+
                 $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchantId);
-                $workflowType = $userDeviceDetail ? $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE) : null;
-                $workflowDetails = $userDeviceDetail ? $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_DETAILS) : null;
+
+                if (empty($userDeviceDetail) === false) {
+
+                    $fetchedFromOnboardingDetails = false;
+
+                    $workflowDetailsResponse = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_DETAILS, $fetchedFromOnboardingDetails, false);
+
+                    $workflowType = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::WORKFLOW_TYPE);
+
+                    if ($fetchedFromOnboardingDetails) {
+
+                        $workflowDetailsV2 = $workflowDetailsResponse;
+
+                    } else {
+
+                        $workflowDetails = $workflowDetailsResponse;
+                    }
+
+                    $userSignupState = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::USER_SIGNUP_STATE);
+                }
+
                 $isDedupeMatched = $this->dedupeCore->isMerchantImpersonated($this->merchant);
                 $isDedupeBlocked = $this->dedupeCore->isDedupeBlocked($this->merchant);
                 $dedupe = [
@@ -251,15 +285,30 @@ class Service extends Base\Service
                 $activationFormMilestone = $this->merchant->merchantDetail->getActivationFormMilestone();
                 $isFormSubmitted = $this->merchant->merchantDetail->isSubmitted();
 
-                return [
+                $response = [
                     MerchantDetailEntity::ACTIVATION_STATUS => $activationStatus,
                     DeviceDetailConstants::WORKFLOW_TYPE    => $workflowType,
-                    DeviceDetailConstants::WORKFLOW_DETAILS => $workflowDetails,
                     DetailConstants::DEDUPE                 => $dedupe,
                     DetailConstants::IS_FORM_LOCKED         => $isFormLocked,
                     Constants::MILESTONE                    => $activationFormMilestone,
                     DetailConstants::IS_FORM_SUBMITTED      => $isFormSubmitted
                 ];
+
+                if ($workflowDetailsV2 != null) {
+                    $response[DeviceDetailConstants::WORKFLOW_DETAILS_V2] = $workflowDetailsV2;
+                } else {
+                    $response[DeviceDetailConstants::WORKFLOW_DETAILS] = $workflowDetails ?? null;
+                }
+                $properties = [
+                    'id'            => $merchantId,
+                    'experiment_id' => $this->app['config']->get('app.workflow_segregation_store_user_signup_state'),
+                ];
+                $shouldStoreUserSignupState = (new MerchantCore())->isSplitzExperimentEnable($properties,'enable');
+                if ($shouldStoreUserSignupState) {
+                    $response[DeviceDetailConstants::USER_SIGNUP_STATE] =  $userSignupState;
+                }
+
+                return $response;
         }
 
         return [];
@@ -268,6 +317,7 @@ class Service extends Base\Service
     public function fetchMerchantDetails($isActivationDetailsFlow = false, $input = null)
     {
         $merchantId = $this->merchant->getId();
+
         $shouldMerchantOnboardViaPGOS = $this->pgosProxyController->shouldMerchantOnboardViaPGOS($merchantId, $this->merchant->getCountry());
         $isPGOSExpEnabled     = false;
         $isActivated          = $this->merchant->isActivated();
@@ -327,9 +377,14 @@ class Service extends Base\Service
 
         $response[DetailConstants::RISK_DETAILS] = $additionalDetails[DetailConstants::RISK_DETAILS] ?? null;
 
-        if ($this->pgosProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($this->merchant) === true)
+        $indiaModularResult=$this->pgosProxyController->getIndiaModularMerchantResult($this->merchant);
+        if (($indiaModularResult[DetailConstants::IS_MODULAR_INDIA]??false) === true)
         {
             $response[DetailConstants::ADDITIONAL_ONBOARDING_DETAILS] = $additionalDetails[DetailConstants::PG_ONBOARDING] ?? null;
+        }
+
+        if ($isActivationDetailsFlow == true){
+            $response[Merchant\Entity::AFA_MAX_AMOUNT_LIMIT] = $this->merchant->afaMaxAmountLimit();
         }
 
         return $response;
@@ -385,6 +440,13 @@ class Service extends Base\Service
         if (isset($pgosFetchInternalResponse[DetailConstants::SUBCATEGORY_RECOMMENDATIONS][DetailConstants::DISABLE_TRY_AGAIN_OTHERS_M3]) === true)
         {
             $response[DetailConstants::DISABLE_TRY_AGAIN_OTHERS_M3] = $pgosFetchInternalResponse[DetailConstants::SUBCATEGORY_RECOMMENDATIONS][DetailConstants::DISABLE_TRY_AGAIN_OTHERS_M3];
+        }
+
+        if (isset($pgosFetchInternalResponse[DetailConstants::BDD_VERIFICATION]) === true)
+        {
+            $response[DetailConstants::BDD_VERIFICATION_STATUS]                 = $pgosFetchInternalResponse[DetailConstants::BDD_VERIFICATION][DetailConstants::BDD_VERIFICATION_STATUS] ?? '';
+            $response[DetailConstants::ALLOWED_NEXT_BDD_VERIFICATION_STATUSES]  = $pgosFetchInternalResponse[DetailConstants::BDD_VERIFICATION][DetailConstants::ALLOWED_NEXT_BDD_VERIFICATION_STATUSES] ?? [];
+            $response[DetailConstants::BDD_VERIFICATION_STATUS_CHANGE_LOGS]     = $pgosFetchInternalResponse[DetailConstants::BDD_VERIFICATION][DetailConstants::BDD_VERIFICATION_STATUS_CHANGE_LOGS] ?? [];
         }
 
         if (isset($pgosFetchInternalResponse[DetailConstants::CATEGORY_MODULE_PLACEMENT]) === true)
@@ -708,6 +770,36 @@ class Service extends Base\Service
 
         $details = $service->getAdditionalDetailsFromASV($merchantId);
         $service->transitionToNextRekycStatus($merchantId, $details, $input['rekyc_status']);
+    }
+
+    /**
+     * Updates the merchant's bdd verification status upon maker-checker workflow approval.
+     *
+     * @param array $input The input data containing the bdd verification status.
+     * @return void
+     * @throws BadRequestValidationFailureException
+     * @throws Exception\ServerErrorException
+     * @throws BadRequestException
+     */
+    public function postMerchantBddVerificationStatusUpdate(array $input)
+    {
+        $service = new Merchant\Service();
+        $merchantId = $this->merchant->getMerchantId();
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $nextBddVerificationStatus = $input['bdd_verification_status'] ?? "";
+
+        $details = $service->getAdditionalDetailsFromASV($merchantId);
+
+        $isValidTransition =  $service->isBddVerificationTransitionValid($details, $nextBddVerificationStatus);
+        if(!$isValidTransition){
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_STATUS_TRANSITION, null, [
+                'error' => 'Invalid state transition'
+            ]);
+        }
+
+        $service->transitionToNextBDDVerificationStatus($merchantId, $nextBddVerificationStatus, $merchant);
     }
 
 
@@ -2160,6 +2252,33 @@ class Service extends Base\Service
 
         $maker = $this->repo->admin->findOrFailPublic( Admin\Admin\Entity::stripDefaultSign($input[DetailConstants::WORKFLOW_MAKER_ADMIN_ID]));
 
+        if (empty($input[DEConstants::BDD_VERIFICATION_STATUS]) === false)
+        {
+            $merchantService = new MerchantService();
+            $workflowService = new MakerCheckerWorkflowService();
+
+            $details = $merchantService->getAdditionalDetailsFromASV($merchantId);
+            $latestBddVerificationStatus = $merchantService->getLatestBddVerificationStatus($details);
+
+            $workflowInput = [
+                "permission_name"   =>  DetailConstants::MERCHANT_BDD_VERIFICATION_STATUS_UPDATE,
+                "route_name"        =>  DetailConstants::ACTIVATION_ROUTE_NAME,
+                "entity_name"       =>  DetailConstants::MERCHANT,
+                "entity_id"         =>  $merchantId,
+                "admin_id"          =>  $input[DEConstants::WORKFLOW_MAKER_ADMIN_ID],
+                "input" =>  [
+                    "bdd_verification_status"=> $input[DEConstants::BDD_VERIFICATION_STATUS],
+                ],
+                "input_old" => [
+                    "bdd_verification_status"=> $latestBddVerificationStatus,
+                ],
+                "tags" => [DetailConstants::BDD_VERIFICATION_STATUS_UPDATE_TAG]
+            ];
+
+            $workflowService->createWorkflow($workflowInput);
+            return $merchant->getMerchantDetail();
+        }
+
         $this->app['workflow']->setMakerFromAuth(false);
         $this->app['workflow']->setWorkflowMaker($maker);
         $this->app['workflow']->setWorkflowMakerType(MakerType::ADMIN);
@@ -2738,6 +2857,8 @@ class Service extends Base\Service
                 $this->applyReferralPartnerWithRetry($subMerchant, $referralInput);
 
             }
+
+            $this->verifyUserDetailsForCustomInviteFlow($merchant, $input);
 
             $this->saveMerchantDetailForPreSignUp($input);
 
@@ -5375,6 +5496,22 @@ class Service extends Base\Service
      */
     public function submitMerchantInternal($merchantId, $input)
     {
+        // mutex lock is added for both onboarding save and submit merchant internal.
+        // due to following flow: onboarding_save (API) -> onboarding_save (PGOS) -> submit_merchant_internal (API),
+        // it is possible that submit_merchant_internal throws an error due to mutex already acquired by onboarding_save
+        // we are passing a boolean flow to skip mutex lock acquire.
+        if (isset($input[self::MUTEX_LOCK_ACQUIRED]) && $input[self::MUTEX_LOCK_ACQUIRED] === true)
+        {
+            $this->trace->info(TraceCode::MUTEX_ACQUIRE_SKIPPED_FOR_SUBMIT_MERCHANT_INTERNAL, [
+                'merchant_id'               => $merchantId,
+                'reason'                    => 'mutex acquired by onboarding_save',
+            ]);
+
+            unset($input[self::MUTEX_LOCK_ACQUIRED]);
+
+            return $this->handleSubmitMerchantInternal($merchantId, $input);
+        }
+
         if (empty($merchantId) == false and $this->core->shouldApplyMutexOnMerchantEntitiesUpdate($merchantId)) {
 
             return $this->mutex->acquireAndRelease(
@@ -5447,6 +5584,16 @@ class Service extends Base\Service
                                 'input'             => $input,
                                 'applicable_status' => $newActivationStatus
                             ]);
+
+                            $splitzResult = $this->isAMPDeprecationExperimentEnabled($merchant->getId());
+
+                            if ($splitzResult == DetailConstants::ENABLE && $newActivationStatus === Status::ACTIVATED_MCC_PENDING && (new Merchant\Core)->isRegularMerchant($merchant) === true)
+                            {
+                                $newActivationStatus = Status::ACTIVATED;
+
+                                $service = new Merchant\Service();
+                                $service->transitionToNextBDDVerificationStatus($merchant->getId(), DEConstants::PENDING, $merchant);
+                            }
 
                             // move the merchant to eligible activation_status
                             $input[Entity::ACTIVATION_STATUS] = $newActivationStatus;
@@ -5800,6 +5947,16 @@ class Service extends Base\Service
         return $this->core->updateEDDStatus($input);
     }
 
+    public function isAMPDeprecationExperimentEnabled(string $merchantId)
+    {
+        $experimentName = 'amp_deprecation_exp_id';
+
+        $splitzResult = $this->core->getSplitzResponse($merchantId, $experimentName);
+
+        return $splitzResult;
+    }
+
+
     public function getEDDDetails($input)
     {
         if($this->ba->isAdminAuth() === false and isset($input['merchant_id']) === false)
@@ -6100,5 +6257,53 @@ class Service extends Base\Service
         }
 
         unset($input['type']);
+    }
+
+    protected function verifyUserDetailsForCustomInviteFlow($merchant, &$input): void
+    {
+        $orgId = $merchant->getOrgId();
+
+        $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, PermissionName::CUSTOM_INVITE_MERCHANT_FLOW);
+
+        $vasOrgFeatureEnabled = $this->merchant->org->isFeatureEnabled(FeatureConstants::VAS_ORG_IDENTIFIER);
+
+        $originProduct = $this->auth->getRequestOriginProduct();
+
+        if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true) and (isset($input[Entity::CONTACT_MOBILE]) === true))
+        {
+            $user = $this->merchant->primaryOwner($originProduct);
+
+            $userContactMobile = $user->getContactMobile() ?? null;
+
+            if(isset($userContactMobile) === false)
+            {
+                (new User\Validator)->validateMobileNumberUnique($input);
+
+                $phoneNumber = new PhoneBook($input[Entity::CONTACT_MOBILE]);
+
+                $input[Entity::CONTACT_MOBILE] = $phoneNumber->format(PhoneBook::E164);
+            }
+            else
+            {
+                $validMobileNumberFormats = (new PhoneBook($input[Entity::CONTACT_MOBILE]))->getMobileNumberFormats();
+
+                // Skip updating contact mobile in user if already present.
+                if(in_array($userContactMobile, $validMobileNumberFormats, true) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'New mobile no cannot be updated against existing user');
+                }
+
+                $input[Entity::CONTACT_MOBILE] = $userContactMobile;
+
+                $merchantContactMobile = $this->merchant->merchantDetail->getContactMobile();
+
+                // Skip contact mobile update in user and merchant details if already present.
+                if(isset($merchantContactMobile) === true)
+                {
+                    unset($input[Entity::CONTACT_MOBILE]);
+                }
+            }
+        }
     }
 }

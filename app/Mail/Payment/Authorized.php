@@ -14,7 +14,11 @@ class Authorized extends Base
     protected array $storkWhitelistedOrgs = [
         Org::RAZORPAY_ORG_ID,
         Org::CURLEC_ORG_ID,
-        Org::AXIS_ORG_ID
+        Org::AXIS_ORG_ID,
+        Org::YES_ORG_ID,
+        Org::HDFC_ORG_ID,
+        Org::INDUS_ORG_ID,
+        Org::IDFC_ORG_ID
     ];
 
     protected function addHtmlView()
@@ -87,9 +91,14 @@ class Authorized extends Base
         {
             $app->trace->info(TraceCode::AUTHORIZE_MAIL, [
                 'data' => $this->data,
-                'shouldSendEmailViaStork' => false,
+                'shouldSendEmailViaStork' => true,
                 'view' => $this->view
             ]);
+            if($this->view == "emails.mjml.customer.payment")
+            {
+                return true;
+            }
+
             return false;
         }
 
@@ -105,6 +114,21 @@ class Authorized extends Base
     protected function getParamsForStork(): array
     {
         $data = $this->data;
+
+        if ((isset($data['merchant']['eligible_for_covid_relief']) and
+                $data['merchant']['eligible_for_covid_relief'] === true) or
+            isset($data['org']['id']) and in_array($data['org']['id'], $this->storkWhitelistedOrgs) === false)
+        {
+            if($this->view == "emails.mjml.customer.payment")
+            {
+                return [
+                    'template_name' => $this->view,
+                    'template_namespace' => 'payments_payment_links',
+                    'org_id' => $data['org']['id'],
+                    'params' => $data
+                ];
+            }
+        }
 
         $storkParams = [
             'template_namespace'                => 'payments_core',

@@ -1089,6 +1089,7 @@ class Header
     const PRICING_RULE_PROCURER                  = 'procurer';
     const PRICING_RULE_UPDATE                   = 'update';
     const PRICING_RULE_FEE_BEARER               = 'fee_bearer';
+    const PRICING_RULE_CHANNEL                = 'channel';
 
     // Loc withdrawals
 
@@ -1221,6 +1222,8 @@ class Header
     const  RBL_ECOLLECT_CREDIT_ACCOUNT_NUMBER       = 'CREDIT_ACCOUNT_NUMBER';
     const  RBL_ECOLLECT_CORPORATE_CODE              = 'CORPORATE_CODE';
     const  RBL_ECOLLECT_SENDER_INFORMATION          = 'SENDER_INFORMATION';
+
+    const RBL_ECOLLECT_TRANSACTION_ID               = 'TRANS_ID';
 
     const  AXIS_ECOLLECT_MESSAGE_TYPE               = 'Message Type';
     const  AXIS_ECOLLECT_UTR_NUMBER                 = 'UTR Number';
@@ -1737,6 +1740,10 @@ class Header
     const UPDATE_GIFT_CARDS_EXPIRY_REFERENCE_ID = "Reference ID (Optional)";
     const UPDATE_GIFT_CARDS_EXPIRY_NOTES = "Notes (Optional)";
 
+
+     // Offers Engine merchant ramp control headers
+    const OFFERS_ENGINE_MERCHANT_RAMP_CONTROL_PUBLISHER_ID = "Publisher ID";
+
     //Wallet create gift card transfers headers
     const CREATE_GIFT_CARD_TRANSFERS_SOURCE_USER_ID = "Source user_id";
     const CREATE_GIFT_CARD_TRANSFERS_DESTINATION_USER_ID = "Destination user_id";
@@ -1905,6 +1912,36 @@ class Header
     const BVS_BULK_KYC_VERIFICATION_DOCUMENT = 'Document';
     const BVS_BULK_KYC_VERIFICATION_ENRICHMENT_TYPE = 'Enrichment Type';
     const BVS_BULK_KYC_VERIFICATION_ACCOUNT_ID = 'Account Id';
+
+    // headers for mandate continuity
+
+    const MANDATE_CONTINUITY_JUSPAY_MANDATE_ID = 'juspay_mandate_id';
+    const MANDATE_CONTINUITY_EPG_TXN_ID = 'epg_txn_id';
+    const MANDATE_CONTINUITY_DATE_CREATED_UTC = 'date_created_utc';
+    const MANDATE_CONTINUITY_RZP_MERCHANT_ID = 'rzp_merchant_id';
+    const MANDATE_CONTINUITY_GATEWAY = 'gateway';
+    const MANDATE_CONTINUITY_RZP_TERMINAL_ID = 'rzp_terminal_id';
+    const MANDATE_CONTINUITY_PG_MANDATE_ID = 'pg_mandate_id';
+    const MANDATE_CONTINUITY_MAX_AMOUNT = 'max_amount';
+    const MANDATE_CONTINUITY_START_DATE = 'start_date';
+    const MANDATE_CONTINUITY_EXPIRY_DATE = 'expiry_date';
+    const MANDATE_CONTINUITY_METHOD = 'method';
+    const MANDATE_CONTINUITY_CUSTOMER_NAME = 'customer_name';
+    const MANDATE_CONTINUITY_CUSTOMER_EMAIL = 'customer_email';
+    const MANDATE_CONTINUITY_CUSTOMER_CONTACT = 'customer_contact';
+
+
+
+    // headers for merchant onboarding
+    const CUSTOMER_MIGRATION_JUSPAY_CUSTOMER_ID = 'juspay_customer_id';
+    const CUSTOMER_MIGRATION_JUSPAY_MERCHANT_ID = 'juspay_merchant_id';
+    const CUSTOMER_MIGRATION_MERCHANT_REFERENCE_ID = 'merchant_reference_id';
+    const CUSTOMER_MIGRATION_EMAIL_ADDRESS = 'email_address';
+    const CUSTOMER_MIGRATION_FIRST_NAME = 'first_name';
+    const CUSTOMER_MIGRATION_LAST_NAME = 'last_name';
+    const CUSTOMER_MIGRATION_MOBILE_COUNTRY_CODE = 'mobile_country_code';
+    const CUSTOMER_MIGRATION_MOBILE_NUMBER = 'mobile_number';
+    const CUSTOMER_MIGRATION_MERCHANT_ID = 'merchant_id';
 
     // S2P Groups Onboarding headers
     const S2P_GROUPS_ONBOARDING_MERCHANT_ID = "MID (Mandatory) 14 character merchant ID";
@@ -2343,6 +2380,21 @@ class Header
     const DEVICE_TO_QR_UNMAPPING_FROM_QR = "UnmapFromQR";
     const DEVICE_TO_QR_UNMAPPING_USER_ID = "UnmapFromUserID";
 
+    // Headers for token continuity
+    const TOKEN_CONTINUITY_JUSPAY_CUSTOMER_ID = "juspay_customer_id";
+    const TOKEN_CONTINUITY_JUSPAY_MERCHANT_ID = "juspay_merchant_id";
+    const TOKEN_CONTINUITY_MERCHANT_REFERENCE_ID = "merchant_reference_id";
+    const TOKEN_CONTINUITY_EMAIL_ADDRESS = "email_address";
+    const TOKEN_CONTINUITY_FIRST_NAME = "first_name";
+    const TOKEN_CONTINUITY_LAST_NAME = "last_name";
+    const TOKEN_CONTINUITY_MOBILE_COUNTRY_CODE="mobile_country_code";
+    const TOKEN_CONTINUITY_MOBILE_NUMBER = "mobile_number";
+    const TOKEN_CONTINUITY_MERCHANT_ID = "merchant_id";
+    const TOKEN_CONTINUITY_RAZORPAY_CUSTOMER_ID = "razorpay_customer_id";
+    const TOKEN_CONTINUITY_ERROR_MESSAGE = "error_message";
+    const TOKEN_CONTINUITY_JUSPAY_MERCHANT_REFERENCE_ID = "juspay_merchant_reference_id";
+    const TOKEN_CONTINUITY_TERMINAL_ID = "terminal_id";
+
 
     // mandatory headers for wallet account batch
     const MANDATORY_HEADERS_FOR_WALLET_ACCOUNTS = [
@@ -2402,6 +2454,12 @@ class Header
         Header::UPDATE_GIFT_CARDS_EXPIRY_TICKET_LINK,
         Header::UPDATE_GIFT_CARDS_EXPIRY_TIMESTAMP,
         Header::UPDATE_GIFT_CARDS_EXPIRY_SOURCE
+    ];
+
+
+     // mandatory headers for offers engine merchant ramp
+    const MANDATORY_HEADERS_FOR_OFFERS_ENGINE_MERCHANT_RAMP_CONTROL = [
+        Header::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL_PUBLISHER_ID,
     ];
 
     // mandatory headers for email upload
@@ -5740,6 +5798,46 @@ class Header
             ],
         ],
 
+        Type::ECOLLECT_RBL_BANKING => [
+            self::INPUT => [
+                self::RBL_ECOLLECT_TRANSACTION_TYPE,
+                self::RBL_ECOLLECT_AMOUNT,
+                self::RBL_ECOLLECT_UTR_NUMBER,
+                self::RBL_ECOLLECT_RRN_NUMBER,
+                self::RBL_ECOLLECT_SENDER_IFSC,
+                self::RBL_ECOLLECT_SENDER_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_SENDER_ACCOUNT_TYPE,
+                self::RBL_ECOLLECT_SENDER_NAME,
+                self::RBL_ECOLLECT_BENEFICIARY_ACCOUNT_TYPE,
+                self::RBL_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_BENENAME,
+                self::RBL_ECOLLECT_CREDIT_DATE,
+                self::RBL_ECOLLECT_CREDIT_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_CORPORATE_CODE,
+                self::RBL_ECOLLECT_SENDER_INFORMATION,
+                self::RBL_ECOLLECT_TRANSACTION_ID,
+            ],
+            self::OUTPUT => [
+                self::RBL_ECOLLECT_TRANSACTION_TYPE,
+                self::RBL_ECOLLECT_AMOUNT,
+                self::RBL_ECOLLECT_UTR_NUMBER,
+                self::RBL_ECOLLECT_RRN_NUMBER,
+                self::RBL_ECOLLECT_SENDER_IFSC,
+                self::RBL_ECOLLECT_SENDER_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_SENDER_ACCOUNT_TYPE,
+                self::RBL_ECOLLECT_SENDER_NAME,
+                self::RBL_ECOLLECT_BENEFICIARY_ACCOUNT_TYPE,
+                self::RBL_ECOLLECT_BENEFICIARY_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_BENENAME,
+                self::RBL_ECOLLECT_CREDIT_DATE,
+                self::RBL_ECOLLECT_CREDIT_ACCOUNT_NUMBER,
+                self::RBL_ECOLLECT_CORPORATE_CODE,
+                self::RBL_ECOLLECT_SENDER_INFORMATION,
+                self::RBL_ECOLLECT_TRANSACTION_ID,
+                self::STATUS,
+            ],
+        ],
+
         Type::ECOLLECT_AXIS => [
             self::INPUT => [
                 self::AXIS_ECOLLECT_MESSAGE_TYPE,
@@ -6593,6 +6691,13 @@ class Header
                 self::UPDATE_GIFT_CARDS_EXPIRY_TICKET_LINK,
                 self::UPDATE_GIFT_CARDS_EXPIRY_TIMESTAMP,
                 self::UPDATE_GIFT_CARDS_EXPIRY_SOURCE
+            ],
+            self::OUTPUT => [],
+        ],
+
+        TYPE::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL => [
+            self::INPUT => [
+                self::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL_PUBLISHER_ID,
             ],
             self::OUTPUT => [],
         ],
@@ -7702,8 +7807,59 @@ class Header
                 self::DEVICE_TO_QR_UNMAPPING_RZP_MID,
                 self::DEVICE_TO_QR_UNMAPPING_FROM_QR,
             ],
-        ]
+        ],
+        Type::MANDATE_CONTINUITY => [
+            self::INPUT => [
+                self::MANDATE_CONTINUITY_JUSPAY_MANDATE_ID,
+                self::MANDATE_CONTINUITY_EPG_TXN_ID,
+                self::MANDATE_CONTINUITY_DATE_CREATED_UTC,
+                self::MANDATE_CONTINUITY_RZP_MERCHANT_ID,
+                self::MANDATE_CONTINUITY_PG_MANDATE_ID,
+                self::MANDATE_CONTINUITY_GATEWAY,
+                self::MANDATE_CONTINUITY_RZP_TERMINAL_ID,
+                self::MANDATE_CONTINUITY_MAX_AMOUNT,
+                self::MANDATE_CONTINUITY_START_DATE,
+                self::MANDATE_CONTINUITY_EXPIRY_DATE,
+                self::MANDATE_CONTINUITY_METHOD,
+                self::MANDATE_CONTINUITY_CUSTOMER_NAME,
+                self::MANDATE_CONTINUITY_CUSTOMER_EMAIL,
+                self::MANDATE_CONTINUITY_CUSTOMER_CONTACT,
+            ],
+            self::OUTPUT => [],
+        ],
+        Type::TOKEN_CONTINUITY => [
+            self::INPUT => [
+                self::TOKEN_CONTINUITY_JUSPAY_CUSTOMER_ID,
+                self::TOKEN_CONTINUITY_JUSPAY_MERCHANT_ID,
+                self::TOKEN_CONTINUITY_MERCHANT_REFERENCE_ID,
+                self::TOKEN_CONTINUITY_EMAIL_ADDRESS,
+                self::TOKEN_CONTINUITY_FIRST_NAME,
+                self::TOKEN_CONTINUITY_LAST_NAME,
+                self::TOKEN_CONTINUITY_MOBILE_COUNTRY_CODE,
+                self::TOKEN_CONTINUITY_MOBILE_NUMBER,
+                self::TOKEN_CONTINUITY_MERCHANT_ID,
+                self::TOKEN_CONTINUITY_RAZORPAY_CUSTOMER_ID,
+                self::TOKEN_CONTINUITY_ERROR_MESSAGE,
+                self::TOKEN_CONTINUITY_JUSPAY_MERCHANT_REFERENCE_ID,
+                self::TOKEN_CONTINUITY_TERMINAL_ID
+            ],
+            self::OUTPUT => [],
+        ],
 
+        Type::CUSTOMER_MIGRATION => [
+            self::INPUT => [
+                self::CUSTOMER_MIGRATION_JUSPAY_CUSTOMER_ID,
+                self::CUSTOMER_MIGRATION_JUSPAY_MERCHANT_ID,
+                self::CUSTOMER_MIGRATION_MERCHANT_REFERENCE_ID,
+                self::CUSTOMER_MIGRATION_EMAIL_ADDRESS,
+                self::CUSTOMER_MIGRATION_FIRST_NAME,
+                self::CUSTOMER_MIGRATION_LAST_NAME,
+                self::CUSTOMER_MIGRATION_MOBILE_COUNTRY_CODE,
+                self::CUSTOMER_MIGRATION_MOBILE_NUMBER,
+                self::CUSTOMER_MIGRATION_MERCHANT_ID,
+            ],
+            self::OUTPUT => [],
+        ],
     ];
 
     /**
@@ -7768,6 +7924,17 @@ class Header
             return;
         }
 
+        if ($type == Type::MANDATE_CONTINUITY) {
+            return;
+        }
+
+        if ($type == Type::TOKEN_CONTINUITY) {
+            return;
+        }
+
+        if ($type == Type::CUSTOMER_MIGRATION) {
+            return;
+        }
 
         if ($orgId !== null)
         {
@@ -7875,6 +8042,10 @@ class Header
             {
                 $expectedHeaders[] = self::PRICING_RULE_FEE_BEARER;
             }
+            if(in_array(self::PRICING_RULE_CHANNEL, $actualHeaders, true) === true)
+            {
+                $expectedHeaders[] = self::PRICING_RULE_CHANNEL;
+            }
         }
 
         if ($type === Type::IIN_NPCI_RUPAY)
@@ -7980,6 +8151,11 @@ class Header
         if ($type === Type::UPDATE_GIFT_CARDS_EXPIRY )
         {
             self::validateWalletUpdateGCExpiryBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_UPDATE_GIFT_CARDS_EXPIRY);
+        }
+
+        if ($type === Type::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL )
+        {
+            self::validateOffersEngineMerchantRampControlBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_OFFERS_ENGINE_MERCHANT_RAMP_CONTROL);
         }
 
         if ($type === Type::GCMS_UPLOAD_BULK_EMAILS)
@@ -8741,5 +8917,43 @@ class Header
 
             throw new BadRequestValidationFailureException($msg);
         }
+    }
+
+    public static function validateOffersEngineMerchantRampControlBatchHeaders(array $expectedHeaders, array $actualHeaders, array $mandatoryHeaders)
+    {
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $mandatoryHeaders, true) === true)
+            {
+                // This will remove the header we just validated from the list of mandatory headers.
+                $mandatoryHeaders = array_diff($mandatoryHeaders, [$actualHeader]);
+            }
+        }
+
+        if (count($mandatoryHeaders) > 0)
+        {
+            $msg = 'Uploaded file is missing mandatory header(s) [%s]';
+
+            $msg = sprintf($msg, implode(', ',$mandatoryHeaders));
+
+            throw new BadRequestValidationFailureException($msg);
+        }
+
+        // Now make sure that all headers provided are part of our headers list.
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $expectedHeaders, true) === false)
+            {
+                $msg = 'Uploaded file has has invalid header [%s]';
+
+                $msg = sprintf($msg, $actualHeader);
+
+                throw new BadRequestValidationFailureException($msg);
+            }
+
+            // This is required so that we throw an exception if the same header is repeated twice.
+            $expectedHeaders = array_diff($expectedHeaders, [$actualHeader]);
+        }
+
     }
 }

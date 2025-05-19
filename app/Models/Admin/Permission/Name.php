@@ -490,6 +490,9 @@ class Name
     const NEEDS_CLARIFICATION_RESPONDED = 'needs_clarification_responded';
     const POS_EDIT_ACTIVATE_MERCHANT        = 'pos_edit_activate_merchant';
 
+    const MERCHANT_BDD_VERIFICATION_STATUS_CHANGE        = 'merchant_bdd_verification_status_update';
+
+
     // Permission to create workflow for an impersonating merchant found during Dedupe
     const IMPERSONATING_MERCHANT_DEDUPE       = 'impersonating_merchant_dedupe';
 
@@ -1066,6 +1069,7 @@ class Name
 
     const ECOLLECT_ICICI_BATCH_UPLOAD                = 'ecollect_icici_batch_upload';
     const ECOLLECT_RBL_BATCH_UPLOAD                  = 'ecollect_rbl_batch_upload';
+    const ECOLLECT_RBL_BANKING_BATCH_UPLOAD          = 'ecollect_rbl_banking_batch_upload';
     const ECOLLECT_AXIS_BATCH_UPLOAD                 = 'ecollect_axis_batch_upload';
     const ECOLLECT_AXIS_BANKING_BATCH_UPLOAD         = 'ecollect_axis_banking_batch_upload';
     const ECOLLECT_YESBANK_BATCH_UPLOAD              = 'ecollect_yesbank_batch_upload';
@@ -1237,6 +1241,9 @@ class Name
     const PAYOUT_MANUAL_ACTION = 'payout_manual_action';
 
     const UPDATE_ALL_ODS_CONFIG = 'update_all_ods_config';
+
+    // this permissin allow admin to utilize custom merchant invite flow
+    const CUSTOM_INVITE_MERCHANT_FLOW = 'custom_invite_merchant_flow';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

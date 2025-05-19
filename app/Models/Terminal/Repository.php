@@ -3150,30 +3150,7 @@ class Repository extends Base\Repository
 
     public function stopTerminalsDualWrite($id)
     {
-        $mode = $this->app['rzp.mode'] ?? 'live';
-
-        $result = $this->app['razorx']->getTreatment(
-            $id,
-            Terminal\Constants::TERMINALS_DUAL_WRITE_REMOVAL,
-            $mode);
-
-        if ($result === 'on')
-        {
-
-            $this->trace->count(Terminal\Metric::TERMINALS_STOP_DUAL_WRITE, [
-                "route" => $this->fetchRouteName(),
-                "rampup" => "on",
-            ]);
-
-            return true;
-        }
-
-        $this->trace->count(Terminal\Metric::TERMINALS_STOP_DUAL_WRITE, [
-            "route" => $this->fetchRouteName(),
-            "rampup" => "control",
-        ]);
-
-        return false;
+        return true;
     }
 
     public function fetchMerchantsWithTerminalPivot($id)

@@ -2,12 +2,15 @@
 
 namespace RZP\Jobs;
 
+use RZP\Constants\Mode;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
 use RZP\Services\RazorXClient;
 use RZP\Models\BankingAccountStatement;
+use Throwable;
 
 class XBalanceDualWrite extends Job
 {
@@ -27,45 +30,58 @@ class XBalanceDualWrite extends Job
      */
     protected $params;
 
-    public function __construct(string $mode, array $params)
+    public function __construct(array $payload)
     {
-        $this->params = $params;
+        $this->params = $payload;
 
-        parent::__construct($mode);
+        parent::__construct(Mode::LIVE);
     }
 
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws Throwable
+     */
     public function handle()
     {
+        parent::handle();
+
+        $this->trace->info(
+            TraceCode::X_BALANCE_DUAL_WRITE_INIT,
+            $this->params
+        );
+
         try
         {
-            parent::handle();
-
-            $this->trace->info(
-                TraceCode::X_BALANCE_DUAL_WRITE_INIT,
-                $this->params
-            );
-
-            (new BankingAccountStatement\Details\Core())->handleDualWrite($this->params);
-
-            $this->trace->info(
-                TraceCode::X_BALANCE_DUAL_WRITE_COMPLETE,
-                $this->params);
-
-            $this->delete();
+            $this->createCore()->handleDualWrite($this->params);
         }
-        catch (\Throwable $exception)
+        catch (Throwable $e)
         {
             $this->trace->traceException(
-                $exception,
+                $e,
                 Trace::ERROR,
                 TraceCode::X_BALANCE_DUAL_WRITE_FAILURE,
                 $this->params);
 
             $this->checkRetry();
+            throw $e;
         }
+
+        $this->trace->info(
+            TraceCode::X_BALANCE_DUAL_WRITE_COMPLETE,
+            $this->params);
+
+        $this->delete();
     }
 
-    protected function checkRetry()
+    /**
+     * Create Core instance - extracted for testing
+     */
+    protected function createCore(): BankingAccountStatement\Details\Core
+    {
+        return new BankingAccountStatement\Details\Core();
+    }
+
+    protected function checkRetry(): void
     {
         if ($this->attempts() < self::MAX_ATTEMPTS_FOR_DUAL_WRITE)
         {
@@ -88,7 +104,7 @@ class XBalanceDualWrite extends Job
     /**
      * Defines how the job is handled in an event of worker timeout
      */
-    protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE)
+    protected function beforeJobKillCleanUp($variant = RazorXClient::DEFAULT_CASE): void
     {
         $this->trace->count(Metric::RAZORPAYX_PAYOUTS_BANKING_QUEUES_TIMEOUT_COUNT, [
             'job_name'   => $this->getJobName() ?? '',
@@ -105,7 +121,7 @@ class XBalanceDualWrite extends Job
         ]);
     }
 
-    protected function handleWorkerTimeoutGracefully($context = [], $maxRetries = 1, $retryDelay = 0)
+    protected function handleWorkerTimeoutGracefully($context = [], $maxRetries = 1, $retryDelay = 0): void
     {
         $internalJob = $this->job;
 

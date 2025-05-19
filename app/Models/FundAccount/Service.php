@@ -18,6 +18,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
+use RZP\Models\LinkedNumber;
 use RZP\Exception\BaseException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Contact\Core as ContactCore;
@@ -59,6 +60,16 @@ class Service extends Base\Service
      */
     protected $mutex;
 
+    /**
+     * @var LinkedNumber\Core
+     */
+    protected $linkedNumberCore;
+
+    /**
+     * @var Vpa\Core
+     */
+    protected $vpaCore;
+
     public function __construct()
     {
         parent::__construct();
@@ -70,6 +81,10 @@ class Service extends Base\Service
         $this->entityRepo = $this->repo->fund_account;
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->linkedNumberCore = new LinkedNumber\Core;
+
+        $this->vpaCore = new Vpa\Core;
     }
 
     public function create(array $input): array
@@ -554,5 +569,31 @@ class Service extends Base\Service
             Entity::ACCOUNT_HOLDER_NAME => $accountHolderName
         ];
         unset($fundAccountArray[Entity::VPA]);
+    }
+
+    public function updateMappedVpaForFundAccount(Entity $fundAccount, string $merchantId): void
+    {
+        $mobileNumber = $fundAccount->getLinkedNumber();
+        $accountHolderName = $fundAccount->getCustomerName();
+
+        $mappedVpa = $this->linkedNumberCore->FetchMappedVpaFromLinkedNumber($mobileNumber, $accountHolderName, $merchantId);
+
+        if (empty($mappedVpa) === false)
+        {
+            list($username, $handle) = explode(Vpa\Entity::AROBASE, $mappedVpa[Entity::VPA] ?? '');
+            
+            $vpaInput = [
+                Vpa\Entity::USERNAME => $username,
+                Vpa\Entity::HANDLE => $handle,
+            ];
+            $customerName = $mappedVpa[Entity::CUSTOMER_NAME];
+
+            $vpa = $fundAccount->account;
+            $this->vpaCore->updateVpaWithPublicId($vpa, $vpaInput);
+            
+            //It could be a case where the customer name change but the vpa is still the same.
+            $fundAccount->setCustomerName($customerName);
+            $fundAccount->saveOrFail();
+        }
     }
 }

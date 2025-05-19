@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Feature\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Service as PaymentService;
@@ -31,7 +32,7 @@ class Metric extends Base\Core
     const LABEL_CARD_ENROLLMENT_STATUS          = 'card_enrolled';
     const LABEL_PAYMENT_LATE_AUTHORIZED         = 'late_authorized';
     const LABEL_PAYMENT_AUTO_CAPTURED           = 'auto_captured';
-    
+
     const LABEL_SHOULD_AUTO_CAPTURE             = 'should_auto_capture';
     const LABEL_AUTO_CAPTURE_ERROR              = 'error';
     const LABEL_PAYMENT_GATEWAY_CAPTURED        = 'gateway_captured';
@@ -62,6 +63,7 @@ class Metric extends Base\Core
     const LABEL_RECURRING                       = 'recurring';
     const LABEL_RECURRING_TYPE                  = 'recurring_type';
     const LABEL_IS_REARCH                       = 'is_rearch';
+    const LABEL_IMPORT_PAYMENT                  = 'import_payment';
 
 
     // Metric Names
@@ -146,7 +148,12 @@ class Metric extends Base\Core
 
 
     const CROSS_BORDER_UPDATE_AND_REDIRECT_COUNT           = 'cross_border_update_and_redirect_count';
+
+    const PAYMENT_FETCH_BY_ID_DISTRIBUTION                      = 'payment_fetch_by_id_decomp';
+
     const AUTO_CAPTURE_RESULT                              = 'auto_capture_result';
+
+    const PAYMENT_CREATE_REQUEST_WITH_OFFER = 'payment_create_request_with_offer';
 
     public function pushCreateMetrics(Entity $payment)
     {
@@ -495,6 +502,9 @@ class Metric extends Base\Core
 
         $dimensions += $upiDimensions;
 
+        $importPaymentDimensions = $this->getDefaultImportPaymentDimensions($payment);
+        $dimensions += $importPaymentDimensions;
+
         return $dimensions;
     }
 
@@ -532,6 +542,31 @@ class Metric extends Base\Core
         }
 
         return $upiDimensions;
+    }
+
+    protected function getDefaultImportPaymentDimensions(Entity $payment): array
+    {
+        $importPaymentDimensions = [
+            self::LABEL_IMPORT_PAYMENT    => null,
+        ];
+
+        try
+        {
+            if ($payment->merchant->isFeatureEnabled(Constants::ENABLE_IMPORT_FLOW) === true ) {
+                $importPaymentDimensions[self::LABEL_IMPORT_PAYMENT] = true;
+            }
+        }
+        catch (\Error $exception)
+        {
+            $this->trace->warning(
+                TraceCode::IMPORT_PAYMENT_DIMENSION_CREATE_FAILED,
+                [
+                    'message' => $exception->getMessage()
+                ]
+            );
+        }
+
+        return $importPaymentDimensions;
     }
 
     protected function getUpiPsp($upi)
@@ -801,6 +836,19 @@ class Metric extends Base\Core
         $dimensions = array_merge($dimensions, $extraDimensions);
 
         $this->trace->count(self::AUTO_CAPTURE_RESULT, $dimensions);
+    }
+
+    public function pushOfferMetrics(Entity $payment,array $input)
+    {
+        $route  = $this->app['api.route']->getCurrentRouteName();
+
+        $dimensions = $this->getDefaultDimentions($payment);
+
+        $dimensions += [
+            self::PAYMENT_REQUEST_ROUTE => $route,
+        ];
+
+        $this->trace->count(self::PAYMENT_CREATE_REQUEST_WITH_OFFER, $dimensions);
     }
 
 }

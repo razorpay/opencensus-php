@@ -19,6 +19,7 @@ class Feature
     const OPTIMIZER               = 'optimizer';
     const MAGIC_CHECKOUT          = 'magic_checkout';
     const AFFORDABILITY_WIDGET    = 'affordability_widget';
+    const OFFER_PREFUNDING_FEE    = 'offer_prefunding_fee';
     const TOKEN_HQ                = 'token_hq';
     const UPI_INAPP               = 'upi_inapp';
     const REWARD                  = 'reward';
@@ -48,6 +49,7 @@ class Feature
         self::ESAUTOMATIC_RESTRICTED,
         self::TOKEN_HQ,
         self::AFFORDABILITY_WIDGET,
+        self::OFFER_PREFUNDING_FEE,
         self::REWARD,
         self::OPTIMIZER_CONVENIENCE_FEE,
         self::NOCODEAPPS,

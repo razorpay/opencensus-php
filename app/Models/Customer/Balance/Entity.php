@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 
 /**
@@ -20,7 +21,7 @@ use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
  */
 class Entity extends Base\PublicEntity
 {
-    use AsvGetAttribute;
+    use AsvGetAttribute, CmsGetAttribute;
 
     const CUSTOMER_ID       = 'customer_id';
     const MERCHANT_ID       = 'merchant_id';

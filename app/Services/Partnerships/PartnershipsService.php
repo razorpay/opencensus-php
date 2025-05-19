@@ -94,8 +94,13 @@ class PartnershipsService extends Base\Service
 
     const DELETE_MERCHANT_ACCESS_MAP = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/Delete';
 
+    const CREATE_PARTNER_KYC_ACCESS_STATE = '/twirp/rzp.partnerships.partner_kyc_access_state.v1.PartnerKycAccessStateAPI/Create';
     const UPDATE_PARTNER_KYC_ACCESS_STATE = '/twirp/rzp.partnerships.partner_kyc_access_state.v1.PartnerKycAccessStateAPI/Upsert';
     const DELETE_PARTNER_KYC_ACCESS_STATE = '/twirp/rzp.partnerships.partner_kyc_access_state.v1.PartnerKycAccessStateAPI/Delete';
+
+    const APPROVE_REJECT = '/twirp/rzp.partnerships.partner_kyc_access_state.v1.PartnerKycAccessStateAPI/ApproveOrReject';
+
+    const CREATE_CONSENT = '/twirp/rzp.partnerships.merchant.v1.ConsentAPI/Create';
 
     CONST GET_MERCHANT_ACCESS_MAP_LIST   = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/List';
 
@@ -373,6 +378,16 @@ class PartnershipsService extends Base\Service
     public function upsertPartnerKycAccessState($parameters)
     {
         return $this->sendRequestWithRetry($parameters, self::UPDATE_PARTNER_KYC_ACCESS_STATE, Requests::POST, Mode::LIVE);
+    }
+
+    public function createConsent($parameters)
+    {
+        $headers = [
+            'X-Ip-Address' => $this->app['request']->ip(),
+            'User-Agent' => $this->app['request']->header('User-Agent'),
+        ];
+
+        return $this->sendRequest($parameters, self::CREATE_CONSENT, Requests::POST,null,$headers);
     }
 
     public function deletePartnerKycAccessState($parameters)
@@ -1025,9 +1040,9 @@ class PartnershipsService extends Base\Service
         return $this->sendRequest($parameters, $path, $method);
     }
 
-    public function sendRequest($parameters, $path, $method, $mode = null)
+    public function sendRequest($parameters, $path, $method, $mode = null, array $headers = [])
     {
-        $requestParams = $this->getRequestParams($parameters, $path, $method, $mode);
+        $requestParams = $this->getRequestParams($parameters, $path, $method, $mode, $headers);
         try {
             $response = Requests::request(
                 $requestParams['url'],
@@ -1035,6 +1050,7 @@ class PartnershipsService extends Base\Service
                 $requestParams['data'],
                 $requestParams['method'],
                 $requestParams['options']);
+
 
             return $this->parseAndReturnResponse($response);
         } catch (Throwable $e) {
@@ -1057,9 +1073,9 @@ class PartnershipsService extends Base\Service
      *
      * @return array|null
      */
-    public function sendRequestWithRetry($parameters, $path, $method, $mode = null)
+    public function sendRequestWithRetry($parameters, $path, $method, $mode = null, $headers = [])
     {
-        $requestParams = $this->getRequestParams($parameters, $path, $method, $mode);
+        $requestParams = $this->getRequestParams($parameters, $path, $method, $mode, $headers);
         $attempts = self::MAX_RETRY_COUNT;
         $res = null;
         $exception = null;
@@ -1115,7 +1131,7 @@ class PartnershipsService extends Base\Service
         return $this->parseAndReturnResponse($res);
     }
 
-    public function getRequestParams($parameters, $path, $method, $mode = null)
+    public function getRequestParams($parameters, $path, $method, $mode = null, array $headers = [])
     {
         if ($mode === null)
         {
@@ -1126,8 +1142,6 @@ class PartnershipsService extends Base\Service
             $this->mode = $mode;
         }
         $url = $this->getBaseUrl($this->mode) . $path;
-
-        $headers = [];
 
         $addBasicAuthCreds = $parameters[self::ADD_BASIC_AUTH_CREDS] ?? false;
         if (isset($parameters[self::ADD_BASIC_AUTH_CREDS]))

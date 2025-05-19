@@ -32,6 +32,13 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
+    public function findByToken(string $token)
+    {
+        return $this->newQuery()
+                    ->where(Entity::TOKEN, '=', $token)
+                    ->first();
+    }
+
     public function findByAdminId(string $adminId)
     {
         return $this->newQuery()

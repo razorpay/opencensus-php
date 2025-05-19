@@ -13,6 +13,7 @@ class Entity extends PublicEntity
     const STATUS = 'status';
     const CLAIM_STATUS = 'claim_status';
     const CLAIM_HISTORY = 'claim_history';
+    const INSURANCE_PROVIDER = 'insurance_provider';
     const INSURED_ENTITY_ID = 'insured_entity_id';
     const INSURED_ENTITY_TYPE = 'insured_entity_type';
 

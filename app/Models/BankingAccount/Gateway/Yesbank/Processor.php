@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccount\Gateway\Yesbank;
 
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankingAccount;
@@ -32,6 +33,8 @@ class Processor extends BaseProcessor
 
     protected $accountNumber;
 
+    protected $merchantID;
+
     public function __construct(array $input = [])
     {
         parent::__construct();
@@ -45,14 +48,30 @@ class Processor extends BaseProcessor
 
     public function fetchGatewayBalance(): int
     {
-        $response = $this->verifyCredentials();
+        $isFtxFlowEnabled = $this->getSplitzResponseForFtxFlow();
 
-        return $this->fetchBalanceFromMozartResponse($response);
+        $response = $this->verifyCredentials($isFtxFlowEnabled);
+
+        return $this->fetchBalanceFromMozartResponse($response, $isFtxFlowEnabled);
     }
 
-    protected function verifyCredentials()
+    public function getSplitzResponseForFtxFlow(): bool
     {
-        $request = $this->formatDataForMozartBalanceFetchApi();
+        $properties = [
+            'id'                     => $this->merchantID,
+            'experiment_id'          => $this->app['config']->get("app.yesbank_ftx_balance_fetch_experiment_id"),
+            'request_data'           => json_encode(['merchant_id' => $this->merchantID])
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable(
+            $properties,
+            Merchant\RazorxTreatment::VARIANT_ENABLE,
+            TraceCode::YESBANK_FTX_SPLITZ_EXPERIMENT_FETCH_FAILED);
+    }
+
+    protected function verifyCredentials( bool $isFtxFlowEnabled )
+    {
+        $request = $this->formatDataForMozartBalanceFetchApi($isFtxFlowEnabled);
 
         $retryCount = 0;
 
@@ -62,11 +81,16 @@ class Processor extends BaseProcessor
         {
             try
             {
+                $mozartIdentifier = Action::V1;
+                if ($isFtxFlowEnabled) {
+                    $mozartIdentifier = Action::V3;
+                }
+
                 $response = $this->app->mozart->sendMozartRequest('fts',
                                                                   BankingAccount\Channel::YESBANK,
                                                                   Action::ACCOUNT_BALANCE,
                                                                   $request,
-                                                                  Action::V1,
+                                                                  $mozartIdentifier,
                                                                   false,
                                                                   self::FETCH_GATEWAY_BALANCE_TIMEOUT,
                                                                   self::FETCH_GATEWAY_BALANCE_CONNECT_TIMEOUT
@@ -90,26 +114,50 @@ class Processor extends BaseProcessor
         }while($retryCount <= self::MAX_MOZART_RETRIES);
     }
 
-    protected function formatDataForMozartBalanceFetchApi()
+    protected function formatDataForMozartBalanceFetchApi( bool $isFtxFlowEnabled ): array
     {
-        return [
-            BaseFields::SOURCE_ACCOUNT => [
-                BaseFields::SOURCE_ACCOUNT_NUMBER => $this->accountNumber,
-                BaseFields::CREDENTIALS           => [
-                    Fields::CUSTOMER_ID   => $this->accountCredentials[Fields::CUSTOMER_ID],
-                    Fields::APP_ID        => $this->accountCredentials[Fields::APP_ID],
-                    Fields::AUTH_USERNAME => $this->accountCredentials[Fields::AUTH_USERNAME],
-                    Fields::AUTH_PASSWORD => $this->accountCredentials[Fields::AUTH_PASSWORD],
-                    Fields::CLIENT_ID     => $this->accountCredentials[Fields::CLIENT_ID],
-                    Fields::CLIENT_SECRET => $this->accountCredentials[Fields::CLIENT_SECRET],
+        $credentialsData = [];
+
+        if ($isFtxFlowEnabled) {
+            $credentialsData = [
+                BaseFields::SOURCE_ACCOUNT => [
+                    BaseFields::SOURCE_ACCOUNT_NUMBER => $this->accountNumber,
+                    BaseFields::CREDENTIALS           => [
+                        Fields::FTX_ID                      => $this->accountCredentials[Fields::FTX_ID],
+                        Fields::CUST_ID                     => $this->accountCredentials[Fields::CUST_ID],
+                        Fields::X_IBM_CLIENT_ID_TOKEN       => $this->accountCredentials[Fields::X_IBM_CLIENT_ID_TOKEN],
+                        Fields::X_IBM_CLIENT_SECRET_TOKEN   => $this->accountCredentials[Fields::X_IBM_CLIENT_SECRET_TOKEN],
+                        Fields::AUTHORIZATION_TOKEN         => $this->accountCredentials[Fields::AUTHORIZATION_TOKEN],
+                        Fields::VERSION                     => $this->accountCredentials[Fields::VERSION],
+                    ],
                 ],
-            ],
-        ];
+            ];
+        } else {
+            $credentialsData = [
+                BaseFields::SOURCE_ACCOUNT => [
+                    BaseFields::SOURCE_ACCOUNT_NUMBER => $this->accountNumber,
+                    BaseFields::CREDENTIALS           => [
+                        Fields::CUSTOMER_ID   => $this->accountCredentials[Fields::CUSTOMER_ID],
+                        Fields::APP_ID        => $this->accountCredentials[Fields::APP_ID],
+                        Fields::AUTH_USERNAME => $this->accountCredentials[Fields::AUTH_USERNAME],
+                        Fields::AUTH_PASSWORD => $this->accountCredentials[Fields::AUTH_PASSWORD],
+                        Fields::CLIENT_ID     => $this->accountCredentials[Fields::CLIENT_ID],
+                        Fields::CLIENT_SECRET => $this->accountCredentials[Fields::CLIENT_SECRET],
+                    ],
+                ],
+            ];
+        }
+
+        return $credentialsData;
     }
 
-    protected function fetchBalanceFromMozartResponse(array $response)
+    protected function fetchBalanceFromMozartResponse(array $response, bool $isFtxFlowEnabled)
     {
         $balance = $response[Fields::DATA][Fields::ACCOUNT_BALANCE_AMOUNT];
+
+        if ($isFtxFlowEnabled) {
+            $balance = $response[Fields::DATA][Fields::BALANCE];
+        }
 
         return $this->getFormattedAmount($balance);
     }
@@ -153,6 +201,13 @@ class Processor extends BaseProcessor
             Fields::AUTH_USERNAME => $response[BaseFields::CREDENTIALS][Fields::AUTH_USERNAME],
             Fields::CLIENT_ID     => $response[BaseFields::CREDENTIALS][Fields::CLIENT_ID],
             Fields::CLIENT_SECRET => $response[BaseFields::CREDENTIALS][Fields::CLIENT_SECRET],
+            // Fields for YB FTX
+            Fields::FTX_ID                      => $response[BaseFields::CREDENTIALS][Fields::FTX_ID]                       ?? null,
+            Fields::CUST_ID                     => $response[BaseFields::CREDENTIALS][Fields::CUST_ID]                      ?? null,
+            Fields::X_IBM_CLIENT_ID_TOKEN       => $response[BaseFields::CREDENTIALS][Fields::X_IBM_CLIENT_ID_TOKEN]        ?? null,
+            Fields::X_IBM_CLIENT_SECRET_TOKEN   => $response[BaseFields::CREDENTIALS][Fields::X_IBM_CLIENT_SECRET_TOKEN]    ?? null,
+            Fields::AUTHORIZATION_TOKEN         => $response[BaseFields::CREDENTIALS][Fields::AUTHORIZATION_TOKEN]          ?? null,
+            Fields::VERSION                     => $response[BaseFields::CREDENTIALS][Fields::VERSION]                      ?? null,
         ];
     }
 }

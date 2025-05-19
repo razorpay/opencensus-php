@@ -194,13 +194,6 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
-        // proxy code
-        $mode  = $this->mode ?? Mode::LIVE;
-
-        $variantFlag = $this->app->razorx->getTreatment($merchantId, "ROUTE_PROXY_TS_MERCHANT_TERMINAL_FETCH_ONBOARDING", $mode);
-
-        if ($variantFlag === 'proxy')
-        {
             $content = ["merchant_ids" => [$merchantId]];
 
             $content = array_merge($input, $content);
@@ -218,14 +211,6 @@ class Service extends Base\Service
             $resData["items"] = $response;
 
             return $resData;
-        }
-        else
-        {
-            $terminals = $this->repo->terminal->fetch($input, $merchantId, null,false);
-
-            return $terminals->toArrayPublic();
-        }
-
     }
 
     public function initiateOnboarding($input)

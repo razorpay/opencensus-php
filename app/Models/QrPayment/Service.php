@@ -228,6 +228,16 @@ class Service extends Base\Service
         return [$qrCodeStatus, $paymentId];
     }
 
+    protected function getDummyVpa(string $gateway): string
+    {
+        $gatewayCamel = camel_case($gateway);
+
+        // Capitalize the first letter of the gateway part
+        $gatewayFormatted = ucfirst($gatewayCamel);
+
+        return strtolower('dummy' . $gatewayFormatted . '@vpa');
+    }
+
     /**
      * @param string $qrCodeId
      * @return string[]
@@ -682,7 +692,7 @@ class Service extends Base\Service
     {
         $output = [
             BharatQr\GatewayResponseParams::AMOUNT                => $inputFields['payment'][Payment\Entity::AMOUNT_AUTHORIZED],
-            BharatQr\GatewayResponseParams::VPA                   => $inputFields['upi'][UpiEntity::VPA],
+            BharatQr\GatewayResponseParams::VPA                   => empty($inputFields['upi'][UpiEntity::VPA]) ? $this->getDummyVpa($gateway) : $inputFields['upi'][UpiEntity::VPA],
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $inputFields['terminal'][\RZP\Models\Terminal\Entity::GATEWAY_MERCHANT_ID],
             BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $inputFields['upi'][Entity::MERCHANT_REFERENCE],

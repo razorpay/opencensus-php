@@ -423,10 +423,12 @@ class Processor extends VirtualAccount\Processor
         if ($bankTransfer->isBalanceTypeBanking() === true) {
             $transactionCore = new Transaction\Core;
 
-            if ($this->isLiveMode() === true) {
-                $transactionCore->dispatchEventForLedgerTransactionCreated($txnId, $merchantId);
-            } else {
-                $transactionCore->dispatchEventForLedgerTransactionCreatedWithoutEmailOrSmsNotification($txnId, $merchantId);
+            if($this->isLedgerReverseShadowBtAsyncWebhookExperimentEnabled($merchantId) === true) {
+                if ($this->isLiveMode() === true) {
+                    $transactionCore->dispatchEventForLedgerTransactionCreated($txnId, $merchantId);
+                } else {
+                    $transactionCore->dispatchEventForLedgerTransactionCreatedWithoutEmailOrSmsNotification($txnId, $merchantId);
+                }
             }
         }
     }
@@ -1045,12 +1047,6 @@ class Processor extends VirtualAccount\Processor
                     return $isValid;
                 }
 
-                if ($isValidationFlow === false and $isValid === false)
-                {
-                    $this->handleNonTpvAccount($bankTransfer, $merchantId, $balanceId);
-
-                    return false;
-                }
             }
 
             /* This checks if tpv is not disabled via the disable feature flag, tpv checks are applied on the bank
@@ -1095,7 +1091,7 @@ class Processor extends VirtualAccount\Processor
                         return false;
                     }
 
-                    $this->handleNonTpvAccount($bankTransfer, $merchantId, $balanceId);
+                    $this->handleNonTpvAccountForNonPayroll($bankTransfer, $merchantId, $balanceId);
 
                     return false;
                 }
@@ -1116,7 +1112,7 @@ class Processor extends VirtualAccount\Processor
     // that the transfer was meant to go to so that we can send that merchant an email regarding
     // their failed fund loading attempt
     //
-    public function handleNonTpvAccount($bankTransfer, $merchantId, $balanceId)
+    public function handleNonTpvAccountForNonPayroll($bankTransfer, $merchantId, $balanceId)
     {
         $actualMerchantId = $bankTransfer->getMerchantId();
 
@@ -1150,6 +1146,23 @@ class Processor extends VirtualAccount\Processor
 
     public function handlePayrollTpv($bankTransfer, $merchantID, $balanceID, $isValidationFlow): bool
     {
+        // Removing the TPV validation from the notification call,
+        // since the validation call has already confirmed that TPV is verified
+        // and the funds are in the payroll account with the correct payroll MID.
+        // Including TPV validation again in the notification call is redundant
+        // and may lead to unnecessary refund transactions.
+        if(!$isValidationFlow){
+            $this->trace->info(TraceCode::TPV_SKIP_FOR_PAYROLL_IN_NOTIFICATION_API,
+                [
+                    'disable_tpv_feature' => false,
+                    'merchant_id' => $merchantID,
+                    'balance_id' => $balanceID,
+                    'validation_flow' => $isValidationFlow
+                ]
+            );
+            return true;
+        }
+
         $xPayrollService = $this->app['xpayroll'];
 
         $response = $xPayrollService->sendPayrollTpvRequestAndGetResponse($bankTransfer, $this->mode);
@@ -1337,6 +1350,18 @@ class Processor extends VirtualAccount\Processor
 
         return (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
 
+    }
+
+    protected function isLedgerReverseShadowBtAsyncWebhookExperimentEnabled($merchantId): bool
+    {
+        $mode = $this->isLiveMode() ? 'live' : 'test';
+        $requestPayload = [
+            "id" => $merchantId,
+            "experiment_name" =>  Merchant\RazorxTreatment::LEDGER_TRANSACTION_ASYNC_WEBHOOK_BT,
+            'request_data'  => json_encode(['id' => $merchantId, 'mode' => $mode])
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE);
     }
 
     public function isWebhookSyncFiringEnabled($merchantId,$experimentName,string $checkVariant)

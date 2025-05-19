@@ -64,6 +64,7 @@ class GroupType
             Type::MARKETPLACE_IS,
             Type::DEMO_ONBOARDING,
             Type::CAPITAL_LOC_EMI,
+            Type::API_PAYOUTS,
             Type::OTHERS
         ],
 

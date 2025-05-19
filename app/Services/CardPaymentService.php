@@ -236,7 +236,7 @@ class CardPaymentService
     public function handleMandateHQCallback(array $input)
     {
         $request = [
-            'url'     => $this->getBaseUrl() . 'mandate_hq/callback',
+            'url'     => $this->config['url'][Mode::LIVE] . 'mandate_hq/callback',
             'method'  => 'POST',
             'content' => $input,
             'headers' => [

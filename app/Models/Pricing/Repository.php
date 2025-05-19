@@ -1344,6 +1344,7 @@ class Repository extends Base\Repository
         $methodSubtype,
         $network,
         $international,
+        $channel,
         $amountRangeActive = 0,
         $orgId = null,
         $appName = null,
@@ -1354,7 +1355,7 @@ class Repository extends Base\Repository
     {
         $fqcn = get_class($this) . '\\' . __FUNCTION__;
         $orgId = $this->getOrgIdForQuery($orgId);
-        $legacyCallable = function () use ($planId, $product, $feature, $method, $methodType, $methodSubtype, $network, $international, $amountRangeActive, $orgId, $appName, $receiverType, $procurer, $feeBearer) {
+        $legacyCallable = function () use ($planId, $product, $feature, $method, $methodType, $methodSubtype, $network, $international, $channel, $amountRangeActive, $orgId, $appName, $receiverType, $procurer, $feeBearer) {
             return $this->getPricingRuleByMultipleParamsLegacy(
                 $planId,
                 $product,
@@ -1364,6 +1365,7 @@ class Repository extends Base\Repository
                 $methodSubtype,
                 $network,
                 $international,
+                $channel,
                 $amountRangeActive,
                 $orgId,
                 $appName,
@@ -1381,6 +1383,7 @@ class Repository extends Base\Repository
             'payment_method_subtype' => $methodSubtype,
             'payment_network' => $network,
             'international' => $international,
+            'channel' => $channel,
             'amount_range_active' => $amountRangeActive,
             'org_id' => $orgId,
             'app_name' => $appName,
@@ -1414,6 +1417,7 @@ class Repository extends Base\Repository
         $methodSubtype,
         $network,
         $international,
+        $channel,
         $amountRangeActive = 0,
         $orgId = null,
         $appName = null,
@@ -1431,6 +1435,7 @@ class Repository extends Base\Repository
                      ->where(Entity::PAYMENT_METHOD_SUBTYPE, '=', $methodSubtype)
                      ->where(Entity::PAYMENT_NETWORK, '=', $network)
                      ->where(Entity::INTERNATIONAL, '=', $international)
+                     ->where(Entity::CHANNEL, '=', $channel)
                      ->where(Entity::AMOUNT_RANGE_ACTIVE, '=', $amountRangeActive)
                      ->where(Entity::APP_NAME,'=',$appName);
 

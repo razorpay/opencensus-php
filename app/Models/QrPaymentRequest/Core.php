@@ -67,6 +67,7 @@ class Core extends Base\Core
         if (!empty($qrPaymentRequest->getAttribute(Entity::REQUEST_SOURCE)) === true)
         {
             $reqSource = (json_decode($qrPaymentRequest->getAttribute(Entity::REQUEST_SOURCE), true));
+
             if (isset($reqSource['source']) === true)
             {
                 $dimensions = [

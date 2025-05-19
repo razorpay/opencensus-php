@@ -20,7 +20,7 @@ final class Metric
     const MISSING_STATEMENT_UPDATE_FAILURE                    = 'missing_statement_update_failure';
     const MISSING_STATEMENT_BATCH_INSERT_FAILURE              = 'missing_statement_batch_insert_failure';
     const MISSING_STATEMENTS_FOUND                            = 'missing_statements_found';
-    const DUAL_WRITE_MESSAGE_PROCESSING_ORDER_VIOLATION       = 'dual_write_message_processing_order_violation';
+    const BASD_DUAL_WRITE_ERROR_COUNT                         = 'basd_dual_write_error_count';
     const STATEMENT_BALANCES_DO_NOT_MATCH                     = 'statement_balances_do_not_match';
     const INSERT_AND_UPDATE_BAS_FAILURE                       = 'insert_and_update_bas_failure';
     const BAS_UPDATE_QUEUE_DISPATCH_FAILURE                   = 'bas_update_queue_dispatch_failure';

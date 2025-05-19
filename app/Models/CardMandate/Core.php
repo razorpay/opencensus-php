@@ -544,6 +544,14 @@ class Core extends Base\Core
 
         $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($cardMandateId, $payment->merchant);
 
+        if (empty($cardMandate))
+        {
+            $class = \RZP\Constants\Entity::getExternalRepoSingleton(\RZP\Constants\Entity::CARD_MANDATE);
+            $entity = $class->fetch('card_mandates', $cardMandateId, []);
+            $cardMandate = new \RZP\Models\CardMandate\Entity($entity);
+            $cardMandate->setExternal(true);
+        }
+
         $mandateHub = (new MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
 
         try

@@ -1426,6 +1426,8 @@ class Core extends Base\Core
 
         foreach ($merchantData as $merchantId => $data)
         {
+            #this is used to identify the logs for this particular run
+            $loggingTime = 'log_' . strval(microtime(true));
             $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::ID]    = $merchantId;
             $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::NAME]  = $data[MerchantEntity::NAME];
             $bulkMailData[EntityConstants::MERCHANT][MerchantEntity::EMAIL] = $data[MerchantEntity::EMAIL];
@@ -1434,6 +1436,8 @@ class Core extends Base\Core
                 'id' => $merchantId,
                 'name'=>$data[MerchantEntity::NAME],
                 'email'=>$data[MerchantEntity::EMAIL],
+                'data' => $data,
+                'loggingTime' => $loggingTime
             ]);
 
             foreach ($data[Constants::DISPUTES] as $disputePhase => $publicDisputeIds)
@@ -1488,47 +1492,87 @@ class Core extends Base\Core
                         $this->trace->info(TraceCode:: BULK_MAIL_DATA_FOR_FRAUD_PAYMENTS, [
                             'phase'=> $disputePhase,
                             'bulk_mail_fraud_data' => $bulkMailDataFraud,
+                            'merchant_id' => $merchantId,
+                            'dispute_ids' => $disputeIds,
+                            'loggingTime' => $loggingTime
+
                         ]);
 
-                        $this->bulkMailQueue($bulkMailDataFraud, $merchantId, $disputeIds, $disputePhase);
+                        $this->bulkMailQueue($bulkMailDataFraud, $merchantId, $disputeIds, $disputePhase, $loggingTime);
                     }
                     if ($bulkMailDataNonFraud['totalPayments'] > 0)
                     {
 
-                        $this->trace->info(TraceCode:: BULK_MAIL_DATA_FOR_FRAUD_PAYMENTS, [
+                        $this->trace->info(TraceCode:: BULK_MAIL_DATA_FOR_NON_FRAUD_PAYMENTS, [
                             'phase'=> $disputePhase,
                             'bulk_mail_non_fraud_data' => $bulkMailDataNonFraud,
+                            'merchant_id' => $merchantId,
+                            'dispute_ids' => $disputeIds,
+                            'loggingTime' => $loggingTime
                         ]);
 
-                        $this->bulkMailQueue($bulkMailDataNonFraud, $merchantId, $disputeIds, $disputePhase);
+                        $this->bulkMailQueue($bulkMailDataNonFraud, $merchantId, $disputeIds, $disputePhase, $loggingTime);
                     }
                 }
 
                 $this->trace->info(TraceCode::BULK_MAIL_DATA, [
                     'bulk_mail_data' => $bulkMailData,
-                    'total_payments' => count($publicDisputeIds)
+                    'total_payments' => count($publicDisputeIds),
+                    'merchant_id' => $merchantId,
+                    'dispute_ids' => $disputeIds,
+                    'loggingTime' => $loggingTime
+
                 ]);
 
                 $bulkMailData['totalPayments'] = count($publicDisputeIds);
 
-                $this->bulkMailQueue($bulkMailData, $merchantId, $disputeIds, $disputePhase);
+                $this->bulkMailQueue($bulkMailData, $merchantId, $disputeIds, $disputePhase, $loggingTime);
 
             }
         }
     }
 
-    protected function bulkMailQueue($bulkMailData, $merchantId, $disputeIds, $disputePhase)
+    protected function bulkMailQueue($bulkMailData, $merchantId, $disputeIds, $disputePhase, $loggingTime = null)
     {
         try
         {
             $merchant = $this->repo->merchant->findOrFail($merchantId);
-
+            $this->trace->info(
+                TraceCode::DISPUTE_BULK_MAIL_QUEUE_START,
+                [
+                    'merchant_id' => $merchantId,
+                    'phase'       => $disputePhase,
+                    'dispute_ids' => $disputeIds,
+                    'bulk_mail_data' => $bulkMailData,
+                    'merchant' => $merchant->toArrayPublic(),
+                    'loggingTime' => $loggingTime
+                ]
+            );
             if ($bulkMailData[Entity::PHASE] === Phase::CHARGEBACK
                 and Merchant\RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === true)
             {
+                $this->trace->info(
+                    TraceCode::DISPUTE_BULK_MAIL_QUEUE_START_CHECK,
+                    [
+                        'phase'       => $disputePhase,
+                        'dispute_ids' => $disputeIds,
+                        'bulk_mail_data' => $bulkMailData,
+                        'merchant' => $merchant->toArrayPublic(),
+                        'loggingTime' => $loggingTime
+                    ]
+                    );
                 if (isset($bulkMailData['isFraud']) === false) {
                     $bulkMailData['mobileSignup'] = true;
-                    $this->sendChargebackNotifMobileSignUp($merchant, $bulkMailData);
+                    $this->trace->info(
+                        TraceCode::DISPUTE_BULK_MAIL_MOBILE_SIGNUP_ELIGIBLE,
+                        [
+                            'merchant_id' => $merchantId,
+                            'phase'       => $disputePhase,
+                            'dispute_ids' => $disputeIds,
+                            'loggingTime' => $loggingTime
+                        ]
+                    );
+                    $this->sendChargebackNotifMobileSignUp($merchant, $bulkMailData, $loggingTime );
                 }
             }
             else
@@ -1540,12 +1584,26 @@ class Core extends Base\Core
 
                     if (empty($fdOutboundEmailRequest) === false)
                     {
-                        $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest, FreshdeskConstants::URLIND);
+                        $this->trace->info(
+                            TraceCode::DISPUTE_BULK_MAIL_FD_REQUEST_INITIATED,
+                            [
+                                'merchant_id' => $merchantId,
+                                'phase'       => $disputePhase,
+                                'fd_request'  => $fdOutboundEmailRequest,
+                            ]
+                        );
 
-                        $this->trace->info(TraceCode::EMAIL_SENDING_PROCEDURE_START, [
-                            'outmail_bound_data' => $fdOutboundEmailRequest,
-                            'response'=> $response
-                        ]);
+                        $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest, FreshdeskConstants::URLIND);
+                        $this->trace->info(
+                            TraceCode::EMAIL_SENDING_PROCEDURE_START,
+                            [
+                                'response'           => $response,
+                                'url' => FreshdeskConstants::URLIND,
+                                'merchant_id' => $merchantId,
+                                'phase'       => $disputePhase,
+
+                            ]
+                        );
 
                         (new FreshDeskService())->validateTicketResponse($response, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
                     }
@@ -1559,6 +1617,13 @@ class Core extends Base\Core
                         Merchant\RazorxTreatment::RISK_WHATSAPP_NOTIFICATION);
 
                     if ($isWhatsappEnabled === true) {
+                        $this->trace->info(
+                            TraceCode::DISPUTE_BULK_MAIL_WHATSAPP_NOTIFICATION_ENABLED,
+                            [
+                                'merchant_id' => $merchantId,
+                                'phase'       => $disputePhase,
+                            ]
+                        );
                         $this->generatePDFAndSendWhatsapp($merchant, $bulkMailData);
                     }
                 }
@@ -1580,18 +1645,18 @@ class Core extends Base\Core
                     'dispute_ids' => $disputeIds,
                     'merchant_id' => $merchantId,
                     'phase'       => $disputePhase,
-                ]);
+                ]
+            );
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
+            $this->trace->error(
                 TraceCode::DISPUTE_BULK_MAIL_PROCESSING_ERROR,
                 [
                     'merchant_id' => $merchantId,
                     'phase'       => $disputePhase,
                     'dispute_ids' => $disputeIds,
+                    'error'       => $e->getMessage(),
                 ]
             );
 
@@ -1643,6 +1708,14 @@ class Core extends Base\Core
 
     private function getFdRequestPayload(string $merchantId, Merchant\Entity $merchant, array $merchantData): array
     {
+        $this->trace->info(
+            TraceCode::FD_REQUEST_PAYLOAD_INITIATED,
+            [
+                'merchant_id' => $merchantId,
+                'merchant_data' => $merchantData,
+            ]
+        );
+
         $mailInstance = new DisputeMailer\BulkCreation($merchantData);
 
         $viewName = $mailInstance->getViewName();
@@ -1670,6 +1743,13 @@ class Core extends Base\Core
         if (empty($emailIds) === true)
         {
             $this->traceAndPushMetricsForMerchantsWithNoEmail($merchantId, $disputeIds, $disputePhase);
+
+            $this->trace->info(
+                TraceCode::FD_REQUEST_PAYLOAD_NO_EMAILS,
+                [
+                    'merchant_id' => $merchantId,
+                ]
+            );
 
             return [];
         }
@@ -1718,6 +1798,14 @@ class Core extends Base\Core
 
             $fdOutboundEmailRequest[FreshdeskConstants::CC_EMAILS] = array_merge($emailIds, $salesPOCEmailId);
         }
+
+        $this->trace->info(
+            TraceCode::FD_REQUEST_PAYLOAD_CREATED,
+            [
+                'merchant_id' => $merchantId,
+                'fd_request' => $fdOutboundEmailRequest,
+            ]
+        );
 
         return $fdOutboundEmailRequest;
     }
@@ -1787,9 +1875,18 @@ class Core extends Base\Core
             'button_url_param' => 'app/disputes',
         ];
 
+        $this->trace->info(
+            TraceCode::GENERATE_PDF_AND_SEND_WHATSAPP_NOTIFICATION,
+            [
+                'merchant_id' => $merchant->getId(),
+                'merchant_name' => $merchant->getName(),
+                'pdf_url' => $signedFileUrl,
+                'template' => DisputeConstants::RISK_CHARGEBACK_INTIMATION_WITH_ATTACHMENT_TEMPLATE_NAME,
+            ]
+        );
+
         $this->sendWhatsappMessage($merchant, DisputeConstants::RISK_CHARGEBACK_INTIMATION_WITH_ATTACHMENT_TEMPLATE_NAME,
             DisputeConstants::RISK_CHARGEBACK_INTIMATION_WITH_ATTACHMENT_TEMPLATE, $dataForPDF, $attachmentData, true);
-
     }
 
     public function fileUploadAndGetUrl($pdfContent)
@@ -1838,11 +1935,23 @@ class Core extends Base\Core
         return $tableData;
     }
 
-    protected function sendChargebackNotifMobileSignUp($merchant, $bulkMailData)
+    protected function sendChargebackNotifMobileSignUp($merchant, $bulkMailData, $loggingTime = null)
     {
         try
         {
-           $viewTemplate = $merchant->isFeatureEnabled(Feature\Constants::EXCLUDE_DISPUTE_PRESENTMENT) === false
+            $this->trace->info(
+                TraceCode::CHARGEBACK_MOBILE_SIGNUP_NOTIFICATION_INITIATED,
+                [
+                    'merchant_id' => $merchant->getId(),
+                    'merchant_name' => $merchant->getName(),
+                    'bulk_mail_data' => $bulkMailData,
+                    'merchant' => $merchant->toArrayPublic(),
+                    'loggingTime' => $loggingTime
+                    
+                ]
+            );
+
+            $viewTemplate = $merchant->isFeatureEnabled(Feature\Constants::EXCLUDE_DISPUTE_PRESENTMENT) === false
                 ? 'emails.dispute.bulk_creation_dispute_presentment_enabled'
                 : 'emails.dispute.bulk_creation';
 
@@ -1860,7 +1969,7 @@ class Core extends Base\Core
 
             $mailBody =  View::make($viewTemplate, $bulkMailData)->with('disputesDataTable', $this->createDisputesDataTable($bulkMailData['disputes']))->render();
 
-            $fdTicket = (new Merchant\RiskMobileSignupHelper())->createFdTicket($merchant, $viewTemplate, $subject, $bulkMailData, $requestParams, $mailBody);
+            $fdTicket = (new Merchant\RiskMobileSignupHelper())->createFdTicket($merchant, $viewTemplate, $subject, $bulkMailData, $requestParams, $mailBody, $loggingTime);
 
             $supportTicketLink = (new Merchant\RiskMobileSignupHelper())->getSupportTicketLink($fdTicket, $merchant);
 
@@ -1873,6 +1982,14 @@ class Core extends Base\Core
 
             $this->sendWhatsappMessage($merchant, DisputeConstants::CHARGEBACK_WHATSAPP_TEMPLATE_NAME,
                                        DisputeConstants::CHARGEBACK_WHATSAPP_TEMPLATE, $data);
+
+            $this->trace->info(
+                TraceCode::CHARGEBACK_MOBILE_SIGNUP_NOTIFICATION_SUCCESS,
+                [
+                    'merchant_id' => $merchant->getId(),
+                    'merchant_name' => $merchant->getName(),
+                ]
+            );
         }
         catch (\Throwable $e)
         {
@@ -1882,6 +1999,7 @@ class Core extends Base\Core
                 TraceCode::CHARGEBACK_MOBILE_SIGNUP_SEND_NOTIF_ERROR,
                 [
                     'merchant_id' => $merchant->getId(),
+                    'merchant_name' => $merchant->getName(),
                 ]
             );
         }
@@ -2066,6 +2184,13 @@ class Core extends Base\Core
             $merchant = $dispute->merchant;
             $disputeEntity = $dispute->toArrayAdmin();
             $disputeReason = $dispute->reason->toArrayAdmin();
+            $this->trace->info(TraceCode::DISPUTE_EMAIL_SENDING_DETAILS, [
+                'dispute_entity' => $disputeEntity,
+                'dispute_id' => $disputeEntity[Entity::ID],
+                'merchant_id' => $disputeEntity[Entity::MERCHANT_ID],
+                'phase' => $disputeEntity[Entity::PHASE],
+                'merchant' => $merchant->toArrayPublic(),
+            ]);
 
             $merchantData[$disputeEntity[Entity::MERCHANT_ID]][MerchantEntity::NAME]  = $merchant->getName();
             $merchantData[$disputeEntity[Entity::MERCHANT_ID]][MerchantEntity::EMAIL] = $merchant->getEmail();
@@ -2083,7 +2208,11 @@ class Core extends Base\Core
                 $disputeData[$disputeEntity[Entity::ID]]['order_receipt'] = $payment->order->getReceipt();
             }
         }
+        $this->trace->info(TraceCode::DISPUTE_EMAIL_SENDING_MERCHANT_DATA, [
+            'merchant_data' => $merchantData,
+            'dispute_data'  => $disputeData,
 
+        ]);
         $this->sendAggregatedEmails($merchantData, $disputeData);
 
         $this->trace->info(TraceCode::DISPUTE_EMAIL_SENDING_COMPLETE,[
@@ -3096,7 +3225,7 @@ class Core extends Base\Core
     {
         $merchant = $payment->merchant;
 
-        if ($merchant->isFeatureEnabled(Feature\Constants::AUTO_CLOSURE_CBK_MF_MX) === true && $input[Entity::PHASE] === Phase::CHARGEBACK && !(new Validator)::isPhaseDispute($input)) {
+        if ($merchant->isFeatureEnabled(Feature\Constants::AUTO_CLOSURE_CBK_MF_MX) === true && strtolower($input[Entity::PHASE]) === Phase::CHARGEBACK && !(new Validator)::isPhaseDispute($input)) {
 
             $isTPlus5ChargebackValid = (new Validator)->isAutoClosureChargebackTimeValid($payment);
 

@@ -36,12 +36,6 @@ trait ExternalLinkedAccountPaymentRepo
 
         try
         {
-            return (new Payment\Repository())->findByPublicId($id, $connectionType);
-        }
-        catch (\Throwable $e) {}
-
-        try
-        {
             if ($this->validateExternalFetchEnabled() === true )
             {
                 return $this->fetchExternalTransferTypePaymentById($id);
@@ -49,7 +43,7 @@ trait ExternalLinkedAccountPaymentRepo
         }
         catch (\Throwable $e) {}
 
-        return $this->findByPublicIdArchived($id);
+        return (new Payment\Repository())->findByPublicId($id, $connectionType);
     }
 
     public function findByPublicIdAndMerchant(
@@ -62,12 +56,6 @@ trait ExternalLinkedAccountPaymentRepo
 
         try
         {
-            return (new Payment\Repository())->findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
-        }
-        catch (\Throwable $e) {}
-
-        try
-        {
             if ($this->validateExternalFetchEnabled() === true)
             {
                 return $this->fetchExternalTransferTypePaymentById($id, $params);
@@ -75,7 +63,7 @@ trait ExternalLinkedAccountPaymentRepo
         }
         catch (\Throwable $e) {}
 
-        return $this->findByPublicIdAndMerchantArchived($id, $merchant, $params);
+        return (new Payment\Repository())->findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
     }
 
     public function findByIdAndMerchant(
@@ -88,12 +76,6 @@ trait ExternalLinkedAccountPaymentRepo
 
         try
         {
-            return (new Payment\Repository())->findByIdAndMerchant($id, $merchant, $params, $connectionType);
-        }
-        catch (\Throwable $e) {}
-
-        try
-        {
             if ($this->validateExternalFetchEnabled() === true)
             {
                 return $this->fetchExternalTransferTypePaymentById($id, $params);
@@ -101,7 +83,7 @@ trait ExternalLinkedAccountPaymentRepo
         }
         catch (\Throwable $e) {}
 
-        return $this->findByIdAndMerchantArchived($id, $merchant, $params);
+        return (new Payment\Repository())->findByIdAndMerchant($id, $merchant, $params, $connectionType);
     }
 
     public function findByIdAndMerchantId($id, $merchantId, string $connectionType = null)
@@ -110,12 +92,6 @@ trait ExternalLinkedAccountPaymentRepo
 
         try
         {
-            return (new Payment\Repository())->findByIdAndMerchantId($id, $merchantId, $connectionType);
-        }
-        catch (\Throwable $e) {}
-
-        try
-        {
             if ($this->validateExternalFetchEnabled() === true)
             {
                 return $this->fetchExternalTransferTypePaymentById($id);
@@ -123,18 +99,12 @@ trait ExternalLinkedAccountPaymentRepo
         }
         catch (\Throwable $e) {}
 
-        return $this->findByIdAndMerchantIdArchived($id, $merchantId);
+        return (new Payment\Repository())->findByIdAndMerchantId($id, $merchantId, $connectionType);
     }
 
     public function findOrFailByPublicIdWithParams($id, array $params, string $connectionType = null): PublicEntity
     {
         $this->entityName = Entity::PAYMENT_METHOD_TRANSFER;
-
-        try
-        {
-            return (new Payment\Repository())->findOrFailByPublicIdWithParams($id, $params, $connectionType);
-        }
-        catch (\Throwable $e) {}
 
         try
         {
@@ -145,7 +115,7 @@ trait ExternalLinkedAccountPaymentRepo
         }
         catch (\Throwable $e) {}
 
-        return $this->findOrFailByPublicIdWithParamsArchived($id, $params);
+        return (new Payment\Repository())->findOrFailByPublicIdWithParams($id, $params, $connectionType);
     }
 
     public function findOrFailPublic($id, $columns = array('*'), string $connectionType = null)
@@ -154,12 +124,6 @@ trait ExternalLinkedAccountPaymentRepo
 
         try
         {
-            return (new Payment\Repository())->findOrFailPublic($id, $columns, $connectionType);
-        }
-        catch (\Throwable $e) {}
-
-        try
-        {
             if ($this->validateExternalFetchEnabled() === true)
             {
                 return $this->fetchExternalTransferTypePaymentById($id);
@@ -167,7 +131,7 @@ trait ExternalLinkedAccountPaymentRepo
         }
         catch (\Throwable $e) {}
 
-        return $this->findOrFailPublicArchived($id, $columns);
+        return (new Payment\Repository())->findOrFailPublic($id, $columns, $connectionType);
     }
 
     public function findOrFail($id, $columns = array('*'), string $connectionType = null)
@@ -176,12 +140,6 @@ trait ExternalLinkedAccountPaymentRepo
 
         try
         {
-            return (new Payment\Repository())->findOrFail($id, $columns, $connectionType);
-        }
-        catch (\Throwable $e) {}
-
-        try
-        {
             if ($this->validateExternalFetchEnabled() === true)
             {
                 return $this->fetchExternalTransferTypePaymentById($id);
@@ -189,7 +147,7 @@ trait ExternalLinkedAccountPaymentRepo
         }
         catch (\Throwable $e) {}
 
-        return $this->findOrFailOnlyArchived($id, $columns);
+        return (new Payment\Repository())->findOrFail($id, $columns, $connectionType);
     }
 
     public function findByTransferIdAndMerchant(string $transferId, string $accountId, array $relations = [], $connectionType = null)
@@ -198,21 +156,14 @@ trait ExternalLinkedAccountPaymentRepo
 
         try
         {
-            return (new Payment\Repository())->findByTransferIdAndMerchant($transferId, $accountId, $relations, $connectionType);
-        }
-        catch (\Throwable $outerEx)
-        {
-            try
+            if ($this->validateExternalFetchEnabled() === true)
             {
-                if ($this->validateExternalFetchEnabled() === true)
-                {
-                    return $this->fetchExternalTransferTypePaymentByTransferIdAndAccountId($transferId, $accountId, $relations);
-                }
+                return $this->fetchExternalTransferTypePaymentByTransferIdAndAccountId($transferId, $accountId, $relations);
             }
-            catch (\Throwable $innerEx) {}
-
-            throw $outerEx;
         }
+        catch (\Throwable $innerEx) {}
+
+        return (new Payment\Repository())->findByTransferIdAndMerchant($transferId, $accountId, $relations, $connectionType);
     }
 
     private function validateExternalFetchEnabled()

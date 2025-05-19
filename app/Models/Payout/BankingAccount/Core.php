@@ -127,6 +127,47 @@ class Core extends Base
         (new Repository)->updateBankingAccountIntoPayoutServiceDB($merchantId, $balanceId, $data);
     }
 
+    public function updatePayoutServiceEnabledFlagInPayoutServiceBankingAccountWithMerchantOnboardingTime(string $merchantId, string $balanceId, bool $payoutServiceEnabled)
+    {
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SERVICE_BANKING_ACCOUNT_UPDATE_INIT,
+            ['merchant_id' => $merchantId, 'balance_id' => $balanceId, 'payout_service_enabled' => $payoutServiceEnabled]
+        );
+
+        /** @var \RZP\Models\Merchant\Balance\Entity $balance */
+
+        $balance = $this->repo->balance->getBalanceEntityForBalanceId($balanceId);
+
+        try
+        {
+            $bankingAccount = (new BankingAccount\Service())-> fetchBankingAccountForAccountNumber($balance->getAccountNumber(), $merchantId);
+
+        }
+        catch (\Throwable $ex)
+        {
+
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::PAYOUT_SERVICE_BANKING_ACCOUNT_FETCH_FROM_API_MONOLITH_FAILURE,
+                ['merchant_id' => $merchantId, 'balance_id' => $balanceId, 'payout_service_enabled' => $payoutServiceEnabled]
+            );
+
+            throw $ex;
+        }
+
+
+        $data = ([
+            Entity::CREATED_AT              => $bankingAccount[Entity::ONBOARDED_TIME],
+            Entity::PAYOUT_SERVICE_ENABLED  => $payoutServiceEnabled,
+            Entity::UPDATED_AT              => Carbon::now(Timezone::IST)->getTimestamp(),
+        ]);
+
+        (new Repository)->updateBankingAccountIntoPayoutServiceDB($merchantId, $balanceId, $data);
+    }
+
+
     public function merchantMigratedToPayoutServiceByMerchantIdAndBalanceId(string $merchantId, string $balanceId)
     {
         $this->trace->info(
@@ -442,7 +483,7 @@ class Core extends Base
         }
         else
         {
-            $this->updatePayoutServiceEnabledFlagInPayoutServiceBankingAccount($merchantId, $balanceId, true);
+            $this->updatePayoutServiceEnabledFlagInPayoutServiceBankingAccountWithMerchantOnboardingTime($merchantId, $balanceId, true);
 
         }
     }

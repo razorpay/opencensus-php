@@ -67,6 +67,16 @@ class Repository extends Base\Repository
         return $query;
     }
 
+    public function retrieveApiIinEntityDetails($iin)
+    {
+        if (strlen($iin) > 6)
+        {
+            $iin = intval(substr($iin, 0, 6));
+        }
+
+        return Card\IIN\Entity::find($iin);
+    }
+
     public function retrieveIinDetails($iin)
     {
         if (strlen($iin) > 6)

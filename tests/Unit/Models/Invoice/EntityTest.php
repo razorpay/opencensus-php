@@ -1,6 +1,8 @@
 <?php
 namespace RZP\Tests\Unit\Models\Invoice;
 
+use Mockery;
+use RZP\Models\Invoice\Entity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\PublicCollection;
 use RZP\Tests\Functional\CustomAssertions;
@@ -41,5 +43,29 @@ class EntityTest extends TestCase
         $expected = [$expected];
 
         $this->assertArraySelectiveEquals($expected, $actual);
+    }
+
+    public function testCustomerLazyRead()
+    {
+        $mockCustomerRepo = Mockery::mock('\RZP\Models\Customer\Repository', [$this->app]);
+        $mockCustomerEntity = new \RZP\Models\Customer\Entity();
+        $mockCustomerId = '100000customer';
+        $mockCustomerEntity->fill([
+            'id' => $mockCustomerId,
+            'name' => 'RzpCustomerName',
+            'email' => 'RzpCustomer@email.com',
+            'contact' => '9999999999',
+            'merchant_id' => '100000Razorpay'
+        ]);
+        $mockCustomerRepo->shouldReceive('find')->with($mockCustomerId)->andReturn($mockCustomerEntity);
+
+        $mockRepoManager = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app]);
+        $this->app->instance('repo', $mockRepoManager);
+        $mockRepoManager->shouldReceive('driver')->with('customer')->andReturn($mockCustomerRepo);
+
+
+        $invoice = new Entity();
+        $invoice->setAttribute('customer_id', $mockCustomerId);
+        $this->assertEquals($mockCustomerEntity, $invoice->customer);
     }
 }

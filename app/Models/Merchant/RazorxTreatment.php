@@ -79,6 +79,8 @@ final class RazorxTreatment
     //It is used to maintain backward compatibility for fav composite api response.
     const FAV_COMPOSITE_SERVICE_FORWARDING = 'fav_composite_service_forwarding';
 
+    const PAYOUT_LINKS_IP_WHITELIST = 'payout_links_ip_whitelist';
+
     // Decide whom to use k8s batch upload job instead of queue worker
     const K8S_BATCH_TREATMENT   = 'k8s-batch-upload';
 
@@ -192,6 +194,8 @@ final class RazorxTreatment
 
     // Expt to use transactions table if count is 1
     const LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE = 'ledger_reverse_shadow_latest_txn_balance';
+
+    const LEDGER_TRANSACTION_ASYNC_WEBHOOK_BT = 'ledger_transaction_async_webhook_bt';
 
     // Fetch balance from ledger TiDB
     const LEDGER_BALANCE_FETCH_FROM_TIDB = 'ledger_balance_fetch_from_tidb';
@@ -338,9 +342,6 @@ final class RazorxTreatment
     const BANKING_ACCOUNT_STATEMENT_FETCH_UNLINKED_QUERY_OPTIMIZE = 'banking_account_statement_fetch_unlinked_query_optimize';
 
     const PAYOUT_SERVICE_TXN_RECON = 'payout_service_txn_recon';
-
-    // for creating upi recurring auth link via batch upload pick up as presented frequency by default
-    const UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT = 'upi_auth_link_frequency_as_presented_default';
 
     const BANKING_ACCOUNT_STATEMENT_TEMP_RECORDS = 'banking_account_statement_temp_records';
 
@@ -566,9 +567,6 @@ final class RazorxTreatment
     // Experiment to send charge collection events to payout service
 
     const SEND_CHARGE_COLLECTION_EVENT_RX = 'send_charge_collection_event_rx';
-
-    // Experiment to pass unused rejected tokens along with regular tokens in fetchTokens api call
-    const PASS_REJECTED_UNUSED_TOKENS = 'pass_rejected_unused_tokens';
 
     // razorx treatment for fetch from scrooge service
     const ENTITY_RELATIONAL_LOAD_FROM_SCROOGE = 'entity_relational_load_from_scrooge';

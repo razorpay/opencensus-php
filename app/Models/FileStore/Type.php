@@ -260,6 +260,8 @@ class Type
     const YES_EMI_FILE_SFTP                 = 'yes_emi_file_sftp';
     const YES_EMI_FILE_MAIL                 = 'yes_emi_file_mail';
     const ICICI_EMI_REFUND_FILE             = 'icici_emi_refund_file';
+
+    const AUBL_EMI_REFUND_FILE             = 'aubl_emi_refund_file';
     const ICICI_EMI_FILE_SFTP               = 'icici_emi_file_sftp';
     const ICICI_EMI_FILE_MAIL               = 'icici_emi_file_mail';
     const SBI_EMI_FILE                      = 'sbi_emi_file';
@@ -273,6 +275,9 @@ class Type
     const INDUS_IND_DEBIT_EMI_FILE          = 'indusind_debit_emi_file';
     const FEDERAL_EMI_FILE                  = 'federal_emi_file';
     const IDFC_EMI_FILE                     = 'idfc_emi_file';
+
+    const AUBL_EMI_FILE                     = 'aubl_emi_file';
+
 
     const AXIS_CARD_SETTLEMENT_FILE         = 'axis_cardsettlement_file';
     const AXIS_CARD_SETTLEMENT_OUTPUT_FILE  = 'axis_cardsettlement_output_file';
@@ -504,7 +509,10 @@ class Type
             self::ICICI_DEBIT_EMI_FILE,
             self::ICICI_DEBIT_EMI_REFUND_FILE,
             self::IDFC_EMI_FILE,
+            self::AUBL_EMI_FILE,
+            self::AUBL_EMI_REFUND_FILE,
             self::AUTO_CLOSURE_MF_MERCHANTS,
+
         ],
 
         Constants\Entity::BATCH => [
@@ -717,6 +725,9 @@ class Type
         self::ICICI_DEBIT_EMI_FILE,
         self::ICICI_DEBIT_EMI_REFUND_FILE,
         self::IDFC_EMI_FILE,
+        self::AUBL_EMI_FILE,
+        self::AUBL_EMI_REFUND_FILE,
+
     ];
 
     /**
@@ -768,7 +779,7 @@ class Type
 
         self::CHOTABEAM_BUCKET_CONFIG => [
             self::IDFC_EMI_FILE,
-            self::YES_EMI_FILE_SFTP
+            self::YES_EMI_FILE_SFTP,
         ],
 
         self::BEAM_BUCKET_CONFIG => [
@@ -794,6 +805,8 @@ class Type
             self::FEDERAL_EMI_FILE,
             self::ICICI_DEBIT_EMI_FILE,
             self::ICICI_DEBIT_EMI_REFUND_FILE,
+            self::AUBL_EMI_FILE,
+            self::AUBL_EMI_REFUND_FILE,
         ],
 
         self::BATCH_SERVICE_BUCKET_CONFIG => [

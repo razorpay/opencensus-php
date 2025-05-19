@@ -24447,6 +24447,38 @@ return [
         ]
     ],
 
+    'testDualWriteForPayoutServicePayoutWithNewColumnAdditioninPayoutDetails' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts_service/dual_write',
+            'content' => [
+                'payout_id' => 'randomid111111',
+                'timestamp' => 946684801
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success'
+            ]
+        ]
+    ],
+
+    'testDualWriteForPayoutServicePayoutUnsettingNewColumnInPayoutsDetails' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts_service/dual_write',
+            'content' => [
+                'payout_id' => 'randomid111111',
+                'timestamp' => 946684801
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success'
+            ]
+        ]
+    ],
+
     'testPayoutUpdatePostBasRecon' => [
         'request' => [
             'method' => 'POST',
@@ -25998,6 +26030,22 @@ return [
                 'bulk_input' => [[
                     'key' => 'collectx_enabled',
                     'value' => ['ha', 'nahi']
+                ]]
+            ]
+        ]
+    ],
+    'testRedisSetBalanceBlacklist' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payouts/manual_action',
+            'content' => [
+                'reason' => 'Jaruri hai',
+                'action' => 'redis_set',
+                'bulk_input' => [[
+                    'key' => 'config:balance_fetch_merchants_blacklist',
+                    'value' => [
+                        'rbl' => ['test1', 'test2']
+                    ]
                 ]]
             ]
         ]

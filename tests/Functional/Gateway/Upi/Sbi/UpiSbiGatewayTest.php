@@ -366,7 +366,7 @@ class UpiSbiGatewayTest extends TestCase
             function (& $request, $action = null)
             {
                 $this->assertEquals('validate_vpa', $action);
-                $this->assertStringContainsString('/payments/upi_sbi/v2/validate_vpa', $request['url']);
+                $this->assertStringContainsString('/payments/upi_sbi/v3/validate_vpa', $request['url']);
             }
         );
 
@@ -417,37 +417,6 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertSame('Test User', $vpa->getName());
         $this->assertSame('valid', $vpa->getStatus());
         $this->assertGreaterThanOrEqual(1600000000, $vpa->getReceivedAt());
-    }
-
-    public function testValidateVpaSuccessWithRazorx()
-    {
-        $this->app->razorx->method('getTreatment')->will($this->returnCallback(
-            function ($mid, $feature, $mode)
-            {
-                if ($feature === 'upi_sbi_v3_migration')
-                {
-                    return 'v3';
-                }
-
-                return 'control';
-            })
-        );
-
-        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
-
-        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
-
-        $this->mockServerRequestFunction(
-            function (& $request, $action = null)
-            {
-                $this->assertEquals('validate_vpa', $action);
-                $this->assertStringContainsString('/payments/upi_sbi/v3/validate_vpa', $request['url']);
-            }
-        );
-
-        $this->ba->privateAuth();
-
-        $this->startTest();
     }
 
     public function testValidateVpaSuccessWithPrefixSpace()

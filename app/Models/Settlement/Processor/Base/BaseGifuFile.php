@@ -17,6 +17,7 @@ use RZP\Services\Mock\UfhService as MockUfhService;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Services\Beam\Service;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Core as MerchantCore;
 
 abstract class BaseGifuFile extends Base\Core
 {
@@ -90,9 +91,16 @@ abstract class BaseGifuFile extends Base\Core
 
         $orgId = (new Merchant\Repository)->getMerchantOrg(current($input));
 
-        $experimentResult = $this->app->razorx->getTreatment($orgId, Merchant\RazorxTreatment::GIFU_CUSTOM,$this->mode);
+        $requestData = '{"org_id":"' . $orgId . '"}';
 
-        $isGifuCustomEnabled = ( $experimentResult === 'on' ) ? true : false;
+        $properties = [
+                'id'            => $orgId,
+                'experiment_id' => $this->app['config']->get('app.gifu_custom_experiment'),
+                'request_data'  => json_encode(['org_id' => $orgId, 'mode' => $this->mode]),
+            ];
+
+        $isGifuCustomEnabled =  (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+
 
         $className = get_class($this);
 

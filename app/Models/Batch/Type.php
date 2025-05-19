@@ -198,6 +198,8 @@ class Type
 
     const CAPITAL_MERCHANT_ELIGIBILITY_CONFIG = 'capital_merchant_eligibility_config';
 
+    const OFFERS_ENGINE_MERCHANT_RAMP_CONTROL = 'offers_engine_merchant_ramp_control';
+
     const MERCHANT_CAPITAL_TAGS = 'merchant_capital_tags';
 
     const EARLY_SETTLEMENT_TRIAL = 'early_settlement_trial';
@@ -209,6 +211,8 @@ class Type
     const MERCHANT_STATUS_ACTIVATION       = 'merchant_status_activation';
 
     const ECOLLECT_RBL          = 'ecollect_rbl';
+
+    const ECOLLECT_RBL_BANKING = 'ecollect_rbl_banking';
 
     const ECOLLECT_AXIS         = 'ecollect_axis';
 
@@ -333,6 +337,12 @@ class Type
     const UPDATE_ODS_MERCHANT_LIMITS = 'update_ods_merchant_limits';
 
 
+    const MANDATE_CONTINUITY = 'mandate_continuity';
+
+    const TOKEN_CONTINUITY = 'token_continuity';
+
+    const CUSTOMER_MIGRATION = 'customer_migration';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -379,6 +389,7 @@ class Type
         self::MERCHANT_CAPITAL_TAGS,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
+        self::ECOLLECT_RBL_BANKING,
         self::ECOLLECT_AXIS,
         self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
@@ -433,6 +444,10 @@ class Type
         self::UPDATE_ODS_MERCHANT_LIMITS,
         self::QR_DEVICE_MAPPING,
         self::QR_DEVICE_UNMAPPING,
+        self::MANDATE_CONTINUITY,
+        self::TOKEN_CONTINUITY,
+        self::CUSTOMER_MIGRATION,
+        self::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL
     ];
 
     /**
@@ -625,6 +640,7 @@ class Type
         self::RECURRING_CHARGE_BSE,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
+        self::ECOLLECT_RBL_BANKING,
         self::ECOLLECT_AXIS,
         self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
@@ -640,6 +656,7 @@ class Type
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
+        self::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL,
         self::EARLY_SETTLEMENT_TRIAL,
         self::MERCHANT_CAPITAL_TAGS,
         self::PARTNER_SUBMERCHANT_INVITE,
@@ -682,6 +699,10 @@ class Type
         self::UPDATE_GIFT_CARDS_EXPIRY,
         self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
         self::ECOLLECT_IDFC,
+        self::STORE_ORG_DEFINED_MERCHANT_FIELDS,
+        self::MANDATE_CONTINUITY,
+        self::TOKEN_CONTINUITY,
+        self::CUSTOMER_MIGRATION,
     ];
 
     /**
@@ -720,6 +741,7 @@ class Type
         self::RECURRING_CHARGE_BSE,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
+        self::ECOLLECT_RBL_BANKING,
         self::ECOLLECT_AXIS,
         self::ECOLLECT_AXIS_BANKING,
         self::ECOLLECT_YESBANK,
@@ -801,6 +823,10 @@ class Type
         self::ECOLLECT_IDFC,
         self::QR_DEVICE_MAPPING,
         self::QR_DEVICE_UNMAPPING,
+        self::MANDATE_CONTINUITY,
+        self::TOKEN_CONTINUITY,
+        self::CUSTOMER_MIGRATION,
+        self::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -852,6 +878,7 @@ class Type
         self::PARTNER_SUBMERCHANTS               => Name::ADMIN_MANAGE_PARTNERS,
         self::ECOLLECT_ICICI                     => Name::ECOLLECT_ICICI_BATCH_UPLOAD,
         self::ECOLLECT_RBL                       => Name::ECOLLECT_RBL_BATCH_UPLOAD,
+        self::ECOLLECT_RBL_BANKING               => Name::ECOLLECT_RBL_BANKING_BATCH_UPLOAD,
         self::ECOLLECT_AXIS                      => Name::ECOLLECT_AXIS_BATCH_UPLOAD,
         self::ECOLLECT_AXIS_BANKING              => Name::ECOLLECT_AXIS_BANKING_BATCH_UPLOAD,
         self::ECOLLECT_YESBANK                   => Name::ECOLLECT_YESBANK_BATCH_UPLOAD,
@@ -913,6 +940,10 @@ class Type
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_V2   => Name::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
         self::QR_DEVICE_MAPPING                       => Name::ADMIN_BATCH_CREATE,
         self::QR_DEVICE_UNMAPPING                     => Name::ADMIN_BATCH_CREATE,
+        self::MANDATE_CONTINUITY                      => Name::ADMIN_BATCH_CREATE,
+        self::TOKEN_CONTINUITY                        => Name::ADMIN_BATCH_CREATE,
+        self::CUSTOMER_MIGRATION                      => Name::ADMIN_BATCH_CREATE,
+        self::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL     => Name::ADMIN_BATCH_CREATE,
     ];
 
     public static $workflowApplicableBatchTypes = [

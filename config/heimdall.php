@@ -1484,6 +1484,10 @@ return [
                 'description' => 'Upload batch file to process ecollect_rbl payments',
                 'assignable'  => true,
             ],
+            Permission::ECOLLECT_RBL_BANKING_BATCH_UPLOAD => [
+                'description' => 'Upload batch file to process collectx payments',
+                'assignable'  => true,
+            ],
             Permission::ECOLLECT_YESBANK_BATCH_UPLOAD => [
                 'description' => 'Upload batch file to process ecollect_yesbank payments',
                 'assignable'  => true,

@@ -146,6 +146,16 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    /***
+    It is for checking the uniqueness of the mobile number
+     ***/
+    public function getUserFromMobile(string $mobile)
+    {
+        return $this->newQuery()
+            ->where(Entity::CONTACT_MOBILE, '=', $mobile)
+            ->first();
+    }
+
     public function getUserIdsFromEmail(string $email, string $userIdToBeExcluded)
     {
         return $this->newQuery()
@@ -221,18 +231,38 @@ class Repository extends Base\Repository
 
     public function getMultipleUsersByIDs($userIds): array
     {
-        return $this->newQuery()
-                    ->whereIn(Entity::ID, $userIds)
-                    ->get()
-                    ->toArray();
+        return $this->getMultipleUsersByIDsV2($userIds)->toArray();
     }
 
     public function getMultipleUsersByEmails($userEmails): array
     {
+        return $this->getMultipleUsersByEmailsV2($userEmails)->toArray();
+    }
+
+    public function getMultipleUsersByMobiles(array $mobileNumbers): array
+    {
+        return getMultipleUsersByMobilesV2($mobileNumbers)->toArray();
+    }
+
+    public function getMultipleUsersByIDsV2($userIds)
+    {
         return $this->newQuery()
-                    ->whereIn(Entity::EMAIL, $userEmails)
-                    ->get()
-                    ->toArray();
+            ->whereIn(Entity::ID, $userIds)
+            ->get();
+    }
+
+    public function getMultipleUsersByEmailsV2($userEmails)
+    {
+        return $this->newQuery()
+            ->whereIn(Entity::EMAIL, $userEmails)
+            ->get();
+    }
+
+    public function getMultipleUsersByMobilesV2(array $mobileNumbers)
+    {
+        return $this->newQuery()
+            ->whereIn(Entity::CONTACT_MOBILE, $mobileNumbers)
+            ->get();
     }
 
 }

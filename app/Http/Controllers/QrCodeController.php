@@ -167,7 +167,14 @@ class QrCodeController extends Controller
 
         return $response;
     }
+    public function fetchQRFromDeviceId()
+    {
+        $input = Request::all();
 
+        $response = (new NonVAQrCodeService())->fetchQRFromDeviceId($input);
+
+        return ApiResponse::json($response);
+    }
     public function qrDemo()
     {
         $input = Request::all();

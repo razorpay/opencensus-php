@@ -167,7 +167,7 @@ class Core extends Base\Core
         }
 
         if ($input[Entity::ACCOUNT_TYPE] === Entity::MOBILE) {
-            $this->sanitizeAndCreateFundAccountInputForLinkedNumber($input);
+            $this->sanitizeAndCreateFundAccountInputForLinkedNumber($input, $merchant->getId());
         }
 
         (new Validator)->setStrictFalse()->validateInput('create', $input);
@@ -1765,12 +1765,12 @@ class Core extends Base\Core
     This function will change the input for fund account creation
     For UPI Number Payouts because underline payment instrument is VPA
      */
-    private function sanitizeAndCreateFundAccountInputForLinkedNumber(array &$input): void
+    private function sanitizeAndCreateFundAccountInputForLinkedNumber(array &$input, string $merchantId): void
     {
         $mobileNumber = $input[Entity::MOBILE][Entity::NUMBER] ?? '';
         $accountHolderName = $input[Entity::MOBILE][Entity::ACCOUNT_HOLDER_NAME] ?? '';
 
-        $mappedVpa = (new LinkedNumber\Core())->FetchMappedVpaFromLinkedNumber($mobileNumber, $accountHolderName);
+        $mappedVpa = (new LinkedNumber\Core())->FetchMappedVpaFromLinkedNumber($mobileNumber, $accountHolderName, $merchantId);
 
         $input = array_merge($input, [
             Entity::LINKED_NUMBER => $mobileNumber,

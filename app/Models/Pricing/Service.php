@@ -30,6 +30,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Services\ChargeCollections;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
+use RZP\Http\RequestHeader;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Pricing\Constants as PricingConstants;
@@ -55,6 +56,11 @@ class Service extends Base\Service
 
     public function createPlan($input, $type = null, $orgID = '', $internalCall = false)
     {
+        $reconJobSync =$this->app['request']->headers->get(RequestHeader::RECON_JOB_SYNC);
+        if ($reconJobSync === "true") {
+            return $this->createPlanLegacy($input, $type, [], $orgID, $internalCall);
+        }
+
         $sourceInput = $input;
         $fqcn = get_class($this) . '\\' . __FUNCTION__;
         $ruleCount = $this->getInputRuleCount($input);
@@ -79,10 +85,20 @@ class Service extends Base\Service
         }
 
         foreach ($input['rules'] as &$item) {
-            // Convert 'amount_range_active' to boolean if it exists and is not already a boolean
-            if (isset($item['amount_range_active']) && !is_bool($item['amount_range_active'])) {
-                $item['amount_range_active'] = (bool) $item['amount_range_active'];
-            }
+           foreach ([
+                    'amount_range_active' => 'bool',
+                    'fixed_rate' => 'int',
+                    'percent_rate' => 'int',
+                    'min_fee' => 'int',
+                    'max_fee' => 'int',
+                    'amount_range_min' => 'int',
+                    'amount_range_max' => 'int',
+                    'percent_rate_scale_factor' => 'int'
+                ] as $key => $type) {
+                    if (isset($item[$key])) {
+                        settype($item[$key], $type);
+                    }
+                }
         }
 
         $input[Entity::ORG_ID] = $this->getRuleOrgId();
@@ -176,6 +192,14 @@ class Service extends Base\Service
         $plan = $this->repo->pricing->getPlanByNameLegacy($input[Entity::PLAN_NAME]);
 
         return $plan->toArrayPublic();
+    }
+
+    public function createPlanReconJobSync($input) {
+        $orgId = '';
+        if (isset($input['rules']) === true && isset($input['rules'][0]['org_id']) === true) {
+            $orgId = $input['rules'][0]['org_id'];
+        }
+        return $this->createPlanLegacy($input, Type::PRICING, null, $orgId);
     }
 
     public function processBuyPricingCostCalculation($input)
@@ -403,11 +427,11 @@ class Service extends Base\Service
         // Ensure 'update' field in each item is a string if it exists
         if (isset($input['items']) && is_array($input['items'])) {
             foreach ($input['items'] as &$item) {
-                if (isset($item['update']) && is_bool($item['update'])) {
+                if (isset($item['update']) && !is_string($item['update'])) {
                     $item['update'] = $item['update'] ? "true" : "false";
                 }
 
-                if (isset($item['international']) && is_bool($item['international'])) {
+                if (isset($item['international']) && !is_string($item['international'])) {
                     $item['international'] = $item['international'] ? "1" : "0";
                 }
 
@@ -419,8 +443,14 @@ class Service extends Base\Service
                     $item['fixed_rate'] = (string) $item['fixed_rate'];
                 }
 
-                if (isset($item['amount_range_active']) && is_bool($item['amount_range_active'])){
+                if (isset($item['amount_range_active']) && !is_string($item['amount_range_active'])){
                     $item['amount_range_active'] = $item['amount_range_active'] ? "1" : "0";
+                }
+                if (isset($item['amount_range_min']) && !is_string($item['amount_range_min'])){
+                    $item['amount_range_min'] = (string)$item['amount_range_min'];
+                }
+                if (isset($item['amount_range_max']) && !is_string($item['amount_range_max'])){
+                    $item['amount_range_max'] = (string)$item['amount_range_max'];
                 }
             }
         }
@@ -562,6 +592,7 @@ class Service extends Base\Service
                         $methodSubtype,
                         $item[Pricing\Entity::PAYMENT_NETWORK],
                         $item[Pricing\Entity::INTERNATIONAL],
+                        $item[Pricing\Entity::CHANNEL],
                         $amountRangeActive,
                         $orgId,
                         $appName,
@@ -629,6 +660,7 @@ class Service extends Base\Service
                                 $methodSubtype,
                                 $item[Pricing\Entity::PAYMENT_NETWORK],
                                 $item[Pricing\Entity::INTERNATIONAL],
+                                $item[Pricing\Entity::CHANNEL],
                                 $amountRangeActive,
                                 $orgId,
                                 $appName,

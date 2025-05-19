@@ -14,6 +14,7 @@ use RZP\Constants\Metric;
 use RZP\Models\Payout\Core;
 use RZP\Models\Payout\Entity;
 use RZP\Services\RazorXClient;
+use RZP\Models\Payout as Payout;
 use RZP\Models\BankingAccountStatement;
 
 /*
@@ -104,6 +105,11 @@ class PayoutServiceDualWriteDirectPush extends Job
                 Trace::ERROR,
                 TraceCode::PAYOUT_SERVICE_DUAL_WRITE_DIRECT_PUSH_FAILURE,
                 $this->params);
+
+            $this->trace->count(Payout\Metric::PAYOUTS_SERVICE_DUAL_WRITE_NEW_FLOW, [
+                Metric::LABEL_MESSAGE => "Payouts Service Dual Write New Flow Failed",
+                Metric:: LABEL_ERROR_CODE => $exception->getCode(),
+            ]);
 
             $this->checkRetry();
         }

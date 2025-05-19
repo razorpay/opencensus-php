@@ -345,7 +345,7 @@ class Base extends BaseCore
                 $payout->setStatus(Status::CREATE_REQUEST_SUBMITTED);
                 $this->repo->saveOrFail($payout);
 
-                $payout->setPayoutStatusAsPerMerchantWebhookSubscription(
+                $payout->setPayoutStatusAsPerMerchantWebhookSubscriptionForPayoutShieldBlockRule(
                     ErrorCode::BAD_REQUEST_SUSPICIOUS_TRANSACTION,
                     PublicErrorDescription::BAD_REQUEST_SUSPICIOUS_TRANSACTION
                 );

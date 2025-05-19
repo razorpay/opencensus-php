@@ -194,8 +194,35 @@ class BankingAccountStatementDualWriteTest extends TestCase
 
         $this->app->instance('repo', $repoMock);
 
+        $this->expectException(\Exception::class);
         $basDetailsCore = new BasDetails\Core();
         $result = $basDetailsCore->handleDualWrite($input);
         $this->assertEquals(['success' => 'true'], $result);
+    }
+
+    public function testHandleDualWriteExceptionOnGetAccountStatementDetailsByBalanceIds()
+    {
+        $input = [
+            [
+                'merchant_id' => '10000000000000',
+                'balance_id' => '100DemoTstBlId',
+                'account_number' => '2224440041626905',
+                'channel' => 'icici',
+                'gateway_balance' => 200,
+                'balance_last_fetched_at' => Carbon::now()->timestamp,
+                'gateway_balance_change_at' => Carbon::now()->timestamp,
+            ]
+        ];
+
+        $repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app])->makePartial();
+        $basdMock = Mockery::mock('\RZP\Models\BankingAccountStatement\Details\Repository', [$this->app])->makePartial();
+        $basdMock->shouldReceive('getAccountStatementDetailsByBalanceIds')->andThrow(new \Exception('Simulated fetch failure'));
+
+        $repoMock->shouldReceive('driver')->with('banking_account_statement_details')->andReturn($basdMock);
+        $basDetailsCore = Mockery::mock('RZP\Models\BankingAccountStatement\Details\Core', [$this->app])->makePartial();
+        $basDetailsCore->shouldReceive('repo')->andReturn($repoMock);
+
+        $basDetailsCore->handleDualWrite($input);
+        $this->expectNotToPerformAssertions();
     }
 }

@@ -281,13 +281,9 @@ class Core extends Base\Core
         $frequency = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY] ?? UpiFrequency::MONTHLY;
         $maxAmount = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::MAX_AMOUNT] ?? null;
 
-        $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT,
-            $this->mode
-        );
+        $variant = $this->evaluateSplitzExperimentForUpiAuthLinkFrequencyAsPresentedDefault($this->merchant->getId());
 
-        if ($variant === 'on')
+        if ($variant === true)
         {
             $frequency = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY] ?? UpiFrequency::AS_PRESENTED;
         }
@@ -357,6 +353,49 @@ class Core extends Base\Core
         $order = $orderService->createOrder($orderPayLoad);
 
         return $order;
+    }
+
+    /**
+     * Evaluates the Splitz experiment for creating upi recurring auth link
+     * via batch upload pick up as presented frequency by default.
+     *
+     * @param string $merchantId
+     * @return bool
+     */
+    protected function evaluateSplitzExperimentForUpiAuthLinkFrequencyAsPresentedDefault($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.upi_auth_link_frequency_as_presented_default'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT
+            );
+        }
+
+        return false;
     }
 
     public function createAuthLinkForOrder(array $tokenRegistrationInput, Order\Entity $order, Customer\Entity $customer)
@@ -764,7 +803,10 @@ class Core extends Base\Core
         }
 
         try {
-            $lockedAcquired = $this->mutex->acquire($idemPotentKey);
+            $lockedAcquired = $this->mutex->acquire($idemPotentKey,300);
+            $this->trace->info(TraceCode::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_IDEMPOTENT_LOCK_ACQUIRED, [
+                'locked_acquired'  => $lockedAcquired,
+            ]);
 
             if ($lockedAcquired === false) {
                 throw new LogicException("Duplicate request", "BAD_REQUEST_BATCH_REQUEST_ALREADY_IN_PROGRESS");

@@ -66,6 +66,7 @@ use RZP\Services\RazorXClient;
 use RZP\Models\CreditTransfer;
 use RZP\Models\IdempotencyKey;
 use RZP\Models\PayoutsDetails;
+use RZP\Jobs\LedgerJournalBase;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Traits\MocksSplitz;
@@ -327,6 +328,161 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
         $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
         $this->assertEquals($payout['channel'], 'yesbank');
+    }
+
+    public function testLedgerJournalBaseJobWithTransactionCreateDisabled()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $splitzResp = $splitzResp = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = Merchant\RazorxTreatment::LEDGER_DISABLE_TRANSACTION_DUAL_WRITE_TEST;
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->makeRequestAndGetContent($this->testData['testCreatePayout']['request']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $ledgerPayload = [
+            "transactor_id"=> "pout_".$payout->getId(),
+            "transactor_event"=> "payout_initiated",
+            "updated_at"=> 1743519616,
+            "amount"=> "240295",
+            "transaction_date"=> 1743519616,
+            "ledger_entry"=> [
+                [
+                    "journal_id"=> "QDppncrKiEw16D",
+                    "created_at"=> 1743519616,
+                    "updated_at"=> 1743519616,
+                    "amount"=> "250",
+                    "type"=> "credit",
+                    "account_entities"=> [
+                        "transactor"=> [
+                            "X"
+                        ],
+                        "account_type"=> [
+                            "cash"
+                        ],
+                        "banking_account_id"=> [
+                            "bacc_H1wRq59tDmJSMG"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_va"
+                        ]
+                    ],
+                    "base_amount"=> "250",
+                    "currency"=> "INR",
+                    "id"=> "QDppnd0Wq95Bbn",
+                    "account_id"=> "J10ACA57N4tbbN",
+                    "merchant_id"=> $payout->getMerchantId()
+                ],
+                [
+                    "journal_id"=> "QDppncrKiEw16D",
+                    "created_at"=> 1743519616,
+                    "updated_at"=> 1743519616,
+                    "amount"=> "45",
+                    "type"=> "credit",
+                    "account_entities"=> [
+                        "transactor"=> [
+                            "X"
+                        ],
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "banking_account_id"=> [
+                            "bacc_H1wRq59tDmJSMG"
+                        ],
+                        "fund_account_type"=> [
+                            "va_gst"
+                        ]
+                    ],
+                    "base_amount"=> "45",
+                    "currency"=> "INR",
+                    "id"=> "QDppnd0XwWLj9J",
+                    "account_id"=> "J10ACFxXZRVJ8a",
+                    "merchant_id"=> $payout->getMerchantId()
+                ],
+                [
+                    "balance"=> "31955385523.000000",
+                    "created_at"=> 1743519616,
+                    "balance_updated"=> true,
+                    "amount"=> "240295",
+                    "type"=> "debit",
+                    "account_entities"=> [
+                        "transactor"=> [
+                            "X"
+                        ],
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "banking_account_id"=> [
+                            "bacc_H1wRq59tDmJSMG"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_va"
+                        ]
+                    ],
+                    "base_amount"=> "240295",
+                    "currency"=> "INR",
+                    "id"=> "QDppnd0YGEjzUm",
+                    "journal_id"=> "QDppncrKiEw16D",
+                    "updated_at"=> 1743519616,
+                    "account_id"=> "J10AC59zxIRRgc",
+                    "merchant_id"=> $payout->getMerchantId()
+                ],
+                [
+                    "journal_id"=> "QDppncrKiEw16D",
+                    "created_at"=> 1743519616,
+                    "updated_at"=> 1743519616,
+                    "amount"=> "240000",
+                    "type"=> "credit",
+                    "account_entities"=> [
+                        "transactor"=> [
+                            "X"
+                        ],
+                        "account_type"=> [
+                            "payable"
+                        ],
+                        "banking_account_id"=> [
+                            "bacc_H1wRq59tDmJSMG"
+                        ],
+                        "fund_account_type"=> [
+                            "merchant_va_vendor"
+                        ]
+                    ],
+                    "base_amount"=> "240000",
+                    "currency"=> "INR",
+                    "id"=> "QDppnd0YXHiNVD",
+                    "account_id"=> "J10ACLhRGe5Y2e",
+                    "merchant_id"=> $payout->getMerchantId()
+                ]
+            ],
+            "base_amount"=> "240295",
+            "currency"=> "INR",
+            "id"=> "QDppncrKiEw16D",
+            "tenant"=> "X",
+            "created_at"=> 1743519616
+        ];
+        LedgerJournalBase::dispatch('test', $ledgerPayload);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('QDppncrKiEw16D', $payout->getTransactionId());
+        $this->assertEquals('transaction', $payout['transaction_type']);
+        $res = $payout->toArrayAdmin();
+        s($res);
+        s($payout['transaction_id']);
+        s($payout['transaction_type']);
+        s("debug info");
     }
 
     public function testAccountStatementQueuePushForProcessedPayout() {
@@ -1233,7 +1389,6 @@ class PayoutTest extends OAuthTestCase
         // Manually pushing into the queue because this is the only way to do this.
         // Keeping the queueFlag as false for this test.
         // Payout should get processed since merchant has enough balance
-        s($payout->toArray());
         $this->fixtures->create(
             'fund_transfer_attempt',
             [
@@ -1247,7 +1402,6 @@ class PayoutTest extends OAuthTestCase
                 'initiate_at'   => '1725001621',
             ]);
         $fta1 = $this->getDbLastEntity('fund_transfer_attempt');
-        s($fta1->toArray());
 
         $splitzResp = [
             "response" => [
@@ -3148,6 +3302,464 @@ class PayoutTest extends OAuthTestCase
         Queue::assertPushed(EsSync::class, 1);
     }
 
+    public function testDualWriteForPayoutServicePayoutWithNewColumnAdditioninPayoutDetails()
+    {
+        $payoutData = [
+            'id'                   => "randomid111111",
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "processed",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'scheduled_at'         => null,
+            'queued_at'            => null,
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'cancellation_user_id' => null,
+            'registered_name'      => "SUSANTA BHUYAN",
+            'queued_reason'        => "beneficiary_bank_down",
+            'on_hold_at'           => 1663092113,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $payoutLogs = [
+            [
+                'id'           => 'randomid111112',
+                'payout_id'    => 'randomid111111',
+                'event'        => 'abc',
+                'from'         => 'pending',
+                'to'           => 'create_request_submitted',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => 1000000000,
+                'updated_at'   => 1000000000
+            ],
+            [
+                'id'           => 'randomid111113',
+                'payout_id'    => 'randomid111111',
+                'event'        => 'abc',
+                'from'         => 'abc',
+                'to'           => 'created',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => 1000000001,
+                'updated_at'   => 1000000001
+            ],
+            [
+                'id'           => 'randomid111123',
+                'payout_id'    => 'randomid111111',
+                'event'        => 'abc',
+                'from'         => 'abc',
+                'to'           => 'non_existing_status',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => 1000000001,
+                'updated_at'   => 1000000001
+            ],
+            [
+                'id'           => 'randomid111133',
+                'payout_id'    => 'randomid111111',
+                'event'        => 'abc',
+                'from'         => 'abc',
+                'to'           => 'scheduled',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => 1000000001,
+                'updated_at'   => 1000000001
+            ],
+            [
+                'id'           => 'randomid111114',
+                'payout_id'    => 'randomid111111',
+                'event'        => 'abc',
+                'from'         => 'abc',
+                'to'           => 'initiated',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => 1000000002,
+                'updated_at'   => 1000000001
+            ]
+        ];
+
+        \DB::connection('test')->table('ps_payout_logs')->insert($payoutLogs);
+
+        $reversalData = [
+            'id'             => 'randomid111115',
+            'payout_id'      => 'randomid111111',
+            'merchant_id'    => "10000000000000",
+            'balance_id'     => "KHTaUGgTXc0dhH",
+            'amount'         => 2000000,
+            'currency'       => "INR",
+            'notes'          => "{}",
+            'fees'           => 10,
+            'tax'            => 33,
+            'channel'        => 'mychannel',
+            'transaction_id' => 'randomid111116',
+            'utr'            => "933815383815",
+            'created_at'     => 1663092114,
+            'updated_at'     => 1663092116,
+        ];
+
+        \DB::connection('test')->table('ps_reversals')->insert($reversalData);
+
+        $payoutStatusDetailsData = [
+            [
+                'id'           => 'randomid111116',
+                'payout_id'    => 'randomid111111',
+                'status'       => 'initiated',
+                'reason'       => 'timepass',
+                'description'  => 'bye',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => 1000000002,
+                'updated_at'   => 1000000001
+            ],
+            [
+                'id'           => 'randomid111118',
+                'payout_id'    => 'randomid111111',
+                'status'       => 'reversed',
+                'reason'       => 'timepass failed',
+                'description'  => 'bye',
+                'mode'         => 'SYSTEM',
+                'triggered_by' => 'SYSTEM',
+                'created_at'   => 1000000002,
+                'updated_at'   => 1000000001
+            ]
+        ];
+
+        \DB::connection('test')->table('ps_payout_status_details')->insert($payoutStatusDetailsData);
+
+        $expectedAdditionalInfo = [
+            'tds_amount'                           => 1000,
+            PayoutsDetails\Entity::SUBTOTAL_AMOUNT => 10000,
+        ];
+
+        $payoutDetailsData = [
+            'id'                        => 'randomid111119',
+            'payout_id'                 => 'randomid111111',
+            'queue_if_low_balance_flag' => 1,
+            'tds_category_id'           => 1,
+            'tax_payment_id'            => 'txpy_F2qwMZe97QTGG1',
+            'additional_info'           => json_encode($expectedAdditionalInfo),
+            'created_at'                => 1000000002,
+            'updated_at'                => 1000000001,
+            'beneficiary_bank_code'     => 'SBIN'
+        ];
+
+        $payoutDetailsDataComparison = [
+            'id'                        => 'randomid111119',
+            'payout_id'                 => 'randomid111111',
+            'queue_if_low_balance_flag' => 1,
+            'tds_category_id'           => 1,
+            'tax_payment_id'            => 'txpy_F2qwMZe97QTGG1',
+            'additional_info'           => json_encode($expectedAdditionalInfo),
+            'created_at'                => 1000000002,
+            'updated_at'                => 1000000001,
+        ];
+
+        \DB::connection('test')->table('ps_payout_details')->insert($payoutDetailsData);
+
+        $payoutSourcesData = [
+            [
+                'id'          => 'randomid111120',
+                'payout_id'   => 'randomid111111',
+                'source_id'   => 'randomid111121',
+                'source_type' => 'randomid111122',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+            [
+                'id'          => 'randomid111123',
+                'payout_id'   => 'randomid111111',
+                'source_id'   => 'randomid111124',
+                'source_type' => 'randomid111125',
+                'priority'    => 2,
+                'created_at'  => 1000000003,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData);
+
+        $workflowEntityMapData = [
+            'id'          => 'randomid111126',
+            'workflow_id' => 'randomid111127',
+            'entity_id'   => 'randomid111111',
+            'config_id'   => 'randomid111128',
+            'entity_type' => 'payout',
+            'merchant_id' => "10000000000000",
+            'org_id'      => 'randomid111129',
+            'created_at'  => 1000000003,
+            'updated_at'  => 1000000001
+        ];
+
+        \DB::connection('test')->table('ps_workflow_entity_map')->insert($workflowEntityMapData);
+
+        $idempotencyKeyData = [
+            'id'              => 'randomid111127',
+            'source_id'       => 'randomid111111',
+            'source_type'     => 'payout',
+            'idempotency_key' => 'random_ikey',
+            'merchant_id'     => "10000000000000",
+            'created_at'      => 1000000003,
+            'updated_at'      => 1000000001
+        ];
+
+        \DB::connection('test')->table('ps_idempotency_keys')->insert($idempotencyKeyData);
+
+        $this->fixtures->on('live')->create(
+            'idempotency_key',
+            [
+                'source_type'     => 'payout',
+                'idempotency_key' => 'random_ikey',
+                'merchant_id'     => "10000000000000",
+                'created_at'      => 1000000003,
+                'updated_at'      => 1000000001
+            ]
+        );
+
+        $idempotencyKeyBefore = $this->getDbLastEntity('idempotency_key', 'live');
+
+        $this->assertEmpty($idempotencyKeyBefore['source_id']);
+
+        $this->fixtures->on('live')->create(
+            'fund_account',
+            [
+                'id'           => '100000000000fa',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
+
+        Queue::fake(EsSync::class);
+
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->ba->payoutInternalAppAuth('live');
+
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $payoutData[Payout\Entity::NOTES]  = [];
+        $payoutData[Payout\Entity::ORIGIN] = 'api';
+        $this->assertArraySubset($payoutData, $payout->toArray());
+
+        $this->assertEquals($payout->getCreatedAt(), $payout->getPendingAt());
+        $this->assertEquals(1000000000, $payout->getCreateRequestSubmittedAt());
+        $this->assertEquals(1000000001, $payout->getInitiatedAt());
+        $this->assertEquals(1000000002, $payout->getTransferredAt());
+        $this->assertEquals(1000000001, $payout->getScheduledOn());
+
+        /** @var ReversalEntity $payout */
+        $reversal = $this->getDbLastEntity('reversal', 'live');
+
+        $reversalData[ReversalEntity::NOTES]     = [];
+        $reversalData[ReversalEntity::PAYOUT_ID] = 'pout_' . $reversalData[ReversalEntity::PAYOUT_ID];
+        $reversalData[ReversalEntity::FEE]       = $reversalData['fees'];
+        unset($reversalData['fees']);
+
+        $this->assertArraySubset($reversalData, $reversal->toArray());
+
+        /** @var PayoutsDetails\Entity $payoutDetails */
+        $payoutDetails = $this->getDbLastEntity('payouts_details', 'live');
+
+
+        $payoutDetailsDataComparison[PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG] = true;
+        unset($payoutDetailsDataComparison[PayoutsDetails\Entity::ID]);
+
+        $payoutDetailsDataComparison[PayoutsDetails\Entity::ADDITIONAL_INFO] =
+            json_decode($payoutDetailsDataComparison[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $payoutDetailsArray = $payoutDetails->toArray();
+
+        $this->assertArrayNotHasKey('beneficiary_bank_code', $payoutDetailsArray);
+
+        $payoutDetailsArray[PayoutsDetails\Entity::ADDITIONAL_INFO] =
+            json_decode($payoutDetailsArray[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $this->assertArraySubset($payoutDetailsDataComparison, $payoutDetailsArray);
+
+        /** @var WorkflowEntityMapEntity $workflowEntityMap */
+        $workflowEntityMap = $this->getDbLastEntity('workflow_entity_map', 'live');
+
+        unset($workflowEntityMapData[WorkflowEntityMapEntity::CREATED_AT]);
+        unset($workflowEntityMapData[WorkflowEntityMapEntity::UPDATED_AT]);
+
+        $this->assertArraySubset($workflowEntityMapData, $workflowEntityMap->toArray());
+        $this->assertEquals(1000000001, $workflowEntityMap->getUpdatedAt());
+        $this->assertEquals(1000000003, $workflowEntityMap->getCreatedAt());
+
+        /** @var PayoutsStatusDetailsEntity $payoutStatusDetails */
+        $payoutStatusDetails = $this->getDbEntities(
+            'payouts_status_details',
+            ['payout_id' => $payout->getId()],
+            'live');
+
+        $this->assertEquals($payoutStatusDetailsData, $payoutStatusDetails->toArray());
+
+        /** @var PayoutSourceEntity $payoutSources */
+        $payoutSources = $this->getDbEntities(
+            'payout_source',
+            ['payout_id' => $payout->getId()],
+            'live');
+
+        $this->assertEquals($payoutSourcesData, $payoutSources->toArray());
+
+        $payoutMetadata = \DB::connection('test')->select("select * from ps_payout_meta_temporary where payout_id = 'randomid111111'")[0];
+
+        $data = json_decode($payoutMetadata->meta_value);
+
+        $this->assertEquals('dual_write', $payoutMetadata->meta_name);
+        $this->assertGreaterThanOrEqual($timestamp, $data->timestamp);
+
+        $idempotencyKeyAfter = $this->getDbEntityById('idempotency_key', $idempotencyKeyBefore['id'], 'live');
+
+        $idempotencyKeyAfterArray = $idempotencyKeyAfter->toArray();
+
+        foreach ($idempotencyKeyAfterArray as $key => $idempotencyAttributeAfter)
+        {
+            if ($key === 'source_id')
+            {
+                $this->assertEquals($idempotencyKeyData['source_id'], $idempotencyAttributeAfter);
+            }
+
+            else
+            {
+                if ($key === 'updated_at')
+                {
+                    $this->assertGreaterThan($idempotencyKeyBefore['updated_at'], $idempotencyAttributeAfter);
+                }
+
+                else
+                {
+                    $this->assertEquals($idempotencyKeyBefore[$key], $idempotencyAttributeAfter);
+                }
+            }
+        }
+
+        $timestamp = $data->timestamp;
+
+        $this->ba->payoutInternalAppAuth('live');
+
+        $this->startTest();
+
+        $payoutMetadata = \DB::connection('test')->select("select * from ps_payout_meta_temporary where payout_id = 'randomid111111'")[0];
+
+        $data = json_decode($payoutMetadata->meta_value);
+
+        $this->assertEquals($timestamp, $data->timestamp);
+
+        Queue::assertPushed(EsSync::class, 1);
+    }
+
+    public function testDualWriteForPayoutServicePayoutUnsettingNewColumnInPayoutsDetails()
+    {
+        $expectedAdditionalInfo = [
+            'tds_amount'                           => 1000,
+            PayoutsDetails\Entity::SUBTOTAL_AMOUNT => 10000,
+        ];
+
+        $payoutDetailsData = [
+            'id'                        => 'randomid111119',
+            'payout_id'                 => 'randomid111111',
+            'queue_if_low_balance_flag' => 1,
+            'tds_category_id'           => 1,
+            'tax_payment_id'            => 'txpy_F2qwMZe97QTGG1',
+            'additional_info'           => json_encode($expectedAdditionalInfo),
+            'created_at'                => 1000000002,
+            'updated_at'                => 1000000001,
+            'beneficiary_bank_code'     => 'SBIN'
+        ];
+
+        $payoutDetailsDataComparison = [
+            'id'                        => 'randomid111119',
+            'payout_id'                 => 'randomid111111',
+            'queue_if_low_balance_flag' => 1,
+            'tds_category_id'           => 1,
+            'tax_payment_id'            => 'txpy_F2qwMZe97QTGG1',
+            'additional_info'           => json_encode($expectedAdditionalInfo),
+            'created_at'                => 1000000002,
+            'updated_at'                => 1000000001,
+        ];
+
+        \DB::connection('test')->table('ps_payout_details')->insert($payoutDetailsData);
+
+        Queue::fake(EsSync::class);
+
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->ba->payoutInternalAppAuth('live');
+
+        $this->startTest();
+
+        /** @var PayoutsDetails\Entity $payoutDetails */
+        $payoutDetails = $this->getDbLastEntity('payouts_details', 'live');
+
+
+        $payoutDetailsDataComparison[PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG] = true;
+        unset($payoutDetailsDataComparison[PayoutsDetails\Entity::ID]);
+
+        $payoutDetailsDataComparison[PayoutsDetails\Entity::ADDITIONAL_INFO] =
+            json_decode($payoutDetailsDataComparison[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $payoutDetailsArray = $payoutDetails->toArray();
+
+        $this->assertArrayNotHasKey('beneficiary_bank_code', $payoutDetailsArray);
+
+        $payoutDetailsArray[PayoutsDetails\Entity::ADDITIONAL_INFO] =
+            json_decode($payoutDetailsArray[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $this->assertArraySubset($payoutDetailsDataComparison, $payoutDetailsArray);
+
+        $payoutMetadata = \DB::connection('test')->select("select * from ps_payout_meta_temporary where payout_id = 'randomid111111'")[0];
+
+        $data = json_decode($payoutMetadata->meta_value);
+
+        $this->assertEquals('dual_write', $payoutMetadata->meta_name);
+        $this->assertGreaterThanOrEqual($timestamp, $data->timestamp);
+
+        $timestamp = $data->timestamp;
+
+        $this->ba->payoutInternalAppAuth('live');
+
+        $this->startTest();
+
+        $payoutMetadata = \DB::connection('test')->select("select * from ps_payout_meta_temporary where payout_id = 'randomid111111'")[0];
+
+        $data = json_decode($payoutMetadata->meta_value);
+
+        $this->assertEquals($timestamp, $data->timestamp);
+
+        Queue::assertPushed(EsSync::class, 1);
+    }
     public function testDualWriteForPayoutServicePayoutWithApiIdempotencyKeyNotPresent()
     {
         $payoutData = [
@@ -45271,6 +45883,19 @@ class PayoutTest extends OAuthTestCase
     }
 
     public function testRedisSetValidationsPass()
+    {
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testRedisSetBalanceBlacklist()
     {
         $this->ba->adminAuth();
 

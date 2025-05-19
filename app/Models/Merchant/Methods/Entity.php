@@ -591,7 +591,8 @@ class Entity extends Base\PublicEntity
             CreditEmiProvider::ONECARD,
             CreditEmiProvider::BAJAJ,
             CreditEmiProvider::FDRL,
-            CreditEmiProvider::IDFB
+            CreditEmiProvider::IDFB,
+            CreditEmiProvider::AUBL
         ],
         self::OFFLINE_CREDIT => [
             OfflineCreditEmiProvider::AMEX,
@@ -636,6 +637,7 @@ class Entity extends Base\PublicEntity
             CardlessEmiProvider::TVSC,
             CardlessEmiProvider::LIQUILOANS,
             CardlessEmiProvider::INSTANT_EMI,
+            CardlessEmiProvider::SHOPSE,
         ],
         self::PAYLATER => [
             Paylaterprovider::GETSIMPL,
@@ -1773,7 +1775,9 @@ class Entity extends Base\PublicEntity
                     {
                         $addon_methods[$method][$sub_method] = $input[$sub_method];
                     }
-                    unset($input[$sub_method]);
+                    if ($sub_method != self::AMAZONPAY) {
+                        unset($input[$sub_method]);
+                    }
                 }
                 else if (isset($input[$method][$sub_method]) ===  true)
                 {
@@ -2264,7 +2268,7 @@ class Entity extends Base\PublicEntity
     public function getEnabledCardlessEmiProviders(): array
     {
         $addon_methods = $this->getAddonMethods();
-
+        
         $all_addon_methods = Entity::getAllAddonMethodsNames();
 
         return CardlessEmiProvider::getEnabledProviders($all_addon_methods, $addon_methods);

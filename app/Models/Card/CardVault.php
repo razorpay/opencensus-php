@@ -343,6 +343,17 @@ class CardVault extends Base\Core
 
             $diff = Carbon::now(Timezone::IST)->getTimestamp() - $createdtAt;
 
+            if ($diff > 1800) // checking for 30 mins
+            {
+                $this->trace->info(TraceCode::CARD_METADATA_FETCH_AFTER_30_MINS, [
+                    'card_id'               => $card->getId(),
+                    'created_at'            => $createdtAt,
+                    'difference'            => $diff,
+                    'route'                 => $routeName
+                ]);
+
+            }
+
             // checking if we are hitting card meta data fetch api after 3 days (3*24*60*60 seconds)
             if ($diff > 259200)
             {

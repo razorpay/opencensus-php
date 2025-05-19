@@ -44,6 +44,17 @@ class Api extends Base
         return $this->sendRequest(Constant::DIRECT_TRANSFER_ENDPOINT, Requests::POST, $input);
     }
 
+        /**
+     * To patch a transfer by ID in Route microservice
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function patchTransfer(string $transferId, array $input) : array
+    {
+        $response = $this->patchTransferByInternalRequest($transferId,  $input);
+        return $response;
+    }
     public function createPaymentTransfer(string $paymentId, array $input) : array
     {
         if ((new Config())->shouldCreateNewPassportToken())
@@ -73,6 +84,21 @@ class Api extends Base
         $transfer = $this->forceFillTransferFromResponse($response);
 
         return $this->loadRelatedEntity($transfer);
+    }
+
+    protected function patchTransferByInternalRequest(string $transferId, array $input) : array
+    {
+        if ( (new Config())->shouldCreateNewPassportToken() ){
+            $this->addNewPassportToken();
+        }
+        else {
+            $this->addPassportToken();
+
+        }
+        $endpoint = sprintf(Constant::PATCH_TRANSFER_ROUTE_ENDPOINT, $transferId);
+        $response = $this->sendRequest($endpoint, Requests::PATCH,$input);
+
+        return $response;
     }
 
     protected function fetchTransferByIdInternalRequest(string $transferId, string $merchantId = null) : array
@@ -256,6 +282,18 @@ class Api extends Base
     public function saveApiTransferPayment(string $paymentId, array $input) : array
     {
         $endpoint = sprintf(Constant::SAVE_API_TRANSFER_PAYMENT_ENDPOINT, $paymentId);
+
+        return $this->sendRequest($endpoint, Requests::POST, $input);
+    }
+
+    /**
+     * To decrement amount_transferred of API schema transfer_payment in Route microservice
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function decrementTransferPayment(string $paymentId, array $input) : array
+    {
+        $endpoint = sprintf(Constant::DECREMENT_TRANSFER_PAYMENT_ENDPOINT, $paymentId);
 
         return $this->sendRequest($endpoint, Requests::POST, $input);
     }

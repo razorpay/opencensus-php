@@ -17,4 +17,8 @@ class Metric
     const INTL_BANK_TRANSFER_EMPTY_ACCOUNT_RETURNED_FROM_CURRENCY_CLOUD = "intl_bank_transfer_empty_account_returned_from_currency_cloud";
 
     const INTL_BANK_TRANSFER_DUPLICATE_PAYMENT = "intl_bank_transfer_duplicate_payment";
+
+    const INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED = "intl_bank_transfer_payment_processing_failed";
+
+
 }

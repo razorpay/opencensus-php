@@ -15,6 +15,7 @@ use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Encryption\AESEncryption;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\GatewayErrorException;
 use RZP\Jobs\ProcessCollectxTransfer;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Bank\IFSC;
@@ -225,8 +226,8 @@ class Service extends Base\Service
         {
             $this->trace->error(
                 TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR, [
-                    'Request' => $input
-                ]);
+                'Request' => $input
+            ]);
 
             throw new Exception\BadRequestValidationFailureException(TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR);
         }
@@ -1891,37 +1892,50 @@ class Service extends Base\Service
         return (new InternationalIntegration\Core)->editMerchantInternationalIntegrations($mii);
     }
 
+    /**
+     * @throws GatewayErrorException
+     */
     protected function getFundingAccountDetailsByCurrency($request, $va_currency)
     {
-        try {
-            $response = $this->app->mozart->sendMozartRequest('onboarding', Constants\Entity::CURRENCY_CLOUD, 'get_funding_account', $request, 'v1', true);
-        } catch (\Exception $ex) {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INTL_BANK_TRANSFER_ACCOUNT_DOES_NOT_EXIST, null,
+        $retryCountRemaining = 3;
+        $funding_accounts = null;
+
+        while ($retryCountRemaining > 0 && $funding_accounts == null) {
+            try {
+                $response = $this->app->mozart->sendMozartRequest('onboarding', Constants\Entity::CURRENCY_CLOUD, 'get_funding_account', $request, 'v1', true);
+                $isFundingDetailsEmpty = empty($response['data']) || empty($response['data']['funding_accounts']);
+                $isFundingAccountNumberEmpty = true;
+                if (!$isFundingDetailsEmpty && isset($response['data']['funding_accounts'][0]['account_number'])) {
+                    $isFundingAccountNumberEmpty = empty($response['data']['funding_accounts'][0]['account_number']);
+                }
+
+                if ($isFundingDetailsEmpty || $isFundingAccountNumberEmpty) {
+                    // Response is again empty, retry as per retryLimit
+                    $this->trace->info(TraceCode::B2B_BANK_EMPTY_ACCOUNT_RETURNED_FROM_CURRENCY_CLOUD, [
+                        'currency' => $va_currency
+                    ]);
+                } else {
+                    // Response is non-empty, so we can continue with normal flow
+                    $funding_accounts = $response['data']['funding_accounts'];
+                }
+            } catch (\Exception $ex) {
+                $this->trace->info(TraceCode::B2B_BANK_ACCOUNT_FETCH_ACCOUNT_BY_CURRENCY_FAILED, [
+                    'currency' => $va_currency
+                ]);
+                $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_EMPTY_ACCOUNT_RETURNED_FROM_CURRENCY_CLOUD, [
+                    'currency' => $va_currency
+                ]);
+            }
+            $retryCountRemaining--;
+        }
+
+        if ($funding_accounts == null) {
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_INTL_BANK_TRANSFER_ACCOUNT_DOES_NOT_EXIST, null,
                 [
-                    'error_data' => $ex->getData() ?? [],
+                    'error_msg' => "Funding Account is Null Despite Multiple Retries",
                 ]);
         }
 
-        //   adding an alert if response comes empty from cc
-        //    "data": {
-        //            "_raw": "{\"funding_accounts\":[]}",
-        //            "status": "successful",
-        //            "funding_accounts": []
-        //    }
-        // slack ref :- https://razorpay.slack.com/archives/C7WEGELHJ/p1738922809860609?thread_ts=1738307080.571999&cid=C7WEGELHJ
-
-        if (empty($response['data']) || empty($response['data']['funding_accounts'])) {
-
-            $this->trace->info(TraceCode::B2B_BANK_ACCOUNT_FETCH_ACCOUNT_BY_CURRENCY_FAILED, [
-                'currency' => $va_currency,
-            ]);
-
-            $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_EMPTY_ACCOUNT_RETURNED_FROM_CURRENCY_CLOUD, [
-                'currency' => $va_currency
-            ]);
-        }
-
-        $funding_accounts = $response['data']['funding_accounts'];
 
         $virtualAccountDetails = [
             'account_number' => $funding_accounts[0]['account_number'],
@@ -1951,17 +1965,25 @@ class Service extends Base\Service
 
         $name = explode(' ', trim($merchantDetail->getPromoterPanName()), 2);
 
+        if(strlen($name[0]) < 2 ){
+            $name[0] = $name[1];
+        }
+        $name[1] = isset($name[1]) ? $name[1] : "LNU";
+        if(strlen($name[1]) < 2){
+            $name[1] = $name[0];
+        }
+
         $address = [
             'street' => $merchantDetail->getBusinessRegisteredAddress(),
             'city' => $merchantDetail->getBusinessRegisteredCity(),
             'state' => $merchantDetail->getBusinessRegisteredState(),
-            'country' => $merchantDetail->getBusinessRegisteredCountry() ?? "IN",
+            'country' => "IN",
             'pin' => $merchantDetail->getBusinessRegisteredPin(),
         ];
 
         $contact = [
             'first_name' => $name[0],
-            'last_name' => isset($name[1]) ? $name[1] : "LNU",
+            'last_name' => $name[1],
             'email' => $merchantDetail->getContactEmail(),
             'phone' => $merchantDetail->getContactMobile(),
             'login_id' => $merchantId . "_razorpay"
@@ -2125,6 +2147,11 @@ class Service extends Base\Service
                 if ($payment->getReference16() != null or
                     !$merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B) or
                     ($addresses->isEmpty() === true)) {
+
+                    $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                        'flow' => TraceCode::B2B_TRANSFER_COMPLETION_PENDING,
+                    ]);
+
                     $this->trace->info(TraceCode::B2B_TRANSFER_COMPLETION_PENDING, [
                         'payment_id' => $payment->getId(),
                         'payment_transfer_id' => $payment->getReference16(),
@@ -2167,6 +2194,11 @@ class Service extends Base\Service
                     'currency' => $response['data']['currency'],
                 ]);
             } catch (\Exception $ex) {
+
+                $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                    'flow' => TraceCode::B2B_SETTLEMENT_TO_RZP_PARENT_ACCOUNT_FAILED,
+                ]);
+
                 $this->trace->traceException(
                     $ex,
                     null,
@@ -2477,6 +2509,18 @@ class Service extends Base\Service
 
         $response = $this->app->mozart->sendMozartRequest('payments', Constants\Entity::CURRENCY_CLOUD, 'get_sender_detail', $request);
 
+        if (!isset($response)) {
+            $this->trace->info(TraceCode::B2B_FUNDS_ARRIVED_NOTIFICATION_PROCESSING_FAILURE, [
+                'txn_id'     => $input['related_entity_id'],
+                'contact_id' => $mii->getReferenceId(),
+            ]);
+
+            $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                'flow'        => TraceCode::B2B_FUNDS_ARRIVED_NOTIFICATION_PROCESSING_FAILURE,
+                'err_msg'     => "Gateway response is empty",
+            ]);
+        }
+
         $payments = $this->core->createAndAuthorizePaymentForIntlBankTransfer($response['data'], $merchantId, $input);
 
         return [
@@ -2490,6 +2534,18 @@ class Service extends Base\Service
         $reason = $input['reason'];
 
         if (isset($reason) === false || empty($reason) === true) {
+
+            $this->trace->info(TraceCode::B2B_TRANSFER_COMPLETED_NOTIFICATION_PROCESSING_FAILURE, [
+                'reason' => $reason,
+            ]);
+
+            $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                [
+                    'flow' => TraceCode::B2B_TRANSFER_COMPLETED_NOTIFICATION_PROCESSING_FAILURE,
+                    'error_desc' => 'reason field is not present',
+                ]
+            ]);
+
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DATA_TAMPERED, null, [
                 'reason' => $input['reason'],
             ]);
@@ -2509,6 +2565,19 @@ class Service extends Base\Service
             ['type' => Address\Type::BILLING_ADDRESS]);
 
         if ($addresses->isEmpty() === true) {
+
+            $this->trace->info(TraceCode::B2B_TRANSFER_COMPLETED_NOTIFICATION_PROCESSING_FAILURE, [
+                'payment_id' => $payment_id,
+            ]);
+
+            $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                [
+                    'flow' => TraceCode::B2B_TRANSFER_COMPLETED_NOTIFICATION_PROCESSING_FAILURE,
+                    'error_desc' => 'Address not present',
+                    'error_code' => 'BAD_REQUEST_ERROR',
+                ]
+            ]);
+
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null,
                 [
                     'error_desc' => 'Address not present',
@@ -2951,6 +3020,11 @@ class Service extends Base\Service
                     CrossBorderCommonUseCases::sendSlackNotification(
                         $paymentId, $merchantId, $priority, "", WorkflowBuilder\Constants::REJECTED);
                 } catch (\Throwable $e) {
+
+                    $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
+                        'flow'        => TraceCode::B2B_WORKFLOW_CREATION_REQUEST_FAILED,
+                    ]);
+
                     $this->trace->traceException($e, Trace::ERROR, TraceCode::CROSS_BORDER_INVOICE_WORKFLOW_NOTIFICATION_FAILED,
                         [
                             'payload' => $this->payload,

@@ -96,12 +96,7 @@ class Mailable extends BaseMailable
             return false;
         }
 
-        // 2. check if razorx experiment is turned on
-        $app  = App::getFacadeRoot();
-        $id   = $this->mid ?? $app['request']->getTaskId() ?? '';
-        $exp  = $storkWhitelistedTemp[$this->view];
-        $mode = $this->mode ?? Mode::LIVE;
-        return (strtolower(app('razorx')->getTreatment($id, $exp, $mode)) === 'on');
+        return true;
     }
 
     public function send($mailer)

@@ -890,6 +890,8 @@ return [
         env('AWS_APPROVED_PAYOUT_DISTRIBUTION_LIVE_QUEUE') => 'RZP\\Jobs\\ApprovedPayoutDistribution',
 
         env('AWS_PAYOUT_SERVICE_DUAL_WRITE_DIRECT_PUSH_LIVE_QUEUE') => 'RZP\\Jobs\\PayoutServiceDualWriteDirectPush',
+
+        env('AWS_X_BALANCE_DUAL_WRITE_LIVE_QUEUE') => 'RZP\\Jobs\\XBalanceDualWrite',
     ],
 
     'fifo_sqs_mappings'=>[

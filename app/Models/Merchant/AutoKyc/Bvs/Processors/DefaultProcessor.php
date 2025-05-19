@@ -126,6 +126,7 @@ class DefaultProcessor implements Processor
             Constant::PLATFORM   => $this->input[Constant::PLATFORM] ?? Constant::PG,
             Constant::OWNER_ID   => $this->input[Constant::OWNER_ID] ?? '',
             Constant::OWNER_TYPE => Constant::MERCHANT,
+
         ];
     }
 

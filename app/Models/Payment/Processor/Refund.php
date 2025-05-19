@@ -4852,7 +4852,7 @@ trait Refund
                 try
                 {
                     $transferPayment = $this->repo
-                        ->payment
+                        ->payment_method_transfer
                         ->findByTransferIdAndMerchant($reversalEntry['transfer']['id'], $reversalEntry['transfer']['to_id']);
 
                     array_push($response['transfer_payments'], $transferPayment->getId());

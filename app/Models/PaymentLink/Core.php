@@ -1658,6 +1658,11 @@ class Core extends Base\Core
             'is_nca_invoice' => $invoice->isNCAPaymentPageInvoice(),
         ];
 
+        if (empty($ncaInput) === true || $ncaInput['title'] === null)
+        {
+            return $response;
+        }
+
         $invoiceCore = new Invoice\Core();
 
         $pdf = Tracer::inSpan(['name' => 'payment_page.invoice.get_fresh_invoice'], function() use($invoiceCore, $invoice, $ncaInput)

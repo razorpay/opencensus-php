@@ -170,6 +170,8 @@ class ConfigKey
 
     const RBL_CA_BALANCE_UPDATE_LIMITS = self::PREFIX . 'rbl_ca_balance_update_limits';
 
+    const BALANCE_FETCH_MERCHANTS_BLACKLIST = self::PREFIX . 'balance_fetch_merchants_blacklist';
+
     const ICICI_CA_BALANCE_UPDATE_LIMITS = self::PREFIX . 'icici_ca_balance_update_limits';
 
     const RBL_CA_PRIORITY_BALANCE_UPDATE_LIST = self::PREFIX . 'rbl_ca_priority_balance_update_list';

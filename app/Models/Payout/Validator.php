@@ -733,6 +733,7 @@ class Validator extends Base\Validator
     protected static $payoutsManualActionDefaultInputRules = [
         Entity::PAYOUT_IDS        => 'required|array|max:' . self::MAX_COUNT_PAYOUTS_BULK_MANUAL_ACTION,
         Entity::PAYOUT_IDS . '.*' => 'required|string|size:14',
+        Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
     ];
 
     protected static $processedToProcessingPayoutActionRules = [
@@ -2021,7 +2022,7 @@ class Validator extends Base\Validator
         {
             $maxPayoutAmountLimit = Entity::MAX_PAYOUT_LIMIT;
 
-            if ((new Service)->isSettlementsApp() === true)
+            if ((new Service)->isSettlementsApp() === true || (new Service)->isCrossBorderImportApp() === true)
             {
                 $maxPayoutAmountLimit = Entity::MAX_SETTLEMENT_PAYOUT_LIMIT;
             }
@@ -2424,7 +2425,6 @@ class Validator extends Base\Validator
                     $this->setStrictFalse()->validateInput(self::MANUAL_SMART_COLLECT_ENTITY_CREATION,$input);
                 }
                 break;
-
             default:
                 $this->setStrictFalse()->validateInput(self::PAYOUTS_MANUAL_ACTION_DEFAULT_INPUT,$bulkInput);
         }

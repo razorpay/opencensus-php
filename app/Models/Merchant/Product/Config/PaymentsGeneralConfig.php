@@ -18,6 +18,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\AccountV2;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Country;
 use RZP\Models\Merchant\Product\Util;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
@@ -156,9 +157,16 @@ class PaymentsGeneralConfig extends Base\Service
 
         $response[Util\Constants::ACCOUNT_NUMBER] = $merchantDetails[Merchant\Detail\Entity::BANK_ACCOUNT_NUMBER];
 
-        $response[Util\Constants::IFSC_CODE] = $merchantDetails[Merchant\Detail\Entity::BANK_BRANCH_IFSC];
-
         $response[Util\Constants::BENEFICIARY_NAME] = $merchantDetails[Merchant\Detail\Entity::BANK_ACCOUNT_NAME];
+
+        if (strtolower($merchant->getCountry()) != Country::IN)
+        {
+            $response[Util\Constants::BANK_BRANCH_CODE] = $merchantDetails[Merchant\Detail\Entity::BANK_BRANCH_CODE];
+        }
+        else
+        {
+            $response[Util\Constants::IFSC_CODE] = $merchantDetails[Merchant\Detail\Entity::BANK_BRANCH_IFSC];
+        }
 
         return $response;
     }

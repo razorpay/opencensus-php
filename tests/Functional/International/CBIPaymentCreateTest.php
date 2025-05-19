@@ -32,6 +32,8 @@ class CBIPaymentCreateTest extends TestCase
     {
         parent::setUp();
         $this->ba->publicAuth();
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
     }
 
 
@@ -357,6 +359,39 @@ class CBIPaymentCreateTest extends TestCase
         $this->assertEquals($payment['notes']['invoice_number'], $paymentEntity['notes']['invoice_number']);
     }
 
+    public function testValidateCitiLrsImportFlowDataInCrossBorderImportServiceShadowSuccess()
+    {
+        $this->setMockForCBIClient(200);
+        $this->mockCitiSplitzEvaluation();
+        $this->fixtures->merchant->addFeatures(['lrs_travel_citi_flow']);
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $order = $this->fixtures->order->create(['amount' => 50000, 'currency' => 'INR', 'receipt' => 'receipt']);
+
+        $orderMeta = $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => self::getOrderMetaValueForLrsTravelCitiFlow(),
+                'type'     => 'cart_info',
+            ]);
+
+        $payment['_']['library'] = 'checkoutjs';
+        $payment['order_id'] = $order->getPublicId();
+        $payment['bank'] = 'ICIC';
+        $payment['notes'] = [
+            'invoice_number' => $order->getId(),
+        ];
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $lastPayment = $this->getDbLastPayment();
+
+        s($lastPayment['notes']['invoice_number']);
+
+        $this->assertEquals($payment['notes']['invoice_number'], $lastPayment['notes']['invoice_number']);
+    }
+
     public function setMockForCBIClient($statusCode)
     {
         $mockResponseValidateImportPayment = [];
@@ -436,6 +471,42 @@ class CBIPaymentCreateTest extends TestCase
         ];
     }
 
+    protected function getOrderMetaValueForLrsTravelCitiFlow()
+    {
+        $app = App::getFacadeRoot();
+        $billing_address = [
+            'line1'         => 'line_one',
+            'line2'         => 'line_two',
+            'city'          => 'Bangalore',
+            'state'         => 'Karnataka',
+            'zipcode'       => '560001',
+            'country'       => 'IND',
+            'type'          => 'billing_address',
+            'primary'       => true
+        ];
+
+        $identity = [
+            [
+                'type'          => 'pan_number',
+                'id'            => 'ABCDE1234F',
+            ]
+        ];
+
+        $customer_details = [
+            'name'              => 'Test Customer',
+            'billing_address'   => $billing_address,
+            'identity'          => $identity,
+        ];
+
+        return [
+            'campaign'          => null,
+            'refund_allowed'    => null,
+            'line_items'        => null,
+            'line_items_total'  => null,
+            'customer_details'  => $customer_details,
+        ];
+    }
+
     private function mockSplitzEvaluation($experiment)
     {
         if($experiment){
@@ -481,6 +552,18 @@ class CBIPaymentCreateTest extends TestCase
             $this->mockSplitzTreatment($input, $output);
         }
 
+    }
+    private function mockCitiSplitzEvaluation($output = [
+        "response" => [
+            "variant" => [
+                "name" => 'variant_on',
+            ]
+        ]
+    ])
+    {
+        return $this->getSplitzMock()
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
     }
 
     public function testPayoutStatusPushForICATransferAsSource()

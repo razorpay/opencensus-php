@@ -191,7 +191,7 @@ trait Capture
         try
         {
             $this->capturePayment($payment, $amount, $currency);
-            
+
             $this->trace->info(
                 TraceCode::PAYMENT_AUTO_CAPTURE_SUCCESS,
                 [
@@ -201,7 +201,7 @@ trait Capture
                     'payment_status'        => $payment->getStatus(),
                     'auto_capture_status'   => "success",
                 ]);
-            
+
             $this->emitAutoCaptureMetrics($payment, "");
 
         }
@@ -289,7 +289,7 @@ trait Capture
         {
             (new Payment\Metric)->pushAutoCaptureResultMetrics($payment,$errorMessage );
         }
-                
+
     }
 
     /**
@@ -696,7 +696,30 @@ trait Capture
             $offer = $this->repo->offer->findByIdAndMerchant($discount->getAttribute(Entity::OFFER_ID), $payment->merchant);
         }
 
-        $captureAmount = $offer->getDiscountedAmountForPayment($order->getAmount(), $payment);
+        $oeBenefitsExpEnabled = (new Offer\Core())->shouldUseBenefitsFromOffersEngine($this->merchant->getMerchantId());
+
+        if (!$oeBenefitsExpEnabled)
+        {
+            $captureAmount = $offer->getDiscountedAmountForPayment($order->getAmount(), $payment);
+        }
+        else
+        {
+            $offerId = $offer->getPublicId();
+
+            $paymentId = $payment->getPublicId();
+
+            $orderAmount = $order->getAmount();
+
+            $discount = $this->app["offers_engine"]->getTotalDiscountApplied($offerId, $paymentId,$order->getPublicId());
+
+            if ($discount === null)
+            {
+                $captureAmount = $offer->getDiscountedAmountForPayment($order->getAmount(), $payment);
+            } else {
+                $captureAmount = $orderAmount - $discount;
+            }
+
+        }
     }
 
     /**
@@ -755,8 +778,8 @@ trait Capture
         }
 
         $this->triggerPaymentCapturedEvents($fee, $tax);
-
-        $this->publishMessageToSqsBarricade($this->payment);
+    //      Removing this as we are not using barricade anymore
+    //    $this->publishMessageToSqsBarricade($this->payment);
 
         $this->notifyPaymentCaptured();
 
@@ -1073,7 +1096,7 @@ trait Capture
             {
                 $discount = $this->getDiscountIfApplicableForLedger($payment);
 
-                if ((isset($payment["original_cps_route"]) === true) and $payment["original_cps_route"] != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
+                if (($payment->isCard() === false) || !(isset($payment["original_cps_route"]) === true) || $payment["original_cps_route"] != Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
                 {
                     [$commission, $tax] = (new ReverseShadowPaymentsCore())->createLedgerEntryForMerchantCaptureReverseShadow($payment, $discount);
                 }
@@ -2107,6 +2130,15 @@ trait Capture
             {
                 $count = $this->repo->transaction(function() use ($payment, $orderId)
                 {
+                    $updates = $this->repo
+                        ->transfer
+                        ->updateTransferStatusBySourceTypeAndId(Constants\Entity::ORDER, $orderId, Transfer\Status::PENDING);
+
+                    if ($updates < 1)
+                    {
+                        return 0;
+                    }
+
                     $isAmountTransferredExpEnabled = (new Transfer\Service())->isAmountTransferredRearchExpEnabled(
                         $payment->getId(), $this->merchant->getId());
 
@@ -2115,10 +2147,7 @@ trait Capture
                         // create transfer payment during order payment capture itself
                         $transferPayment = (new TransferPaymentCore)->createOrFetch($payment);
                     }
-
-                    return $this->repo
-                        ->transfer
-                        ->updateTransferStatusBySourceTypeAndId(Constants\Entity::ORDER, $orderId, Transfer\Status::PENDING);
+                    return $updates;
                 });
 
                 return $count;
@@ -2416,8 +2445,8 @@ trait Capture
         [$fee, $tax] = $this->recordCapture(true);
 
         $this->triggerPaymentCapturedEvents($fee, $tax);
-
-        $this->publishMessageToSqsBarricade($this->payment);
+      //         Removing this as we are not using barricade anymore
+      //  $this->publishMessageToSqsBarricade($this->payment);
 
         $this->notifyPaymentCaptured();
 

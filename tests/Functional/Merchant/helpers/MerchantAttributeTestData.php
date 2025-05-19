@@ -168,7 +168,11 @@ return [
                 [
                     'type'  => 'demo_onboarding',
                     'value' => 'true'
-                ]
+                ],
+                [
+                    'type'  => 'api_payouts',
+                    'value' => 'true'
+                ],
             ],
             'url' => '/merchant/preferences/x_merchant_intent',
             'method' => 'POST',

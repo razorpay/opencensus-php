@@ -561,18 +561,26 @@ class Service extends Base\Service
 
         (new Validator)->validateAndUpdateCardMode($input);
 
-        $isMobileNumberPayout = $this->isMobileNumberPayout($input);
+        $isCompositePayout = false;
+
+        if (isset($input[Entity::FUND_ACCOUNT]) === true)
+        {
+            $isCompositePayout = true;
+        }
+
+        $isMobileNumberPayout = $this->isMobileNumberPayout($input, $isCompositePayout);
         $mobileNumber = null;
 
         if ($isMobileNumberPayout) {
             $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_VOLUME_COUNT);
 
-            $mobileNumber = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::MOBILE][FundAccount\Entity::NUMBER] ?? null;
+            if ($isCompositePayout) {
+                $mobileNumber = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::MOBILE][FundAccount\Entity::NUMBER] ?? null;
 
-            $this->trace->info(TraceCode::LINKED_NUMBER_PAYOUT_INFO,
-                [
+                $this->trace->info(TraceCode::LINKED_NUMBER_PAYOUT_INFO, [
                     FundAccount\Entity::LINKED_NUMBER => $mobileNumber,
                 ]);
+            }
 
             $properties = [
                 'id'            => $this->merchant->getId(),
@@ -586,14 +594,10 @@ class Service extends Base\Service
                     ErrorCode::BAD_REQUEST_MOBILE_NUMBER_PAYOUT_NOT_ALLOWED,
                     null);
             }
-            (new Validator)->validateMobileNumberPayout($input);
-        }
 
-        $isCompositePayout = false;
-
-        if (isset($input[Entity::FUND_ACCOUNT]) === true)
-        {
-            $isCompositePayout = true;
+            if ($isCompositePayout) {
+                (new Validator)->validateMobileNumberPayout($input);
+            }
         }
 
         $this->checkIfPayoutIsAllowed($isCompositePayout, $input, $internal, $balance);
@@ -693,6 +697,14 @@ class Service extends Base\Service
             }
         }
 
+        if ($isMobileNumberPayout) {
+            $fundAccount = $this->repo->fund_account->findByPublicId($input[Entity::FUND_ACCOUNT_ID]);
+
+            $vpaHandle = $fundAccount->account->getHandle();
+            
+            $input[Entity::NOTES]['VPA_HANDLE'] = $vpaHandle;
+        }
+
         $payout = $this->core->createPayoutToFundAccount($input, $this->merchant, null, $internal, $balance);
 
         if ($isCompositePayout === true)
@@ -738,7 +750,7 @@ class Service extends Base\Service
             $payoutArray = $payout->toArrayPublic();
         }
 
-        if ($isMobileNumberPayout) {
+        if ($isMobileNumberPayout && $isCompositePayout) {
             $fundAccount = $payout->fundAccount;
             $this->sanitizeResponseForMobileNumberPayout($payoutArray, $fundAccount);
             $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_SUCCESS_COUNT);
@@ -6857,23 +6869,19 @@ class Service extends Base\Service
                     break;
 
                 case 'approve_workflow_payouts':
-
                     $payoutIds = $bulk_input['payout_ids'];
-
-                    $processFunction(function($payoutIds) {
-                        $this->approveRejectWorkflowPayouts($payoutIds, 'approve');
+                    $queueIfBalanceLow = $bulk_input['queue_if_low_balance'] ?? true;
+                    $processFunction(function($payoutId) use ($queueIfBalanceLow)  {
+                        $this->approveRejectWorkflowPayouts($payoutId,'approve',$queueIfBalanceLow);
                     }, $payoutIds);
-
                     break;
 
                 case 'reject_workflow_payouts':
-
                     $payoutIds = $bulk_input['payout_ids'];
-
-                    $processFunction(function($payoutIds) {
-                        $this->approveRejectWorkflowPayouts($payoutIds,'reject');
-                    },$payoutIds);
-
+                    $queueIfBalanceLow = $bulk_input['queue_if_low_balance'] ?? true;
+                    $processFunction(function($payoutId) use ($queueIfBalanceLow) {
+                        $this->approveRejectWorkflowPayouts($payoutId,'reject',$queueIfBalanceLow);
+                    }, $payoutIds);
                     break;
 
                 case 'process_bank_transfer':
@@ -6958,56 +6966,60 @@ class Service extends Base\Service
         }
     }
 
-    public function approveRejectWorkflowPayouts($payoutIds, $action)
+    public function approveRejectWorkflowPayouts($payoutId, $action, $queueIfBalanceLow=true)
     {
-        foreach ($payoutIds as $payoutId) {
+        if (!str_starts_with($payoutId, 'pout_')) {
+            $payoutId = 'pout_' . $payoutId;
+        }
 
-            $attributes = [];
+        $attributes = [];
+        if ($queueIfBalanceLow) {
 
-            $payoutDetails = $this->repo->payouts_details->find($payoutId);
+            $attributes[Payout\Entity::QUEUE_IF_LOW_BALANCE] = $queueIfBalanceLow;
+        }
 
-            $queueIfBalanceLow = $payoutDetails->getQueueIfLowBalanceFlag();
+        if ($action === 'approve') {
+            $this->processActionOnFundAccountPayoutInternal($payoutId, true, $attributes);
 
-            if (!empty($queueIfBalanceLow)) {
+        } elseif ($action === 'reject') {
+            $this->processActionOnFundAccountPayoutInternal($payoutId, false, $attributes);
 
-                $attributes[Payout\Entity::QUEUE_IF_LOW_BALANCE] = $queueIfBalanceLow;
-            }
-
-            if ($action === 'approve') {
-
-                $this->processActionOnFundAccountPayoutInternal($payoutId, true, $attributes);
-
-            } elseif ($action === 'reject') {
-
-                $this->processActionOnFundAccountPayoutInternal($payoutId, false, $attributes);
-
-            } else {
-
-                $this->trace->warning(
-                    TraceCode::MANUAL_ACTION_APPROVE_REJECT_WORKFLOW_PAYOUTS_FAILURE,
-                    [
-                        'payout_id' => $payoutId,
-                        'action' => $action,
-                        'message' => 'Invalid action provided'
-                    ]
-                );
-
-                return;
-            }
-
-            $this->trace->info(
-                TraceCode::MANUAL_ACTION_APPROVE_REJECT_WORKFLOW_PAYOUTS_SUCCESS,
+        } else {
+            $this->trace->warning(
+                TraceCode::MANUAL_ACTION_APPROVE_REJECT_WORKFLOW_PAYOUTS_FAILURE,
                 [
-                    'payoutId' => $payoutId,
-                    'action' => $action
+                    'payout_id' => $payoutId,
+                    'action' => $action,
+                    'message' => 'Invalid action provided'
                 ]
             );
 
+            return;
         }
+
+        $this->trace->info(
+            TraceCode::MANUAL_ACTION_APPROVE_REJECT_WORKFLOW_PAYOUTS_SUCCESS,
+            [
+                'payoutId' => $payoutId,
+                'action' => $action
+            ]
+        );
     }
 
-    private function isMobileNumberPayout(array $input): bool {
-        return isset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE]) && $input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE] === FundAccount\Entity::MOBILE;
+    private function isMobileNumberPayout(array $input, bool $isCompositePayout): bool {
+        if ($isCompositePayout) {
+            return isset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE]) && $input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE] === FundAccount\Entity::MOBILE;
+        } else {
+            $fundAccountId = $input[Entity::FUND_ACCOUNT_ID];
+            $fundAccount = $this->repo->fund_account->findByPublicId($fundAccountId);
+
+
+            if ($fundAccount->getLinkedNumber() != null && $fundAccount->getCustomerName() != null) {
+                $this->fundAccountService->updateMappedVpaForFundAccount($fundAccount, $this->merchant->getId());
+                return true;
+            }
+            return false;
+        }
     }
 
     private function sanitizeResponseForMobileNumberPayout(array &$payoutArray, FundAccount\Entity $fundAccount): void

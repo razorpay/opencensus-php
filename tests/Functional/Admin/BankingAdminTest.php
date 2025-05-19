@@ -79,7 +79,7 @@ class BankingAdminTest extends TestCase
         return $this->fixtures->create(Entity::ADMINS_META,
             [
                 AdminsMeta\Entity::ADMIN_ID          => $adminId,
-                AdminsMeta\Entity::UNIQUE_IDENTIFIER => 'xv6vxwe7',
+                AdminsMeta\Entity::UNIQUE_IDENTIFIER => 'xv6vxwe7@axisbank.com',
                 AdminsMeta\Entity::AUTH_MODE         => 'adfs',
                 AdminsMeta\Entity::DISABLED_REASON   =>  null,
                 AdminsMeta\Entity::USER_DISABLED_AT  =>  null,
@@ -426,5 +426,250 @@ class BankingAdminTest extends TestCase
         $this->app['dcs_config_service']
             ->method('fetchConfiguration')
             ->willReturn(["dormancy_period" => $dormancy]);
+    }
+
+    public function testCreateOrgAdminWithoutDomainInUniqueIdentifier()
+    {
+        $adminField = [
+            'name', 'username', 'email', 'allow_all_merchants',
+            'oauth_provider_id', 'oauth_access_token', 'disabled',
+            'roles', 'groups', 'locked', 'password', 'password_confirmation', 'expired_at'
+        ];
+        $this->createFieldMapsForOrg($this->idamOrg->getId(), 'admin', $adminField);
+
+        $adminsMeta = [
+            'auth_mode', 'unique_identifier', 'expired_at'
+        ];
+        $this->createFieldMapsForOrg($this->idamOrg->getId(), 'admins_meta', $adminsMeta);
+
+        $role = $this->fixtures->create('role', ['org_id' => $this->idamOrg->getId()]);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['headers']['X-Org-Id']      = "org_" . $this->idamOrg->getId();
+        $testData['request']['headers']['X-Admin-Token'] = $this->adfsAuthToken;
+        $testData['request']['content']['user_roles']    = array($role['id']);
+        $expireAt                                        = $this->timestampWithOffset(5);
+        $testData['request']['content']['expire_at']     = $expireAt;
+
+        $testData['response']['content']['user_roles']   = array("role_" .$role['id']);
+        $testData['response']['content']['expire_at']    = $expireAt;
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateOrgAdminWithDomainInUniqueIdentifier()
+    {
+        $adminField = [
+            'name', 'username', 'email', 'allow_all_merchants',
+            'oauth_provider_id', 'oauth_access_token', 'disabled',
+            'roles', 'groups', 'locked', 'password', 'password_confirmation', 'expired_at'
+        ];
+        $this->createFieldMapsForOrg($this->idamOrg->getId(), 'admin', $adminField);
+
+        $adminsMeta = [
+            'auth_mode', 'unique_identifier', 'expired_at'
+        ];
+        $this->createFieldMapsForOrg($this->idamOrg->getId(), 'admins_meta', $adminsMeta);
+
+        $role = $this->fixtures->create('role', ['org_id' => $this->idamOrg->getId()]);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['headers']['X-Org-Id']      = "org_" . $this->idamOrg->getId();
+        $testData['request']['headers']['X-Admin-Token'] = $this->adfsAuthToken;
+        $testData['request']['content']['user_roles']    = array($role['id']);
+        $expireAt                                        = $this->timestampWithOffset(5);
+        $testData['request']['content']['expire_at']     = $expireAt;
+
+
+        $testData['response']['content']['user_roles']   = array("role_" .$role['id']);
+        $testData['response']['content']['expire_at']    = $expireAt;
+
+        $result = $this->startTest($testData);
+    }
+
+    public function testUpdateOrgAdminWithoutDomainInUniqueIdentifier()
+    {
+        $admin = $this->createIdamAdmins($this->idamOrg->getId(), 1);
+
+        $role1 = $this->fixtures->create('role', ['org_id' => $this->idamOrg->getId()]);
+
+        $role2 = $this->fixtures->create('role',
+            [
+                'org_id' => $this->idamOrg->getId(),
+                'name' => 'Super Admin',
+                'description' => 'Super Admins of Roles'
+            ]);
+
+        $admin->roles()->attach($role1);
+        $admin->roles()->attach($role2);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+
+        $updatedExpireAt = $this->timestampWithOffset(2);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = $testData['request']['url'] . '/' . $adminsMeta['unique_identifier'];
+        $testData['request']['headers']['X-Org-Id'] = "org_" . $this->idamOrg->getId();
+        $testData['request']['headers']['X-Admin-Token'] = $this->adfsAuthToken;
+        $testData['request']['content']['user_roles'] = array_merge(array("role_" . $role1['id']), array("role_" . $role2['id']));
+        $testData['request']['content']['expire_at'] = $updatedExpireAt;
+
+        $testData['response']['content']['user_roles'] = array_merge(array("role_" . $role1['id']), array("role_" . $role2['id']));
+        $testData['response']['content']['expire_at'] = $updatedExpireAt;
+
+        $this->startTest($testData);
+    }
+
+    public function testUpdateOrgAdminWithDomainInUniqueIdentifier()
+    {
+        $admin = $this->createIdamAdmins($this->idamOrg->getId(), 1);
+
+        $role1 = $this->fixtures->create('role', ['org_id' => $this->idamOrg->getId()]);
+
+        $role2 = $this->fixtures->create('role',
+            [
+                'org_id' => $this->idamOrg->getId(),
+                'name' => 'Super Admin',
+                'description' => 'Super Admins of Roles'
+            ]);
+
+        $admin->roles()->attach($role1);
+        $admin->roles()->attach($role2);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+
+        $updatedExpireAt = $this->timestampWithOffset(2);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = $testData['request']['url'] . '/' . $adminsMeta['unique_identifier'];
+        $testData['request']['headers']['X-Org-Id'] = "org_" . $this->idamOrg->getId();
+        $testData['request']['headers']['X-Admin-Token'] = $this->adfsAuthToken;
+        $testData['request']['content']['user_roles'] = array_merge(array("role_" . $role1['id']), array("role_" . $role2['id']));
+        $testData['request']['content']['expire_at'] = $updatedExpireAt;
+
+        $testData['response']['content']['user_roles'] = array_merge(array("role_" . $role1['id']), array("role_" . $role2['id']));
+        $testData['response']['content']['expire_at'] = $updatedExpireAt;
+
+        $this->startTest($testData);
+    }
+
+    public function testGetOrgAdminWithoutDomainInUniqueIdentifier()
+    {
+        // create IDAM admin who can only access this routes
+        $this->adfsAuthToken = $this->createIDAMAdminAndGetAdminToken($this->idamOrg->getId());
+
+        $admin = $this->createIdamAdmins($this->idamOrg->getId(), 1);
+
+        $role = $this->fixtures->create('role', ['org_id' => $this->idamOrg->getId()]);
+
+        $admin->roles()->attach($role);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+
+        $this->ba->expressAuth('test', 'rzp_test_10000000000000');
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $testData['request']['url'] . '/' . $adminsMeta['unique_identifier'];
+        $testData['request']['headers']['X-Org-Id']      = "org_" . $this->idamOrg->getId();
+        $testData['request']['headers']['X-Admin-Token'] = $this->adfsAuthToken;
+
+        $testData['response']['content']['user_roles'] = array("role_" .$role['id']);
+
+        $this->startTest($testData);
+
+    }
+
+    public function testGetOrgAdminWithDomainInUniqueIdentifier()
+    {
+        // create IDAM admin who can only access this routes
+        $this->adfsAuthToken = $this->createIDAMAdminAndGetAdminToken($this->idamOrg->getId());
+
+        $admin = $this->createIdamAdmins($this->idamOrg->getId(), 1);
+
+        $role = $this->fixtures->create('role', ['org_id' => $this->idamOrg->getId()]);
+
+        $admin->roles()->attach($role);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+        $this->ba->expressAuth('test', 'rzp_test_10000000000000');
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $testData['request']['url'] . '/' . $adminsMeta['unique_identifier'];
+        $testData['request']['headers']['X-Org-Id']      = "org_" . $this->idamOrg->getId();
+        $testData['request']['headers']['X-Admin-Token'] = $this->adfsAuthToken;
+
+        $testData['response']['content']['user_roles'] = array("role_" .$role['id']);
+
+        $this->startTest($testData);
+    }
+
+    private function createFieldMapsForOrg(string $orgId, string $entityName, array $fields)
+    {
+        return $this->fixtures->create(
+            'org_field_map',
+            [
+                'org_id' => $orgId,
+                'entity_name' => $entityName,
+                'fields' => $fields,
+            ]);
+    }
+
+    private function createIDAMAdminAndGetAdminToken(string $orgId): string
+    {
+        $expireAt = $this->timestampWithOffset(5);
+
+        $admin = $this->createAdmin(
+            $orgId,
+            $expireAt,
+            'admin@axis.com',
+            'IDAM Admin',
+            'admin',
+            true
+        );
+
+        $role = $this->fixtures->create('role', [
+            'org_id' => $orgId,
+            'name'   => 'IDAM Admin Role',
+        ]);
+
+        $permission = $this->fixtures->create('permission', [
+            'name' => 'banking_idam_admin'
+        ]);
+
+        $role->permissions()->attach($permission->getId());
+
+        $admin->roles()->attach($role);
+
+        $token = 'ThisIsATokenForTest';
+
+        $adminToken = $this->fixtures->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'created_at' => $this->timestampWithOffset(),
+            'token'      => Hash::make($token),
+            'expires_at' => $expireAt,
+        ]);
+
+        return $token . $adminToken->getId();
+    }
+
+    private function createAdmin(
+        string $orgId,
+        int    $expireAt,
+        string $email = 'testadmin@axis.com',
+        string $name = 'Test User',
+        string $username = 'testadmin',
+        bool   $allowAllMerchants = false
+    )
+    {
+        return $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID                => $orgId,
+            Admin\Entity::EMAIL                 => $email,
+            Admin\Entity::NAME                  => $name,
+            Admin\Entity::EXPIRED_AT            => $expireAt,
+            Admin\Entity::USERNAME              => $username,
+            Admin\Entity::ALLOW_ALL_MERCHANTS   => $allowAllMerchants,
+        ]);
     }
 }

@@ -42,7 +42,7 @@ class Authorized extends Base
 
         $amount = $this->data['payment']['amount'];
 
-        $subject = "Payment of Rs. {$amount} is successful (via Razorpay)";
+        $subject = "Payment of {$amount} is successful (via Razorpay)";
 
         $this->subject($subject);
 
@@ -88,16 +88,27 @@ class Authorized extends Base
 
     protected function shouldSendEmailViaStork(): bool
     {
+        $app = \App::getFacadeRoot();
+
         $traceData = [
             'merchant_id' => $this->data['merchant']['id'],
             'view' => $this->view,
-            'data' => $this->data
+            'data' => $this->data,
+            'isStorkEmailVIAEnabled' => true
         ];
 
-        $app = \App::getFacadeRoot();
+        $app['trace']->info(TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_VIA_SPLITZ_PAYMENT_AUTHORIZED , $traceData);
 
-        $app['trace']->info(TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK_PAYMENT_AUTHORIZED , $traceData);
+        return true;
+    }
 
-        return false;
+    protected function getParamsForStork(): array
+    {
+        return [
+            'template_name' => $this->view,
+            'template_namespace' => 'payments_payment_links',
+            'org_id' => $this->data['org']['id'],
+            'params' => $this->data
+        ];
     }
 }

@@ -133,7 +133,7 @@ abstract class BaseProxyController extends Controller
             $this->routesVsCacheKeys = $routesVsCacheKeys;
     }
 
-    protected function getHeadersForDashboardRequest(array $body = [], string $id = '')
+    protected function getHeadersForDashboardRequest(array $body = [], string $id = '', string $productType = '')
     {
         $headers = [
             'x-merchant-id'    => optional($this->ba->getMerchant())->getId() ?? $id,
@@ -152,7 +152,9 @@ abstract class BaseProxyController extends Controller
             'X-Org-Id'         => optional($this->ba->getMerchant())->getOrgId() ?? '',
             'X-Merchant-Country' => optional($this->ba->getMerchant())->getCountry() ?? ($body['country_code'] ?? ''),
             'X-Admin-id'       => optional($this->ba->getAdmin())->getId() ?? '',
-            'X-Product'        => $body['product'] ?? ''
+
+            'X-Product'                 => $body['product'] ?? $productType,
+            'X-Onboarding-Version'      => $body['version'] ?? '',
         ];
 
         $actorDetailsHeaders = $this->getActorDetailHeaders();

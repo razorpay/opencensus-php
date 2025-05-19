@@ -3,18 +3,13 @@
 namespace RZP\Models\LinkedNumber;
 
 use App;
-use RZP\Constants\Entity as E;
-use RZP\Error\Error;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Payout\DualWrite\Payout as DualWritePayout;
 use RZP\Models\Payout\Metric;
-use RZP\Models\Vpa;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
-use RZP\Http\Request\Requests;
 use RZP\Exception;
-use RZP\Models\Internal\PayoutService;
 use RZP\Models\FundAccount\Validation as FAV;
 use RZP\Services\PayoutService\VpaMapperFetch;
 use RZP\Trace\TraceCode;
@@ -24,15 +19,17 @@ class Core extends Base\Core
     protected $favCore;
     protected $mappedVpaFetchClient;
     protected $vpaCore;
+    protected $payoutService;
     public function __construct()
     {
         parent::__construct();
 
         $this->favCore = new FAV\Core();
         $this->mappedVpaFetchClient = $this->app[VpaMapperFetch::MAPPED_VPA_FETCH];
+        $this->payoutService = new DualWritePayout();
     }
 
-    public function FetchMappedVpaFromLinkedNumber(string $linkedNumber, string $accountHolderName)
+    public function FetchMappedVpaFromLinkedNumber(string $linkedNumber, string $accountHolderName, string $merchantId)
     {
         $mappedVpa = $this->mappedVpaFetchClient->fetchMappedVpaViaMicroservice($linkedNumber);
 
@@ -55,7 +52,7 @@ class Core extends Base\Core
 
         $customerName = $mappedVpa[FundAccount\Entity::CUSTOMER_NAME];
 
-        $this->doMatchScoring($customerName, $accountHolderName);
+        $this->doMatchScoring($customerName, $accountHolderName, $merchantId);
 
         return [
             FundAccount\Entity::VPA => $mappedVpa[FundAccount\Entity::VPA],
@@ -63,9 +60,9 @@ class Core extends Base\Core
         ];
     }
 
-    public function doMatchScoring(string $customerName, string $accountHolderName)
+    public function doMatchScoring(string $customerName, string $accountHolderName, string $merchantId)
     {
-        $threshold = $this->app['config']->get('app.payouts_to_phone_number_name_match_threshold');
+        $threshold = $this->payoutService->getMerchantSettingsForThresholdFromPayoutService($merchantId);
 
         $matchScore = $this->favCore->getNameScoreForValidation($customerName, $accountHolderName);
 
