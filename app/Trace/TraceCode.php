@@ -13229,6 +13229,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_METHODS_DIFF_FOUND = 'PAYMENT_METHODS_DIFF_FOUND';
     const PAYMENT_METHODS_SERVICE_CALL_FAILED = 'PAYMENT_METHODS_SERVICE_CALL_FAILED';
 
+    // userService trace code
+    const USER_SERVICE_DATA_ACCESSOR = 'USER_SERVICE_DATA_ACCESSOR';
+
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

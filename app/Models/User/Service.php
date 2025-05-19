@@ -4913,4 +4913,72 @@ class Service extends Base\Service
            $inputData [Merchant\Entity::SKIP_EMAIL_UNIQUENESS_CHECK ] = true;
        }
    }
+
+   public function userServiceDataAccessor($input)
+   {
+       $responseData = [];
+
+       $this->trace->info(
+           TraceCode::USER_SERVICE_DATA_ACCESSOR,
+               [
+                   'input' => $input
+               ]
+       );
+
+       $action = $input['action'] ?? 'default';
+
+       switch ($action) {
+           case 'create_merchant':
+               $responseData = $this->merchantService->create($input['merchant_input_data'],
+                   $input['merchant_detail_input_data'],
+                   $input['create_merchant_metadata']
+               );
+               break;
+
+           case 'fetch_permission':
+               $responseData = $this->core->userPermissions($input['merchant']);
+               break;
+
+           case 'product_switch':
+               // TODO : implement product switch
+               break;
+
+           case 'actor_info':
+               $responseData = Adapter\Base::getActorInfo();
+               break;
+
+           case 'fetch_role_names_from_authz':
+               $responseData = (new \RZP\Models\Roles\Service())->getRoleNamesUsingExperiment($input['role_ids']);
+               break;
+
+           case 'fetch_role_name':
+               $responseData = $this->repo->roles->fetchRoleName($input['role_name']);
+               break;
+
+           case 'fetch_methods':
+               $merchantEntity = $this->repo->merchant->findOrFailPublic($input['merchant_id']);
+               $responseData = $merchantEntity->getMethods();
+               break;
+
+           case 'fetch_attributes':
+               $responseData = $this->core->fetchMerchantAttribute($input['merchant_id']);
+               break;
+
+           case 'fetch_banking_balance':
+               $responseData = $this->core->fetchBankingBalanceData($input['merchant_id']);
+               break;
+
+           case 'fetch_settings':
+               $responseData = $this->core->fetchUserSettings($input['user_id']);
+               break;
+
+           default:
+               break;
+       }
+
+       return [
+           'response' => $responseData
+       ];
+   }
+
 }
