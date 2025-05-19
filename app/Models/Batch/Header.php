@@ -1740,6 +1740,10 @@ class Header
     const UPDATE_GIFT_CARDS_EXPIRY_REFERENCE_ID = "Reference ID (Optional)";
     const UPDATE_GIFT_CARDS_EXPIRY_NOTES = "Notes (Optional)";
 
+
+     // Offers Engine merchant ramp control headers
+    const OFFERS_ENGINE_MERCHANT_RAMP_CONTROL_PUBLISHER_ID = "Publisher ID";
+
     //Wallet create gift card transfers headers
     const CREATE_GIFT_CARD_TRANSFERS_SOURCE_USER_ID = "Source user_id";
     const CREATE_GIFT_CARD_TRANSFERS_DESTINATION_USER_ID = "Destination user_id";
@@ -2450,6 +2454,12 @@ class Header
         Header::UPDATE_GIFT_CARDS_EXPIRY_TICKET_LINK,
         Header::UPDATE_GIFT_CARDS_EXPIRY_TIMESTAMP,
         Header::UPDATE_GIFT_CARDS_EXPIRY_SOURCE
+    ];
+
+
+     // mandatory headers for offers engine merchant ramp
+    const MANDATORY_HEADERS_FOR_OFFERS_ENGINE_MERCHANT_RAMP_CONTROL = [
+        Header::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL_PUBLISHER_ID,
     ];
 
     // mandatory headers for email upload
@@ -6685,6 +6695,13 @@ class Header
             self::OUTPUT => [],
         ],
 
+        TYPE::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL => [
+            self::INPUT => [
+                self::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL_PUBLISHER_ID,
+            ],
+            self::OUTPUT => [],
+        ],
+
         TYPE::CREATE_GIFT_CARD_TRANSFERS => [
             self::INPUT => [
                 self::CREATE_GIFT_CARD_TRANSFERS_SOURCE_USER_ID,
@@ -8136,6 +8153,11 @@ class Header
             self::validateWalletUpdateGCExpiryBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_UPDATE_GIFT_CARDS_EXPIRY);
         }
 
+        if ($type === Type::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL )
+        {
+            self::validateOffersEngineMerchantRampControlBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_OFFERS_ENGINE_MERCHANT_RAMP_CONTROL);
+        }
+
         if ($type === Type::GCMS_UPLOAD_BULK_EMAILS)
         {
             self::validateGCOMSBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_UPLOAD_BULK_EMAILS);
@@ -8895,5 +8917,43 @@ class Header
 
             throw new BadRequestValidationFailureException($msg);
         }
+    }
+
+    public static function validateOffersEngineMerchantRampControlBatchHeaders(array $expectedHeaders, array $actualHeaders, array $mandatoryHeaders)
+    {
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $mandatoryHeaders, true) === true)
+            {
+                // This will remove the header we just validated from the list of mandatory headers.
+                $mandatoryHeaders = array_diff($mandatoryHeaders, [$actualHeader]);
+            }
+        }
+
+        if (count($mandatoryHeaders) > 0)
+        {
+            $msg = 'Uploaded file is missing mandatory header(s) [%s]';
+
+            $msg = sprintf($msg, implode(', ',$mandatoryHeaders));
+
+            throw new BadRequestValidationFailureException($msg);
+        }
+
+        // Now make sure that all headers provided are part of our headers list.
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $expectedHeaders, true) === false)
+            {
+                $msg = 'Uploaded file has has invalid header [%s]';
+
+                $msg = sprintf($msg, $actualHeader);
+
+                throw new BadRequestValidationFailureException($msg);
+            }
+
+            // This is required so that we throw an exception if the same header is repeated twice.
+            $expectedHeaders = array_diff($expectedHeaders, [$actualHeader]);
+        }
+
     }
 }

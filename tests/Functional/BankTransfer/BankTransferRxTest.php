@@ -290,6 +290,15 @@ class BankTransferRxTest extends TestCase
         $this->assertEquals("9020", $bankTransfer['payer_ifsc']);
 
         $this->assertEquals("IOBA0002897", $bankTransfer->payerBankAccount['ifsc_code']);
+
+        $bankTransferRequest = $this->getDbLastEntity('bank_transfer_request', 'live');
+
+        $this->assertNotNull($bankTransferRequest);
+        $this->assertTrue($bankTransferRequest['is_created']);
+        $this->assertEquals(
+            ['source' => 'file', 'request_from' => 'bank'],
+            json_decode($bankTransferRequest['request_source'], true)
+        );
     }
 
     public function testBankTransferYesbankMISForClosedVirtualAccount()

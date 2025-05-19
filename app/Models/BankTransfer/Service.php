@@ -1965,6 +1965,14 @@ class Service extends Base\Service
 
         $name = explode(' ', trim($merchantDetail->getPromoterPanName()), 2);
 
+        if(strlen($name[0]) < 2 ){
+            $name[0] = $name[1];
+        }
+        $name[1] = isset($name[1]) ? $name[1] : "LNU";
+        if(strlen($name[1]) < 2){
+            $name[1] = $name[0];
+        }
+
         $address = [
             'street' => $merchantDetail->getBusinessRegisteredAddress(),
             'city' => $merchantDetail->getBusinessRegisteredCity(),
@@ -1975,7 +1983,7 @@ class Service extends Base\Service
 
         $contact = [
             'first_name' => $name[0],
-            'last_name' => isset($name[1]) ? $name[1] : "LNU",
+            'last_name' => $name[1],
             'email' => $merchantDetail->getContactEmail(),
             'phone' => $merchantDetail->getContactMobile(),
             'login_id' => $merchantId . "_razorpay"

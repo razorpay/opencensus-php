@@ -157,7 +157,8 @@ class Entity extends Base\PublicEntity
 
         $metricData = [
             'route' => $app['request.ctx']->getRoute(),
-            'source' => $fetchedFromOnboardingDetails ? "onboarding_details" : "user_device_detail"
+            'source' => $fetchedFromOnboardingDetails ? "onboarding_details" : "user_device_detail",
+            'key' => $key
         ];
 
         $app['trace']->count(Metric::FETCH_WORKFLOW_DETAILS_SUCCESS, $metricData);
@@ -195,7 +196,7 @@ class Entity extends Base\PublicEntity
 
                     $newKey = $productKey . '_' . 'workflow_type';
 
-                    $mergedObject[Constants::WORKFLOW_DETAILS] = [$newKey => $value[Constants::WORKFLOW_TYPE] ?? ''];
+                    $mergedObject[Constants::WORKFLOW_DETAILS] = [$newKey => !empty($value[Constants::WORKFLOW_TYPE]) ? $value[Constants::WORKFLOW_TYPE] : null];
 
                     return [
                         Constants::MERGED_OBJECT                     => $mergedObject,

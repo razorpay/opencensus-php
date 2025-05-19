@@ -45,7 +45,7 @@ class Validator extends Base\Validator
         Entity::IINS                => 'filled|array',
         Entity::PERCENT_RATE        => 'filled|integer|min:1|max:10000',
         Entity::MAX_CASHBACK        => 'filled|integer|min:0',
-        Entity::FLAT_CASHBACK       => 'filled|integer|min:0',
+        Entity::FLAT_CASHBACK       => 'filled|integer|min:100',
         Entity::MIN_AMOUNT          => 'filled|integer|min:0',
         Entity::MAX_PAYMENT_COUNT   => 'filled|integer|min:1',
         Entity::LINKED_OFFER_IDS    => 'filled|array',
@@ -495,9 +495,9 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Flat cashback cannot be greater than minimum amount', null, [
-                    Entity::FLAT_CASHBACK => $input[Entity::FLAT_CASHBACK],
-                    Entity::MIN_AMOUNT    => $input[Entity::MIN_AMOUNT],
-                ]);
+                Entity::FLAT_CASHBACK => $input[Entity::FLAT_CASHBACK],
+                Entity::MIN_AMOUNT    => $input[Entity::MIN_AMOUNT],
+            ]);
         }
     }
 
@@ -578,6 +578,13 @@ class Validator extends Base\Validator
         if (empty($input[Entity::ISSUER]))
         {
             return;
+        }
+
+        if ((empty($input[Entity::PAYMENT_METHOD]) === false) and
+            ($input[Entity::PAYMENT_METHOD] === Payment\Method::UPI))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Issuer should not be passed for payment method UPI');
         }
 
         if ((empty($input[Entity::PAYMENT_METHOD]) === false) and

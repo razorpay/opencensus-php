@@ -26,6 +26,7 @@ use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Services\Mutex;
+use Razorpay\IFSC\IFSC;
 use RZP\Models\Settings;
 use RZP\Models\Customer;
 use RZP\Models\Reversal;
@@ -880,6 +881,33 @@ class Core extends Base\Core
         {
             case Status::PROCESSED:
                 $oldStatus = $payout->getStatus();
+
+                if (isset($ftaData[PayoutConstants::PAYEE_IFSC]) === true) {
+                    $requestPayload = [
+                        "id" => $payout->getMerchantId(),
+                        "experiment_name" =>  $this->app['config']->get('app.payouts_to_phone_number_splitz_experiment'),
+                        'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                    ];
+                    $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE, TraceCode::SEND_IFSC_IN_WEBHOOK_SPLITZ_ERROR);
+
+                    if ($isExperimentEnabled === true) {
+                        $ifsc = $ftaData[PayoutConstants::PAYEE_IFSC];
+                        $payeeBankName = IFSC::getBankName(strtoupper($ifsc));
+
+                        $this->trace->info(
+                            TraceCode::FTA_INFO_IN_PAYOUT_WEBHOOK,
+                            [
+                                PayoutConstants::FTA => $ftaData,
+                                PayoutConstants::PAYEE_BANK_NAME => $payeeBankName,
+                            ]
+                        );
+
+                        $payout->setNotes(array_merge($payout->getNotes(), [
+                            PayoutConstants::PAYEE_IFSC => $ifsc,
+                            PayoutConstants::PAYEE_BANK_NAME => $payeeBankName
+                        ]));
+                    }
+                }
 
                 $this->handlePayoutProcessed($payout, null, $ftaStatus, $ftsSourceAccountInformation, true);
 
@@ -5443,11 +5471,18 @@ class Core extends Base\Core
                 'request_data' => json_encode(['merchant_id' => $payout->getMerchantId()])
             ];
 
+            // Experiment for PS event push feature
             $isPushToQueueForAccStSourceExperimentEnabled = $this->isSplitzExperimentEnable($properties, 'variables', TraceCode::ACCOUNT_STATEMENTS_SOURCE_EVENT_SPLITZ_ERROR);
-            $isCAPayout = $payout->balance->isAccountTypeDirect();
+            $isPayoutService = $payout->getIsPayoutService();
+            $isCAPayout = $payout->balance ->isAccountTypeDirect();
 
-            if ($isPushToQueueForAccStSourceExperimentEnabled && $isCAPayout) {
-                $this->pushToAccountServiceQueue($payout);
+            // Only push for direct payouts
+            if ($isCAPayout) {
+                // If experiment is ON, push only for API payouts
+                // If experiment is OFF, push for all direct payouts
+                if (!$isPushToQueueForAccStSourceExperimentEnabled || !$isPayoutService) {
+                    $this->pushToAccountServiceQueue($payout);
+                }
             }
         } catch (\Throwable $ex) {
             $this->trace->traceException(

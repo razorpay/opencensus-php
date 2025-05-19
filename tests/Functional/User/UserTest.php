@@ -22,6 +22,7 @@ use RZP\Mail\User\Otp;
 use RZP\Models\Feature;
 use RZP\Mail\User\Login;
 use RZP\Models\User\Constants;
+use RZP\Models\User\Entity;
 use RZP\Models\User\Role;
 use Razorpay\OAuth\Client;
 use RZP\Constants\Product;
@@ -29,7 +30,6 @@ use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
-use RZP\Models\User\Entity;
 use RZP\Mail\User\OtpSignup;
 use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
@@ -1892,7 +1892,7 @@ class UserTest extends TestCase
         $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
     }
 
-    public function testCreateMerchantWithWorkflowCreate()
+    public function testCreateMerchantWithoutWorkflowCreate()
     {
         $user = $this->fixtures->create('user');
         $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
@@ -2023,7 +2023,7 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateMerchantWithoutWorkflowCreate()
+    public function testCreateMerchantWithWorkflowCreate()
     {
         $user = $this->fixtures->create('user');
         $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
@@ -2035,6 +2035,8 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
 
+        $this->mockAllSplitzTreatment();
+
         $this->ba->dashboardGuestAppAuth();
         $response = $this->startTest();
 
@@ -2044,18 +2046,51 @@ class UserTest extends TestCase
         $this->assertEquals(1, $merchantUsers->count());
 
         $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
-        $merchant = DB::table('merchants')->where('id', '=', $merchantUserEntry->merchant_id)->first();
-
-        // If user doesn't have a merchant (considered fresh signup), we use the user's email to create the merchant
-        $this->assertEquals($user['email'], $merchant->email);
-
         // Payload assertion
         $this->assertEquals($response['user_id'], $user['id']);
         $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
 
         //workflow assertion
-        $userDeviceDetailsEntry = DB::table('user_device_detail')->where('merchant_id', '=', $merchantUserEntry->merchant_id);
-        $this->assertEmpty($userDeviceDetailsEntry->metadata);
+        $userDeviceDetailsEntry = DB::table('user_device_details')->where('merchant_id', '=', $merchantUserEntry->merchant_id)->first();
+        $this->assertEquals('{"user_signup_state": "mid_created"}', $userDeviceDetailsEntry->metadata);
+    }
+
+    public function testCreateMerchantWithWorkflowCreateAndUserSingupStateExpTurnedOff()
+    {
+        $user = $this->fixtures->create('user');
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        // Deleting the newly create merchant details so that user appears as fresh signup
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->mockAllSplitzTreatment([
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ]);
+
+        $this->ba->dashboardGuestAppAuth();
+        $response = $this->startTest();
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        // No merchant associated previously
+        $this->assertEquals(1, $merchantUsers->count());
+
+        $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+        // Payload assertion
+        $this->assertEquals($response['user_id'], $user['id']);
+        $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
+
+        //workflow assertion
+        $userDeviceDetailsEntry = DB::table('user_device_details')->where('merchant_id', '=', $merchantUserEntry->merchant_id)->first();
+        $this->assertEquals('[]', $userDeviceDetailsEntry->metadata);
     }
 
     public function testCreateMerchantForNewUserWithMobileNumber()
@@ -17291,44 +17326,40 @@ class UserTest extends TestCase
 
         $user2 = $this->fixtures->create('user', [
             Entity::NAME => 'testUserA',
-            Entity::CONTACT_MOBILE => '9876543211',
+            Entity::CONTACT_MOBILE => '+919876543211',
             Entity::EMAIL => 'user2@razorpay.com',
             Entity::PASSWORD => 'hello123',
             ENTITY::CONTACT_MOBILE_VERIFIED => true
         ]);
 
+        $user3 = $this->fixtures->create('user', [
+            Entity::NAME => 'testUserA',
+            Entity::CONTACT_MOBILE => '+91 9876543212',
+            Entity::EMAIL => 'user3@razorpay.com',
+            Entity::PASSWORD => 'hello123',
+            ENTITY::CONTACT_MOBILE_VERIFIED => true
+        ]);
+
+        $contacts = ["+919876543210","+91 9876543211", "9876543212"];
         $testData = &$this->testData[__FUNCTION__];
-        $testData['request']['content']['user_contacts'][0] = $user1->getContactMobile();
-        $testData['request']['content']['user_contacts'][1] = $user2->getContactMobile();
+        $testData['request']['content']['user_contacts'][0] = $contacts[0];
+        $testData['request']['content']['user_contacts'][1] = $contacts[1];
+        $testData['request']['content']['user_contacts'][2] = $contacts[2];
+
 
         $response = $this->startTest($testData);
 
-        $this->assertEquals($user1->getName(), $response[$user1->getContactMobile()]['name']);
-        $this->assertEquals($user2->getName(), $response[$user2->getContactMobile()]['name']);
+        $this->assertEquals($user1->getName(), $response[$contacts[0]]['name']);
+        $this->assertEquals($user2->getName(), $response[$contacts[1]]['name']);
+        $this->assertEquals($user3->getName(), $response[$contacts[2]]['name']);
 
-        $this->assertEquals($user1->getEmail(), $response[$user1->getContactMobile()]['email']);
-        $this->assertEquals($user2->getEmail(), $response[$user2->getContactMobile()]['email']);
+        $this->assertEquals($user1->getEmail(), $response[$contacts[0]]['email']);
+        $this->assertEquals($user2->getEmail(), $response[$contacts[1]]['email']);
+        $this->assertEquals($user3->getEmail(), $response[$contacts[2]]['email']);
 
-        $requestWithOnlyContacts = [
-            'user_contacts' => [
-                $user1->getContactMobile(),
-                $user2->getContactMobile(),
-            ]
-        ];
-
-        $request = [
-            'url'       => '/users_internal',
-            'method'    => 'POST',
-            'content'   => $requestWithOnlyContacts
-        ];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertEquals($user1->getName(), $response[$user1->getContactMobile()]['name']);
-        $this->assertEquals($user2->getName(), $response[$user2->getContactMobile()]['name']);
-
-        $this->assertEquals($user1->getEmail(), $response[$user1->getContactMobile()]['email']);
-        $this->assertEquals($user2->getEmail(), $response[$user2->getContactMobile()]['email']);
+        $this->assertEquals(true, $response[$contacts[0]]['is_password_set']);
+        $this->assertEquals(true, $response[$contacts[1]]['is_password_set']);
+        $this->assertEquals(true, $response[$contacts[2]]['is_password_set']);
     }
 
     public function testResellerPartnerMerchantRegister()

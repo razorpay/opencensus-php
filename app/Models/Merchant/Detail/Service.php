@@ -251,6 +251,8 @@ class Service extends Base\Service
 
                 $workflowDetails = $workflowDetailsV2 = $workflowType = $source = null;
 
+                $userSignupState = "";
+
                 $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRoleFromMaster($merchantId);
 
                 if (empty($userDeviceDetail) === false) {
@@ -269,6 +271,8 @@ class Service extends Base\Service
 
                         $workflowDetails = $workflowDetailsResponse;
                     }
+
+                    $userSignupState = $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::USER_SIGNUP_STATE);
                 }
 
                 $isDedupeMatched = $this->dedupeCore->isMerchantImpersonated($this->merchant);
@@ -294,6 +298,14 @@ class Service extends Base\Service
                     $response[DeviceDetailConstants::WORKFLOW_DETAILS_V2] = $workflowDetailsV2;
                 } else {
                     $response[DeviceDetailConstants::WORKFLOW_DETAILS] = $workflowDetails ?? null;
+                }
+                $properties = [
+                    'id'            => $merchantId,
+                    'experiment_id' => $this->app['config']->get('app.workflow_segregation_store_user_signup_state'),
+                ];
+                $shouldStoreUserSignupState = (new MerchantCore())->isSplitzExperimentEnable($properties,'enable');
+                if ($shouldStoreUserSignupState) {
+                    $response[DeviceDetailConstants::USER_SIGNUP_STATE] =  $userSignupState;
                 }
 
                 return $response;
@@ -5488,12 +5500,14 @@ class Service extends Base\Service
         // due to following flow: onboarding_save (API) -> onboarding_save (PGOS) -> submit_merchant_internal (API),
         // it is possible that submit_merchant_internal throws an error due to mutex already acquired by onboarding_save
         // we are passing a boolean flow to skip mutex lock acquire.
-        if ($input[self::MUTEX_LOCK_ACQUIRED] === true)
+        if (isset($input[self::MUTEX_LOCK_ACQUIRED]) && $input[self::MUTEX_LOCK_ACQUIRED] === true)
         {
             $this->trace->info(TraceCode::MUTEX_ACQUIRE_SKIPPED_FOR_SUBMIT_MERCHANT_INTERNAL, [
                 'merchant_id'               => $merchantId,
                 'reason'                    => 'mutex acquired by onboarding_save',
             ]);
+
+            unset($input[self::MUTEX_LOCK_ACQUIRED]);
 
             return $this->handleSubmitMerchantInternal($merchantId, $input);
         }

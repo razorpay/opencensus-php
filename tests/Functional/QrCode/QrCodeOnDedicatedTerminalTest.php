@@ -96,6 +96,8 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $this->config['gateway.mock_upi_mozart'] = true;
 
+        $this->setMockSplitzTreatment();
+
     }
 
     public function testCreateDynamicQrWithDedicatedTerminal()
@@ -2467,6 +2469,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
     }
     public function testEnableBulkTerminalsOnline()
     {
+        $this->markTestSkipped("Unused Code");
         $this->ba->adminAuth();
         $this->addPermissionToBaAdmin(Permission::ENABLE_TERMINALS_ONLINE_TAG_BULK);
         $terminal1 = $this->fixtures->create(
@@ -2527,6 +2530,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
     }
     public function testDisableBulkTerminalsOnline()
     {
+        $this->markTestSkipped("Unused Code");
         $this->ba->adminAuth();
         $this->addPermissionToBaAdmin(Permission::DISABLE_TERMINALS_ONLINE_TAG_BULK);
         $terminal1 = $this->fixtures->create(

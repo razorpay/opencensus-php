@@ -22,7 +22,7 @@ class Core extends Base\Core
         }
         else
         {
-            $bankTransferRequest->findAndSetRequestSource($routeName);
+            $bankTransferRequest->findAndSetRequestSource();
         }
 
         $requestSource = $bankTransferRequest->getRequestSource();

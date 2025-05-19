@@ -589,6 +589,10 @@ class AxisBankTransferTest extends TestCase
 
         $this->assertTrue($bankTransferRequest['is_created']);
         $this->assertNotNull($bankTransferRequest['payee_account']);
+        $this->assertEquals(
+            ['source' => 'test', 'request_from' => 'test'],
+            json_decode($bankTransferRequest['request_source'], true)
+        );
 
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
 
@@ -883,6 +887,10 @@ class AxisBankTransferTest extends TestCase
 
         $this->assertTrue($bankTransferRequest['is_created']);
         $this->assertNotNull($bankTransferRequest['payee_account']);
+        $this->assertEquals(
+            ['source' => 'callback', 'request_from' => 'bank'],
+            json_decode($bankTransferRequest['request_source'], true)
+        );
 
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
 
