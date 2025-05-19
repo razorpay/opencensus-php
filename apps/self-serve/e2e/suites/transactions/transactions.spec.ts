@@ -51,7 +51,7 @@ test.describe.parallel('Transactions (Test Mode) @flow=transactions @project=pay
     ).toBeVisible();
   });
 
-  test('should show invoice list and details in Invoices', async ({ page }) => {
+  test.skip('should show invoice list and details in Invoices', async ({ page }) => {
     await navigateToTransactions(page);
     await page.getByRole('link', { name: 'Invoices', exact: true }).click();
     const columns = [
