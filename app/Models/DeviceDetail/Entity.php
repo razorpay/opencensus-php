@@ -194,9 +194,11 @@ class Entity extends Base\PublicEntity
 
                 if (is_array($value)) {
 
-                    $newKey = $productKey . '_' . 'workflow_type';
+                    $workflowTypeKey = $productKey . '_' . 'workflow_type';
+                    $workflowVersionKey = $productKey . '_' . 'workflow_version';
 
-                    $mergedObject[Constants::WORKFLOW_DETAILS] = [$newKey => !empty($value[Constants::WORKFLOW_TYPE]) ? $value[Constants::WORKFLOW_TYPE] : null];
+                    $mergedObject[Constants::WORKFLOW_DETAILS][$workflowTypeKey] = !empty($value[Constants::WORKFLOW_TYPE]) ? $value[Constants::WORKFLOW_TYPE] : null;
+                    $mergedObject[Constants::WORKFLOW_DETAILS][$workflowVersionKey] = !empty($value[Constants::VERSION_ID]) ? $value[Constants::VERSION_ID] : null;
 
                     return [
                         Constants::MERGED_OBJECT                     => $mergedObject,
