@@ -1638,19 +1638,21 @@ class Processor
         try
         {
             $experimentId = "";
-            if(self::isCardRecurringAutoRearchRoute($routeName)){
+            $experimentIdWithLimit = "";
+            if (self::isCardRecurringAutoRearchRoute($routeName)) {
                 $experimentId = $this->app['config']->get('app.enable_rearch_card_recurring_flow');
-            } else if(self::isCardRecurringInitialRearchRoute($routeName)){
+                $experimentIdWithLimit = $this->app['config']->get('app.enable_rearch_card_recurring_flow_with_limit');
+            } else if (self::isCardRecurringInitialRearchRoute($routeName)) {
                 $experimentId = $this->app['config']->get('app.enable_rearch_card_recurring_initial_flow');
+                $experimentIdWithLimit = $this->app['config']->get('app.enable_rearch_card_recurring_initial_flow_with_limit');
             }
 
             $properties = [
                 'id'            => UniqueIdEntity::generateUniqueId(),
                 'experiment_id' => $experimentId,
-                'request_data'  => json_encode(
-                    [
-                        'merchant_id' => $merchant->getId(),
-                    ]),
+                'request_data'  => json_encode([
+                    'merchant_id' => $merchant->getId(),
+                ]),
             ];
             $response = $this->app['splitzService']->evaluateRequest($properties);
             $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
@@ -1658,7 +1660,22 @@ class Processor
                 'response' => $response,
             ]);
             $variant = $response['response']['variant']['name'] ?? '';
-            if ($variant === 'enable') {
+
+            $propertiesWithLimit = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $experimentIdWithLimit,
+                'request_data'  => json_encode([
+                    'merchant_id' => $merchant->getId(),
+                ]),
+            ];
+            $responseWithLimit = $this->app['splitzService']->evaluateRequest($propertiesWithLimit);
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties' => $propertiesWithLimit,
+                'response' => $responseWithLimit,
+            ]);
+            $variantWithLimit = $responseWithLimit['response']['variant']['name'] ?? '';
+
+            if ($variant === 'enable' || $variantWithLimit === 'enable') {
                 return true;
             }
         }
@@ -1741,38 +1758,6 @@ class Processor
             );
         }
         return false;
-    }
-
-    private function evaluateSplitzExperimentForCardRecurringRearchCardMandateMigrateDate($merchant)
-    {
-        try
-        {
-            $experimentId = $this->app['config']->get('app.enable_rearch_card_recurring_flow_mandate_ts');
-
-            $properties = [
-                'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $experimentId,
-                'request_data'  => json_encode(
-                    [
-                        'merchant_id' => $merchant->getId(),
-                    ]),
-            ];
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
-                'properties' => $properties,
-                'response' => $response,
-            ]);
-            return $response['response']['variant']['name'] ?? "1733920200";
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::CARD_RECURRING_REARCH_EXPERIMENT_SPLITZ_ERROR
-            );
-        }
-        return "1733920200";
     }
 
     private function evaluateSplitzExperimentForCardRecurringRearchRoute($merchant, $routeName)
@@ -2354,16 +2339,7 @@ class Processor
                 if (self::isCardRecurringAutoRearchRoute($currentRouteName)) {
                     // Check card mandate created date and mandate hub for ramp up
                     $cardMandate = (new CardMandate\Repository())->findByCardMandateId($token->getCardMandateId());
-                    $cardMandateCreatedAtCutoffTs = (int) $this->evaluateSplitzExperimentForCardRecurringRearchCardMandateMigrateDate($merchant);
-                    if ($cardMandate !== null and $cardMandate->getCreatedAt() > $cardMandateCreatedAtCutoffTs) {
-                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                            'reason' => "card_mandate_not_migrated",
-                            'merchant_id' => $merchant->getId(),
-                            'card_mandate_id' => $cardMandate?->getId(),
-                            'flow' => 'card_recurring',
-                        ]);
-                        return false;
-                    }
+
                     $result = $this->evaluateSplitzExperimentForCardRecurringRearchHub($merchant, $cardMandate);
                     if ($result === false) {
                         $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [

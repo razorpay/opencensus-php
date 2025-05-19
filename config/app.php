@@ -1281,6 +1281,10 @@ return array(
 
     'enable_rearch_card_recurring_initial_flow' => env('ENABLE_REARCH_CARD_RECURRING_INITIAL_FLOW'),
 
+    'enable_rearch_card_recurring_flow_with_limit' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_WITH_LIMIT'),
+
+    'enable_rearch_card_recurring_initial_flow_with_limit' => env('ENABLE_REARCH_CARD_RECURRING_INITIAL_FLOW_WITH_LIMIT'),
+
     'enable_rearch_card_recurring_flow_hub' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_HUB'),
 
     'enable_rearch_card_recurring_flow_route' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_ROUTE'),
@@ -1292,8 +1296,6 @@ return array(
     'enable_rearch_card_recurring_flow_hub_mandatehq' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_HUB_MANDATEHQ'),
 
     'enable_rearch_card_recurring_flow_initial_mandatehq' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_INITIAL_MANDATEHQ'),
-
-    'enable_rearch_card_recurring_flow_mandate_ts' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_MANDATE_TS'),
 
     'merchant_checkout_optimizer_affordability_emi_enabled_exp_id' => env('MERCHANT_CHECKOUT_OPTIMIZER_AFFORDABILITY_EMI_ENABLED_EXP_ID'),
 
