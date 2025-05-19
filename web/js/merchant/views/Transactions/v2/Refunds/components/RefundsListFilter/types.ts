@@ -45,8 +45,11 @@ export interface DefaultValuesAndOptions {
   defaultStatusOption: Option;
   defaultSearchByOption: Option;
   defaultSearchByValue: string;
-  defaultChannelValue: string;
+  defaultChannelValue?: string;
   defaultChannelOption: Option;
+  defaultMethodValue?: string;
+  defaultDeviceIdValue?: string;
+  defaultStoreIdValue: string[];
 }
 
 export interface AllOptions {
@@ -54,6 +57,7 @@ export interface AllOptions {
   statusOptions: Options;
   searchByOptions: Options;
   paymentChannelOptions: Options;
+  paymentMethodOptions: Options;
 }
 
 export interface ExtraFiltersModalProps {

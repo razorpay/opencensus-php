@@ -7,6 +7,7 @@ import { View } from 'merchant/views/Transactions/v2/common/types';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 import Content from './Content';
+import useFetchStores from 'merchant/views/Transactions/v2/common/utils/useFetchStores';
 
 const { LOADING, FTUX, FAILED_FTUX, LIST } = View;
 
@@ -32,6 +33,8 @@ const PaymentsContainer = ({ showNotification }) => {
       });
     }
   };
+
+  useFetchStores(showNotification);
 
   useEffect(() => {
     checkFtuxView();

@@ -1,12 +1,14 @@
 import React, { useRef, useState } from 'react';
-import { Box, Button, SearchIcon, TextInput } from '@razorpay/blade/components';
+import { Box, Button, Divider, FilterIcon, SearchIcon, Tag, Text, TextInput } from '@razorpay/blade/components';
 import { compose } from '@reduxjs/toolkit';
 import moment from 'moment';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
 import Dropdown from 'common/components/Dropdown';
 import { Option } from 'common/components/Dropdown/types';
 import { withRouter } from 'common/deprecated/withRouter';
+import { openModal } from 'merchant_common/reducers/modals';
 import { useMobile } from 'common/hooks/useMobile';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import ProviderSelector from 'merchant/components/ProviderSelector';
@@ -44,9 +46,21 @@ import {
 } from './constants';
 import { Duration, RefundsListFilterProps } from './types';
 import { getDefaultValuesAndOptions, getOptions } from './utils';
+import { useHierarchyStore } from 'merchant/views/Transactions/v2/common/stores/useHierarchyStore';
+import StoreTags from 'merchant/views/Transactions/v2/common/components/StoreHierarchyTags';
+import { useSplitzService } from 'common/splitz';
+import { isOmniHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 
 const DateRangePicker = lazy(
   () => import(/* webpackChunkName: 'DateRangePicker' */ 'common/ui/Forms/DateRangePickerField'),
+);
+
+// Import the common ExtraFiltersModal component
+const ExtraFiltersModal = lazy(
+  () =>
+    import(
+      /* webpackChunkName: 'ExtraFiltersModal' */ 'merchant/views/Transactions/v2/common/components/ExtraFiltersModal'
+    ),
 );
 
 const RefundsListFilter = ({
@@ -55,6 +69,7 @@ const RefundsListFilter = ({
   user,
   location: { pathname },
   terminalProviders,
+  openModal,
 }: RefundsListFilterProps): JSX.Element => {
   const {
     defaultRefundsDuration,
@@ -65,6 +80,9 @@ const RefundsListFilter = ({
     defaultSearchByValue,
     defaultChannelValue: channel,
     defaultChannelOption,
+    defaultMethodValue: method,
+    defaultDeviceIdValue: deviceId,
+    defaultStoreIdValue: storeId,
   } = getDefaultValuesAndOptions();
   const [date, setDate] = useState<Duration>(defaultDate);
   const [shouldShowDateRangePicker, setShowDateRangePicker] = useState(
@@ -76,6 +94,9 @@ const RefundsListFilter = ({
   const isMobile = useMobile();
   const isMediumDesktopAndMobile = useMobile(mobileBreakoints);
   const defaultFocusedInput = useRef<'startDate' | null>(null);
+  const splitz = useSplitzService();
+  const isStoreHierarchyEnabled = isOmniHomepageEnabled(splitz?.abExperiments);
+
   const { paymentChannelOptions, refundsDurationOptions, statusOptions, searchByOptions } =
     getOptions(isMobile);
 
@@ -83,6 +104,7 @@ const RefundsListFilter = ({
     ? MOBILE_CALENDAR_NUMBER_OF_MONTHS
     : DESKTOP_CALENDAR_NUMBER_OF_MONTHS;
   const isOmniChannelMerchant = _isOmniChannelMerchant(user);
+  const flatStores = useHierarchyStore((state) => state.flatStores);
 
   const handleSearch = (newSearchParams = {}) => {
     const searchParams = {
@@ -90,6 +112,9 @@ const RefundsListFilter = ({
       public_status: status,
       [terminalId === 'Razorpay' ? 'settled_by' : 'terminal_id']: terminalId,
       source_channel: channel,
+      method,
+      device_id: deviceId,
+      "store_ids[]": storeId,
       [searchBy]: searchByValue,
       ...newSearchParams,
     };
@@ -152,6 +177,35 @@ const RefundsListFilter = ({
     handleSearch({ source_channel: channel });
   };
 
+  const openExtraFiltersModal = () => {
+    const props = {
+      handleSearch,
+    };
+    openModal({
+      size: 'small',
+      isNew: true,
+      component: (
+        <SuspenseWithLoader>
+          <ExtraFiltersModal {...props} />
+        </SuspenseWithLoader>
+      ),
+    });
+  };
+
+  const clearMethod = () => {
+    handleSearch({ method: '' });
+  };
+
+  const clearDeviceId = () => {
+    handleSearch({ device_id: '' });
+  };
+
+  const clearStoreId = (idToRemove) => {
+    const updatedStoreIds = storeId.filter(id => id !== idToRemove);
+    handleSearch({ "store_ids[]": updatedStoreIds });
+  };
+
+
   const onSearchByOptionChange = ([{ title, value }]: Option[]) => {
     setSearchBy(value);
     trackSearchByFilter({
@@ -174,86 +228,141 @@ const RefundsListFilter = ({
   };
 
   return (
-    <StyledListFilter>
-      <StyledSubListFilter className="scrollable-tab-header">
-        <StyledDateRangePicker>
-          <Dropdown
-            onChange={onDurationChange}
-            options={refundsDurationOptions}
-            defaultOptions={[defaultRefundsDuration]}
-            isDisabled={loading}
-            bottomSheetTitle={refundsDurationSectionName}
-          />
-          {shouldShowDateRangePicker && date.from && date.to ? (
-            <div className="rzp-daterange-picker">
-              <div className="daterange-container">
-                <SuspenseWithLoader>
-                  <DateRangePicker
-                    onDatesChange={onDatesChange}
-                    startDate={moment.unix(date.from)}
-                    endDate={moment.unix(date.to)}
-                    disabled={loading}
-                    numberOfMonths={numberOfMonths}
-                    withPortal={isMobile}
-                    defaultFocusedInput={defaultFocusedInput.current}
-                  />
-                </SuspenseWithLoader>
-              </div>
-            </div>
-          ) : null}
-        </StyledDateRangePicker>
-        <Dropdown
-          onChange={onStatusChange}
-          options={statusOptions}
-          defaultOptions={[defaultStatusOption]}
-          prefixTitle="Status: "
-          isDisabled={loading}
-          bottomSheetTitle={statusSectionName}
-        />
-        {isOmniChannelMerchant ? (
-          <Dropdown
-            onChange={onChannelChange}
-            options={paymentChannelOptions}
-            defaultOptions={[defaultChannelOption]}
-            prefixTitle="Channel: "
-            isDisabled={loading}
-            bottomSheetTitle={channelSectionName}
-          />
-        ) : null}
-        {user.isSingleReconEnabled &&
-          user.isOptimizerEnabled &&
-          terminalProviders &&
-          terminalProviders.length > 0 && (
-            <ProviderSelector
-              providers={terminalProviders}
-              onChange={onTerminalProviderChange}
-              isLoading={loading}
+    <Box marginBottom="spacing.5" display="flex" flexDirection="column">
+      <StyledListFilter>
+        <StyledSubListFilter className="scrollable-tab-header">
+          <StyledDateRangePicker>
+            <Dropdown
+              onChange={onDurationChange}
+              options={refundsDurationOptions}
+              defaultOptions={[defaultRefundsDuration]}
+              isDisabled={loading}
+              bottomSheetTitle={refundsDurationSectionName}
             />
-          )}
-      </StyledSubListFilter>
-      <StyledSearchByFilter>
-        <Box display="flex" columnGap="spacing.1" marginLeft="auto">
+            {shouldShowDateRangePicker && date.from && date.to ? (
+              <div className="rzp-daterange-picker">
+                <div className="daterange-container">
+                  <SuspenseWithLoader>
+                    <DateRangePicker
+                      onDatesChange={onDatesChange}
+                      startDate={moment.unix(date.from)}
+                      endDate={moment.unix(date.to)}
+                      disabled={loading}
+                      numberOfMonths={numberOfMonths}
+                      withPortal={isMobile}
+                      defaultFocusedInput={defaultFocusedInput.current}
+                    />
+                  </SuspenseWithLoader>
+                </div>
+              </div>
+            ) : null}
+          </StyledDateRangePicker>
           <Dropdown
-            onChange={onSearchByOptionChange}
-            options={searchByOptions}
-            defaultOptions={[defaultSearchByOption]}
+            onChange={onStatusChange}
+            options={statusOptions}
+            defaultOptions={[defaultStatusOption]}
+            prefixTitle="Status: "
             isDisabled={loading}
-            isSelectInput
-            bottomSheetTitle={searchBySectionName}
-            testID="search-by-dropdown"
+            bottomSheetTitle={statusSectionName}
           />
-          <TextInput
-            showClearButton
-            label=""
-            defaultValue={defaultSearchByValue}
-            placeholder="Search"
-            onChange={onSearchByValueChange}
-            onClearButtonClick={() => onSearchByValueChange({})}
-          />
-          <Button accessibilityLabel="Search" icon={SearchIcon} size="medium" onClick={onSearch} />
+
+          {isOmniChannelMerchant && !isStoreHierarchyEnabled ? (
+            <Dropdown
+              onChange={onChannelChange}
+              options={paymentChannelOptions}
+              defaultOptions={[defaultChannelOption]}
+              prefixTitle="Channel: "
+              isDisabled={loading}
+              bottomSheetTitle={channelSectionName}
+            />
+          ) : null}
+
+          {isOmniChannelMerchant && isStoreHierarchyEnabled ? (
+            <>
+              <Divider marginRight="spacing.3" marginLeft="spacing.3" orientation="vertical" />
+              <Box>
+                <Button
+                  isDisabled={loading}
+                  variant="tertiary"
+                  icon={FilterIcon}
+                  onClick={openExtraFiltersModal}
+                >
+                  All Filters
+                </Button>
+              </Box>
+            </>
+          ) : null}
+
+          {user.isSingleReconEnabled &&
+            user.isOptimizerEnabled &&
+            terminalProviders &&
+            terminalProviders.length > 0 && (
+              <ProviderSelector
+                providers={terminalProviders}
+                onChange={onTerminalProviderChange}
+                isLoading={loading}
+              />
+            )}
+        </StyledSubListFilter>
+        <StyledSearchByFilter>
+          <Box display="flex" columnGap="spacing.1" marginLeft="auto">
+            <Dropdown
+              onChange={onSearchByOptionChange}
+              options={searchByOptions}
+              defaultOptions={[defaultSearchByOption]}
+              isDisabled={loading}
+              isSelectInput
+              bottomSheetTitle={searchBySectionName}
+              testID="search-by-dropdown"
+            />
+            <TextInput
+              showClearButton
+              label=""
+              defaultValue={defaultSearchByValue}
+              placeholder="Search"
+              onChange={onSearchByValueChange}
+              onClearButtonClick={() => onSearchByValueChange({})}
+            />
+            <Button accessibilityLabel="Search" icon={SearchIcon} size="medium" onClick={onSearch} />
+          </Box>
+        </StyledSearchByFilter>
+      </StyledListFilter>
+      {(method || deviceId || channel || storeId) ? (
+        <Box maxWidth="auto" display="flex" alignItems="center" flexDirection="row" marginTop="spacing.4" flexWrap={isMobile ? "wrap" : "nowrap"}>
+          {method ? (
+            <Box display="flex" alignItems="center" flexDirection="row">
+              <Text color="surface.text.gray.subtle">Payment Method:</Text>
+              <Tag marginLeft="spacing.3" size="medium" onDismiss={clearMethod}>
+                {method}
+              </Tag>
+            </Box>
+          ) : null}
+          {channel && (method || deviceId) ? (
+            <Divider marginRight="spacing.3" marginLeft="spacing.3" orientation="vertical" />
+          ) : null}
+          {channel && isStoreHierarchyEnabled ? (
+            <Box display="flex" alignItems="center" flexDirection="row">
+              <Text color="surface.text.gray.subtle">Channel:</Text>
+              <Tag marginLeft="spacing.3" size="medium" onDismiss={() => handleSearch({ source_channel: '' })}>
+                {defaultChannelOption?.title || channel}
+              </Tag>
+            </Box>
+          ) : null}
+          {deviceId && (method || channel) ? (
+            <Divider marginRight="spacing.3" marginLeft="spacing.3" orientation="vertical" />
+          ) : null}
+          {deviceId ? (
+            <Box display="flex" alignItems="center" flexDirection="row">
+              <Text color="surface.text.gray.subtle">DSN:</Text>
+              <Tag marginLeft="spacing.3" size="medium" onDismiss={clearDeviceId}>
+                {deviceId}
+              </Tag>
+            </Box>
+          ) : null}
+          <StoreTags storeId={storeId} flatStores={flatStores} clearStoreId={clearStoreId} />
         </Box>
-      </StyledSearchByFilter>
-    </StyledListFilter>
+      ) : null}
+    </Box>
   );
 };
 
@@ -261,4 +370,12 @@ const mapStateToProps = (state) => ({
   user: state.session.user,
 });
 
-export default withRouter<any>(compose(connect(mapStateToProps, null)(RefundsListFilter)));
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      openModal,
+    },
+    dispatch,
+  );
+
+export default withRouter<any>(compose(connect(mapStateToProps, mapDispatchToProps)(RefundsListFilter)));

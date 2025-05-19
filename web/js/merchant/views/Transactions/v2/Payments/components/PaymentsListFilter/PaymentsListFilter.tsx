@@ -58,6 +58,8 @@ import {
 } from './constants';
 import { PaymentsListFilterProps } from './types';
 import { getDefaultValuesAndOptions, getOptions } from './utils';
+import { useHierarchyStore } from 'merchant/views/Transactions/v2/common/stores/useHierarchyStore';
+import StoreTags from 'merchant/views/Transactions/v2/common/components/StoreHierarchyTags';
 
 const { FAILED_PAYMENTS } = TransactionsEntityRoute;
 
@@ -68,7 +70,7 @@ const DateRangePicker = lazy(
 const ExtraFiltersModal = lazy(
   () =>
     import(
-      /* webpackChunkName: 'ExtraFiltersModal' */ 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter/ExtraFiltersModal'
+      /* webpackChunkName: 'ExtraFiltersModal' */ 'merchant/views/Transactions/v2/common/components/ExtraFiltersModal'
     ),
 );
 
@@ -96,6 +98,8 @@ const PaymentsListFilter = ({
     defaultCountryCodeValue,
     defaultChannelOption,
     defaultChannelValue,
+    defaultDeviceIdValue,
+    defaultStoreIdValue
   } = getDefaultValuesAndOptions();
   const [date, setDate] = useState<Duration>(defaultDate);
   const [shouldShowDateRangePicker, setShowDateRangePicker] = useState(
@@ -124,6 +128,8 @@ const PaymentsListFilter = ({
     : DESKTOP_CALENDAR_NUMBER_OF_MONTHS;
   const shouldShowStatus = pathname !== FAILED_PAYMENTS;
   const isOmniChannelMerchant = _isOmniChannelMerchant(user);
+  const flatStores = useHierarchyStore((state) => state.flatStores);
+
 
   const handleSearch = (newSearchParams = {}) => {
     const newCountryCode = isContactSearch ? countryCode : '';
@@ -134,12 +140,19 @@ const PaymentsListFilter = ({
       [terminalId === 'Razorpay' ? 'settled_by' : 'terminal_id']: terminalId,
       country_code: newCountryCode,
       source_channel: channel,
+      device_id: defaultDeviceIdValue,
+      "store_ids[]": defaultStoreIdValue,
       ...newSearchParams,
     };
     if (searchByValue) {
       searchParams[searchBy === SearchQueryParam.POS_ORDER_ID ? SearchQueryParam.NOTES : searchBy] = searchByValue;
     }
     onSubmit(searchParams);
+  };
+
+  const clearStoreId = (idToRemove) => {
+    const updatedStoreIds = defaultStoreIdValue.filter(id => id !== idToRemove);
+    handleSearch({ "store_ids[]": updatedStoreIds });
   };
 
   const onDatesChange = ({ from, to }) => {
@@ -249,6 +262,10 @@ const PaymentsListFilter = ({
 
   const clearMethod = () => {
     handleSearch({ method: '' });
+  };
+
+  const clearDeviceId = () => {
+    handleSearch({ device_id: '' });
   };
 
   return (
@@ -363,7 +380,7 @@ const PaymentsListFilter = ({
         </StyledSearchByFilter>
       </StyledListFilter>
       {isOmniChannelMerchant ? (
-        <Box maxWidth="auto" display="flex" alignItems="center" flexDirection="row">
+        <Box maxWidth="auto" display="flex" alignItems="center" flexDirection="row" flexWrap={isMobile ? "wrap" : "nowrap"}>
           {method ? (
             <Box display="flex" alignItems="center" flexDirection="row">
               <Text color="surface.text.gray.subtle">Payment Method:</Text>
@@ -383,6 +400,15 @@ const PaymentsListFilter = ({
               </Tag>
             </Box>
           ) : null}
+          {defaultDeviceIdValue ? (
+            <Box marginLeft="spacing.3" display="flex" alignItems="center" flexDirection="row">
+              <Text color="surface.text.gray.subtle">DSN:</Text>
+              <Tag marginLeft="spacing.3" size="medium" onDismiss={clearDeviceId}>
+                {defaultDeviceIdValue}
+              </Tag>
+            </Box>
+          ) : null}
+          <StoreTags storeId={defaultStoreIdValue} flatStores={flatStores} clearStoreId={clearStoreId} />
         </Box>
       ) : null}
     </Box>

@@ -24,7 +24,15 @@ export const stringifyQueryParams = (params: Record<string, any>): string => {
 
   for (let key in params) {
     if (params.hasOwnProperty(key) && params[key] != null && params[key] !== '') {
-      queryElements.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));
+      if (Array.isArray(params[key])) {
+        params[key].forEach((value: any) => {
+          if (value != null && value !== '') {
+            queryElements.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+          }
+        });
+      } else {
+        queryElements.push(`${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
+      }
     }
   }
 

@@ -15,14 +15,19 @@ export const getURLQueryParams = (url: string = document.location.hash): Record<
   let params: Record<string, string | undefined> = {};
 
   if (search) {
-    /* split using '&' as separator
-    and get the key-value pairs for query params. */
-    params = search.split('&').reduce((prev, curr) => {
-      const [key, value] = curr.split('=');
-      prev[key] = window?.decodeURIComponent?.(value);
-      return prev;
-    }, {} as Record<string, string | undefined>);
+    search.split('&').forEach((param) => {
+      const [key, value] = param.split('=');
+      const decodedKey = decodeURIComponent(key);
+      const decodedValue = window?.decodeURIComponent?.(value);
+
+      if (decodedKey in params) {
+        params[decodedKey] = `${params[decodedKey]},${decodedValue}`;
+      } else {
+        params[decodedKey] = decodedValue;
+      }
+    });
   }
 
   return params;
 };
+

@@ -14,12 +14,13 @@ const TreeSelect: React.FC<TreeSelectProps> = ({
   value,
   onChange,
   width = '100%',
-  showCheckedStrategy = ShowCheckedStrategy.SHOW_PARENT,
+  showCheckedStrategy = ShowCheckedStrategy.SHOW_CHILD,
   disabled = false,
   placeholder = 'Please select',
   maxTagCountToShow = 5,
   maxTagTextLength = 20,
   label = 'Select Items',
+  maxCount = 10,
   labelColor = 'surface.text.gray.normal',
   labelSize = 'medium',
 }) => {
@@ -55,6 +56,7 @@ const TreeSelect: React.FC<TreeSelectProps> = ({
         placeholder={placeholder}
         filterTreeNode={treeSelectFilterTreeNode}
         virtual={true}
+        maxCount={maxCount}
       />
     </Box>
   );

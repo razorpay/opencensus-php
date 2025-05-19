@@ -5,15 +5,22 @@ import {
   statusOptionsMap,
   searchByOptionsMap,
 } from 'merchant/views/Transactions/v2/Refunds/components/RefundsListFilter/constants';
-import { screen, userEvent } from 'test-utils';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { screen, userEvent, waitFor } from 'test-utils';
 
 import { renderApp, defaultProps, useMobileSpy } from './mocks/fixtures/RefundsListFilter';
 import 'jest-location-mock';
 import store from 'merchant/store';
 
+jest.mock('merchant/containers/Home/RTUX/utils', () => ({
+  isOmniHomepageEnabled: jest.fn().mockReturnValue(true),
+}));
+
 describe('RefundsListFilter', () => {
+  const openModalSpy = jest.spyOn(ModalActions, 'openModal');
   beforeEach(() => {
     useMobileSpy.mockReset();
+    openModalSpy.mockClear();
   });
 
   describe('Duration filter', () => {
@@ -99,12 +106,12 @@ describe('RefundsListFilter', () => {
       const user = globalState.session.user;
       jest.spyOn(user, 'isOmniEnabledMerchant', 'get').mockReturnValue(true);
       renderApp();
-      const dropdownTrigger = screen.getByRole('button', { name: 'Channel: All' });
-      expect(dropdownTrigger).toBeInTheDocument();
-      await userEvent.click(dropdownTrigger);
-      await userEvent.click(screen.getByRole('menuitem', { name: 'In Person' }));
-      const selectedOption = screen.getByRole('button', { name: 'Channel: In Person' });
-      expect(selectedOption).toBeInTheDocument();
+      const extraFiltersButton = screen.getByRole('button', { name: 'All Filters' });
+      expect(extraFiltersButton).toBeInTheDocument();
+      await userEvent.click(extraFiltersButton);
+      await waitFor(() => {
+        expect(openModalSpy).toHaveBeenCalled();
+      });
     });
   });
 

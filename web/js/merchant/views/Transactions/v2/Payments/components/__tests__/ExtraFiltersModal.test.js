@@ -1,7 +1,7 @@
 import { act } from '@testing-library/react';
 
 import { POS_TRANSACTION_CHANNEL } from 'merchant/views/Transactions/constants';
-import ExtraFiltersModal from 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter/ExtraFiltersModal';
+import ExtraFiltersModal from 'merchant/views/Transactions/v2/common/components/ExtraFiltersModal';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { render, screen, userEvent } from 'test-utils';
 
@@ -9,11 +9,27 @@ jest.setTimeout(30000);
 
 const mockHandleSearch = jest.fn();
 
+jest.mock('rc-tree-select', () => {
+  const React = require('react');
+  return {
+    __esModule: true,
+    default: ({ onChange, value }) => (
+      <div>
+        <button onClick={() => onChange(['store_id123', 'store_id124'])}>Select Store</button>
+      </div>
+    )
+  };
+});
+
+jest.mock('merchant/containers/Home/RTUX/utils', () => ({
+  isOmniHomepageEnabled: jest.fn().mockReturnValue(true),
+}));
+
 const renderExtraFiltersModal = () => {
-  const defaultPtrops = {
+  const defaultProps = {
     handleSearch: mockHandleSearch,
   };
-  return render(<ExtraFiltersModal {...defaultPtrops} />);
+  return render(<ExtraFiltersModal {...defaultProps} />);
 };
 
 describe('ExtraFiltersModal', () => {
@@ -87,6 +103,19 @@ describe('ExtraFiltersModal', () => {
       await userEvent.click(inPersonOption);
     });
 
+    const deviceIdInput = screen.getByPlaceholderText('Search');
+    expect(deviceIdInput).toBeInTheDocument();
+    await act(async () => {
+      await userEvent.type(deviceIdInput, 'device_id123');
+    });
+
+
+    const storeIdInput = screen.getByText('Hierarchy Level');
+    expect(storeIdInput).toBeInTheDocument();
+    await act(async () => {
+      await userEvent.click(screen.getByText('Select Store'));
+    });
+
     const applyButton = screen.getByRole('button', { name: 'Apply' });
     expect(applyButton).toBeInTheDocument();
     await act(async () => {
@@ -94,8 +123,10 @@ describe('ExtraFiltersModal', () => {
     });
 
     expect(mockHandleSearch).toHaveBeenCalledWith({
-      method: 'card',
-      source_channel: POS_TRANSACTION_CHANNEL,
+      method: ['card'],
+      source_channel: [POS_TRANSACTION_CHANNEL],
+      device_id: 'device_id123',
+      'store_ids[]': ['store_id123', 'store_id124'],
     });
   });
 

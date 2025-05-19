@@ -25,6 +25,7 @@ import {
   DefaultStatusAndOption,
   DefaultValuesAndOptions,
 } from './types';
+import { getDefaultDeviceIdValue, getDefaultStoreIdValue } from 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter/utils';
 
 const getDefaultStatusAndOption = (): DefaultStatusAndOption => {
   const { public_status } = qs.parse(location.search);
@@ -60,6 +61,12 @@ export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
   });
   const { defaultChannelValue, defaultChannelOption } = getDefaultChannelAndOption();
 
+  // Get method from query params
+  const { method } = qs.parse(location.search);
+  const defaultMethodValue = method as string || '';
+  const defaultDeviceIdValue = getDefaultDeviceIdValue();
+  const defaultStoreIdValue = getDefaultStoreIdValue();
+
   return {
     defaultRefundsDuration,
     defaultDate,
@@ -69,6 +76,9 @@ export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
     defaultSearchByValue,
     defaultChannelValue,
     defaultChannelOption,
+    defaultMethodValue,
+    defaultDeviceIdValue,
+    defaultStoreIdValue
   };
 };
 

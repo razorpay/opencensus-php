@@ -28,6 +28,7 @@ placeholder?: string;
 maxTagCountToShow?: number;
 maxTagTextLength?: number;
 label?: string;
+maxCount?: number;
 labelColor?: TextProps<{ variant: 'body' }>['color'];
 labelSize?: TextProps<{ variant: 'body' }>['size'];
 }

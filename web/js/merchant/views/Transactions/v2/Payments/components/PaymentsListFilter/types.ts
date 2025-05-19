@@ -83,6 +83,8 @@ export interface DefaultValuesAndOptions {
   defaultCountryCodeValue: string;
   defaultChannelValue: string;
   defaultChannelOption: Option;
+  defaultDeviceIdValue: string;
+  defaultStoreIdValue: string[];
 }
 
 export interface AllOptions {

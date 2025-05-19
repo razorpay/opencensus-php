@@ -1,6 +1,14 @@
 import { renderApp } from 'merchant/views/Transactions/v2/Payments/__tests__/mocks/fixtures/PaymentsContainer';
-import { mockPaymentAPIResponse } from 'merchant/views/Transactions/v2/Payments/__tests__/mocks/handlers';
+import { mockPaymentAPIResponse, mockStoreHierarchyAPIResponse } from 'merchant/views/Transactions/v2/Payments/__tests__/mocks/handlers';
 import { screen, waitFor } from 'test-utils';
+
+jest.mock('merchant/utils/omniUtils', () => ({
+  isOmniChannelMerchant: jest.fn().mockReturnValue(true),
+}));
+
+jest.mock('merchant/containers/Home/RTUX/utils', () => ({
+  isOmniHomepageEnabled: jest.fn().mockReturnValue(true),
+}));
 
 describe('PaymentsContainer', () => {
   test('should render the loading view initially', async () => {
@@ -61,6 +69,23 @@ describe('PaymentsContainer', () => {
     });
     await waitFor(() => {
       expect(screen.getByTestId('Notification--error')).toBeInTheDocument();
+    });
+  });
+
+  test('should show an error notification when there is an error fetching store hierarchy', async () => {
+    const error = 'Failed to fetch store hierarchy';
+    mockStoreHierarchyAPIResponse({
+      error,
+    });
+
+    renderApp();
+    
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'Unable to fetch stores information at this moment, please try again later.',
+        ),
+      ).toBeInTheDocument();
     });
   });
 });

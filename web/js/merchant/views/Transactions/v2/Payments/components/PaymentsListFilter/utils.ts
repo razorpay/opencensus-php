@@ -74,6 +74,17 @@ export const getDefaultChannelAndOption = (): DefaultChannelAndOption => {
   return { defaultChannelValue: defaultValue, defaultChannelOption: defaultOption };
 };
 
+export const getDefaultDeviceIdValue = (): string => {
+  const { device_id } = qs.parse(location.search);
+  return device_id ? (device_id as string).trim() : '';
+};
+
+export const getDefaultStoreIdValue = (): string[] => {
+  const { 'store_ids[]': storeId } = qs.parse(location.search);
+  if (!storeId) return [];
+  return Array.isArray(storeId) ? storeId : [storeId as string];
+};
+
 export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
   const { defaultDate, defaultDuration: defaultPaymentDuration } = getDefaultDateAndOption({
     customDurationOptionsMap: paymentDurationOptionsMap,
@@ -86,6 +97,9 @@ export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
   });
   const defaultCountryCodeValue = getDefaultCountryCodeValue();
   const { defaultChannelValue, defaultChannelOption } = getDefaultChannelAndOption();
+  const defaultDeviceIdValue = getDefaultDeviceIdValue();
+  const defaultStoreIdValue = getDefaultStoreIdValue();
+
   return {
     defaultPaymentDuration,
     defaultDate,
@@ -98,6 +112,8 @@ export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
     defaultCountryCodeValue,
     defaultChannelValue,
     defaultChannelOption,
+    defaultDeviceIdValue,
+    defaultStoreIdValue,
   };
 };
 
