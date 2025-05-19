@@ -139,9 +139,24 @@ class Core extends Base
 
         $balance = $this->repo->balance->getBalanceEntityForBalanceId($balanceId);
 
+        $onboardingTime = null;
+
         try
         {
-            $bankingAccount = (new BankingAccount\Service())-> fetchBankingAccountForAccountNumber($balance->getAccountNumber(), $merchantId);
+            $bankingAcc = $this->repo->banking_account->getFromBalanceId($balance->getId());
+            $onboardingTime = optional($bankingAcc)->getCreatedAt();
+
+            // In case of Merchants Onboarded on BAS flow, bankingAcc needs to be retrived from BAS
+            if ($bankingAcc === null)
+            {
+
+                $bankingAcc =  (new \RZP\Services\BankingAccountService($this->app)) -> fetchBankingAccountByAccountNumberAndChannel($balance->getMerchantId(), $balance->getAccountNumber(), $balance->getChannel());
+                if ($bankingAcc !== null)
+                {
+                    $onboardingTime = intdiv($bankingAcc['created_at'], 1000); // CreatedAt is in Milliseconds in BAS
+
+                }
+            }
 
         }
         catch (\Throwable $ex)
@@ -159,7 +174,7 @@ class Core extends Base
 
 
         $data = ([
-            Entity::CREATED_AT              => $bankingAccount[Entity::ONBOARDED_TIME],
+            Entity::CREATED_AT              => (!empty($onboardingTime)) ? $onboardingTime : Carbon::now(Timezone::IST)->getTimestamp(),
             Entity::PAYOUT_SERVICE_ENABLED  => $payoutServiceEnabled,
             Entity::UPDATED_AT              => Carbon::now(Timezone::IST)->getTimestamp(),
         ]);
