@@ -1950,6 +1950,22 @@ export const splitzConfig: SplitzInitConfig = {
           },
         },
         {
+          uniqueHashKey: 'magic_sso_dashboard',
+          experimentId: {
+            beta: 'QMnPqpym10V7Kl',
+            production: 'QMnUdVKeP1VOB0',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
           uniqueHashKey: 'magic_hide_cod_when_disabled',
           experimentId: {
             beta: 'NBmJ2kwae0JDrc',

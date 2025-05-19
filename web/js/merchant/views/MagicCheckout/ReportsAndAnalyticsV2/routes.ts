@@ -16,6 +16,10 @@ const RTOAnalytics = lazy(
     ),
 );
 
+const SSODashboard = lazy(
+  () => import(/* webpackChunkName: "SSODashboard" */ 'merchant/views/MagicCheckout/SSODashboard'),
+);
+
 export const GENERIC_ROUTES: RouteItem[] = [
   {
     path: '/magic/reports-analytics/order-analytics',
@@ -35,6 +39,13 @@ export const GENERIC_ROUTES: RouteItem[] = [
     path: '/magic/reports-analytics/rto',
     label: 'RTO Analytics',
     Component: RTOAnalytics,
+  },
+  {
+    path: '/magic/reports-analytics/sso-dashboard',
+    label: 'Customer Analytics',
+    Component: SSODashboard,
+    condition: (_user: User, abExperiments: any) =>
+      abExperiments?.magic_sso_dashboard?.variables?.result === 'on',
   },
   {
     path: '/magic/reports-analytics/reports',
