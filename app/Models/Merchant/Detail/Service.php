@@ -5500,12 +5500,14 @@ class Service extends Base\Service
         // due to following flow: onboarding_save (API) -> onboarding_save (PGOS) -> submit_merchant_internal (API),
         // it is possible that submit_merchant_internal throws an error due to mutex already acquired by onboarding_save
         // we are passing a boolean flow to skip mutex lock acquire.
-        if ($input[self::MUTEX_LOCK_ACQUIRED] === true)
+        if (isset($input[self::MUTEX_LOCK_ACQUIRED]) && $input[self::MUTEX_LOCK_ACQUIRED] === true)
         {
             $this->trace->info(TraceCode::MUTEX_ACQUIRE_SKIPPED_FOR_SUBMIT_MERCHANT_INTERNAL, [
                 'merchant_id'               => $merchantId,
                 'reason'                    => 'mutex acquired by onboarding_save',
             ]);
+
+            unset($input[self::MUTEX_LOCK_ACQUIRED]);
 
             return $this->handleSubmitMerchantInternal($merchantId, $input);
         }
