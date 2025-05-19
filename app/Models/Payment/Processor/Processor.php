@@ -14,6 +14,7 @@ use RZP\Gateway\Wallet\Razorpaywallet;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
 use RZP\Jobs\WebhookEvent;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Payment\Constant;
@@ -107,7 +108,6 @@ use RZP\Models\Transfer\PaymentTransfer;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Locale\Core as LocaleCore;
 use RZP\Models\Payment\Processor\PayLater;
-use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Models\Notification as Notifications;
@@ -2679,6 +2679,7 @@ class Processor
 
                                 return false;
                             }
+
                             if ($card->isNetworkTokenisedCard() === true)
                             {
                                 $this->trace->info(TraceCode::TOKENISED_CARD_PAYMENT_ROUTING_INFO, [
@@ -2714,12 +2715,18 @@ class Processor
 
                                 $tokenRearchExperimentName = 'app.saved_card_token_payments_rearch';
                                 $tokenRearchResult = (new Payment\Service())->getSplitzExpResponse($merchant->getId(),$tokenRearchExperimentName);
-                                if ($tokenRearchResult == 'enable' && app()->isEnvironmentProduction() && ($card->getNetwork() == 'Visa' || $card->getNetwork() == 'Mastercard') && $card->getVault() == Card\Vault::RZP_VAULT)
+
+                                if ($tokenRearchResult == 'enable' && app()->isEnvironmentProduction() &&
+                                    ($card->getNetwork() == 'Visa' || $card->getNetwork() == 'MasterCard')
+                                    && ($card->getVault() === 'mastercard' || $card->getVault() === 'visa')
+                                    && $this->inputCurrencyNotINR($input) === false
+                                    && $this->merchant->isFeatureEnabled(FeatureConstants::RAAS) === false
+                                    && $this->merchant->getCountry() == "IN")
                                 {
                                     $tokenRearchResult = 'on';
                                 }
 
-                                if (($cpsCryptogramFetchResult === 'on' && $card->getVault() !== Card\Vault::HDFC && $this->merchant->isFeatureEnabled(Feature::RAAS) === false) || $mcScofTokenResult === 'on')
+                                if (($cpsCryptogramFetchResult === 'on' && $card->getVault() !== Card\Vault::HDFC && $this->merchant->isFeatureEnabled(FeatureConstants::RAAS) === false) || $mcScofTokenResult === 'on')
                                 {
                                     $cardInput = $this->getCardInputWithoutCryptogramForRearch($card, $input, $token, $tokenRearchResult);
                                     if($this->inputCurrencyNotINR($input)){
@@ -3268,6 +3275,7 @@ class Processor
 
     protected function getCardInputForRearch($cryptogram, $card, $input,$token, $tokenRearchResult = null)
     {
+        //This needs to be moved to CPS before enabling bypass
         $input = [
             Card\Entity::TOKENISED              => true,
             Card\Entity::VAULT                  => "rzpvault",
@@ -3286,6 +3294,11 @@ class Processor
                 Card\Entity::LAST4                  => $card->getLast4(),
                 Card\Entity::CRYPTOGRAM_VALUE       => $cryptogram['cryptogram_value'] ?? null,
                 Card\Entity::GLOBAL_FINGERPRINT     => $card->getGlobalFingerPrint() ?? ""
+            ];
+        } else {
+            // Move this to CPS before enabling bypass
+            $input += [
+                "cryptogram_source" => "cps",
             ];
         }
 
