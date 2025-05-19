@@ -60,6 +60,9 @@ describe('Optimizer Utils > getValue', () => {
           value: 'emi',
         },
         {
+          value: 'cardless_emi',
+        },
+        {
           value: 'emandate',
         },
         {

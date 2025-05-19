@@ -57,6 +57,7 @@ export const METHODS_MAP = {
   sodexo: 'Pluxee',
   cod: 'Cash on Delivery (COD)',
   paylater: 'Pay Later',
+  cardless_emi: 'Cardless EMI',
 };
 
 export const INIT_PROVIDER_STATE = {

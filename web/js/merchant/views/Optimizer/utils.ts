@@ -166,6 +166,9 @@ export const PARAMETERS: Parameter[] = [
         value: 'emi',
       },
       {
+        value: 'cardless_emi',
+      },
+      {
         value: 'emandate',
       },
       {
@@ -1359,6 +1362,33 @@ export const PARAMETERS: Parameter[] = [
       {
         value: 'simpl_pay_in_3',
         label: 'Simpl Pay In 3',
+      },
+    ],
+    operators: {
+      '==': {
+        multiple: false,
+        type: 'dropdown',
+      },
+      in: {
+        multiple: true,
+        type: 'dropdown',
+      },
+      '!=': {
+        multiple: false,
+        type: 'dropdown',
+      },
+    },
+    type: 'string',
+  },
+  {
+    name: 'Cardless EMI Provider',
+    value: '$payment.optimizer_cardless_emi_provider',
+    description: 'Shopse',
+    id: 20,
+    values: [
+      {
+        label: 'Shopse',
+        value: 'shopse',
       },
     ],
     operators: {

@@ -54,6 +54,7 @@ const Select = (props: SelectProps) => {
   const IDS = [
     'upi_intent',
     'upi_collect',
+    'cardless_emi',
     'BARB_R',
     'PUNB_R',
     'LAVB_R',
