@@ -22,6 +22,9 @@ import useSideNavigation from './useSideNavigation';
 import { ANALYTICS_ONENAV } from '@libs/shared-utils';
 import { useStore } from '@federated/apps/shell/commonStore';
 import { useConnectedNavigationStore } from '@federated/apps/shell/connected-navigation/connectedNavigationStore';
+import { getTitleSuffixComponent } from 'merchant/components/SidebarV2/utils/TitleSuffixRenderer';
+import type { TitleSuffixConfig } from 'merchant/components/SidebarV2/utils/Products';
+import type { ReactElement } from 'react';
 
 interface ProductOptions {
   title: string;
@@ -29,6 +32,7 @@ interface ProductOptions {
   href?: string;
   routeRegex?: string;
   items?: Array<ProductOptions>;
+  titleSuffix?: ReactElement | TitleSuffixConfig;
 }
 
 export interface SideNavSection {
@@ -46,6 +50,7 @@ type NavItemProps = {
   href: string;
   routeRegex?: string;
   items?: Array<any>;
+  titleSuffix?: ReactElement | TitleSuffixConfig;
 };
 
 type NavItemAnalyticsProps = {
@@ -91,6 +96,10 @@ export const isItemActive = (item: any, pathname: string): boolean => {
   return false;
 };
 
+function isTitleSuffixConfig(suffix: any): suffix is TitleSuffixConfig {
+  return suffix && typeof suffix === 'object' && 'componentType' in suffix;
+}
+
 export const NavItem: React.FC<NavItemProps & NavItemAnalyticsProps> = ({
   title,
   section_id,
@@ -98,12 +107,15 @@ export const NavItem: React.FC<NavItemProps & NavItemAnalyticsProps> = ({
   href,
   items,
   routeRegex,
+  titleSuffix,
 }) => {
   const location = useLocation();
   const active = isItemActive({ href, routeRegex, items, icon }, location.pathname);
   const { session } = useStore();
 
   const { products } = useConnectedNavigationStore();
+
+  const finalTitleSuffix = getTitleSuffixComponent(titleSuffix);
 
   const trackNavItemClick = () => {
     let toggleMode = '';
@@ -137,7 +149,14 @@ export const NavItem: React.FC<NavItemProps & NavItemAnalyticsProps> = ({
   if (items && items.length > 0) {
     return (
       <div onClick={trackNavItemClick}>
-        <SideNavLink icon={icon} isActive={active} as={Link} title={title} href={items[0].href}>
+        <SideNavLink
+          icon={icon}
+          isActive={active}
+          as={Link}
+          title={title}
+          href={items[0].href}
+          titleSuffix={finalTitleSuffix}
+        >
           <SideNavLevel>
             {items.map((child) => {
               const {
@@ -145,7 +164,11 @@ export const NavItem: React.FC<NavItemProps & NavItemAnalyticsProps> = ({
                 title: childTitle,
                 href: childHref,
                 icon: childIcon,
+                titleSuffix: childTitleSuffix,
               } = child;
+
+              const childFinalTitleSuffix = getTitleSuffixComponent(childTitleSuffix);
+
               if (!childItems) {
                 return (
                   <SideNavLink
@@ -154,6 +177,7 @@ export const NavItem: React.FC<NavItemProps & NavItemAnalyticsProps> = ({
                     title={childTitle}
                     href={childHref}
                     icon={childIcon}
+                    titleSuffix={childFinalTitleSuffix}
                   />
                 );
               }
@@ -164,16 +188,24 @@ export const NavItem: React.FC<NavItemProps & NavItemAnalyticsProps> = ({
                   as={Link}
                   title={childTitle}
                   href={undefined}
+                  titleSuffix={childFinalTitleSuffix}
                 >
                   <SideNavLevel>
-                    {childItems.map((subChild) => (
-                      <SideNavLink
-                        as={Link}
-                        isActive={isItemActive(subChild, location.pathname)}
-                        title={subChild.title}
-                        href={subChild.href}
-                      />
-                    ))}
+                    {childItems.map((subChild) => {
+                      const subChildFinalTitleSuffix = getTitleSuffixComponent(
+                        subChild.titleSuffix,
+                      );
+
+                      return (
+                        <SideNavLink
+                          as={Link}
+                          isActive={isItemActive(subChild, location.pathname)}
+                          title={subChild.title}
+                          href={subChild.href}
+                          titleSuffix={subChildFinalTitleSuffix}
+                        />
+                      );
+                    })}
                   </SideNavLevel>
                 </SideNavLink>
               );
@@ -186,7 +218,14 @@ export const NavItem: React.FC<NavItemProps & NavItemAnalyticsProps> = ({
 
   return (
     <div onClick={trackNavItemClick}>
-      <SideNavLink title={title} as={Link} href={href} icon={icon} isActive={active} />
+      <SideNavLink
+        title={title}
+        as={Link}
+        href={href}
+        icon={icon}
+        isActive={active}
+        titleSuffix={finalTitleSuffix}
+      />
     </div>
   );
 };

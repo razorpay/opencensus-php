@@ -35,8 +35,8 @@ type DateRange = {
 
 const getDefaultDateRange = () => {
   return {
-    startOfDay: moment().clone().startOf('day').unix(),
-    endOfDay: moment().clone().endOf('day').unix(),
+    startOfDay: moment().clone().startOf('day').unix(), // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
+    endOfDay: moment().clone().add(1, 'day').startOf('day').unix(), // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
   };
 };
 

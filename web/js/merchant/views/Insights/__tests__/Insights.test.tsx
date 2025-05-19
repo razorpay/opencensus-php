@@ -23,11 +23,17 @@ jest.mock('../DateRangePicker', () => ({
     <div
       data-testid="date-range-picker-input"
       onClick={() => {
-        const now = Date.now();
-        const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+        const now = new Date();
+        const nextDay = new Date(now);
+        nextDay.setDate(now.getDate() + 1);
+        nextDay.setHours(0, 0, 0, 0);
+
+        const sevenDaysAgo = new Date(now);
+        sevenDaysAgo.setDate(now.getDate() - 7);
+
         selectedDateCallback({
-          from: Math.floor(sevenDaysAgo / 1000),
-          to: Math.floor(now / 1000),
+          from: Math.floor(sevenDaysAgo.getTime() / 1000),
+          to: Math.floor(nextDay.getTime() / 1000),
         });
       }}
     >
@@ -45,6 +51,7 @@ describe('Testing Insights Component', () => {
   });
 
   beforeEach(() => {
+    jest.clearAllMocks();
     (useInsightsSplitzExperiments as jest.Mock).mockReturnValue({
       isExperimentEnabled: false,
       isInsightsCheckoutMagicXEnabled: false,
@@ -101,23 +108,22 @@ describe('Testing Insights Component', () => {
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
-  it('should pass correct date range to embedDashboard', async () => {
+  it('should pass date range with end date at 00:00:00 of next day to embedDashboard', async () => {
     renderApp();
 
     const dateRangePicker = screen.getByTestId('date-range-picker-input');
     userEvent.click(dateRangePicker);
 
     await waitFor(() => {
-      expect(embedDashboard).toHaveBeenCalledWith(
-        expect.objectContaining({
-          dashboardUiConfig: expect.objectContaining({
-            urlParams: expect.objectContaining({
-              from_ts: expect.any(Number),
-              to_ts: expect.any(Number),
-            }),
-          }),
-        }),
-      );
+      expect(embedDashboard).toHaveBeenCalled();
+
+      const callArgs = (embedDashboard as jest.Mock).mock.calls[0][0];
+      const toTs = callArgs.dashboardUiConfig.urlParams.to_ts;
+
+      const endDate = new Date(toTs * 1000);
+      expect(endDate.getHours()).toBe(0);
+      expect(endDate.getMinutes()).toBe(0);
+      expect(endDate.getSeconds()).toBe(0);
     });
   });
 

@@ -25,7 +25,7 @@ const DateRangePicker = ({
     setSelectedPreset({ value: { from, to } });
     selectedDateCallback({
       from: moment(from).clone().unix(), // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
-      to: moment(to).clone().unix(), // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
+      to: moment(to).clone().add(1, 'day').startOf('day').unix(), // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
     });
   };
 

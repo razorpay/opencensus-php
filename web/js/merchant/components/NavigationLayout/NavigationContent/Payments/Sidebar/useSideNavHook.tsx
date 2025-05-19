@@ -81,6 +81,11 @@ function transformDataWithRoutes(data, routes, { user, abExperiments, isConfigTa
             product.items = getL1ProductItems(product.product_id, user, abExperiments);
           }
 
+          const titleSuffix = PRODUCTS_DATA[product.product_id].getTitleSuffix?.(user, {
+            abExperiments,
+            isConfigTagEnabled,
+          });
+
           acc.push({
             ...product,
             href:
@@ -89,6 +94,7 @@ function transformDataWithRoutes(data, routes, { user, abExperiments, isConfigTa
                 : routes[product.product_id],
             routeRegex: ROUTE_REG[product.product_id],
             icon: PRODUCTS_DATA[product.product_id].bladeIcon,
+            titleSuffix: titleSuffix,
           });
         }
         return acc;

@@ -1,9 +1,11 @@
+import React from 'react';
 import {
   AffordabilityIcon,
   AlertTriangleIcon,
   AppStoreIcon,
   AtSignIcon,
   BankIcon,
+  Badge,
   CashIcon,
   CheckCircleIcon,
   CodeSnippetIcon,
@@ -11,6 +13,7 @@ import {
   DashboardIcon,
   FileTextIcon,
   type IconComponent,
+  type BadgeProps,
   MagicCheckoutIcon,
   MyAccountIcon,
   TagIcon,
@@ -42,6 +45,7 @@ import {
   BillMeIcon,
 } from '@razorpay/blade/components';
 import magicKonnectLogo from 'assets/magicKonnectLogo.png';
+import type { ReactElement } from 'react';
 
 import { isExperimentEnabled } from 'common/splitz/utils';
 import { User } from 'common/typings';
@@ -65,6 +69,20 @@ export type ExtraConfig = {
   isConfigTagEnabled: (path: ConfigTagType) => boolean;
 };
 
+export type BadgeConfig = {
+  text: string;
+  color: 'positive' | 'negative' | 'neutral' | 'notice' | 'information' | 'primary';
+  size: 'small' | 'medium' | 'large';
+};
+
+export type TitleSuffixConfig = {
+  componentType: 'Badge';
+  props: {
+    color: BadgeConfig['color'];
+    size: BadgeConfig['size'];
+    children: string;
+  };
+};
 
 const ROUTE_L1_PRODUCTS_DATA = [
   {
@@ -109,7 +127,15 @@ const ROUTE_L1_PRODUCTS_DATA = [
   },
 ];
 
-export const PRODUCTS_DATA = {
+export type ProductData = {
+  bladeIcon: IconComponent;
+  icon: string;
+  additionalCondition: (user: any, extraConfig: ExtraConfig) => boolean;
+  items?: L1ProductItem[];
+  getTitleSuffix?: (user: any, extraConfig: ExtraConfig) => TitleSuffixConfig | undefined;
+};
+
+export const PRODUCTS_DATA: Record<string, Partial<ProductData>> = {
   home: {
     bladeIcon: DashboardIcon,
     icon: 'i-chart',
@@ -458,7 +484,17 @@ export const PRODUCTS_DATA = {
       isConnectedNavigationEnabled({ user, abExperiments }) && 
       user.isCountryIndia &&
       !isMobileResolution(),
-    items: INSIGHTS_L1_PRODUCTS_DATA ,
+    items: INSIGHTS_L1_PRODUCTS_DATA || [],
+    getTitleSuffix: (): TitleSuffixConfig => {
+      return {
+        componentType: 'Badge',
+        props: {
+          color: 'positive',
+          size: 'medium',
+          children: 'Beta'
+        }
+      };
+    },
   },
 };
 
@@ -579,7 +615,7 @@ const getRouteL1Products = (items: L1ProductItem[], user: any) => {
 export const getL1ProductItems = (productId: string, user: any,abExperiments:any) => {
   switch (productId) {
     case 'insights':
-      return getInsightsL1Products(PRODUCTS_DATA[productId]?.items,user,abExperiments);
+      return getInsightsL1Products(PRODUCTS_DATA[productId]?.items || [],user,abExperiments);
       // Only for Optimizer merchants where route is enabled we will show L1 items on Route Product
     case 'route':
       if (user?.isOptimizerEnabled && user?.isOptimizerRouteEnabled) {
