@@ -29,6 +29,7 @@ export const isDebitCardIssuer = (issuer) => {
 export const getIssuerLabel = (issuer) => {
   // Check if the issuer is debit card
   const isDebitCard = isDebitCardIssuer(issuer);
+  // remove _DC from the issuer
   if (isDebitCard) issuer = issuer.slice(0, -3); // Removing '_DC'
   const label = NetworksAndIssuers[issuer] || issuer;
 
