@@ -314,6 +314,7 @@ class Constants
     const ACCOUNTS_ES_ONDEMAND_CREATED_RESPONSE = 'accounts_es_ondemand_response';
     const RESERVE_BALANCE_RESPONSE              = 'reserve_balance_response';
     const RESPONSE                              = 'response';
+    const BALANCE_ID                            = 'balance_id';
 
     const PAYMENT_STATUS_AGGREGATE        = 'payment_status_aggregate';
     const VISA_SAFE_CLICK                 = 'vsc_authorization';

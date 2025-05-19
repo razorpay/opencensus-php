@@ -320,6 +320,8 @@ class Metric
 
     const PGOS_DUAL_WRITE_CONSUMER_ERROR                        = 'pgos_dual_write_consumer_error';
 
+    const LEDGER_PG_ACCOUNT_CREATION_FAILED                     = 'ledger_pg_account_creation_failed';
+
     const SETTLEMENT_ONDEMAND_GLOBAL_LIMIT_BREACHED             = 'settlement_ondemand_global_limit_breached';
 
     const SETTLEMENT_ONDEMAND_INVALID_CAPPING_SCALE_FACTOR      = 'settlement_ondemand_invalid_capping_scale_factor';

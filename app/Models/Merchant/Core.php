@@ -2861,7 +2861,7 @@ class Core extends Base\Core
         $this->addMerchantEmailToMailingList($merchant, [], [$newEmail]);
     }
 
-    public function createBalance($merchant, $mode)
+    public function createBalance($merchant, $mode, $balanceId = null)
     {
         $merchantBalance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), Type::PRIMARY, $mode);
 
@@ -2879,7 +2879,7 @@ class Core extends Base\Core
             return $merchantBalance;
         }
 
-        $merchantBalance = Merchant\Balance\Entity::buildFromMerchant($merchant);
+        $merchantBalance = Merchant\Balance\Entity::buildFromMerchant($merchant, $balanceId);
 
         $merchantBalance->setConnection($mode);
 

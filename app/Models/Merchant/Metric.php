@@ -329,6 +329,8 @@ final class Metric
 
     const MERCHANTS_AUTOMATIC_IIR_CREATION          = 'MERCHANTS_AUTOMATIC_IIR_CREATION';
 
+    const EMPTY_BALANCE_ID_FROM_LEDGER          = 'empty_balance_id_from_ledger';
+
     const DATA_MISMATCH_FOR_WEBSITE_POLICY_AND_BMC_RESPONSE = 'data_mismatch_for_website_policy_and_bmc_response';
 
     const PG_LEDGER_AMOUNT_CREDIT_EXPIRY_REMINDER_CREATED       = 'pg_ledger_amount_credit_expiry_reminder_created';
