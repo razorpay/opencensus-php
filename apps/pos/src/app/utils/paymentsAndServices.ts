@@ -60,7 +60,7 @@ interface HasEditedStandardRatesProps {
   currentRates: Record<string, string>;
 }
 export const hasEditedStandardRates = ({ stdRates, currentRates }: HasEditedStandardRatesProps) => {
-  if (!stdRates) return { differences: {}, isRateEdited: false };
+  if (!stdRates) return { differences: {}, isStdRateEdited: false };
   const differences = {};
   let isRateEdited = false;
   for (const key in stdRates) {

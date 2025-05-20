@@ -55,7 +55,7 @@ const NACHForm: React.FC<NachFormProps> = ({
   if (isModularLoading) return null;
   const nachFormDisabled =
     isFormDisabled ||
-    nachFields.find((field) => field.name === NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD)
+    nachFields?.find((field) => field.name === NachFormKeyNames.NACH_FORM_DOCUMENT_FIELD)
       ?.isDisabled;
   return (
     <Box padding="spacing.5">

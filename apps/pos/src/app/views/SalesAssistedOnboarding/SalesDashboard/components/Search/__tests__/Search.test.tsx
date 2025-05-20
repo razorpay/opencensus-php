@@ -1,5 +1,4 @@
 import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   render,
   screen,
@@ -34,13 +33,8 @@ jest.mock('lodash/debounce', () => {
   };
 });
 
-const queryClient = new QueryClient();
 const renderApp = (props: SearchProps) => {
-  render(
-    <QueryClientProvider client={queryClient}>
-      <Search {...props} />
-    </QueryClientProvider>,
-  );
+  render(<Search {...props} />);
 };
 
 describe('Search', () => {
@@ -72,7 +66,6 @@ describe('Search', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
-    queryClient.clear();
     mockUseScreen.mockReturnValue({ isMobile: false });
   });
 

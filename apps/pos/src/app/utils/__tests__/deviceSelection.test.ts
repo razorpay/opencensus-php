@@ -1,18 +1,20 @@
 import { DashboardGraphQLMerchant } from '@libs/shared-types';
-import { QuantityActions } from '../../types/DeviceSelection';
+import { QuantityActions } from 'apps/pos/src/app/types/DeviceSelection';
 import {
   getCatalogDataFromModularConfig,
   getDeviceChargesFromModularConfig,
+  getDevicePaymentDetails,
   getDevicePaymentFields,
   getDeviceStepStatus,
   getFieldsForDeliveryAddressFromMerchantDetails,
   getOrderSummaryFieldsFromModularConfig,
   updateQuantity,
-} from '../deviceSelection';
-import { MerchantModularOnboardingDetailsSuccessResponse } from '../../types/modular';
+} from 'apps/pos/src/app/utils/deviceSelection';
+import { MerchantModularOnboardingDetailsSuccessResponse } from 'apps/pos/src/app/types/modular';
 import { SUCCESS_MODULAR_RESPONSE } from 'apps/pos/src/services/mocks/fixtures/modularConfig';
 import { MOCK_MERCHANT_DETAILS } from 'apps/pos/src/services/mocks/fixtures/merchantDetails';
 import { TestAddedDeviceWithDeviceConfig } from 'apps/pos/src/services/mocks/fixtures/deviceSelection';
+import { getMockModularResponseWithDeviceStep } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/DeviceOrdering/DevicePaymentMethods/__tests__/mocks/fixtures';
 
 describe('deviceSelection utils', () => {
   const modularResponse = SUCCESS_MODULAR_RESPONSE.merchantModularOnboardingDetailsAsSales;
@@ -192,5 +194,89 @@ describe('deviceSelection utils', () => {
       });
       expect(stepStatus).toBe('payment_pending');
     });
+  });
+});
+
+describe('getDevicePaymentDetails', () => {
+  test('should return null if modularConfig is not provided', () => {
+    expect(getDevicePaymentDetails({ modularConfig: null })).toBeNull();
+  });
+
+  test('should return empty values if fields are not found', () => {
+    expect(
+      getDevicePaymentDetails({
+        modularConfig: getMockModularResponseWithDeviceStep({
+          hasPaymentLinkStatusField: false,
+          hasPaymentLinkUrlField: false,
+          hasPaymentLinkCreatedAtField: false,
+          hasPaymentLinkCompletedAtField: false,
+          hasQrCodeStatusField: false,
+        }).merchantModularOnboardingDetailsUpdateAsSales as any,
+      }),
+    ).toEqual({
+      paymentLinkStatus: '',
+      paymentLinkUrl: '',
+      paymentLinkCreatedAt: '',
+      paymentLinkCompletedAt: '',
+      qrCodePaymentStatus: '',
+    });
+  });
+
+  test('should return correct payment link details', () => {
+    expect(
+      getDevicePaymentDetails({
+        modularConfig: getMockModularResponseWithDeviceStep({
+          qrPaymentStatusField: 'success',
+        }).merchantModularOnboardingDetailsUpdateAsSales as any,
+      }),
+    ).toEqual({
+      paymentLinkStatus: '',
+      paymentLinkUrl: 'https://example.com',
+      paymentLinkCreatedAt: '1734463166',
+      paymentLinkCompletedAt: '1734463169',
+      qrCodePaymentStatus: 'success',
+    });
+  });
+
+  test('should return qrPaymentStatus as pending when qrCodeStatus is active', () => {
+    expect(
+      getDevicePaymentDetails({
+        modularConfig: getMockModularResponseWithDeviceStep({
+          qrCodeStatusField: 'active',
+        }).merchantModularOnboardingDetailsUpdateAsSales as any,
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        qrCodePaymentStatus: 'pending',
+      }),
+    );
+  });
+
+  test('should return qrPaymentStatus as success when qrCodeStatus is closed and qrPaymentStatus is success', () => {
+    expect(
+      getDevicePaymentDetails({
+        modularConfig: getMockModularResponseWithDeviceStep({
+          qrPaymentStatusField: 'success',
+        }).merchantModularOnboardingDetailsUpdateAsSales as any,
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        qrCodePaymentStatus: 'success',
+      }),
+    );
+  });
+
+  test('should return qrPaymentStatus as expired when qrCodeStatus is closed and qrPaymentStatus is pending', () => {
+    expect(
+      getDevicePaymentDetails({
+        modularConfig: getMockModularResponseWithDeviceStep({
+          qrPaymentStatusField: 'pending',
+        }).merchantModularOnboardingDetailsUpdateAsSales as any,
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        qrCodePaymentStatus: 'expired',
+      }),
+    );
   });
 });

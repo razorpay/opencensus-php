@@ -43,4 +43,8 @@ describe('<StatusBadge />', () => {
     render(<StatusBadge type="some_random" />);
     expect(screen.getByTestId('component-wrapper').firstChild).toBeNull();
   });
+  test('should render Status Badge with Pricing Needs Clarifcation value', () => {
+    render(<StatusBadge type="pending_agent_action" />);
+    expect(screen.getByText('Pricing Needs Clarification')).toBeInTheDocument();
+  });
 });

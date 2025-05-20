@@ -3,7 +3,7 @@ import PaymentLinkMethod, {
   PaymentLinkMethodProps,
 } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/DeviceOrdering/DevicePaymentMethods/PaymentLinkMethod/PaymentLinkMethod';
 import { getModularConfig } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/DeviceOrdering/DevicePaymentMethods/__tests__/mocks/handlers';
-import { render, screen, server, userEvent } from 'apps/pos/src/services/test/test-utils';
+import { render, screen, server, userEvent, waitFor } from 'apps/pos/src/services/test/test-utils';
 
 const renderApp = (props: PaymentLinkMethodProps) => {
   render(<PaymentLinkMethod {...props} />);

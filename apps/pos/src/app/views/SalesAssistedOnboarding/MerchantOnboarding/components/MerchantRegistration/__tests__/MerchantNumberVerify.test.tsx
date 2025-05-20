@@ -59,6 +59,14 @@ describe('MerchantNumberVerify', () => {
     expect(initProps.onOTPChange).toHaveBeenLastCalledWith('000007');
   });
 
+  test('should be able to resend OTP', async () => {
+    renderApp({ isOTPSent: true, OTPToken: 'abc_1233' });
+    await userEvent.click(screen.getByText('Resend OTP'));
+    // await userEvent.type(screen.getByTestId('otp-input-field'), '000000');
+    expect(screen.getByTestId('otp-input-field')).toHaveValue("");
+    expect(initProps.handleOnPhoneNumberConfirm).toHaveBeenCalled();
+  });
+
   test('should show error message if passed', () => {
     renderApp({ error: 'Invalid OTP' });
     expect(screen.getByText('Invalid OTP')).toBeInTheDocument();

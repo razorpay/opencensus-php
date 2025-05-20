@@ -20,7 +20,7 @@ const DeliveryAddressRadio = ({ value, address }: DeliverAddressRadio): JSX.Elem
   return (
     <Box display="flex" alignItems="flex-start" marginBottom="spacing.5">
       <Box>
-        <Radio value={value} marginRight="spacing.5" />
+        <Radio value={value} marginRight="spacing.5" testID="delivery-address-radio" />
       </Box>
       <Box width="100%">
         <Box display="flex" justifyContent="space-between" marginBottom="spacing.3">

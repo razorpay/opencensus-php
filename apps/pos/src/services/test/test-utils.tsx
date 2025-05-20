@@ -28,8 +28,6 @@ interface CustomRenderOptions {
   history?: any;
 }
 
-export const queryClient = new QueryClient({});
-
 const createWrapper = ({
   showModal,
   path,
@@ -40,6 +38,7 @@ const createWrapper = ({
   const AllTheProviders: React.FC<{
     children: ReactElement<any, any> | null;
   }> = ({ children }) => {
+    const queryClient = new QueryClient();
     const renderChildren = () => {
       if (renderViaRouteGuard) {
         return <RouteGuard>{children}</RouteGuard>;

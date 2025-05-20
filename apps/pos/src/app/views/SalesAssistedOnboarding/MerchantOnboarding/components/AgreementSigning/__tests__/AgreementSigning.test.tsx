@@ -1,8 +1,8 @@
 import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { getModularConfig, updateModularConfig } from './mocks/handlers';
 import { render, screen, server, userEvent, waitFor } from 'apps/pos/src/services/test/test-utils';
 import AgreementSigning from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/AgreementSigning/AgreementSigning';
+import { PosAgreementMode } from 'apps/pos/src/app/views/SalesAssistedOnboarding/MerchantOnboarding/components/AgreementSigning/PosAgreementMode';
 
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
@@ -13,20 +13,14 @@ jest.mock('react-router-dom', () => ({
   }),
 }));
 
-const queryClient = new QueryClient();
 const renderApp = () => {
-  render(
-    <QueryClientProvider client={queryClient}>
-      <AgreementSigning />
-    </QueryClientProvider>,
-  );
+  render(<AgreementSigning />);
 };
 
 describe('<AgreementSigning/>', () => {
   jest.setTimeout(30000);
   afterEach(() => {
     jest.clearAllMocks();
-    queryClient.clear();
   });
 
   test('should render agent agreement screen', async () => {
@@ -87,7 +81,6 @@ describe('<AgreementSigning/>', () => {
     await waitFor(() => {
       expect(screen.getByText(/agreement sent/i)).toBeInTheDocument();
     });
-    screen.debug(undefined, 100000000);
     expect(screen.getByText(/Mon, 29th Jul’24 | 6:07pm/i)).toBeInTheDocument();
     expect(screen.getByText(/action pending/i)).toBeInTheDocument();
     expect(screen.getByText(/signing confirmation/i)).toBeInTheDocument();
@@ -117,7 +110,6 @@ describe('<AgreementSigning/>', () => {
     await waitFor(() => {
       expect(screen.getByText(/agreement sent/i)).toBeInTheDocument();
     });
-    screen.debug(undefined, 10000000);
     expect(screen.getByText(/Mon, 29th Jul’24 \| 6:07pm/i)).toBeInTheDocument();
     expect(screen.getByText(/signing confirmation/i)).toBeInTheDocument();
     expect(screen.getByText(/^successful$/i)).toBeInTheDocument();
@@ -157,12 +149,59 @@ describe('<AgreementSigning/>', () => {
     const resendLinkBtn = screen.getByRole('button', { name: /send-link-btn/i });
     expect(resendLinkBtn).toBeInTheDocument();
     await userEvent.click(resendLinkBtn);
-    screen.debug(undefined, 10000000);
     await waitFor(() => {
       expect(screen.getByText(/Agreement re-sent successfully/i)).toBeInTheDocument();
     });
   });
 
+  test('should show error if agreement sending fails', async () => {
+    server.use(
+      getModularConfig({
+        type: 'success',
+        data: {
+          agreementType: '',
+          agreementStatusField: '',
+          agreementComponentStatus: '',
+          agreementSentAt: '1722276450',
+        },
+      }),
+      updateModularConfig({
+        type: 'failure',
+        data: {
+          agreementType: 'online',
+          agreementStatusField: '',
+          agreementComponentStatus: '',
+          agreementSentAt: '1722276450',
+        },
+      }),
+    );
+    renderApp();
+    await waitFor(() => {
+      expect(screen.getByRole('radio', { name: /online/i })).toBeChecked();
+      expect(screen.getByRole('radio', { name: /offline/i })).toBeInTheDocument();
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'send-link-btn' }));
+    await waitFor(() =>
+      expect(screen.getByText(/Something went wrong. Please try again./i)).toBeInTheDocument(),
+    );
+  });
+  test('should show error if failed to fetch agreement options', async () => {
+    server.use(
+      getModularConfig({
+        type: 'failure',
+        data: {
+          agreementType: '',
+          agreementStatusField: '',
+          agreementComponentStatus: '',
+          agreementSentAt: '1722276450',
+        },
+      }),
+    );
+    renderApp();
+    await waitFor(() => {
+      expect(screen.getByText(/Something went wrong. Please try again./i)).toBeInTheDocument();
+    });
+  });
   test('should show error if agreement is failed to generate', async () => {
     server.use(
       getModularConfig({
@@ -231,6 +270,36 @@ describe('<AgreementSigning/>', () => {
     });
   });
 
+  test('should throw error for invalid file upload', async () => {
+    server.use(
+      getModularConfig({
+        type: 'success',
+        data: {
+          agreementType: 'online',
+          agreementComponentStatus: '',
+          agreementStatusField: '',
+        },
+      }),
+    );
+    renderApp();
+
+    await waitFor(async () => {
+      const offlineRadio = screen.getAllByTestId('agreement-mode-radio')[1];
+      await userEvent.click(offlineRadio);
+      expect(screen.getByRole('radio', { name: /offline/i })).toBeChecked();
+      expect(screen.getByText(/Upload TnC & Pricing Agreement/i)).toBeInTheDocument();
+    });
+
+    const file = new File(['content'], 'tnc.pdf', { type: 'text/plain' });
+    const fileInput = screen.getByLabelText('file-upload-input');
+    await userEvent.upload(fileInput, file);
+    expect(screen.getByText('Some error occurred while uploading file!')).toBeInTheDocument();
+
+    const submitBtn = screen.getByText('Submit Merchant Details');
+    await userEvent.click(submitBtn);
+    expect(screen.getByText('Please upload a file')).toBeInTheDocument();
+  });
+
   test('should show submitted bottom sheet if agreement is already signed and online mode', async () => {
     server.use(
       getModularConfig({
@@ -289,5 +358,26 @@ describe('<AgreementSigning/>', () => {
       expect(screen.getByText(/Link copied successfully/i)).toBeInTheDocument();
     });
     document.execCommand = originalExec;
+  });
+});
+
+describe('<PosAgreementMode>', () => {
+  const props = {
+    modularConfig: null as any,
+    isUpdateModularLoading: false,
+    updateModularConfig: jest.fn(),
+    isModularLoading: true,
+    merchantDetails: undefined,
+  };
+
+  test('should show loader if isModularLoading is true', async () => {
+    render(<PosAgreementMode {...props} />);
+    expect(screen.getByLabelText('additional-details-spinner')).toBeInTheDocument();
+  });
+
+  test('should return null when modular config is absent', async () => {
+    render(<PosAgreementMode {...{ ...props, isModularLoading: false }} />);
+    expect(screen.queryByRole('radio', { name: /online/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio', { name: /offline/i })).not.toBeInTheDocument();
   });
 });

@@ -3,6 +3,7 @@ import AddDeviceToCart from '../AddDeviceToCart';
 import { TestDeviceConfig } from 'apps/pos/src/services/mocks/fixtures/deviceSelection';
 import { screen, render, userEvent, within, waitFor } from 'apps/pos/src/services/test/test-utils';
 import { EditDeviceInCartForm } from 'apps/pos/src/app/types/DeviceSelection';
+import { MODULAR_DEVICE_FIELDS } from 'apps/pos/src/app/types/DeviceSelection';
 
 const defaultValues: EditDeviceInCartForm = {
   device_item_quantity_field: 1,
@@ -23,12 +24,14 @@ const initProps = {
   isDisabled: false,
   isDeviceAlreadyAdded: false,
   isUpdateModularLoading: false,
-  handleModularUpdate: jest.fn(),
+  handleModularUpdate: jest.fn((payload) => {
+    payload[MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]();
+  }),
   defaultValues,
 };
 
-const renderApp = () => {
-  render(<AddDeviceToCart {...initProps} />);
+const renderApp = (props = {}) => {
+  render(<AddDeviceToCart {...initProps} {...props} />);
 };
 
 describe('AddDeviceToCart', () => {
@@ -136,6 +139,28 @@ describe('AddDeviceToCart', () => {
           device_selection_timestamp_field: expect.any(Number),
         }),
       );
+    });
+  });
+
+  test('should be able to close Device Selection drawer', async () => {
+    renderApp();
+    await userEvent.click(screen.getByText('Add Device'));
+    await waitFor(() => {
+      expect(screen.getByText('Device Selection')).toBeVisible();
+    });
+    await userEvent.click(screen.getByText('Cancel'));
+    expect(screen.getByText('Device Selection')).not.toBeVisible();
+  });
+
+  test('should be able to delete added device', async () => {
+    renderApp({ isEditFlow: true });
+    await userEvent.click(screen.getByText('Edit'));
+    await userEvent.click(screen.getByLabelText('delete device item'));
+
+    expect(initProps.handleModularUpdate).toHaveBeenCalledWith({
+      [MODULAR_DEVICE_FIELDS.DEVICE_CART_ID_FIELD]: expect.any(String),
+      [MODULAR_DEVICE_FIELDS.MODULAR_CALLBACK]: expect.any(Function),
+      [MODULAR_DEVICE_FIELDS.DEVICE_DELETE_PRODUCT_FIELD]: true,
     });
   });
 });

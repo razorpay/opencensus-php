@@ -1,5 +1,5 @@
 import { graphql } from 'msw-old';
-import { MODULAR_RESPONSE, workflowDataMock } from './fixtures';
+import { getMockModularResponseWithDeviceStep } from './fixtures';
 
 export const getModularConfig = ({ type }: { type: string }): any => {
   if (type === 'failure') {
@@ -14,7 +14,7 @@ export const getModularConfig = ({ type }: { type: string }): any => {
   }
   if (type === 'success') {
     return graphql.query('MerchantModularOnboardingDetailsAsSales', (_req, res, ctx) => {
-      return res(ctx.status(200), ctx.data(MODULAR_RESPONSE), ctx.delay(50));
+      return res(ctx.status(200), ctx.data(getMockModularResponseWithDeviceStep({})), ctx.delay(50));
     });
   }
 };
@@ -37,7 +37,9 @@ export const updateModularConfig = ({ type }: { type: string }): any => {
       ctx.data({
         merchantModularOnboardingDetailsUpdateAsSales: {
           __typename: 'merchantModularOnboardingDetailsSuccessResponse',
-          workflowData: workflowDataMock,
+          workflowData:
+            getMockModularResponseWithDeviceStep({}).merchantModularOnboardingDetailsUpdateAsSales
+              .workflowData,
         },
       }),
     );

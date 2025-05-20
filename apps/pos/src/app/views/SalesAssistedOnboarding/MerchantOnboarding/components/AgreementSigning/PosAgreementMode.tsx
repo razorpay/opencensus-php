@@ -402,7 +402,7 @@ export const PosAgreementMode = ({
           {getAgreementTypeField(modularConfig)?.meta?.options?.map((mode) => (
             <StyledCardContainer key={mode.value} selected={agreementMode === mode.value}>
               <StyledCard selected={agreementMode === mode.value}>
-                <Radio value={mode.value}>{mode.label}</Radio>
+                <Radio value={mode.value} testID='agreement-mode-radio'>{mode.label}</Radio>
                 {getComponent(mode.value)}
               </StyledCard>
             </StyledCardContainer>

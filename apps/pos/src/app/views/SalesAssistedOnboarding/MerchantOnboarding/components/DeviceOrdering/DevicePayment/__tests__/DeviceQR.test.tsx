@@ -63,6 +63,9 @@ describe('DeviceQR', () => {
       check_qr_status_field: expect.any(Number),
       modular_callback: expect.any(Function),
     });
+    renderApp({ isUpdateModularLoading: true });
+    await waitFor(() => renderApp());
+
     await waitFor(() => {
       expect(screen.getByText('Payment Pending')).toBeInTheDocument();
     });
@@ -72,5 +75,10 @@ describe('DeviceQR', () => {
     renderApp();
     await userEvent.click(screen.getByLabelText('back-btn'));
     expect(mockNavigate).toHaveBeenCalledWith(-1);
+  });
+
+  test('should display loading state for empty qrCodeIntent', async () => {
+    renderApp({ qrCodeIntent: '' });
+    expect(screen.getByText('Generating QR Code...')).toBeInTheDocument();
   });
 });

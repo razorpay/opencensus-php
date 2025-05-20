@@ -29,6 +29,7 @@ const mockFunctions = {
   fistStepCallback: jest.fn(),
   componentConifgMockfn: jest.fn(),
   stepConfigMockFn: jest.fn(),
+  getOnboardingProgressMock: jest.fn(),
 };
 
 const initProps = {
@@ -45,6 +46,7 @@ const TestApp = ({ stepSlug, stepConfig }) => {
     handleStepClick,
     getFirstComponentOfStep,
     handleProceedToNextComponent,
+    getOnboardingProgress,
   } = handlers;
 
   const handleGetComponentConfig = () => {
@@ -62,6 +64,20 @@ const TestApp = ({ stepSlug, stepConfig }) => {
     mockFunctions.fistStepCallback(firstStep);
   };
 
+  const handleGetOnboardingProgress = () => {
+    const progress = getOnboardingProgress();
+    mockFunctions.getOnboardingProgressMock(progress);
+  };
+
+  const handleProceedToNextComponentFn = () => {
+    handleProceedToNextComponent({
+      __typeName: 'custom_routing',
+      routerConditions: {
+        mobileNumberVerify: true,
+      },
+    });
+  };
+
   return (
     <React.Fragment>
       <h1>{step}</h1>
@@ -69,10 +85,12 @@ const TestApp = ({ stepSlug, stepConfig }) => {
       <h1>{merchantId}</h1>
       <div>
         <button onClick={() => handleProceedToNextComponent()}>Proceed</button>
+        <button onClick={handleProceedToNextComponentFn}>Route to MobileNumberVerify</button>
         <button onClick={() => handleGetFirstStep()}>Get First Step</button>
         <button onClick={() => handleStepClick({ step: stepConfig })}>Step click</button>
         <button onClick={() => handleStepConfig()}>Get Step Config</button>
         <button onClick={() => handleGetComponentConfig()}>Get Component Config</button>
+        <button onClick={handleGetOnboardingProgress}>Get Onboarding Progress</button>
       </div>
     </React.Fragment>
   );
@@ -162,6 +180,25 @@ describe('useOnboardingContext', () => {
       expect(mockNavigate).toHaveBeenCalledWith(
         '/pos-sales/onboarding/abc_123/merchantRegistration/merchantKycRedirect',
       );
+    });
+  });
+
+  test('should handle custom routing if handleProceedToNextComponent is called with CustomRouter', async () => {
+    const { getByText } = render(<TestApp {...initProps} />);
+    await userEvent.click(getByText('Route to MobileNumberVerify'));
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/pos-sales/onboarding/abc_123/merchantRegistration/mobileNumberVerify',
+      );
+    });
+  });
+
+  test('should return onboarding progress when getOnboardingProgress is called', async () => {
+    const { getByText } = render(<TestApp {...initProps} />);
+    await userEvent.click(getByText('Get Onboarding Progress'));
+    expect(mockFunctions.getOnboardingProgressMock).toHaveBeenCalledWith({
+      totalCompletedSteps: 0,
+      totalSteps: 3,
     });
   });
 });

@@ -10,7 +10,7 @@ import {
 import React from 'react';
 import styled from 'styled-components';
 
-interface DeviceCardProps {
+export interface DeviceCardProps {
   imageUrl: string;
   name: string;
   isDeployed: boolean;
@@ -52,7 +52,7 @@ export const DeviceCard = ({
 
   return (
     <DeviceCardContainer onClick={handleDeployedDevice}>
-      <Box display="flex" flexDirection="column" gap="spacing.6">
+      <Box display="flex" flexDirection="column" gap="spacing.6" testID="device-card">
         <Box display="flex" gap="spacing.4">
           <img src={imageUrl} alt={name} width="68px" height="68px" />
           <Box display="flex" flexDirection="column" gap="spacing.2" flex="1">

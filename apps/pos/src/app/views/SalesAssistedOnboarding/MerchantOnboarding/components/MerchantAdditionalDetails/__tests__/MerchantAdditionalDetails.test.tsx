@@ -1,5 +1,4 @@
 import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MerchantAdditionalDetails from '../MerchantAdditionalDetails';
 import { getModularConfig, updateModularConfig } from '../mocks/handlers';
 import {
@@ -19,20 +18,15 @@ jest.mock('react-router-dom', () => ({
     component: 'merchantAdditionalDetails',
   }),
 }));
-const queryClient = new QueryClient();
+
 const renderApp = () => {
-  render(
-    <QueryClientProvider client={queryClient}>
-      <MerchantAdditionalDetails />
-    </QueryClientProvider>,
-  );
+  render(<MerchantAdditionalDetails />);
 };
 
 describe('Test POS merchant additional details screen', () => {
   jest.setTimeout(30000);
   afterEach(() => {
     jest.clearAllMocks();
-    queryClient.clear();
   });
 
   test('should not render additional details screen if modular config is failed to fetch', async () => {

@@ -1,17 +1,11 @@
 import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as graphqlUtils from '@federated/apps/shell/graphql';
 import SalesDashboard from '../SalesDashboard';
 import {
   SUCCESS_SALES_MAPPED_MERCHANTS_EMPTY_RESPONSE,
   SUCCESS_SALES_MAPPED_MERCHANTS_RESPONSE,
 } from './mocks/fixtures';
-import {
-  render,
-  screen,
-  waitFor,
-  within,
-} from 'apps/pos/src/services/test/test-utils';
+import { render, screen, waitFor, within } from 'apps/pos/src/services/test/test-utils';
 import useOnboardingStore from 'apps/pos/src/bootstrap/Store';
 
 jest.mock('apps/pos/src/bootstrap/Store', () => {
@@ -27,24 +21,13 @@ jest.mock('@federated/apps/shell/graphql', () => {
 
 jest.setTimeout(30000);
 
-const queryClient = new QueryClient();
-
-const renderApp = () => {
-  render(
-    <QueryClientProvider client={queryClient}>
-      <SalesDashboard />
-    </QueryClientProvider>,
-  );
+const renderApp = (props = {}) => {
+  render(<SalesDashboard {...props} />);
 };
 
 describe('<SalesDashboard/>', () => {
-  beforeEach(() => {
-    queryClient.clear();
-  });
-
   afterEach(() => {
     jest.clearAllMocks();
-    queryClient.clear();
   });
 
   (useOnboardingStore as unknown as jest.Mock).mockReturnValue({
@@ -74,7 +57,6 @@ describe('<SalesDashboard/>', () => {
     });
   });
 
-
   test('should render status counts on screen', async () => {
     const graphqlRequestSpy = jest.spyOn(graphqlUtils, 'graphqlRequest');
     graphqlRequestSpy.mockReturnValue(Promise.resolve(SUCCESS_SALES_MAPPED_MERCHANTS_RESPONSE));
@@ -95,8 +77,12 @@ describe('<SalesDashboard/>', () => {
     expect(within(kycQualifiedChip).getByText('KYC Qualified - 35')).toBeInTheDocument();
     expect(within(pendingChip).getByText('Pending - 10')).toBeInTheDocument();
     expect(within(underReviewChip).getByText('Under Review - 1')).toBeInTheDocument();
-    expect(within(NeedsClarificationChip).getByText('KYC Needs Clarification - 7')).toBeInTheDocument();
-    expect(within(pricingNeedsClarificationChip).getByText('Pricing Needs Clarification - 1')).toBeInTheDocument();
+    expect(
+      within(NeedsClarificationChip).getByText('KYC Needs Clarification - 7'),
+    ).toBeInTheDocument();
+    expect(
+      within(pricingNeedsClarificationChip).getByText('Pricing Needs Clarification - 1'),
+    ).toBeInTheDocument();
   });
 
   test('should show empty screen if no merchants are available', async () => {
@@ -115,8 +101,8 @@ describe('<SalesDashboard/>', () => {
     const graphqlRequestSpy = jest.spyOn(graphqlUtils, 'graphqlRequest');
     graphqlRequestSpy.mockReturnValue(Promise.resolve(SUCCESS_SALES_MAPPED_MERCHANTS_RESPONSE));
     renderApp();
-      const startInput = screen.getByRole('combobox', { name: /Start Date/i });
-      const endInput = screen.getByRole('combobox', { name: /End Date/i });
+    const startInput = screen.getByRole('combobox', { name: /Start Date/i });
+    const endInput = screen.getByRole('combobox', { name: /End Date/i });
     await waitFor(() => {
       expect(startInput).toBeInTheDocument();
       expect(endInput).toBeInTheDocument();

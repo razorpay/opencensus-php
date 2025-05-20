@@ -1041,6 +1041,81 @@ export const SUCCESS_MODULAR_RESPONSE = {
                   status: 'processing',
                   name: 'qr_code_component',
                 },
+                {
+                  "fields": [
+                    {
+                      "name": "payment_options_field",
+                      "isDisabled": true,
+                      "isRequired": false,
+                      "isHidden": false,
+                      "isInternal": false,
+                      "meta": {
+                        "title": "Payment Options",
+                        "description": null,
+                        "defaultValue": "qr_code",
+                        "size": null,
+                        "accessibilityLabel": null,
+                        "hideOnReviewScreen": null,
+                        "dataType": "radio",
+                        "selectionType": "single",
+                        "options": [
+                          {
+                            "label": "Scan and Pay",
+                            "value": "qr_code",
+                            "helpText": "Generate QR Code for instant scan"
+                          },
+                          {
+                            "label": "Payment Link",
+                            "value": "payment_link",
+                            "helpText": "For Net banking, Cards, UPI"
+                          }
+                        ],
+                        "validations": null,
+                        "jsonValue": {
+                          "data_type": "radio",
+                          "default_value": "qr_code",
+                          "options": [
+                            {
+                              "help_text": "Generate QR Code for instant scan",
+                              "label": "Scan and Pay",
+                              "value": "qr_code"
+                            },
+                            {
+                              "help_text": "For Net banking, Cards, UPI",
+                              "label": "Payment Link",
+                              "value": "payment_link"
+                            }
+                          ],
+                          "selection_type": "single",
+                          "title": "Payment Options"
+                        }
+                      },
+                      "failureReason": "",
+                      "failureReasonType": "",
+                      "stringValue": "qr_code"
+                    }
+                  ],
+                  "meta": {
+                    "description": "Make Payment",
+                    "errorCode": null,
+                    "isHidden": null,
+                    "template": "grid",
+                    "title": "2. Device Selection & Ordering",
+                    "validations": null,
+                    "defaultValues": null,
+                    "brandDataFields": null,
+                    "optionalBrandFields": null,
+                    "merchantGstField": null,
+                    "deviceConfig": null,
+                    "metaUi": null,
+                    "acquirerPreferenceOptions": null
+                  },
+                  "progress": 100,
+                  "status": "executed",
+                  "name": "payment_options_component"
+                },
+               
+               
               ],
             },
             {

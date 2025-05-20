@@ -19,6 +19,12 @@ module.exports = withDashboardCore({
       },
     };
 
+    config.coveragePathIgnorePatterns = [
+      ...config.coveragePathIgnorePatterns,
+      '<rootDir>/src/bootstrap',
+      '<rootDir>/src/coverage',
+    ]
+
     return config;
   },
 });

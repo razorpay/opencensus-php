@@ -1,4 +1,3 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import DeviceConfigurationContainer from '../DeviceConfigurationContainer';
 import { getModularConfig } from '../mocks/handlers';
@@ -23,20 +22,14 @@ jest.mock('apps/pos/src/bootstrap/Store/index', () => ({
   })),
 }));
 
-const queryClient = new QueryClient();
 const renderApp = () => {
-  render(
-    <QueryClientProvider client={queryClient}>
-      <DeviceConfigurationContainer />
-    </QueryClientProvider>,
-  );
+  render(<DeviceConfigurationContainer />);
 };
 
 describe('Test POS Device Configuration screen', () => {
   jest.setTimeout(30000);
   afterEach(() => {
     jest.clearAllMocks();
-    queryClient.clear();
   });
 
   test('should not render Device Configuration page if modular config data is not available', async () => {

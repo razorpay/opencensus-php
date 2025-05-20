@@ -6,6 +6,12 @@ import {
   TestAddedDeviceWithDeviceConfig,
   TestDeviceOrderSummary,
 } from 'apps/pos/src/services/mocks/fixtures/deviceSelection';
+import { useLocation } from 'react-router-dom';
+
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useLocation: jest.fn(),
+}));
 
 const defaultProps = {
   deviceConfig: TestDeviceConfig,
@@ -28,6 +34,12 @@ const renderApp = (props = {}) => {
 };
 
 describe('DeviceConfirmation', () => {
+  const mockPathname = (path: string) => {
+    (useLocation as jest.Mock).mockReturnValue({
+      pathname: path,
+    });
+  };
+
   test('should render empty state if no devices added', () => {
     renderApp({ addedDevices: [] });
     expect(screen.getByText('No Devices added')).toBeInTheDocument();
@@ -44,6 +56,24 @@ describe('DeviceConfirmation', () => {
     expect(screen.getByText('Test Device')).toBeInTheDocument();
     expect(screen.getByText('Monthly')).toBeInTheDocument();
     expect(screen.getByText('30,000.00')).toBeInTheDocument();
+  });
+
+  test('displays Payment Details after clicking View Details on Delivery Address page', async () => {
+    mockPathname('/deviceDeliveryAddress');
+    renderApp();
+    const viewDetailsLink = screen.getByRole('button', { name: 'View Details' });
+    expect(viewDetailsLink).toBeInTheDocument();
+    await userEvent.click(viewDetailsLink);
+    expect(screen.getByText('Payment Details')).toBeInTheDocument();
+  });
+
+  test('displays Payment Details after clicking View Details on Device Cart page', async () => {
+    mockPathname('/deviceCart');
+    renderApp();
+    const viewDetailsLink = screen.getByRole('button', { name: 'View Details' });
+    expect(viewDetailsLink).toBeInTheDocument();
+    await userEvent.click(viewDetailsLink);
+    expect(screen.getByText('Payment Details')).toBeInTheDocument();
   });
 
   test('should render delete item button and clicking on it should trigger modular with correct payload', async () => {

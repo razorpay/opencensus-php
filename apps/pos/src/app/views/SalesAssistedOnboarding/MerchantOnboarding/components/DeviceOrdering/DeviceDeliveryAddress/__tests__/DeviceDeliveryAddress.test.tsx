@@ -15,7 +15,9 @@ const defaultProps = {
   addedDevices: [TestAddedDeviceWithDeviceConfig],
   orderSummary: TestDeviceOrderSummary,
   merchantDetails: MOCK_MERCHANT_DETAILS as unknown as DashboardGraphQLMerchant,
-  handleModularUpdate: jest.fn(),
+  handleModularUpdate: jest.fn((payload) => {
+    payload["modular_callback"]();
+  }),
   handleGoToNextStep: jest.fn(),
   isUpdateModularLoading: false,
   isStepCompleted: false,
@@ -49,6 +51,8 @@ describe('DeviceDeliveryAddress', () => {
 
   test('should call update modular with correct payload on confirmation', async () => {
     renderApp();
+    const operationalRadio = screen.getAllByTestId('delivery-address-radio')[1];
+    await userEvent.click(operationalRadio);
     await userEvent.click(screen.getByText('Confirm Delivery Address'));
     expect(defaultProps.handleModularUpdate).toHaveBeenCalledWith({
       device_delivery_address_field: {

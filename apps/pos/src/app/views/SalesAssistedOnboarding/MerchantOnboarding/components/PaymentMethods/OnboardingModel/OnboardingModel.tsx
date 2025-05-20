@@ -33,11 +33,11 @@ const OnboardingModel = ({
   setFormType,
   acquisitionModelField,
   acquisitionModelFields,
-}:OnboardingModelProps): JSX.Element => {
+}: OnboardingModelProps): JSX.Element => {
   const [paymentMethodFormType, setPaymentMethodFormType] = useState<PaymentMethodFormType>(
     acquisitionModelField || PaymentMethodFormType.AGGREGATOR,
   );
-  
+
   const onDismissClick = () => {
     trackEvent({
       eventName: ANALYTICS_EVENTS.ICON,
@@ -97,13 +97,16 @@ const OnboardingModel = ({
     setPaymentMethodFormType(acquisitionModelField);
   }, [acquisitionModelField]);
 
-  
   return (
     <BottomSheet zIndex={99999} isOpen={isOpen} onDismiss={onDismissClick}>
       <BottomSheetHeader title="Select Onboarding Model" />
       <BottomSheetBody>
         <Box padding="spacing.4">
-          <RadioGroup onChange={onRadioButtonChange} value={paymentMethodFormType} isDisabled={acquisitionModelFields?.isDisabled}>
+          <RadioGroup
+            onChange={onRadioButtonChange}
+            value={paymentMethodFormType}
+            isDisabled={acquisitionModelFields?.isDisabled}
+          >
             <Radio testID="aggregator-model" value={PaymentMethodFormType.AGGREGATOR}>
               Aggregator Model
             </Radio>
@@ -115,7 +118,7 @@ const OnboardingModel = ({
       </BottomSheetBody>
       <BottomSheetFooter>
         <Box display="flex" flexDirection="row" justifyContent="space-between">
-          <Button variant="secondary" onClick={onBackButtonClick}>
+          <Button testID="back-btn" variant="secondary" onClick={onBackButtonClick}>
             Back
           </Button>
           <Button
