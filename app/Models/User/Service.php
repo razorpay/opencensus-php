@@ -4987,7 +4987,14 @@ class Service extends Base\Service
        try {
            $res = (new \RZP\Models\Roles\Service())->getRoleNamesUsingExperiment($input['role_ids']);
            return $res;
-       }catch (\Throwable $exception) {
+       }catch (\Throwable $ex) {
+           $this->trace->info(
+               TraceCode::USER_SERVICE_DATA_ACCESSOR,
+               [
+                   'desc' => 'error while fetching authz role names',
+                   'err' => $ex->getMessage()
+               ],
+           );
            return ['res' => 'something went wrong'];
        }
    }
