@@ -314,7 +314,7 @@ class Webhooks extends Base\Core
             return;
         }
 
-        $txn = $this->getPrepaidTransaction($txns['transactions']);
+        $txn = $this->getPrepaidTransactionforRefund($txns['transactions']);
         if (empty($txn) === true)
         {
             $this->trace->count(
@@ -659,6 +659,21 @@ class Webhooks extends Base\Core
         }
         return $txn;
     }
+
+    protected function getPrepaidTransactionforRefund(array $txns): array
+    {
+        $txn = [];
+        for ($i = 0; $i < count($txns); $i++)
+        {
+            if ($txns[$i]['status'] === 'success' and $txns[$i]['kind'] === 'refund' and $txns[$i]['gateway'] === 'Razorpay')
+            {
+                $txn = $txns[$i];
+                break;
+            }
+        }
+        return $txn;
+    }
+
 
     protected function processFulfillmentUpdateEvent(array $data)
     {
