@@ -5547,6 +5547,8 @@ class Service extends Base\Service
                 return  (new Merchant\Activate)->processActivatePosAndMarkKycVerifiedEvent($merchantId);
             case 'ACTIVATED_NOT_LIVE_FIX':
                 return $this->core->updateActivatedNotLiveMerchantsCron();
+            case 'POS_ACTIVATED_OR_KQS_NOT_LIVE_FIX':
+                return $this->core->updatePosActivatedOrKqsNotLiveMerchantsCron();
             case 'UPDATE_ACTIVATION_PROGRESS':
                 return $this->core->updateActivationProgressPGOSInternal($merchantId, $input);
             case 'UPDATE_ACTIVATION_MILESTONE':
