@@ -4965,7 +4965,7 @@ class Service extends Base\Service
                $responseData = $this->core->fetchMerchantAttribute($input['merchant_id']);
                break;
 
-           case 'fetch_banking_balance':
+           case 'fetch_balance':
                $responseData = $this->core->fetchBankingBalanceData($input['merchant_id']);
                break;
 
