@@ -1317,23 +1317,20 @@ class Service extends Base\Service
             case 'feature':
                 // Retrieve features of the source organization
                 $this->trace->info(TraceCode::ORG_FEATURE_REPLICATION, [$this->merchant->org]);
-                $orgFeatures = $this->merchant->org->getEnabledFeatures();
-
-                $this->trace->info(TraceCode::ORG_FEATURE_REPLICATION, [$orgFeatures]);
-
-                // Extract feature names for processing
-                $featureNames = array_column($orgFeatures, 'feature_name');
+                $org = $this->repo->org->find($fromOrgId);
+//                $orgFeatures = $this->merchant->org->getEnabledFeatures();
+                $orgFeatures = $org->getEnabledFeatures();
 
                 // Retrieve existing feature names of the target organization
-                $existingFeatureNames =$this->merchant->org->getEnabledFeatures();
+                $toOrg = $this->repo->org->find($toOrgId);
+                $existingFeatureNames =$toOrg->getEnabledFeatures();
 
-                $insertFeaturesData = collect($featureNames)
+                $insertFeaturesData = collect($orgFeatures)
                     ->diff($existingFeatureNames)
                     ->map(function ($featureName) {
-                        return [
-                            'name' => $featureName,
-                        ];
+                        return $featureName;
                     })
+                    ->values()
                     ->toArray();
 
                 // Throw exception if there are no new features to insert
@@ -1341,10 +1338,8 @@ class Service extends Base\Service
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_NO_NEW_FEATURES);
                 }
 
-                $colors = $insertFeaturesData;
-
                 $enableFeatures = [
-                    "names"       => $colors,
+                    "names"       => $insertFeaturesData,
                     "entity_type" => "org",
                     "should_sync" => "1",
                     "entity_id"   => $toOrgId,

@@ -72,10 +72,11 @@ class Validator extends Base\Validator
         $core = new Core();
         $allFeatureMap = $core->getFeatureValueMap(null);
         $allFeatures = array_keys($allFeatureMap);
+        $routeName = app('api.route')->getCurrentRouteName();
 
         array_push($allFeatures,Constants::PG_LEDGER_REVERSE_SHADOW );
 
-        if (in_array($value, $allFeatures) === false)
+        if (in_array($value, $allFeatures) === false && $routeName !== 'admin_org_replications')
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid feature',
@@ -318,6 +319,7 @@ class Validator extends Base\Validator
     public function validateFeatureNames(array $featureNames)
     {
         $core = new Core();
+
         $allFeatureMap = $core->getFeatureValueMap();
         $allFeatures = array_keys($allFeatureMap);
 
