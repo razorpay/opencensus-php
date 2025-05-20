@@ -146,6 +146,7 @@ class ApiRequestAny
         'admin_dashboard/tags',
         'dashboard/blocks',
         'engage',
+        'admin/store_management_service',
         'dcs',
         'admin/offers',
         'admin/usage-limits',

@@ -22,4 +22,5 @@ const BillsView = (): React.ReactElement => {
   );
 };
 
+
 export default BillsView;
