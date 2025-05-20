@@ -2822,27 +2822,6 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
-      routesToMatch: ['/payments-and-refunds-settings/*'],
-      abExperiments: [
-        {
-          uniqueHashKey: 'pre_fund_withdrawal',
-          experimentId: {
-            beta: 'PHuJNVsGEvWf8Y',
-            production: 'PHv47klOrKceo8',
-          },
-          defaultVariant: {
-            name: 'variables',
-            variables: [
-              {
-                key: 'result',
-                value: 'off',
-              },
-            ],
-          },
-        },
-      ],
-    },
-    {
       routesToMatch: ['/onboarding/api-keys'],
       abExperiments: [
         {

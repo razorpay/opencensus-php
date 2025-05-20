@@ -3,8 +3,6 @@ import { Box, Button } from '@razorpay/blade/components';
 import WithdrawCredit from './WithdrawCredit';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { useState } from 'react';
-import { useSplitzService } from 'common/splitz';
-import { isExperimentEnabled } from 'common/splitz/utils';
 import { useStore } from '@federated/apps/shell/commonStore';
 
 interface WithdrawButtonProps {
@@ -28,14 +26,7 @@ function WithdrawButton({ title, type, credits, submitHandler }: WithdrawButtonP
     setOpen(false);
   };
 
-  const {
-    abExperiments: { pre_fund_withdrawal },
-  } = useSplitzService();
-
-  const isPrefundWithdrawalEnabled = isExperimentEnabled(pre_fund_withdrawal);
-
-  const showWithdrawButton =
-    isPrefundWithdrawalEnabled && user.isPgLegderReverseShadowEnabled && user.isCountryIndia;
+  const showWithdrawButton = user.isPgLegderReverseShadowEnabled && user.isCountryIndia;
   return (
     <>
       {showWithdrawButton ? (
