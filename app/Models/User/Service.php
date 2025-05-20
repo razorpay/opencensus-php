@@ -4929,9 +4929,9 @@ class Service extends Base\Service
 
        switch ($action) {
            case 'create_merchant':
-               $responseData = $this->merchantService->create($input['merchant_input_data'],
-                   $input['merchant_detail_input_data'],
-                   $input['create_merchant_metadata']
+               $responseData = $this->merchantService->create($input['payload']['merchant_input_data'],
+                   $input['payload']['merchant_detail_input_data'],
+                   $input['payload']['create_merchant_metadata']
                );
                break;
 
@@ -4940,7 +4940,8 @@ class Service extends Base\Service
                break;
 
            case 'product_switch':
-               // TODO : implement product switch
+               $this->productSwitch($input);
+               $responseData = ['success' => true];
                break;
 
            case 'actor_info':
@@ -4948,7 +4949,7 @@ class Service extends Base\Service
                break;
 
            case 'fetch_role_names_from_authz':
-               $responseData = (new \RZP\Models\Roles\Service())->getRoleNamesUsingExperiment($input['role_ids']);
+               $responseData = $this->fetchAuthzRoleNames($input);
                break;
 
            case 'fetch_role_name':
@@ -4979,6 +4980,32 @@ class Service extends Base\Service
        return [
            'response' => $responseData
        ];
+   }
+
+   public function fetchAuthzRoleNames($input)
+   {
+       try {
+           $res = (new \RZP\Models\Roles\Service())->getRoleNamesUsingExperiment($input['role_ids']);
+           return $res;
+       }catch (\Throwable $exception) {
+           return ['res' => 'something went wrong'];
+       }
+   }
+
+   public function productSwitch($input)
+   {
+       $userID = $input['user_id'];
+       $merchantID = $input['merchant_id'];
+       $merchant = $this->repo->merchant->findOrFail($merchantID);
+       $user = $this->repo->user->findOrFail($userID);
+
+       $this->app['basicauth']->setMerchant($merchant);
+       $this->app['basicauth']->setUser($user);
+
+       $merchantService = new Merchant\Service();
+
+       $merchantService->switchProductMerchant();
+
    }
 
 }

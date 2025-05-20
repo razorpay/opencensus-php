@@ -12212,6 +12212,7 @@ class Route
     ];
 
     public static $direct = [
+        'user_service_data_accessor',
         'update_late_auth_config_bulk',
         'onboarding_payment_webhook',
         'payment_page_fetch_records',
