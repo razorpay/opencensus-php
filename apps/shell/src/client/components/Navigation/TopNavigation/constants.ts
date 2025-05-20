@@ -4,6 +4,7 @@ import {
   AwardIcon,
   BankIcon,
   BillIcon,
+  CompanyRegistrationIcon,
   HomeIcon,
   RazorpayXIcon,
   RazorpayxPayrollIcon,
@@ -22,4 +23,5 @@ export const PRODUCT_ICON_MAP = {
   AwardIcon,
   ArrowUpRightIcon,
   HomeIcon,
+  CompanyRegistrationIcon,
 };

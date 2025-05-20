@@ -2,7 +2,12 @@ import { useQuery } from '@tanstack/react-query';
 import { useStore } from '@federated/apps/shell/commonStore';
 import { fetchUCS } from '@federated/apps/shell/rest-fetch';
 import { getProducts } from './utils';
-import { homeFallbackData, paymentsFallbackData, partnerFallbackData } from './constants';
+import {
+  homeFallbackData,
+  paymentsFallbackData,
+  partnerFallbackData,
+  companyRegistrationFallbackData,
+} from './constants';
 import errorService from '@razorpay/universe-cli/errorService';
 import { DASHBOARD_TEAMS } from '@libs/shared-types';
 import { DASHBOARD_PRIORITY_RANKS } from '@libs/shared-types';
@@ -51,22 +56,26 @@ export const useTopNavigationData = () => {
   const getFallbackData = ({
     isOneHomeEnabled,
     isPartner,
+    isCompanyRegistrationTopNavEnabled,
   }: {
     isOneHomeEnabled: boolean;
     isPartner: boolean;
+    isCompanyRegistrationTopNavEnabled: boolean;
   }) => {
     return {
       components: [
         ...(isOneHomeEnabled ? [homeFallbackData] : []),
         paymentsFallbackData,
+        ...(isCompanyRegistrationTopNavEnabled ? [companyRegistrationFallbackData] : []),
         ...(isPartner ? [partnerFallbackData] : []),
       ],
     };
   };
 
   const fallbackData = getFallbackData({
-    isOneHomeEnabled: window.IS_ONE_HOME_ENABLED,
+    isOneHomeEnabled: Boolean(window?.IS_ONE_HOME_ENABLED),
     isPartner: Boolean(user?.partner_type),
+    isCompanyRegistrationTopNavEnabled: Boolean(window?.IS_COMPANY_REGISTRATION_TOP_NAV_ENABLED),
   });
 
   const products = getProducts({ data: isError ? fallbackData : actualData });

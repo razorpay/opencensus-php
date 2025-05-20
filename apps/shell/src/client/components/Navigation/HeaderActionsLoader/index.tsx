@@ -97,6 +97,7 @@ const HomeActions = React.lazy(
 
 const PaymentsTopNavActions = withTopNavActions(PaymentsAndPartnersActions);
 const PartnersTopNavActions = withTopNavActions(PaymentsAndPartnersActions);
+const CompanyRegistrationTopNavActions = withTopNavActions(PaymentsAndPartnersActions);
 const BankingTopNavActions = withTopNavActions(BankingActions);
 const HomeTopNavActions = withTopNavActions(HomeActions);
 
@@ -105,8 +106,13 @@ type HeaderActionsLoaderProps = {
 };
 
 export const HeaderActionsLoader = (props: HeaderActionsLoaderProps): JSX.Element | null => {
-  const { isPaymentsActive, isBankingActive, isPartnersActive, isHomeActive } =
-    useGetActiveProduct();
+  const {
+    isPaymentsActive,
+    isBankingActive,
+    isPartnersActive,
+    isHomeActive,
+    isCompanyRegistrationActive,
+  } = useGetActiveProduct();
   const { products } = useConnectedNavigationStore();
 
   const actionType = products?.selectedProduct?.selectAction?.actionType;
@@ -130,6 +136,8 @@ export const HeaderActionsLoader = (props: HeaderActionsLoaderProps): JSX.Elemen
       return <PartnersTopNavActions {...props} />;
     case isHomeActive:
       return <HomeTopNavActions {...props} />;
+    case isCompanyRegistrationActive:
+      return <CompanyRegistrationTopNavActions {...props} />;
     default:
       return null;
   }

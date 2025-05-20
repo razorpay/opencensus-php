@@ -167,3 +167,55 @@ export const partnerFallbackData = {
   },
   styles: null,
 };
+
+export const companyRegistrationFallbackData = {
+  id: '26',
+  type: 'top_navigation_item',
+  title: 'Company Registration',
+  description: "India's most comprehensive company registration program",
+  actions: [],
+  inputs: [],
+  components: [
+    {
+      id: '261',
+      type: 'navigate',
+      title: '',
+      actions: [
+        {
+          title: '',
+          action: '',
+          type: '',
+          icon: '',
+          icon_position: '',
+          action_params: {
+            path: '/company-registration',
+          },
+        },
+      ],
+      inputs: [],
+      components: [],
+      alias: 'company_registration_navigate',
+      analytics: {
+        enabled: true,
+      },
+      styles: null,
+    },
+  ],
+  data: {
+    navigation_data: {
+      default_item: false,
+      icon: 'CompanyRegistrationIcon',
+    },
+  },
+  alias: 'company_registration_top_navigation_item',
+  analytics: {
+    enabled: true,
+  },
+  metadata: {
+    splitz: ['Pv8UjdeuiMElZL'],
+    transformations: {},
+    tags: [],
+    product_id: '',
+  },
+  styles: null,
+};

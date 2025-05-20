@@ -131,4 +131,24 @@ export const shellSplitzConfig: VariantConfigArgs[] = [
     uniqueHashKey: 'bill_me_enabled',
     evaluater: (variables) => variables?.['result'] === 'on',
   },
+  {
+    defaultVariant: {
+      name: 'variables',
+      variables: [
+        {
+          key: 'enable',
+          value: 'off',
+        },
+      ],
+    },
+    experimentId: {
+      stage: 'Pv8XZi0GU7VXHR',
+      beta: 'Pv8XZi0GU7VXHR',
+      devstack: 'Pv8XZi0GU7VXHR',
+      production: 'Pv8UjdeuiMElZL',
+      canary: 'Pv8UjdeuiMElZL',
+    },
+    uniqueHashKey: 'company_registration_top_nav_enabled',
+    evaluater: (variables) => variables?.['enable'] === 'on',
+  },
 ];

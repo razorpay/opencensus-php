@@ -6,3 +6,10 @@ export const isOneHomeExperimentEnabled = () => {
   }
   return false;
 };
+
+export const isCompanyRegistrationExperimentEnabled = () => {
+  if (isBrowser()) {
+    return window?.IS_COMPANY_REGISTRATION_TOP_NAV_ENABLED;
+  }
+  return false;
+};

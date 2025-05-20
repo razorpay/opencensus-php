@@ -1,7 +1,7 @@
 import { matchPath } from 'react-router-dom';
 import { PRODUCT_PATH_MAP, PRODUCT_ALIAS_MAP } from './constants';
 import { isPaymentsPath } from '@libs/shared-utils';
-import { isOneHomeExperimentEnabled } from '../utils';
+import { isOneHomeExperimentEnabled, isCompanyRegistrationExperimentEnabled } from '../utils';
 /**
  * Checks if a specific product path is active based on the current path
  * @param params - An object containing productAlias and currentPath
@@ -13,13 +13,22 @@ type ProductPathParams = {
   currentPath: string;
 };
 
+// Define a Record type for the product path map to allow indexing with string keys
+type ProductPathMapType = Record<string, string>;
+
 export const isProductPathActive = ({ productAlias, currentPath }: ProductPathParams): boolean => {
-  const productPathMap = { ...PRODUCT_PATH_MAP };
+  const productPathMap: ProductPathMapType = { ...PRODUCT_PATH_MAP };
   const isOneHomeEnabled = isOneHomeExperimentEnabled();
+  const isCompanyRegistrationEnabled = isCompanyRegistrationExperimentEnabled();
 
   // If one home is not enabled, remove the home path from the product path map because payments will be the default in that case
   if (!isOneHomeEnabled) {
     delete productPathMap[PRODUCT_ALIAS_MAP.HOME];
+  }
+
+  // If company registration is not enabled, remove it from the product path map
+  if (!isCompanyRegistrationEnabled) {
+    delete productPathMap[PRODUCT_ALIAS_MAP.COMPANY_REGISTRATION];
   }
 
   // For payments, make it the default if no other product matches
@@ -40,7 +49,6 @@ export const isProductPathActive = ({ productAlias, currentPath }: ProductPathPa
   }
 
   // For other products, use the path mapping
-
   const productPath = productPathMap[productAlias];
 
   if (!productPath) {
