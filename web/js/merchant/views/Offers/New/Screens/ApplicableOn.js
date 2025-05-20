@@ -129,6 +129,8 @@ class ApplicableOn extends React.Component {
       this.resetGranularOffers();
     }
 
+    this.handleFormChange('issuer', undefined);
+
     if (!getIsMultiPaymentMethodExperimentEnabled(this.props.splitz)) {
       this.handleFormChange(name, values);
       return;
