@@ -17,6 +17,10 @@ import {
 } from 'merchant/views/CustomerTrust/constants';
 import { handleInterestedClick } from 'merchant/views/CustomerTrust/utils/helpers';
 import { OnboardingStatus, SetOnboardingStatus } from 'merchant/views/CustomerTrust/types';
+import {
+  trackBpLearnMoreClick,
+  trackBpSetupNowClick,
+} from 'merchant/views/CustomerTrust/analytics';
 
 const LandingPage = ({
   onboardingStatus,
@@ -34,9 +38,15 @@ const LandingPage = ({
   const handlePrimaryButtonClick = () => {
     if (showSelfServeOnboarding) {
       setOnboardingStatus('in-progress');
+      trackBpSetupNowClick();
     } else {
       handleInterestedClick(onboardingStatus, setOnboardingStatus, show);
     }
+  };
+
+  const handleLearnMoreClick = () => {
+    trackBpLearnMoreClick();
+    window.open(BUYER_PROTECT_BLOG, '_blank', 'noopener noreferrer');
   };
 
   return (
@@ -98,12 +108,7 @@ const LandingPage = ({
         </Box>
         <Box display="flex" gap="spacing.3">
           <Box flex="1">
-            <Button
-              variant="secondary"
-              size="medium"
-              isFullWidth
-              onClick={() => window.open(BUYER_PROTECT_BLOG, '_blank', 'noopener noreferrer')}
-            >
+            <Button variant="secondary" size="medium" isFullWidth onClick={handleLearnMoreClick}>
               Learn more
             </Button>
           </Box>

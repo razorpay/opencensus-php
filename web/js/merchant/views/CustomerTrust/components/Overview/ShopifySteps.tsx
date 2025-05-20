@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import {
   ArrowUpRightIcon,
@@ -12,7 +12,12 @@ import {
   ModalBody,
 } from '@razorpay/blade/components';
 import VIDEO_THUMBNAIL from './thumbnail.png';
-import { BUYER_PROTECT_SHOPIFY_INTEGRATION_GUIDE } from '../../constants';
+import { BUYER_PROTECT_SHOPIFY_INTEGRATION_GUIDE } from 'merchant/views/CustomerTrust/constants';
+import {
+  trackBpStartSetupClick,
+  trackBpVideoClick,
+  trackBpVideoModalView,
+} from 'merchant/views/CustomerTrust/analytics';
 
 const MarkerContainer = styled.div`
   height: 20px;
@@ -36,6 +41,22 @@ const Marker = ({ number }: { number: number }) => {
 
 export const ShopifySteps = () => {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+
+  const handleStartSetupClick = () => {
+    window.open(BUYER_PROTECT_SHOPIFY_INTEGRATION_GUIDE, '_blank');
+    trackBpStartSetupClick();
+  };
+
+  const handleVideoClick = () => {
+    setIsVideoModalOpen(true);
+    trackBpVideoClick();
+  };
+
+  useEffect(() => {
+    if (isVideoModalOpen) {
+      trackBpVideoModalView();
+    }
+  }, [isVideoModalOpen]);
 
   return (
     <>
@@ -114,9 +135,7 @@ export const ShopifySteps = () => {
               variant="primary"
               icon={ArrowUpRightIcon}
               iconPosition="right"
-              onClick={() => {
-                window.open(BUYER_PROTECT_SHOPIFY_INTEGRATION_GUIDE, '_blank');
-              }}
+              onClick={handleStartSetupClick}
             >
               Start set up
             </Button>
@@ -137,7 +156,7 @@ export const ShopifySteps = () => {
           }}
         >
           <div
-            onClick={() => setIsVideoModalOpen(true)}
+            onClick={handleVideoClick}
             style={{
               cursor: 'pointer',
               width: '100%',

@@ -14,7 +14,12 @@ import {
   ModalFooter,
   Button,
 } from '@razorpay/blade/components';
-import { OnboardingStatus } from '../../types';
+import { OnboardingStatus } from 'merchant/views/CustomerTrust/types';
+import {
+  trackBpDeactivateBuyerProtectionClick,
+  trackBpMenuOpen,
+  trackBpContactSupportClick,
+} from 'merchant/views/CustomerTrust/analytics';
 
 export const ActivationStatus = ({ onboardingStatus }: { onboardingStatus: OnboardingStatus }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -22,6 +27,17 @@ export const ActivationStatus = ({ onboardingStatus }: { onboardingStatus: Onboa
 
   const handleCloseModal = () => {
     setIsDeactivateModalOpen(false);
+  };
+
+  const handleDeactivateBuyerProtectionClick = () => {
+    setIsMenuOpen(false);
+    setIsDeactivateModalOpen(true);
+    trackBpDeactivateBuyerProtectionClick();
+  };
+
+  const handleContactSupportClick = () => {
+    setIsMenuOpen(false);
+    trackBpContactSupportClick();
   };
 
   return (
@@ -79,6 +95,7 @@ export const ActivationStatus = ({ onboardingStatus }: { onboardingStatus: Onboa
               isOpen={isMenuOpen}
               onOpenChange={({ isOpen: value }) => {
                 setIsMenuOpen(value);
+                trackBpMenuOpen(value);
               }}
             >
               <IconButton
@@ -92,12 +109,9 @@ export const ActivationStatus = ({ onboardingStatus }: { onboardingStatus: Onboa
               <MenuOverlay>
                 <MenuItem
                   title="Deactivate Buyer Protection"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    setIsDeactivateModalOpen(true);
-                  }}
+                  onClick={handleDeactivateBuyerProtectionClick}
                 />
-                <MenuItem title="Contact support" />
+                <MenuItem title="Contact support" onClick={handleContactSupportClick} />
               </MenuOverlay>
             </Menu>
           )}

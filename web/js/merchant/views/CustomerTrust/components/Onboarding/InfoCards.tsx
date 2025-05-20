@@ -9,8 +9,9 @@ import {
   type IconProps,
 } from '@razorpay/blade/components';
 import styled from 'styled-components';
-import { BUYER_PROTECT_BLOG } from '../../constants';
-import { OnboardingCategory } from '../../types';
+import { BUYER_PROTECT_BLOG } from 'merchant/views/CustomerTrust/constants';
+import { OnboardingCategory } from 'merchant/views/CustomerTrust/types';
+import { trackBpKnowMoreClick } from 'merchant/views/CustomerTrust/analytics';
 
 const InfoCardContainer = styled.div`
   background-color: #fff;
@@ -68,6 +69,11 @@ export const InfoCards = ({
     return Number.isInteger(value) ? value.toString() : value.toFixed(2);
   };
 
+  const handleKnowMoreClick = () => {
+    trackBpKnowMoreClick();
+    window.open(BUYER_PROTECT_BLOG, '_blank');
+  };
+
   return (
     <CardsContainer>
       <Box
@@ -88,14 +94,7 @@ export const InfoCards = ({
             <Text weight="semibold" color="surface.text.gray.subtle">
               What You Need to Know About Buyer Protection
             </Text>
-            <Link
-              variant="anchor"
-              color="primary"
-              size="medium"
-              onClick={() => {
-                window.open(BUYER_PROTECT_BLOG, '_blank');
-              }}
-            >
+            <Link variant="anchor" color="primary" size="medium" onClick={handleKnowMoreClick}>
               Know more
             </Link>
           </Box>

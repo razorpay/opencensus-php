@@ -1,7 +1,13 @@
 import React from 'react';
 import { Alert, InfoIcon } from '@razorpay/blade/components';
+import { trackBpMailClick } from 'merchant/views/CustomerTrust/analytics';
 
 export const HelpBanner = () => {
+  const handleWriteMailClick = () => {
+    window.open('mailto:magicsales@razorpay.com', '_blank');
+    trackBpMailClick();
+  };
+
   return (
     <Alert
       isFullWidth={true}
@@ -12,9 +18,7 @@ export const HelpBanner = () => {
       actions={{
         primary: {
           text: 'Write an email',
-          onClick: () => {
-            window.open('mailto:magicsales@razorpay.com', '_blank');
-          },
+          onClick: handleWriteMailClick,
         },
       }}
     />

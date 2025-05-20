@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Text, Box, Link, Button, Alert, InfoIcon } from '@razorpay/blade/components';
 import { Header } from 'merchant/views/CustomerTrust/components/Header';
@@ -7,6 +7,10 @@ import { TnCModal } from './TnCModal';
 import { createOnboardingConsentApi } from '../../utils/api';
 import { FetchOnboardingResponse, OnboardingCategory, SetOnboardingStatus } from '../../types';
 import MONEY_BACK_PROMISE_IMAGE from './demo.svg';
+import {
+  trackBpInfoPageView,
+  trackBpTermsConditionsLinkClick,
+} from 'merchant/views/CustomerTrust/analytics';
 
 const MainContainer = styled.div`
   background-color: #fff;
@@ -47,6 +51,10 @@ export const Onboarding = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    trackBpInfoPageView();
+  }, []);
+
   const handleActivateNow = async () => {
     setIsLoading(true);
     try {
@@ -61,6 +69,11 @@ export const Onboarding = ({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleTermsConditionsLinkClick = () => {
+    trackBpTermsConditionsLinkClick();
+    setIsOpen(true);
   };
 
   return (
@@ -99,7 +112,7 @@ export const Onboarding = ({
               <Text size="small" color="surface.text.gray.muted">
                 By clicking "Activate Now", you agree to our
               </Text>
-              <Link size="small" variant="button" onClick={() => setIsOpen(true)}>
+              <Link size="small" variant="button" onClick={handleTermsConditionsLinkClick}>
                 Terms and Conditions.
               </Link>
             </Box>

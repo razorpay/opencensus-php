@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Button,
@@ -9,6 +9,10 @@ import {
   Text,
   Link,
 } from '@razorpay/blade/components';
+import {
+  trackBpAgreeActivateClick,
+  trackBpTermsModalView,
+} from 'merchant/views/CustomerTrust/analytics';
 
 export const TnCModal = ({
   isOpen,
@@ -21,6 +25,17 @@ export const TnCModal = ({
   handleActivateNow: () => void;
   isLoading: boolean;
 }) => {
+  useEffect(() => {
+    if (isOpen) {
+      trackBpTermsModalView();
+    }
+  }, [isOpen]);
+
+  const handleAgreeAndActivateClick = () => {
+    trackBpAgreeActivateClick();
+    handleActivateNow();
+  };
+
   return (
     <Modal size="medium" isOpen={isOpen} onDismiss={() => setIsOpen(false)}>
       <ModalHeader
@@ -101,7 +116,7 @@ export const TnCModal = ({
       </ModalBody>
       <ModalFooter>
         <Box display="flex" justifyContent="flex-end" width="100%">
-          <Button isLoading={isLoading} onClick={handleActivateNow}>
+          <Button isLoading={isLoading} onClick={handleAgreeAndActivateClick}>
             Agree and activate
           </Button>
         </Box>

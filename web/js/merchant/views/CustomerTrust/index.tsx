@@ -7,6 +7,7 @@ import { FetchOnboardingResponse, OnboardingStatus } from 'merchant/views/Custom
 import { Box, Spinner, ToastContainer, useToast } from '@razorpay/blade/components';
 import { Onboarding } from 'merchant/views/CustomerTrust/components/Onboarding';
 import { Overview } from 'merchant/views/CustomerTrust/components/Overview';
+import { trackBpLandingPageView } from './analytics';
 
 const CustomerTrust = ({ user }: { user: any }) => {
   const { show } = useToast();
@@ -47,6 +48,8 @@ const CustomerTrust = ({ user }: { user: any }) => {
       }
     }
     checkOnboardingStatus();
+
+    trackBpLandingPageView();
   }, []);
 
   const setOnboardingStatus = (status: OnboardingStatus) => {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { Box } from '@razorpay/blade/components';
 import { Header } from 'merchant/views/CustomerTrust/components/Header';
@@ -6,6 +6,7 @@ import { ActivationStatus } from './ActivationStatus';
 import { IntegrationSteps } from './IntegrationSteps';
 import { HelpBanner } from './HelpBanner';
 import { OnboardingStatus } from '../../types';
+import { trackBpSetupPlatformPageView } from 'merchant/views/CustomerTrust/analytics';
 
 const MainContainer = styled.div`
   background-color: #fff;
@@ -14,6 +15,10 @@ const MainContainer = styled.div`
 `;
 
 export const Overview = ({ onboardingStatus }: { onboardingStatus: OnboardingStatus }) => {
+  useEffect(() => {
+    trackBpSetupPlatformPageView();
+  }, []);
+
   return (
     <>
       <MainContainer>

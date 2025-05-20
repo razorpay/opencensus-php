@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Card,
   CardHeader,
@@ -12,9 +12,27 @@ import {
 import { RadioBlock } from './RadioBlock';
 import { ShopifySteps } from './ShopifySteps';
 import { BUYER_PROTECT_SHOPIFY_INTEGRATION_GUIDE } from 'merchant/views/CustomerTrust/constants';
+import {
+  trackBpPlatformSelectOtherClick,
+  trackBpPlatformSelectShopifyClick,
+  trackBpViewIntegrationStepsClick,
+} from 'merchant/views/CustomerTrust/analytics';
 
 export const IntegrationSteps = () => {
   const [selectedPlatform, setSelectedPlatform] = useState<'shopify' | 'non-shopify'>('shopify');
+
+  useEffect(() => {
+    if (selectedPlatform === 'shopify') {
+      trackBpPlatformSelectShopifyClick();
+    } else {
+      trackBpPlatformSelectOtherClick();
+    }
+  }, [selectedPlatform]);
+
+  const handleViewIntegrationStepsClick = () => {
+    window.open(BUYER_PROTECT_SHOPIFY_INTEGRATION_GUIDE, '_blank');
+    trackBpViewIntegrationStepsClick();
+  };
 
   const renderContent = () => {
     if (selectedPlatform === 'non-shopify') {
@@ -45,9 +63,7 @@ export const IntegrationSteps = () => {
               variant="primary"
               icon={ArrowUpRightIcon}
               iconPosition="right"
-              onClick={() => {
-                window.open(BUYER_PROTECT_SHOPIFY_INTEGRATION_GUIDE, '_blank');
-              }}
+              onClick={handleViewIntegrationStepsClick}
             >
               View integration steps
             </Button>
