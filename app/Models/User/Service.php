@@ -1596,7 +1596,13 @@ class Service extends Base\Service
         return $existingDetails;
     }
 
-
+    /**
+     * Pushes the SUBMERCHANT_SIGNUP event to Segment.
+     *
+     * @param Merchant\Entity $partnerMerchant The partner merchant entity.
+     * @param string          $subMerchantId   The ID of the sub-merchant.
+     * @param string          $referralCode    The referral code used.
+     */
     public function processReferralCode(string $merchantId, string $referralCode, bool $withRetry = true): array
     {
         try
@@ -1628,12 +1634,13 @@ class Service extends Base\Service
             $merchant = $this->repo->merchant->findOrFail($merchantId);
 
             if ($withRetry) {
-                $detailService->applyReferralPartnerWithRetry($merchant, $referralInput, false);
+                $detailService->applyReferralPartnerWithRetry($merchant, $referralInput, true);
             } else {
-                $detailService->applyReferralPartner($merchant, $referralInput, false);
+                $detailService->applyReferralPartner($merchant, $referralInput, true);
             }
 
             $this->trace->count(Merchant\Metric::SUBMERCHANT_SIGNUP_LINKING_SUCCESS_TOTAL);
+
             return $referralInput;
         }
         catch (\Exception $e)

@@ -7,6 +7,7 @@ use Config;
 use DateTime;
 use DOMDocument;
 use Lib\PhoneBook;
+use Razorpay\Trace\Logger;
 use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Services\KafkaProducer;
@@ -3237,7 +3238,8 @@ class Service extends Base\Service
             $mappingInput = [
                 'partner_id'     => $partnerId,
                 'source'         => PartnerConstants::REFERRAL,
-                'actual_product' => $actualReferralProduct ?? $referralProduct ?? Product::PRIMARY
+                'actual_product' => $actualReferralProduct ?? $referralProduct ?? Product::PRIMARY,
+                'referral_code'  => $input['referral_code']
             ];
 
             $this->applyPartnerSubMerchantMapping($subMerchant, $mappingInput, $referralProduct, $isSignUpFlow);
@@ -3365,7 +3367,12 @@ class Service extends Base\Service
         ];
 
         $merchantCore = new Merchant\Core;
-
+        $signUpSegmentProperties = [
+            'merchant_id' => $subMerchant->getId(),
+            'referral_code'  => $input['referral_code'],
+        ];
+        $this->app['segment-analytics']->pushTrackEvent($partner, $signUpSegmentProperties, SegmentEvent::SUBMERCHANT_SIGNUP);
+        $this->pushTotalSubmerchantSignUpCountToSegment($partner);
         $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
                                                  $partner, null,
                                                  $data);
@@ -3382,6 +3389,33 @@ class Service extends Base\Service
 
         $merchantCore->sendPartnerLeadInfoToSalesforce($subMerchant->getId(), $partner->getId(), $product);
     }
+
+
+    private function pushTotalSubmerchantSignUpCountToSegment($partner): void
+    {
+        try
+        {
+            $submerchantCount=$this->repo->merchant_access_map->getSubmerchantCount($partner->getId());
+            $segmentProperties=[
+                "total_submerchant_signed_up" => $submerchantCount
+            ];
+            $this->trace->info(TraceCode::SUBMERCHANT_SIGN_UP_COUNT,[
+                'partner_id' => $partner->getId(),
+                'submerchant_count' => $submerchantCount
+            ]);
+            $this->app['segment-analytics']->pushIdentifyEvent($partner,$segmentProperties);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->info(TraceCode::TOTAL_SUBMERCHANT_SIGNUP_EVENT_DISPATCH_FAILURE,[
+                'partnerId'=>$partner->getId()
+            ]);
+            $this->trace->traceException($exception,Logger::ERROR,TraceCode::TOTAL_SUBMERCHANT_SIGNUP_EVENT_DISPATCH_FAILURE,[
+                'partnerId'=>$partner->getId()
+            ]);
+        }
+    }
+
 
     /**
      * This function is used to get zapier data for activation

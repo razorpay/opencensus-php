@@ -4603,6 +4603,8 @@ class Core extends Base\Core
         $properties = [
             'merchant_id'         => $partner->getId(),
             'is_managed_account'  => false,
+            'is_partner'           => true,
+            'partner_type'         => $partnerType,
         ];
 
         $this->app['segment-analytics']->pushIdentifyEvent(
@@ -6069,7 +6071,7 @@ class Core extends Base\Core
      * @param Entity $submerchant
      * @param null $appType
      */
-    protected function assignSubmerchantDashboardAccessIfApplicable(Entity $partner, Entity $submerchant, $appType = null, string $role = null)
+    public function assignSubmerchantDashboardAccessIfApplicable(Entity $partner, Entity $submerchant, $appType = null, string $role = null)
     {
         if ($partner->allowSubmerchantDashboardAccess($appType) === false)
         {
@@ -9564,7 +9566,7 @@ class Core extends Base\Core
         {
             return false;
         }
-        
+
         if ($merchant->isTagAddedBasedOnPrefix(Constants::POS_PARTNERSHIP_TAG_PREFIX) === false)
         {
             return false;

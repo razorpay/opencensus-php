@@ -11,6 +11,8 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Constants\Product;
+use RZP\Models\User\Role;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Error\PublicErrorDescription;
@@ -120,8 +122,10 @@ class Core extends Base\Core
 
         $viewPayload['merchant'] = $merchant->toArray();
         $viewPayload['partner']  = $partner->toArray();
-        $viewPayload['approve_url'] = $websiteUrl. '/submerchant-kyc-access-request/?' . http_build_query(array('entity_id' => $kycAccess->getEntityId(), 'approve_token' => $kycAccess->getApprovedToken(), 'partner_id' => $kycAccess->getPartnerId()));
-        $viewPayload['reject_url'] = $websiteUrl. '/submerchant-kyc-access-request/?' . http_build_query(array('entity_id' => $kycAccess->getEntityId(), 'reject_token' => $kycAccess->getRejectToken(), 'partner_id' => $kycAccess->getPartnerId()));
+        
+        $urls = $this->getApproveRejectUrls($websiteUrl, $kycAccess, $partner);
+        $viewPayload['approve_url'] = $urls['approve_url'];
+        $viewPayload['reject_url'] = $urls['reject_url'];
 
         try
         {
@@ -148,6 +152,52 @@ class Core extends Base\Core
      * @param Entity $kycAccess
      *
      */
+
+
+     protected function getMkycAccessUrl($websiteUrl,$requestData) {
+        $encoded = base64_encode($requestData);
+        $newMkycAccessUrl = $websiteUrl . '/partner/kyc-access/#request_data=' . $encoded;
+        return $newMkycAccessUrl;
+    }
+
+    protected function isPartnerMkycAccessExperimentEnabled($partner): bool
+    {
+        $expId = $this->app['config']->get('app.mkyc_reseller_experiment_id');
+        if ($partner->getPartnerType() === MerchantConstants::AGGREGATOR)
+        {
+            $expId = $this->app['config']->get('app.mkyc_aggregator_experiment_id');
+        }
+        $properties = [
+            'id'            => $partner->getId(),
+            'experiment_id' => $expId,
+        ];
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    protected function getApproveRejectUrls($websiteUrl, $kycAccess, $partner)
+    {
+        $approveUrl = $websiteUrl. '/submerchant-kyc-access-request/?' . http_build_query(array('entity_id' => $kycAccess->getEntityId(), 'approve_token' => $kycAccess->getApprovedToken(), 'partner_id' => $kycAccess->getPartnerId()));
+        $rejectUrl = $websiteUrl. '/submerchant-kyc-access-request/?' . http_build_query(array('entity_id' => $kycAccess->getEntityId(), 'reject_token' => $kycAccess->getRejectToken(), 'partner_id' => $kycAccess->getPartnerId()));
+        if ($this->isPartnerMkycAccessExperimentEnabled($partner)) {
+            $requestData = [
+                'entity_id' => $kycAccess->getEntityId(),
+                'partner_id' => $kycAccess->getPartnerId(),
+                'partner_type' => $partner->getPartnerType(),
+                'partner_name' => $partner->getName(),
+            ];
+            $approveRequestData = array_merge($requestData, [
+                'approve_token' => $kycAccess->getApprovedToken(),
+            ]);
+            $rejectRequestData = array_merge($requestData, [
+                'reject_token' => $kycAccess->getRejectToken(),
+            ]);
+            $approveUrl = $this->getMkycAccessUrl($websiteUrl, json_encode($approveRequestData));
+            $rejectUrl = $this->getMkycAccessUrl($websiteUrl, json_encode($rejectRequestData));
+        }
+        
+        return ['approve_url' => $approveUrl, 'reject_url' => $rejectUrl];
+    }
+
     protected function sendKycAccessRequestSms(Merchant\Entity $partner, Entity $kycAccess)
     {
         $merchant = $this->repo->merchant->findOrFail($kycAccess->getEntityId());
@@ -157,10 +207,9 @@ class Core extends Base\Core
         $smsPayload['submerchant_name'] = $merchant->getName();
         $smsPayload['partner_name']     = $partner->getName();
 
-        $approveUrl    = $websiteUrl. '/submerchant-kyc-access-request/?' . http_build_query(array('entity_id' => $kycAccess->getEntityId(), 'approve_token' => $kycAccess->getApprovedToken(), 'partner_id' => $kycAccess->getPartnerId()));
-        $rejectUrl     = $websiteUrl. '/submerchant-kyc-access-request/?' . http_build_query(array('entity_id' => $kycAccess->getEntityId(), 'reject_token' => $kycAccess->getRejectToken(), 'partner_id' => $kycAccess->getPartnerId()));
-        $smsPayload['approve_url']      = $this->app['elfin']->shorten($approveUrl);
-        $smsPayload['reject_url']       = $this->app['elfin']->shorten($rejectUrl);
+        $urls = $this->getApproveRejectUrls($websiteUrl, $kycAccess, $partner);
+        $smsPayload['approve_url'] = $this->app['elfin']->shorten($urls['approve_url']);
+        $smsPayload['reject_url'] = $this->app['elfin']->shorten($urls['reject_url']);
 
         try
         {
@@ -464,9 +513,15 @@ class Core extends Base\Core
             {
                 $merchantAccessMapId = $payload['merchant_access_map']['id'] ?? null;
             }
+            $partnerId = $payload['partner_kyc_access_state']['partner_id'];
+            $merchantId = $payload['partner_kyc_access_state']['entity_id'];
+        
+
 
             $this->app['api.mutex']->acquireAndRelease(
-                $resource, function() use ($input, $payload, $kycAccessStateId, $merchantAccessMapId) {
+                $resource, function() use ($input, $payload, $kycAccessStateId, $merchantAccessMapId, $partnerId, $merchantId) {
+                $partner = $this->repo->merchant->findOrFail($partnerId);
+                $subMerchant = $this->repo->merchant->findOrFail($merchantId);
                 $kycAccessState = $this->getPKASEntityByIdForDualWrite($kycAccessStateId, $input[Entity::ID]);
 
                 $isKYCAccessGranted = (isset($payload['merchant_access_map']['has_kyc_access']) && $payload['merchant_access_map']['has_kyc_access']);
@@ -474,7 +529,8 @@ class Core extends Base\Core
 
                 $kycAccessState->fillSelectAttributes($payload['partner_kyc_access_state'], Entity::$prtsFillable);
 
-                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($kycAccessState, $merchantAccessMap) {
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($kycAccessState, $merchantAccessMap, $partner, $subMerchant) {
+                    (new Merchant\Core())->assignSubmerchantDashboardAccessIfApplicable($partner, $subMerchant,  (new MerchantApplications\Core())->getDefaultAppTypeForPartner($partner), Role::OWNER);
                     $this->repo->saveOrFail($kycAccessState);
                     if (isset($merchantAccessMap) === true)
                     {
