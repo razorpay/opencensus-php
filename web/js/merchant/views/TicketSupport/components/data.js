@@ -8,7 +8,7 @@ export const TICKET_STATUS_LABELS = {
   DELAYED: 'Delayed',
   REJECTED: 'Rejected',
   FAILED: 'Failed',
-  ESCALATED: 'Escalated',
+  ESCALATED: 'Priority Review',
 };
 export const statuses = {
   '2': {

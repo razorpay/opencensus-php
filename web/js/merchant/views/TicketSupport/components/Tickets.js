@@ -19,7 +19,6 @@ import {
   isMxTicketEscalationEnabled,
   raiseTicket,
 } from 'merchant/views/TicketSupport/utils';
-import { getResponseExpectedBy } from 'merchant/views/TicketSupport/getResponseExpectedBy';
 
 import FailedScreen from './FailedScreen';
 import TicketBrief from './TicketBrief';
@@ -130,22 +129,19 @@ class Tickets extends React.Component {
     })
       .then((res) => {
         if (res?.data?.isEscalationSuccess) {
-          const { responseBy, prefix, shouldShowEta } = getResponseExpectedBy(ticket, true);
           this.goNext(1, true);
           this.props.fetchTicketsEligibleForEscalation(this.props.user.id, this.props.mode);
           this.props.toast?.show({
-            content: `Your ticket has been escalated for high priority resolution. Our team will get back to you ${
-              shouldShowEta ? `${prefix} ${responseBy}` : 'shortly'
-            }.`,
+            content: `Your ticket has been escalated for high priority resolution. We will get back to you within 1-2 business hours.`,
             color: 'neutral',
-            duration: 2000,
+            duration: 4000,
             autoDismiss: true,
           });
         } else {
           this.props.toast?.show({
             content: 'We are facing some issue at the moment. Please try again later.',
             color: 'negative',
-            duration: 2000,
+            duration: 4000,
             autoDismiss: true,
           });
         }
@@ -155,7 +151,7 @@ class Tickets extends React.Component {
           content:
             err?.errors?.[0] || 'We are facing some issue at the moment. Please try again later.',
           color: 'negative',
-          duration: 2000,
+          duration: 4000,
           autoDismiss: true,
         });
       });

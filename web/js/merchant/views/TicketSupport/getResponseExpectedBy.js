@@ -77,6 +77,14 @@ export const getResponseExpectedBy = (ticket, shortMessage = false) => {
   if (!ticket) return { responseBy: '', prefix: '', shouldShowEta: false };
 
   const isMXEscalated = isTicketMxEscalated(ticket);
+  if (isMXEscalated) {
+    return {
+      responseBy: 'We will get back to you within 1-2 business hours.',
+      prefix: '',
+      shouldShowEta: true,
+    };
+  }
+
   const prefix = shortMessage
     ? 'by'
     : isMXEscalated

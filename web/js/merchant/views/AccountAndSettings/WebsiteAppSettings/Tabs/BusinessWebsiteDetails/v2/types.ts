@@ -163,7 +163,27 @@ export interface WebsiteVerificationPageStatus {
   [WebsitePolicyPages.CONTACT]?: WebsitePolicyPageVerificationStatus;
 }
 
+export enum WebsiteLivenssCheckStatus {
+  liveness_check_failed = 'liveness_check_failed',
+  website_request_creation_failed = 'website_request_creation_failed',
+  website_dns_lookup_failed = 'website_dns_lookup_failed',
+  website_tls_cert_invalid = 'website_tls_cert_invalid',
+  website_connection_refused = 'website_connection_refused',
+  website_too_many_redirects = 'website_too_many_redirects',
+  website_forbidden_access = 'website_forbidden_access',
+  website_unrecognized_tls_name = 'website_unrecognized_tls_name',
+  website_timeout = 'website_timeout',
+  website_connection_reset = 'website_connection_reset',
+  website_network_unreachable = 'website_network_unreachable',
+  website_internal_server_error = 'website_internal_server_error',
+  website_service_unavailable = 'website_service_unavailable',
+  website_not_found = 'website_not_found',
+  website_bad_request = 'website_bad_request',
+  website_unauthorized = 'website_unauthorized',
+}
+
 export interface WebsiteUpdateApiData {
+  liveness_check_status?: WebsiteLivenssCheckStatus;
   current_status?: WebsiteUpdateAutomationStatus;
   current_status_updated_at?: string;
   main_page_url?: string;

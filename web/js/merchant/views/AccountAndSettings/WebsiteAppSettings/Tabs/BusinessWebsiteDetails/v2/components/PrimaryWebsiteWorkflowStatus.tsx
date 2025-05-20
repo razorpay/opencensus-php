@@ -15,7 +15,7 @@ import {
   trackWebsiteRequestStatusBannerLoad,
   trackWebsiteRequestStatusBannerOptionClick,
 } from '../tracking';
-import { BusinessWebsiteWorkflow, WebsiteUpdateApiData } from '../types';
+import { BusinessWebsiteWorkflow, WebsiteLivenssCheckStatus, WebsiteUpdateApiData } from '../types';
 import {
   Status,
   alertCTAText,
@@ -24,6 +24,132 @@ import {
   getWebsiteCount,
   getWebsiteWorkflowStatus,
 } from '../utils';
+
+export const getLivenessError = (
+  status: WebsiteLivenssCheckStatus | undefined,
+  mainPageUrl: string,
+) => {
+  switch (status) {
+    case WebsiteLivenssCheckStatus.liveness_check_failed: {
+      return {
+        title: `The website (${mainPageUrl}) could not be verified at the moment.`,
+        description:
+          "We couldn't verify if your website is currently live. Please ensure it's live and try again.",
+      };
+    }
+    case WebsiteLivenssCheckStatus.website_request_creation_failed: {
+      return {
+        title: `Your website (${mainPageUrl}) verification failed due to a system issue on our end.`,
+        description:
+          'We are facing an internal error while verifying your website. Please try again after sometime.',
+      };
+    }
+    case WebsiteLivenssCheckStatus.website_dns_lookup_failed: {
+      return {
+        title: `We could not access your website domain (${mainPageUrl}).`,
+        description:
+          'Please ensure your website domain is correct and publicly accessible. You can open it on a browser (like Chrome) to confirm.',
+      };
+    }
+    case WebsiteLivenssCheckStatus.website_tls_cert_invalid: {
+      return {
+        title: `Your website's (${mainPageUrl}) security certificate is either invalid or expired.`,
+        description:
+          'Please renew or install a valid SSL/TLS certificate to make your website secure and accessible.',
+      };
+    }
+    case WebsiteLivenssCheckStatus.website_connection_refused: {
+      return {
+        title: `Your website (${mainPageUrl}) is not accepting connections right now.`,
+        description:
+          "Please ensure your server is up and accepting requests. You can check your hosting provider's status or restart your server.",
+      };
+    }
+    case WebsiteLivenssCheckStatus.website_too_many_redirects: {
+      return {
+        title: `Your website (${mainPageUrl}) is redirecting multiple times.`,
+        description:
+          'Please fix any infinite redirects on your homepage or root URL. You can test this by accessing the website in incognito mode or using redirect-checker.org.',
+      };
+    }
+    case WebsiteLivenssCheckStatus.website_forbidden_access: {
+      return {
+        title: `Your website (${mainPageUrl}) is actively blocking our verification request.`,
+        description:
+          "Please allow access to Razorpay's verification servers by updating your firewall or server access rules.",
+      };
+    }
+    case WebsiteLivenssCheckStatus.website_unrecognized_tls_name: {
+      return {
+        title: `The server does not recognise the website domain (${mainPageUrl}) during a secure connection.`,
+        description:
+          'Please ensure that the domain name in your SSL/TLS certificate matches the one you add here. Ensure your server supports SNI (Server Name Indication).',
+      };
+    }
+    case WebsiteLivenssCheckStatus.website_timeout: {
+      return {
+        title: `Your website (${mainPageUrl}) is taking too long to respond.`,
+        description:
+          'Please ensure the website is live and responsive. You can check for hosting issues, high load times or network instability.',
+      };
+    }
+    case WebsiteLivenssCheckStatus.website_connection_reset: {
+      return {
+        title: `Your website (${mainPageUrl}) closed the connection unexpectedly.`,
+        description:
+          'Please check your server logs to identify connection drops. Ensure it accepts external traffic and does not auto-block requests.',
+      };
+    }
+    case WebsiteLivenssCheckStatus.website_network_unreachable: {
+      return {
+        title: `We could not reach your website (${mainPageUrl}) from our network.`,
+        description:
+          'Your website might be behind a restricted firewall or IP block. Please ensure it is publicly accessible from all locations.',
+      };
+    }
+    case WebsiteLivenssCheckStatus.website_internal_server_error: {
+      return {
+        title: `Your website (${mainPageUrl}) is returning an internal server error.`,
+        description:
+          'Please check your hosting/server logs for HTTP 500 errors and resolve any underlying issues.',
+      };
+    }
+    case WebsiteLivenssCheckStatus.website_service_unavailable: {
+      return {
+        title: `Your website (${mainPageUrl}) is temporarily unavailable.`,
+        description:
+          'This is usually due to server overload or maintenance. Please try again once the website is back online.',
+      };
+    }
+    case WebsiteLivenssCheckStatus.website_not_found: {
+      return {
+        title: `Your website (${mainPageUrl}) page was not found.`,
+        description: 'Please verify that the entered URL exists and is available to the public.',
+      };
+    }
+    case WebsiteLivenssCheckStatus.website_bad_request: {
+      return {
+        title: `Your website (${mainPageUrl}) request was malformed.`,
+        description:
+          'Ensure the website URL is correctly formatted (e.g., starts with http:// or https:// and contains a valid domain).',
+      };
+    }
+    case WebsiteLivenssCheckStatus.website_unauthorized: {
+      return {
+        title: `Your website (${mainPageUrl}) requires authentication to view.`,
+        description:
+          'Please provide a publicly accessible URL that does not require a login, OTP or credentials.',
+      };
+    }
+    default: {
+      return {
+        title: `The website (${mainPageUrl}) could not be verified at the moment.`,
+        description:
+          "We couldn't verify that your website is currently live. Please ensure it's live and try again.",
+      };
+    }
+  }
+};
 
 interface PrimaryWebsiteWorkflowStatusProps {
   websiteUpdateData: WebsiteUpdateApiData;
@@ -62,6 +188,7 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const mainPageUrl = websiteUpdateData?.main_page_url ?? '';
+  const livenessCheckStatus = websiteUpdateData?.liveness_check_status ?? '';
   const title = getAlertText({
     status,
     mainPageUrl,
@@ -293,15 +420,20 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
   }
 
   if (status === Status.WebsiteLivenessFailed) {
+    const { title: livenessTitle, description: livenessDescription } = getLivenessError(
+      livenessCheckStatus,
+      mainPageUrl,
+    );
     return (
       <Alert
         color="negative"
         isDismissible={false}
         isFullWidth
-        title={title}
+        title={livenessTitle || title}
         description={
           <Text color="surface.text.gray.subtle" wordBreak="break-word">
-            Please submit your request after the website is fully live and functional.
+            {livenessDescription ||
+              'Please submit your request after the website is fully live and functional.'}
           </Text>
         }
       />

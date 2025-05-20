@@ -23,6 +23,7 @@ const TicketStatus = ({ workflow, ticket, shouldUseBladeBadge = false } = {}) =>
     ].includes(statusLabel) && today > dueDate;
   const status = workflow?.state || statuses[ticket.status];
 
+  let bladeBadgeEmphasis = 'subtle';
   let cssClass = isDelayed
     ? workflowStatusClass[TICKET_STATUS_LABELS.DELAYED]
     : workflowStatusClass[status] || status?.class;
@@ -32,10 +33,11 @@ const TicketStatus = ({ workflow, ticket, shouldUseBladeBadge = false } = {}) =>
   if (isTicketMxEscalated(ticket)) {
     statusLabel = TICKET_STATUS_LABELS.ESCALATED;
     cssClass = 'danger';
+    bladeBadgeEmphasis = 'intense';
   }
 
   return shouldUseBladeBadge ? (
-    <Badge color={cssClassToBadgeVariant[cssClass]} size="medium" emphasis="subtle">
+    <Badge color={cssClassToBadgeVariant[cssClass]} size="medium" emphasis={bladeBadgeEmphasis}>
       {statusLabel}
     </Badge>
   ) : (

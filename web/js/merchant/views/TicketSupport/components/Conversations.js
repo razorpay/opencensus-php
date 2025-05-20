@@ -41,6 +41,8 @@ import {
   PRERECORDED_RESPONSES,
   TICKET_STATUS_LABELS,
 } from './data';
+import { getResponseExpectedBy } from 'merchant/views/TicketSupport/getResponseExpectedBy';
+import { isMxTicketEscalationEnabled } from 'merchant/views/TicketSupport/utils';
 
 const Ticket = lazy(() => import(/* webpackChunkName: 'Ticket' */ './Ticket'));
 
@@ -452,6 +454,8 @@ class Conversations extends React.Component {
     let message;
     const MESSAGE = getResponseArrivalType(ticket, workflow);
     const STATUS = getTicketStatus(ticket, workflow);
+    const { responseBy, prefix, shouldShowEta } = getResponseExpectedBy(ticket);
+    const showResponseBy = shouldShowEta && isMxTicketEscalationEnabled(this.props.splitz);
     const responseFormatTime = moment(
       workflow?.due_date ? parseInt(workflow?.due_date, 10) : ticket.fr_due_by,
     ).format('DD MMM');
@@ -467,7 +471,17 @@ class Conversations extends React.Component {
             <span>You can</span>
             <br />
             <span>
-              expect reply within <b>4-8 working hours</b>.
+              {showResponseBy ? (
+                <>
+                  {prefix}
+                  {prefix ? ' ' : ''}
+                  <b>{responseBy}</b>.
+                </>
+              ) : (
+                <>
+                  expect reply within <b>4-8 working hours</b>.
+                </>
+              )}
             </span>
           </>
         ) : null}
