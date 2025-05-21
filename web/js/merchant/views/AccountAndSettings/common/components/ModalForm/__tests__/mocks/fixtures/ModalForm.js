@@ -7,6 +7,9 @@ export const mockUser = {
   user: {
     email: 'something@gmail.com',
   },
+  merchant: {
+    country_code: 'IN',
+  },
 };
 
 export const onUpdateClick = jest.fn();

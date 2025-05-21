@@ -21,6 +21,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { bindActionCreators } from 'redux';
 import { Store } from 'common/typings';
 import { CountryCodeType } from '@razorpay/i18nify-js';
+import { getUser } from '@apps/shell/src/client/store/commonStore/exposedActions';
 
 type PhoneNumberEvent = {
   phoneNumber: string;
@@ -55,6 +56,8 @@ const ModalForm = ({
   const [isChecked, setIsChecked] = useState(true);
   const [hasValidationError, setHasValidationError] = useState(false);
   const validationState = hasValidationError ? 'error' : 'none';
+
+  const { merchant } = getUser();
 
   if (!entity) return null;
 
@@ -107,6 +110,7 @@ const ModalForm = ({
           validationState={validationState}
           errorText={hasValidationError ? errorText : undefined}
           isRequired
+          defaultCountry={(merchant?.country_code ?? 'IN') as CountryCodeType}
         />
       );
     }

@@ -67,4 +67,19 @@ describe('ModalForm', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Clear Input Content' }));
     expect(screen.getByRole('textbox')).toHaveValue('');
   });
+
+  test('should handle merchant country code correctly', () => {
+    renderApp({
+      entity: {
+        id: PersonalProfileFields.CONTACT_MOBILE,
+      },
+      user: {
+        merchant: {
+          country_code: 'US',
+        },
+      },
+    });
+    const phoneInput = screen.getByRole('textbox');
+    expect(phoneInput).toBeInTheDocument();
+  });
 });
