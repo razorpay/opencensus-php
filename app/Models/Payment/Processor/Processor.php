@@ -2394,7 +2394,7 @@ class Processor
                     if (empty($input[Payment\Entity::TOKEN]))
                     {
                         $card_number = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
-                        $iinId = substr($card_number, 0, 6);
+                        $iinId = substr($card_number, 0, 8);
                         $iin = $this->repo->iin->find($iinId);
                         if ($iin->getCountry() !== 'IN')
                         {
@@ -2489,7 +2489,7 @@ class Processor
             }
 
             $card_number = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
-            $iinId = substr($card_number, 0, 6);
+            $iinId = substr($card_number, 0, 8);
             $iin = $this->repo->iin->find($iinId);
 
             if ((empty($input['currency']) === false and
