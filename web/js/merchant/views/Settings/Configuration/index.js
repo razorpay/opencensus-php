@@ -23,6 +23,7 @@ import {
   isSkipMandatorySummaryPageAllowed,
   isWhatsappNotificationEnabled,
   isSmsNotificationEnabled,
+  isPaymentReceiptCustomizationEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { showDynamicFields } from 'merchant/views/PaymentLinks/utils';
 import InstantRefundFee from 'merchant/views/Transactions/v1/Payments/components/InstantRefundFee';
@@ -48,6 +49,7 @@ import {
   SMS_NOTIF,
   REFUND_SETTINGS,
   WHATSAPP_NOTIF,
+  PAYMENT_RECEIPT_CUSTOMIZATION,
   SKIP_CARD_MANDATE_SUMMARY,
   MISSED_ORDER_PAYMENT_LINK,
   ACCOUNT_SETTINGS,
@@ -55,6 +57,7 @@ import {
 } from './deeplink-constants';
 import DynamicFieldsPl from './dynamicFieldsPl';
 import { flashCheckoutProps, skipCardMandateSummaryProps } from './settings-config-constants';
+import PaymentReceiptCustomizer from './PaymentReceiptCustomizer';
 
 // eslint-disable-next-line react/no-unsafe
 class CongfigurationContainer extends Component {
@@ -383,6 +386,7 @@ class CongfigurationContainer extends Component {
       showEmailNotifications,
       showSmsNotifications,
       showWhatsappNotifications,
+      showPaymentReceiptCustomizer,
       showSkipMandatorySummaryPage,
       showAnnouncements,
       className,
@@ -532,6 +536,16 @@ class CongfigurationContainer extends Component {
             >
               <IntoView hashedWith={WHATSAPP_NOTIF}>
                 <WhatsappNotification />
+              </IntoView>
+            </ShowWhen>
+            
+            <ShowWhen
+              additionalCondition={(user) =>
+                showPaymentReceiptCustomizer && isPaymentReceiptCustomizationEnabled(user)
+              }
+            >
+              <IntoView hashedWith={PAYMENT_RECEIPT_CUSTOMIZATION}>
+                <PaymentReceiptCustomizer />
               </IntoView>
             </ShowWhen>
 

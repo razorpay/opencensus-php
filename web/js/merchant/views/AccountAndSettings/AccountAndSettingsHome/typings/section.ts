@@ -60,6 +60,7 @@ export enum NotificationSettingsFields {
   EMAIL = 'email',
   SMS = 'sms',
   WHATSAPP = 'whatsapp',
+  RECEIPT = 'receipt',
 }
 
 export enum CheckoutSettingsFields {
@@ -147,6 +148,7 @@ export const NotificationSettingsTitles: Record<NotificationSettingsFields, stri
   [NotificationSettingsFields.EMAIL]: 'Email',
   [NotificationSettingsFields.SMS]: 'SMS',
   [NotificationSettingsFields.WHATSAPP]: 'WhatsApp',
+  [NotificationSettingsFields.RECEIPT]: 'Payment Receipt',
 };
 
 export const CheckoutSettingsTitles: Record<CheckoutSettingsFields, string> = {

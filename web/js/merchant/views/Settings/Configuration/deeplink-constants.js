@@ -7,6 +7,7 @@ export const CHECKOUT_EMAIL_SETTINGS = 'checkout_email';
 export const FLASH_CHECKOUT = 'flash_checkout';
 export const SETTLEMENT_CYCLE = 'settlement_cycle_settings';
 export const WHATSAPP_NOTIF = 'whatsapp_notifications';
+export const PAYMENT_RECEIPT_CUSTOMIZATION = 'payment_receipt_customization';
 export const SKIP_CARD_MANDATE_SUMMARY = 'skip_card_mandate_summary';
 export const ACCOUNT_SETTINGS = 'account_settings';
 export const MISSED_ORDER_PAYMENT_LINK = 'missed_order_payment_link';

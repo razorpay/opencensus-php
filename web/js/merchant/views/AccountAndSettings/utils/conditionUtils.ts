@@ -43,6 +43,8 @@ export const isWhatsappNotificationEnabled = (user: User, extraConfig: ExtraConf
   user.activation_status === 'activated' &&
   (user.role === rolesList.OWNER || user.role === rolesList.ADMIN);
 
+export const isPaymentReceiptCustomizationEnabled = (user: User): boolean => user.isPaymentReceiptCustomizerEnabled; 
+
 export const isTrustedBadgeAllowed = (user: User, extraConfig: ExtraConfig): boolean =>
   user.isAllowedView('trustedbadge') &&
   !user.isOrgAxis &&

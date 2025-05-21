@@ -17,6 +17,7 @@ import {
   isWhatsappNotificationEnabled,
   isSmsNotificationEnabled,
   isEmailNotificationEnabled,
+  isPaymentReceiptCustomizationEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { connect } from 'react-redux';
 import {
@@ -39,6 +40,7 @@ const NotificationSettings = ({ user, location: { pathname } }): JSX.Element | n
       case ROUTES_INFO.EMAIL_NOTIFICATIONS:
       case ROUTES_INFO.SMS_NOTIFICATIONS:
       case ROUTES_INFO.WHATSAPP_NOTIFICATIONS:
+      case ROUTES_INFO.PAYMENT_RECEIPT_CUSTOMIZER:
         return <Navigate to="/config" replace />;
       default:
         return <Navigate to="/dashboard" replace />;
@@ -76,6 +78,9 @@ const NotificationSettings = ({ user, location: { pathname } }): JSX.Element | n
           >
             <NavLink to={ROUTES_INFO.WHATSAPP_NOTIFICATIONS}>WhatsApp</NavLink>
           </ShowWhen>
+          <ShowWhen additionalCondition={isPaymentReceiptCustomizationEnabled}>
+            <NavLink to={ROUTES_INFO.PAYMENT_RECEIPT_CUSTOMIZER}>Payment Receipt</NavLink>
+          </ShowWhen>
           <Box display="inline">
             <DocsLink title="Documentation" isTab shouldApplyLineHeight shouldFloatRight />
           </Box>
@@ -107,6 +112,14 @@ const NotificationSettings = ({ user, location: { pathname } }): JSX.Element | n
                     element={
                       <RouteGuard>
                         <StyledConfiguration showWhatsappNotifications />
+                      </RouteGuard>
+                    }
+                  />
+                  <Route
+                    path={getRefRoute(ROUTES_INFO.PAYMENT_RECEIPT_CUSTOMIZER)}
+                    element={
+                      <RouteGuard>
+                        <StyledConfiguration showPaymentReceiptCustomizer />
                       </RouteGuard>
                     }
                   />

@@ -1,6 +1,6 @@
 import type { RazorpayUser } from '../../../common';
 
-export type PaymentsDashboardUserGetters = {
+export interface PaymentsDashboardUserGetters {
   /**
    * The role of the current user in the context of the merchant.
    * Possible roles include 'admin', 'owner', etc.
@@ -520,4 +520,5 @@ export type PaymentsDashboardUserGetters = {
   isUpiRefundDisabled: boolean;
   isProductTourScreenHidden: boolean;
   isVASOrg: boolean;
-};
+  isPaymentReceiptCustomizerEnabled: boolean;
+}

@@ -68,6 +68,7 @@ import {
   isCheckoutV2SettingsAllowed,
   isCurlecPaypalOnboardingEnabled,
   isCheckoutV2PaymentConfigsEnabled,
+  isPaymentReceiptCustomizationEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
 export const AccountNSettingsIcons = {
@@ -568,6 +569,15 @@ export const Sections: SectionCardInterface[] = [
           ({ extraConfig }: AdditionalContextInterface) =>
           (user: User): boolean =>
             isWhatsappNotificationEnabled(user, extraConfig),
+      },
+      {
+        id: NotificationSettingsFields.RECEIPT,
+        title: NotificationSettingsTitles[NotificationSettingsFields.RECEIPT],
+        href: ROUTES_INFO.PAYMENT_RECEIPT_CUSTOMIZER,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isPaymentReceiptCustomizationEnabled(user),
       },
     ],
   },

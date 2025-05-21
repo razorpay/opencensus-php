@@ -11,6 +11,7 @@ export enum ROUTES_INFO {
   EMAIL_NOTIFICATIONS = '/notification-settings/email',
   SMS_NOTIFICATIONS = '/notification-settings/sms',
   WHATSAPP_NOTIFICATIONS = '/notification-settings/whatsapp',
+  PAYMENT_RECEIPT_CUSTOMIZER = '/notification-settings/payment-receipt',
   API_KEYS = '/website-app-settings/api-keys',
   WEBSITE_APP_SETTINGS = '/website-app-settings/website-app',
   BUSINESS_WEBSITE_SETTINGS = '/website-app-settings/business-website-details',

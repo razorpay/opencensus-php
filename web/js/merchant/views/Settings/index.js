@@ -199,6 +199,7 @@ class Settings extends Component {
                         showEmailNotifications
                         showSmsNotifications
                         showWhatsappNotifications
+                        showPaymentReceiptCustomizer
                         showSkipMandatorySummaryPage
                         showAnnouncements
                       />
