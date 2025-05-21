@@ -566,11 +566,6 @@ export const COMMON_PRODUCTS: Array<ProductTypeProp> = [
 
 export const CUSTOMERS_PRODUCTS = [
   {
-    title: SIDEEBAR_PRODUCTS_TITLES.company_registration,
-    product_id: 'company_registration',
-    tags: ['New'],
-  },
-  {
     title: SIDEEBAR_PRODUCTS_TITLES.customers,
     product_id: 'customers',
     tags: [],

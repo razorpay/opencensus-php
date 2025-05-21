@@ -18,7 +18,7 @@ import {
   RIZE_JOURNEY,
   USER_JOURNEY_STEPS,
   USER_JOURNEY,
-  DOCUMENT_FORM_STATUS
+  DOCUMENT_FORM_STATUS,
 } from './constant';
 import type { BannerDataT, StatusStepsType, RizeJourneyType } from './types';
 
@@ -89,8 +89,25 @@ export const useScreen = (): UseScreen => {
   };
 };
 
+const verifyUserJourneyStarts = (workflowData) => {
+  const { workflow_data: { milestones = [] } = {} } = workflowData || {};
+  const l1Milestone = milestones?.find((item) => item.name === "l1_milestone");
+  const basicDetailsStep = l1Milestone?.steps?.find((item) => item.name === 'basic_details_step');
+  const nameComponent = basicDetailsStep?.components.find(
+    (item) => item.name === 'contact_name_component',
+  );
+  return nameComponent?.status === 'pending' ? false : true;
+};
+
 export const parseWorkflowResponse = (workflowData) => {
   const { onboarding_state: { steps: [firstStep] = [] } = {} } = workflowData || {};
+
+  const isUserRizeIncorpJourneyStart = workflowData && verifyUserJourneyStarts(workflowData) || false;
+
+  if (!isUserRizeIncorpJourneyStart)
+    return {
+      screen: RIZE_JOURNEY.INITIAL_SCREEN,
+    };
 
   if (USER_JOURNEY_STEPS.includes(firstStep))
     return {
