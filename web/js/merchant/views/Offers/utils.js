@@ -1,5 +1,13 @@
 import rolesList from 'merchant/helpers/permissions/roles-list';
-import { PAYMENT_NETWORK_MAP, ISSUERS, CARD_TYPES } from 'merchant/views/Offers/constants';
+import {
+  PAYMENT_NETWORK_MAP,
+  ISSUERS,
+  CARD_TYPES,
+  EMI_BENEFITS_TYPES,
+  BENEFIT_LIMIT_TYPES,
+  EMI_BENEFITS,
+  PAYMENT_METHODS,
+} from 'merchant/views/Offers/constants';
 import { isExperimentEnabled } from 'common/splitz/utils';
 
 const NetworksAndIssuers = { ...PAYMENT_NETWORK_MAP, ...ISSUERS };
@@ -69,4 +77,45 @@ export const getIs10DigitBinExperimentEnabled = (splitz) => {
 
 export const getIsOffersClubbingEnabled = (splitz) => {
   return isExperimentEnabled(splitz?.abExperiments?.offer_clubbing);
+};
+
+const ADDITIONAL_BENEFITS_SET = new Set([
+  EMI_BENEFITS_TYPES.INSTANT_DISCOUNT,
+  EMI_BENEFITS_TYPES.CASHBACK_DISCOUNT,
+]);
+
+export const getAdditionalBenefitFromRules = (rules, payment_method) => {
+  if (!rules || payment_method !== PAYMENT_METHODS.EMI) {
+    return {
+      discountWorthBenefit: null,
+      maxCashbackBenefit: null,
+      isUptoTypeBenefit: false,
+      isClubbedOffer: false,
+      emiTypeBenefit: null,
+    };
+  }
+
+  let additionalBenefit = null;
+  let emiTypeBenefit = null;
+
+  rules.forEach((rule) => {
+    if (!rule?.benefits) return;
+    rule.benefits.forEach((benefit) => {
+      if (rule.benefits.length > 1 && ADDITIONAL_BENEFITS_SET.has(benefit.offer_type)) {
+        additionalBenefit = benefit;
+      } else {
+        emiTypeBenefit = EMI_BENEFITS[benefit.offer_type];
+      }
+    });
+  });
+
+  const isUptoTypeBenefit = additionalBenefit?.limit_type === BENEFIT_LIMIT_TYPES.UPTO;
+
+  return {
+    discountWorthBenefit: (additionalBenefit?.value || 0) / 100,
+    maxCashbackBenefit: isUptoTypeBenefit ? additionalBenefit?.max_discount : 0,
+    isUptoTypeBenefit,
+    isClubbedOffer: !!additionalBenefit,
+    emiTypeBenefit,
+  };
 };

@@ -21,9 +21,10 @@ import {
   OFFER_DISABLE_CTA_NETWORKS,
   PAYER_ACCOUNT_TYPES_DISPLAY,
   PAYMENT_METHODS,
+  OFFER_TYPES,
 } from 'merchant/views/Offers/constants';
 import { withSplitzService } from 'common/splitz';
-import { isOfferIdClickable } from 'merchant/views/Offers/utils';
+import { isOfferIdClickable, getAdditionalBenefitFromRules } from 'merchant/views/Offers/utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { withI18Service } from 'common/i18';
@@ -214,6 +215,43 @@ export class OffersDetails extends React.Component {
       .join(', ');
   }
 
+  renderDiscountWorthField = ({
+    discountWorthBenefit,
+    isUptoTypeBenefit,
+    percent_rate,
+    flat_cashback,
+  }) => {
+    if (discountWorthBenefit) {
+      return (
+        <EntityDetailRow label="Discount Worth">
+          {isUptoTypeBenefit ? (
+            <span>{discountWorthBenefit}%</span>
+          ) : (
+            <Amount value={discountWorthBenefit} currency="INR" />
+          )}
+        </EntityDetailRow>
+      );
+    }
+
+    if (percent_rate) {
+      return (
+        <EntityDetailRow label="Discount Worth">
+          <span>{percent_rate / 100}%</span>
+        </EntityDetailRow>
+      );
+    }
+
+    if (flat_cashback) {
+      return (
+        <EntityDetailRow label="Discount Worth">
+          <Amount value={flat_cashback} currency="INR" />
+        </EntityDetailRow>
+      );
+    }
+
+    return null;
+  };
+
   render() {
     const { loading, offer, splitz } = this.props;
     const {
@@ -246,9 +284,10 @@ export class OffersDetails extends React.Component {
       no_of_cycles,
       max_order_amount,
       upi,
+      rules,
     } = offer;
 
-    const discountType = percent_rate !== null ? 'Percentage' : 'Flat';
+    const discountType = percent_rate ? 'Percentage' : 'Flat';
     const isPercentageDiscount = discountType === 'Percentage';
 
     const paymentMethods =
@@ -276,6 +315,14 @@ export class OffersDetails extends React.Component {
     const isBajajNcEmiOffer = OFFER_DISABLE_CTA_NETWORKS.includes(payment_network);
 
     const disabledButtonClass = isBajajNcEmiOffer ? `link-disabled` : '';
+
+    const {
+      discountWorthBenefit,
+      maxCashbackBenefit,
+      isUptoTypeBenefit,
+      isClubbedOffer,
+      emiTypeBenefit,
+    } = getAdditionalBenefitFromRules(rules, payment_method);
 
     return (
       <div className="Offers--Details content-wrapper content-sm txn-details">
@@ -357,32 +404,55 @@ export class OffersDetails extends React.Component {
                     <Time format="DD MMM YYYY, hh:mm a" value={ends_at} />
                   </EntityDetailRow>
 
-                  <EntityDetailRow label="Discount Type" value={discountType} />
+                  <EntityDetailRow
+                    label="Offer Type"
+                    value={
+                      isClubbedOffer
+                        ? OFFER_TYPE_LABELS[OFFER_TYPES.Clubbed]
+                        : emi_subvention && emiTypeBenefit
+                        ? 'EMI'
+                        : OFFER_TYPE_LABELS[type]
+                    }
+                  />
 
-                  <EntityDetailRow label="Discount Worth">
-                    {percent_rate !== null ? (
-                      <span>{percent_rate / 100}%</span>
-                    ) : (
-                      <Amount value={flat_cashback} currency="INR" />
-                    )}
-                  </EntityDetailRow>
-
-                  {isPercentageDiscount && (
-                    <EntityDetailRow label="Max Cashback">
-                      <Amount value={max_cashback} currency="INR" />
-                    </EntityDetailRow>
-                  )}
-
-                  <EntityDetailRow label="Maximum Usage" value={max_offer_usage} />
+                  <EntityDetailRow label="Bank Name" value={ISSUERS[issuer]} />
 
                   <EntityDetailRow label="Method" value={paymentMethod} />
 
-                  {paymentMethod === 'emi' && (
+                  {paymentMethod === PAYMENT_METHODS.EMI && (
                     <EntityDetailRow
                       label="Method Type"
                       value={payment_method_type === 'debit' ? 'Debit Card' : 'Credit Card'}
                     />
                   )}
+
+                  {emi_subvention && emiTypeBenefit ? (
+                    <EntityDetailRow label="EMI Type" value={emiTypeBenefit} />
+                  ) : null}
+
+                  {emi_subvention && (
+                    <EntityDetailRow
+                      label="Emi Durations"
+                      value={emiDurationString(emi_durations)}
+                    />
+                  )}
+
+                  <EntityDetailRow label="Maximum Usage" value={max_offer_usage} />
+
+                  <EntityDetailRow label="Discount Type" value={discountType} />
+
+                  {this.renderDiscountWorthField({
+                    discountWorthBenefit,
+                    isUptoTypeBenefit,
+                    percent_rate,
+                    flat_cashback,
+                  })}
+
+                  {maxCashbackBenefit || (isPercentageDiscount && max_cashback) ? (
+                    <EntityDetailRow label="Max Cashback">
+                      <Amount value={maxCashbackBenefit || max_cashback} currency="INR" />
+                    </EntityDetailRow>
+                  ) : null}
 
                   {isCardPayment && (
                     <>
@@ -392,17 +462,6 @@ export class OffersDetails extends React.Component {
                         value={PAYMENT_NETWORK_MAP[payment_network]}
                       />
                     </>
-                  )}
-
-                  <EntityDetailRow label="Bank Name" value={ISSUERS[issuer]} />
-
-                  <EntityDetailRow label="Offer Type" value={OFFER_TYPE_LABELS[type]} />
-
-                  {emi_subvention && (
-                    <EntityDetailRow
-                      label="Emi Durations"
-                      value={emiDurationString(emi_durations)}
-                    />
                   )}
 
                   {this.isSubscriptionOffer && (

@@ -80,9 +80,6 @@ export default class BaseForm extends React.Component {
     // Discount Type
     if (fieldName === 'min_amount') {
       if (values.issuer) {
-        newState.values.issuer = null;
-
-        newValidTabs[1] = false;
         invalidateTabs = true;
         newValidTabs[4] = false;
       }

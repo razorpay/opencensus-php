@@ -29,10 +29,10 @@ export default class CreateOfferWizard extends React.Component {
   }
 
   componentDidUpdate() {
-    this.toggleDisableState();
+    this.toggleDisableState(true);
   }
 
-  toggleDisableState = () => {
+  toggleDisableState = (isUpdate = false) => {
     setTimeout(() => {
       const { state } = this;
       const { errors, values = {} } = this.props;
@@ -63,6 +63,11 @@ export default class CreateOfferWizard extends React.Component {
       const newValidTabs = Array(this.TABS_DATA.length)
         .fill(false)
         .map((_, idx) => {
+          // If isUpdate is true, preserve validation state of previous tabs
+          if (isUpdate && idx < state.currentTab) {
+            return state.validTabs[idx];
+          }
+
           if (state.currentTab === idx && state.validTabs[idx] !== currentTabStatus) {
             isValidTabsUpdate = true;
             return currentTabStatus;

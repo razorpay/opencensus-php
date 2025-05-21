@@ -73,7 +73,7 @@ export const getClubbedOfferRules = (formData) => {
           offer_type: formData.additional_offer,
           limit_type,
           unit: formData.additional_offer_discount_type,
-          value: +(formData.flat_cashback || formData.percent_rate),
+          value: +(formData.flat_cashback || formData.percent_rate) * 100,
           ...(formData.percent_rate ? { max_discount: formData.max_cashback } : {}),
         });
       }

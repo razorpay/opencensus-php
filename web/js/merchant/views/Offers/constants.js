@@ -371,3 +371,22 @@ export const ADDITIONAL_OFFER_OPTIONS = [
   { label: 'Instant Discount', name: ADDITIONAL_OFFER_VALUES.INSTANT_DISCOUNT },
   { label: 'Cashback', name: ADDITIONAL_OFFER_VALUES.CASHBACK },
 ];
+
+export const EMI_BENEFITS_TYPES = {
+  NO_COST_EMI: 'no_cost_emi',
+  LOW_COST_EMI: 'low_cost_emi',
+  INSTANT_DISCOUNT: 'instant_discount',
+  CASHBACK_DISCOUNT: 'cashback',
+};
+
+export const BENEFIT_LIMIT_TYPES = {
+  UPTO: 'UPTO',
+  FIXED: 'FIXED',
+};
+
+export const EMI_BENEFITS = {
+  [EMI_BENEFITS_TYPES.NO_COST_EMI]: 'No Cost EMI',
+  [EMI_BENEFITS_TYPES.LOW_COST_EMI]: 'Low Cost EMI',
+  [EMI_BENEFITS_TYPES.INSTANT_DISCOUNT]: 'Instant Discount',
+  [EMI_BENEFITS_TYPES.CASHBACK_DISCOUNT]: 'Cashback Discount',
+};
