@@ -3000,7 +3000,7 @@ class Service extends Base\Service
             $input["isProxyAuth"] = $this->app['basicauth']->isProxyAuth();
             $input["internalApp"] = $this->app['basicauth']->getInternalApp();
 
-            $this->pushPaymentFetchByIdForParity($payment, $input);
+            $this->pushPaymentFetchByIdForParity($entity, $input);
         }
 
         return $entity;
