@@ -314,7 +314,7 @@ class Webhooks extends Base\Core
             return;
         }
 
-        $txn = $this->getPrepaidTransactionforRefund($txns['transactions']);
+        $txn = $this->getPrepaidTransaction($txns['transactions']);
         if (empty($txn) === true)
         {
             $this->trace->count(
@@ -362,7 +362,7 @@ class Webhooks extends Base\Core
                 ]);
             return;
         }
-        $refundFromWebhook = $refundFromTxn;
+        $refundFromWebhook = $this->formatAmountStringToPaise($input['transactions'][0]['amount']);
         // As keyless auth is not properly supported we only support LIVE mode in production and ignore
         // any errors which occur when a refund is issued against a test payment via Shopify for 1cc orders.
         $mode = $this->app->environment(Environment::PRODUCTION) === true ? Mode::LIVE : Mode::TEST;
@@ -659,21 +659,6 @@ class Webhooks extends Base\Core
         }
         return $txn;
     }
-
-    protected function getPrepaidTransactionforRefund(array $txns): array
-    {
-        $txn = [];
-        for ($i = 0; $i < count($txns); $i++)
-        {
-            if ($txns[$i]['status'] === 'success' and $txns[$i]['kind'] === 'refund' and $txns[$i]['gateway'] === 'Razorpay')
-            {
-                $txn = $txns[$i];
-                break;
-            }
-        }
-        return $txn;
-    }
-
 
     protected function processFulfillmentUpdateEvent(array $data)
     {
