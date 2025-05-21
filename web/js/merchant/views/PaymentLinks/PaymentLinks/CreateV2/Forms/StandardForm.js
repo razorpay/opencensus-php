@@ -17,9 +17,22 @@ import {
 import { analyticsTrack } from 'common/utils/analytics';
 import { classList, getURLQueryParams, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import * as LocalStorageService from 'common/utils/localStorage';
+import { getUser } from '@apps/shell/src/client/store/commonStore/exposedActions';
 
 // TODO: Feels like, can be written in better.
 export default class StandardForm extends React.Component {
+  constructor() {
+    super();
+
+    this.state = {
+      contact: {
+        dialCode: '',
+        phoneNumber: '',
+        value: '',
+      },
+    };
+  }
+
   onSubmit = () => {
     return this.props.onSubmit();
   };
@@ -39,6 +52,31 @@ export default class StandardForm extends React.Component {
       });
     }
   }
+
+  handleChange = (event) => {
+    const user = getUser();
+    let customEvent = event;
+
+    if (user.isCountrySingapore && event.target.name === 'contact') {
+      customEvent.target.value = `${this.state.contact.dialCode}${this.state.contact.value}`;
+    }
+
+    this.props.onChange(customEvent);
+  };
+
+  handlePhoneNumberChange = (event) => {
+    const { dialCode, phoneNumber, value } = event;
+    this.setState({ contact: { dialCode, phoneNumber, value } }, () => {
+      const syntheticEvent = {
+        target: {
+          name: 'contact',
+          value: this.state.contact,
+        },
+      };
+      this.handleChange(syntheticEvent);
+    });
+  };
+
   render() {
     const { props } = this;
     const {
@@ -58,7 +96,7 @@ export default class StandardForm extends React.Component {
         isModalView={props.isModalView}
         title="Standard Payment Link"
         onSubmit={this.onSubmit}
-        onChange={props.onChange}
+        onChange={this.handleChange}
         onClose={props.onClose}
         disableSubmit={props.disableSubmit}
         history={props.history}
@@ -82,6 +120,8 @@ export default class StandardForm extends React.Component {
         />
         {props.isMobileResolution ? (
           <MWebContactDetails
+            handlePhoneNumberChange={this.handlePhoneNumberChange}
+            contactValue={this.state.contact.value}
             disabled={props.disabled}
             defaultContactNumber={formData.contact}
             defaultEmailAddress={formData.email}
@@ -91,6 +131,8 @@ export default class StandardForm extends React.Component {
           />
         ) : (
           <ContactDetails
+            handlePhoneNumberChange={this.handlePhoneNumberChange}
+            contactValue={this.state.contact.value}
             disabled={props.disabled}
             defaultContactNumber={formData.contact}
             defaultEmailAddress={formData.email}

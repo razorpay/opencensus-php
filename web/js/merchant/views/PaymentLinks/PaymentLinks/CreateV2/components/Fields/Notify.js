@@ -123,7 +123,7 @@ class Notify extends React.Component {
             }
           </div>
         </Input.Group>
-        {!isFeatureLoading && isNotificationShow ? (
+        {!isFeatureLoading && isNotificationShow && !user.isCountrySingapore ? (
           <Alert
             title={title}
             marginTop="spacing.4"

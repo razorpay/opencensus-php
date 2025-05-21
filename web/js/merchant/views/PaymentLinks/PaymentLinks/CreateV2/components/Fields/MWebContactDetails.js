@@ -1,11 +1,14 @@
 import { useI18Service } from 'common/i18';
 import Input from 'common/new-ui/Input';
+import { PhoneNumberInput } from '@razorpay/blade/components';
 import DocsLink from 'merchant/components/DocsLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
+import { getUser } from '@apps/shell/src/client/store/commonStore/exposedActions';
 
 const MWebContactDetails = (props) => {
   const { isConfigTagEnabled } = useI18Service();
+  const user = getUser();
   const handleEmailNotify = (event) => {
     const isChecked = !!event.target.value == '1';
     if (!isChecked) return;
@@ -25,6 +28,7 @@ const MWebContactDetails = (props) => {
     track.lj.fields.notifySms();
     track.segment.fields.notifySms();
   };
+
   return (
     <Input.Group
       className="InputGroup--inline InputGroup--vTop customer-details hidden-lg"
@@ -51,15 +55,30 @@ const MWebContactDetails = (props) => {
         />
       </div>
       <div className="mob-customer-details">
-        <Input
-          autoRender
-          name="contact"
-          type="tel"
-          placeholder={props.contactPlaceholder}
-          addonBefore={<i className="i i-phone-outline" />}
-          defaultValue={props.defaultContactNumber}
-          onBlur={track.lj.fields.contact}
-        />
+        {user.isCountrySingapore ? (
+          <PhoneNumberInput
+            name="contact"
+            label="Contact Number"
+            showDialCode={true}
+            defaultValue={props.defaultContactNumber}
+            defaultCountry={user.merchant.country_code}
+            value={props.contactValue}
+            onChange={(event) => {
+              props.handlePhoneNumberChange(event);
+            }}
+            onBlur={track.lj.fields.contact}
+          />
+        ) : (
+          <Input
+            autoRender
+            name="contact"
+            type="tel"
+            placeholder={props.contactPlaceholder}
+            addonBefore={<i className="i i-phone-outline" />}
+            defaultValue={props.defaultContactNumber}
+            onBlur={track.lj.fields.contact}
+          />
+        )}
 
         <Input.Check
           autoRender

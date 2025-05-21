@@ -1,5 +1,16 @@
 import UPIForm from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/Forms/UPIForm';
 
+jest.mock('@apps/shell/src/client/store/commonStore/exposedActions', () => ({
+  getUser: () => ({
+    isCountrySingapore: false,
+    merchant: {
+      country_code: 'IN',
+    },
+    isInttCurrenciesEnabled: true,
+    isPaymentLinkDescriptionRequired: false,
+  }),
+}));
+
 jest.mock(
   'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/Fields/ReferenceId',
   () => () => {

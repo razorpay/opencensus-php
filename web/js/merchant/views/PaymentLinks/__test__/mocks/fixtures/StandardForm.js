@@ -48,6 +48,15 @@ jest.mock('common/utils/localStorage', () => ({
   removeItem: jest.fn(),
 }));
 
+jest.mock('@apps/shell/src/client/store/commonStore/exposedActions', () => ({
+  getUser: () => ({
+    isCountrySingapore: false,
+    merchant: {
+      country_code: 'IN',
+    },
+  }),
+}));
+
 const defaultProps = {
   formData: {
     currency: 'INR',
