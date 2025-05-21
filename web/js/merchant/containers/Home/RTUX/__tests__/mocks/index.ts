@@ -2111,7 +2111,7 @@ export const INSIGHTS_FOR_YOU_MOCK_RESPONSE = {
       components: [],
       data: {
         merchant_store_hierarchy: {
-          storeHierarchy: [
+          store_hierarchy: [
             {
               store_id: 'karnataka-store',
               name: 'karnataka-store',

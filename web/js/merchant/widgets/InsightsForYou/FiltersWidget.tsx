@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Text, Badge, Divider } from '@razorpay/blade/components';
 import { ChannelIconMap, ChannelSourceMap, ValidFiltersWidgetTypes } from './utils';
-import { FiltersWidgetProps } from './types';
+import { FiltersWidgetProps, ComponentDataType } from './types';
 
 
 export const FiltersWidget: React.FC<FiltersWidgetProps> = ({
@@ -11,7 +11,7 @@ export const FiltersWidget: React.FC<FiltersWidgetProps> = ({
 }) => {
   const componentWidget = component.filter(widget =>
     ValidFiltersWidgetTypes.includes(widget.type)
-  );
+  ) as ComponentDataType[];
 
   return (
     <>
@@ -37,7 +37,7 @@ export const FiltersWidget: React.FC<FiltersWidgetProps> = ({
                 marginLeft="spacing.3"
                 icon={
                   ChannelIconMap[
-                    (sourceChannel ?? inputs[0]?.default_value) as string
+                    (sourceChannel || inputs[0]?.default_value) as string
                   ]
                 }
               >
@@ -56,16 +56,19 @@ export const FiltersWidget: React.FC<FiltersWidgetProps> = ({
 
                   return (
                     <>
-                      {visibleItems.map((item, idx) => (
-                        <Badge
+                      {visibleItems.map((item, idx) => {
+                        const store = component?.data?.merchant_store_hierarchy?.store_hierarchy?.find(store => store.store_id === item);
+                        return (
+                          <Badge
                           key={idx}
                           color="neutral"
                           size="large"
                           marginLeft="spacing.3"
-                        >
-                          {item}
-                        </Badge>
-                      ))}
+                          >
+                            {store?.name ?? item}
+                          </Badge> 
+                        )
+                      })}
                       {remainingCount > 0 && (
                         <Badge
                           color="neutral"

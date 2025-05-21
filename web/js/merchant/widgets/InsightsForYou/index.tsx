@@ -68,11 +68,20 @@ export const InsightsForYou = (props: InsightsForYouWidgetProps & CommonWidgetPr
   const screen = getUcsAliasFromQueryKey(queryKey) ?? '';
   const widgetId = `merchantDashboard.${screen}.${type}.${id}`;
 
+  const getRequestPayload = ({ date_time, stores, source }: { date_time: DateTime, stores: string[], source: string }) => {
+    return {
+      date_time,
+      ...(stores.length > 0 && isOmniMerchant && source !== 'online' && { store_ids: stores }),
+      ...(source && isOmniMerchant && { payment_source: source }),
+    };
+  };
+
   const handleDateChange = (value: Array<DateRangeValues>, custom_range: [number, number]) => {
     setDate(value[0]);
     if (value[0] !== durationOptionKeys.CUSTOM) {
       setFilters({ ...filters, date_time: { quick: value[0] } });
-      retryHandler({ id, ...(isOmniMerchant && filters), date_time: { quick: value[0] } });
+      const requestPayload = getRequestPayload({ date_time: { quick: value[0] }, stores: filters.store_ids, source: filters.payment_source });
+      retryHandler({ id, ...requestPayload });
     } else if (value[0] === durationOptionKeys.CUSTOM && custom_range) {
       const [fromDate, toDate] = custom_range;
       const dateTime = {
@@ -82,11 +91,8 @@ export const InsightsForYou = (props: InsightsForYouWidgetProps & CommonWidgetPr
         },
       };
       setFilters({ ...filters, date_time: dateTime });
-      retryHandler({
-        id,
-        ...(isOmniMerchant && filters),
-        date_time: dateTime,
-      });
+      const requestPayload = getRequestPayload({ date_time: dateTime, stores: filters.store_ids, source: filters.payment_source });
+      retryHandler({ id, ...requestPayload });
     }
   };
 
@@ -95,11 +101,7 @@ export const InsightsForYou = (props: InsightsForYouWidgetProps & CommonWidgetPr
     setSourceChannel(source);
     setFilters({ ...filters, store_ids: stores, payment_source: source });
     const { date_time } = filters;
-    const requestPayload = {
-      date_time,
-      ...(stores.length > 0 && { store_ids: stores }),
-      ...(source && { payment_source: source }),
-    };
+    const requestPayload = getRequestPayload({ date_time, stores, source });
     retryHandler({ id, ...requestPayload });
   };
 
@@ -193,7 +195,7 @@ export const InsightsForYou = (props: InsightsForYouWidgetProps & CommonWidgetPr
               const widgetComponent = widgetKeyToComponentMapping[widget.type];
               return widgetComponent ? (
                 <React.Fragment key={widget.id}>
-                  {widgetComponent({ ...props, ...widget, isLoading })}
+                  {widgetComponent({ ...props, ...widget, isLoading: isLoading || isRetrying, filters: filters })}
                 </React.Fragment>
               ) : null;
             });

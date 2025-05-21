@@ -5,6 +5,9 @@ import {
   Box,
   Text,
   XCircleIcon,
+  Tooltip,
+  TooltipInteractiveWrapper,
+  InfoIcon
 } from '@razorpay/blade/components';
 import { TreeSelectProps, ShowCheckedStrategy } from './types';
 import { treeSelectFilterTreeNode, NoResultFound, renderSwitcherIcon } from './utils';
@@ -23,18 +26,32 @@ const TreeSelect: React.FC<TreeSelectProps> = ({
   maxCount = 10,
   labelColor = 'surface.text.gray.normal',
   labelSize = 'medium',
+  showTooltip = false,
+  tooltipText = "Choose a hierarchy level to view your data",
+  showDisabledText = false,
+  disabledText = "This feature is currently disabled"
 }) => {
   return (
     <Box width="100%">
+      <Box display="flex" flexDirection="row">
       <Text
         variant="body"
         size={labelSize}
         weight="semibold"
         color={labelColor}
         marginBottom="spacing.3"
+        marginRight="spacing.2"
       >
         {label}
       </Text>
+      {showTooltip ? (
+        <Tooltip content={tooltipText} placement="top">
+          <TooltipInteractiveWrapper>
+            <InfoIcon color="surface.icon.gray.muted" size="small" />
+          </TooltipInteractiveWrapper>
+        </Tooltip>
+      ) : null}
+      </Box>
       <RcTreeSelect
         treeData={treeData}
         value={value}
@@ -58,6 +75,11 @@ const TreeSelect: React.FC<TreeSelectProps> = ({
         virtual={true}
         maxCount={maxCount}
       />
+      {disabled && showDisabledText ? (
+      <Text variant="caption" size="small" color="surface.text.gray.muted" marginTop="spacing.2">
+        {disabledText}
+      </Text>
+      ) : null}
     </Box>
   );
 };

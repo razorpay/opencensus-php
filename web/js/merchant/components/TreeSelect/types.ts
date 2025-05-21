@@ -31,4 +31,8 @@ label?: string;
 maxCount?: number;
 labelColor?: TextProps<{ variant: 'body' }>['color'];
 labelSize?: TextProps<{ variant: 'body' }>['size'];
+showTooltip?: boolean;
+tooltipText?: string;
+showDisabledText?: boolean;
+disabledText?: string;
 }

@@ -9,7 +9,7 @@ export interface StoreHierarchyItem {
 }
 
 export interface MerchantStoreHierarchy {
-  storeHierarchy: StoreHierarchyItem[];
+  store_hierarchy: StoreHierarchyItem[];
 }
 
 export interface ComponentInput {

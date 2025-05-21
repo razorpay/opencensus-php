@@ -48,6 +48,11 @@ describe('Testing BusinessPerformance Component', () => {
         variant: 'negative' as const,
       },
     ],
+    filters: {
+      date_time: { quick: 'last_7_days' },
+      store_ids: [],
+      payment_source: 'all',
+    },
   };
 
   it('should check the UI by toggling the loading state', async () => {
@@ -76,7 +81,6 @@ describe('Testing BusinessPerformance Component', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: mockProps.title })).toBeInTheDocument();
-      expect(screen.getByRole('combobox', { name: mockProps.inputs[0].name })).toBeInTheDocument();
     });
   });
 

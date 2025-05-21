@@ -19,10 +19,9 @@ export function getPropsForInput(args: {
       return {
         defaultValue: args.input.default_value,
         dropdownProps: {
-          _width: args.isMobile ? '200px' : '300px',
+          _width: '170px',
           selectionType: 'single',
         },
-        label: args.input.name,
         labelPosition: 'left',
         values: BUSINESS_PERFORMANCE_VIEW_BY_OPTIONS,
         // hide label on mobile

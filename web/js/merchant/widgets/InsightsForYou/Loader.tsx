@@ -11,11 +11,10 @@ export const InsightsForYouWidgetLoader = () => {
         flexDirection="column"
         justifyContent="space-between"
         gap="spacing.3"
-        padding="spacing.5"
+        padding="spacing.3"
+        marginX={{ base: 'spacing.2', m: 'spacing.4' }}
       >
-        <Skeleton width="50%" height="32px" borderRadius="max" />
-        <Skeleton width="80%" height="20px" borderRadius="max" />
-        <Skeleton width="20%" height="20px" borderRadius="max" />
+        <Skeleton width="50%" height="spacing.5" borderRadius="max" />
       </Box>
     </Box>
   );

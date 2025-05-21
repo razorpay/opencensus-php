@@ -17,6 +17,7 @@ export type SelectProps = CommonInputProps &
       date_time?: DateTime;
     };
     label?: string;
+    width?: any;
   };
 
 export interface SelectChangeEvent {

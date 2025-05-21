@@ -35,7 +35,8 @@ const AllFiltersModal: React.FC<AllFiltersModalProps> = ({
   handleDateChange,
 }) => {
   const [storeId, setStoreId] = useState<string[]>([]);
-  const [sourceChannel, setSourceChannel] = useState<string>('');
+  const defaultSourceChannel = componentWidget?.find((component) => component.type === 'payment_source_filter')?.inputs?.[0]?.default_value;
+  const [sourceChannel, setSourceChannel] = useState<string>(defaultSourceChannel ?? '');
 
   const handleApply = () => {
     onFilterApply({ stores: storeId, source: sourceChannel });
@@ -51,7 +52,7 @@ const AllFiltersModal: React.FC<AllFiltersModalProps> = ({
             {input &&
               isMobile &&
               renderInput({
-                widget: { ...input, label: 'Time Period' },
+                widget: { ...input, label: 'Time Period', width: '100%' },
                 value: date,
                 variables,
                 onChange: handleDateChange,
@@ -71,7 +72,7 @@ const AllFiltersModal: React.FC<AllFiltersModalProps> = ({
                   <ChipGroup
                     label={component.title}
                     selectionType="single"
-                    value={sourceChannel || component.inputs?.[0]?.default_value}
+                    value={sourceChannel || defaultSourceChannel}
                     onChange={({ values }): void => {
                       setSourceChannel(values[0]);
                     }}
@@ -89,7 +90,7 @@ const AllFiltersModal: React.FC<AllFiltersModalProps> = ({
                   <TreeSelect
                     value={storeId}
                     treeData={TransformToTreeData(
-                      component.data?.merchant_store_hierarchy?.storeHierarchy,
+                      component.data?.merchant_store_hierarchy?.store_hierarchy,
                     )}
                     label={component.title}
                     labelSize="small"
@@ -97,6 +98,11 @@ const AllFiltersModal: React.FC<AllFiltersModalProps> = ({
                     onChange={(selectedValues) => {
                       setStoreId(selectedValues as string[]);
                     }}
+                    disabled={sourceChannel === 'online'}
+                    showTooltip={true}
+                    tooltipText={"Choose a hierarchy level to view your data by, down to individual stores."}
+                    showDisabledText={true}
+                    disabledText={"This feature is currently only available for In Person sources."}
                   />
                 </Box>
               )}

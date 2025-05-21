@@ -1,3 +1,5 @@
+import { DateTime } from 'merchant/widgets/types';
+
 export type PerformanceCard = {
   id: string;
   label: string;
@@ -24,4 +26,9 @@ export type BusinessPerformanceProps = {
   }[];
   title: string;
   type: string;
+  filters: {
+    date_time: DateTime;
+    store_ids: string[];
+    payment_source: string;
+  };
 };

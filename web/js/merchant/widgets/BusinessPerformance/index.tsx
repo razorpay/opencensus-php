@@ -15,9 +15,10 @@ import { BusinessPerformanceProps } from './types';
 export const BusinessPerformance = (props: BusinessPerformanceProps & CommonWidgetProps) => {
   const isMobile = useMobile();
   const [isRetrying, retryHandler] = useRetryWidget(props.queryKey);
+  const { date_time } = props.filters;
 
   function handleChange({ values }: { values: string }) {
-    retryHandler({ id: props.id, filter_selected: values });
+    retryHandler({ id: props.id, filter_selected: values, date_time });
   }
 
   const isLoading = props.isLoading || isRetrying;

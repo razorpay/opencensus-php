@@ -28,6 +28,7 @@ function Select({
   toggleHelpWidget,
   variables,
   label = '',
+  width = '150px',
 }: SelectProps) {
   const isMobile = useMobile();
 
@@ -91,7 +92,7 @@ function Select({
           />
         </Box>
       ) : null}
-      <Box width="150px">
+      <Box width={width}>
         <Dropdown selectionType="single" testID="date-picker-component">
           <SelectInput
             label={label}
