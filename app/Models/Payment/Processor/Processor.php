@@ -8897,6 +8897,16 @@ class Processor
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ATTEMPTS_EXCEEDED);
         }
 
+        $currentDayPaymentsCount = $this->repo->payment->fetchCurrentDayPaymentsCountByOrderID(
+            Order\Entity::verifyIdAndSilentlyStripSign($input['order_id'])
+        );
+
+        // we are allowing only 3 payment attempts for an order on a single calendar day as per npci compliance
+        if($currentDayPaymentsCount > 2)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSACTION_RETRY_LIMIT_EXCEEDED);
+        }
+
         //debit amount should be same as order amount.
         if($input['amount'] != $order->getAmount())
         {
