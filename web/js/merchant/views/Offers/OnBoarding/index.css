@@ -1,0 +1,22 @@
+.OnBoarding.Offers-Marketplace .OnBoarding--ImageSlide .Product--Details {
+  margin-top: 1.8rem !important;
+}
+
+.OnBoarding.Offers-Marketplace .Button-Container {
+  position: static;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.OnBoarding.Offers-Marketplace .Landing--Image img {
+  left: 120px;
+  min-width: unset;
+  width: 240px;
+  left: 180px;
+  max-width: unset;
+  border-radius: 40px;
+}
+
+.OnBoarding.Offers-Marketplace .OnBoarding--Features .Button-Container {
+  position: absolute;
+}

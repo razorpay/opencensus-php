@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Button, PlusIcon, Heading } from '@razorpay/blade/components';
+import { Button, PlusIcon, Badge } from '@razorpay/blade/components';
 import HeaderAction from 'common/ui/HeaderAction';
 import Alert from 'common/ui/Forms/Alert';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
@@ -10,7 +10,7 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import ShowWhen from 'merchant/components/ShowWhen';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import List from 'merchant/views/Offers/List';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { Route, Routes, useNavigate, NavLink } from 'react-router-dom';
 import rTracking from 'react-tracking';
 
 import { withSplitzService } from 'common/splitz';
@@ -27,6 +27,7 @@ import { isLowCostExperimentEnabled as isLowCostEnabled } from 'merchant/views/O
 import { withI18Service } from 'common/i18';
 import OnBoarding, { getIsOffersEnabled, getIsAllowedResetOffersOnBoarding } from './OnBoarding';
 import { compose } from 'redux';
+import OffersMarketPlaceOnboarding from 'merchant/views/Offers/OnBoarding/OffersMarketPlaceOnboard';
 
 // eslint-disable-next-line react/no-unsafe
 const OfferIndexWrapper = (props) => {
@@ -113,21 +114,23 @@ class OfferIndex extends Component {
         </div>
         <tabbed-container>
           <header id="link-header">
-            <Heading
-              color="surface.text.gray.staticBlack.Normal"
-              size="medium"
-              weight="semibold"
-              display={'inline'}
-            >
-              Offers
-            </Heading>
+            <NavLink to="/offers" end>My Offers</NavLink>
+            <NavLink to="/offers/offers-marketplace">Offers Marketplace
+              <Badge
+                marginLeft="spacing.3"
+                color="neutral"
+                size="small"
+              >
+                New
+              </Badge>
+            </NavLink>
           </header>
 
           <TestModeBanner />
           <ErrorBoundary resetOnProps>
             <Routes>
               <Route
-                index
+                path="/"
                 element={
                   <content>
                     <div className="content-wrapper">
@@ -186,6 +189,16 @@ class OfferIndex extends Component {
                   </content>
                 }
               />
+               <Route
+                  path="offers-marketplace"
+                  element={
+                    <content>
+                      <div className="content-wrapper">
+                        <OffersMarketPlaceOnboarding user={this.props.user} />
+                      </div>
+                    </content>
+                  }
+                />
             </Routes>
           </ErrorBoundary>
         </tabbed-container>
