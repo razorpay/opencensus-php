@@ -796,6 +796,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const EMANDATE_CANCEL_FILE_RAZORX                           = 'EMANDATE_CANCEL_FILE_RAZORX';
     const EMANDATE_BATCH_SERVICE_INPUT_CONFIG                   = 'EMANDATE_BATCH_SERVICE_INPUT_CONFIG';
+    const EMANDATE_CAPTURE_PAYMENT                              = 'EMANDATE_CAPTURE_PAYMENT';
     const GATEWAY_ENTITIES_COUNT_UNEXPECTED                     = 'GATEWAY_ENTITIES_COUNT_UNEXPECTED';
     const GATEWAY_ENTITY_UNEXPECTED_ACTION                      = 'GATEWAY_ENTITY_UNEXPECTED_ACTION';
     const CHANGING_FILE_PERMISSION                              = 'CHANGING_FILE_PERMISSION';
