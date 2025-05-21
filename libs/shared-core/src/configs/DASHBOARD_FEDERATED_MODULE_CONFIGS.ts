@@ -141,4 +141,14 @@ export const DASHBOARD_FEDERATED_MODULE_CONFIGS: Record<
       moduleName: DASHBOARD_FEDERATED_MODULES.ONE_HOME,
     }),
   },
+  [DASHBOARD_FEDERATED_MODULES.PAYROLL_APP]: {
+    appDirFromRoot: 'apps/payroll-app',
+    devStartCommand: 'pnpm nx start',
+    devServerPort: 9042,
+    buildType: DASHBOARD_APP_BUNDLE_TYPE.BROWSER,
+    ...generateBaseMfeBaseMeta({
+      moduleType: DASHBOARD_FEDERATED_MODULE_TYPE.APP,
+      moduleName: DASHBOARD_FEDERATED_MODULES.PAYROLL_APP,
+    }),
+  },
 };

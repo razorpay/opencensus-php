@@ -21,6 +21,7 @@
     { "path": "../../libs/shared-types" },
     { "path": "../../libs/shared-qsuite" },
     { "path": "../../apps/one-home" },
-    { "path": "../../web/js/merchant" }
+    { "path": "../../web/js/merchant" },
+    { "path": "../../apps/payroll-app" }
   ]
 }

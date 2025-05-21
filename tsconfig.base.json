@@ -60,7 +60,8 @@
       "newAuth/*": ["web/js/newAuth/*"],
       "pokedex/*": ["web/js/pokedex/*"],
       "razorx/*": ["web/js/razorx/*"],
-      "test-utils": ["web/js/common/services/test/test-utils"]
+      "test-utils": ["web/js/common/services/test/test-utils"],
+      "@federated/apps/payroll-app/*": ["apps/payroll-app/src/exposed/*"]
     },
     "plugins": [
       {
@@ -116,7 +117,9 @@
     {
       "path": "./apps/shell"
     },
-    { "path": "./apps/one-home" },
+    {
+      "path": "./apps/one-home"
+    },
     {
       "path": "./libs/shared-utils"
     },
@@ -128,6 +131,9 @@
     },
     {
       "path": "./apps/onboarding-experience"
+    },
+    {
+      "path": "./apps/payroll-app"
     }
   ]
 }
