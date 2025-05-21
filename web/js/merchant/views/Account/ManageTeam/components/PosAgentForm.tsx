@@ -151,6 +151,20 @@ const PosAgentForm: React.FC<PosAgentFormProps> = ({
           </Box>
 
           <Box flex={1}>
+            <label>Manager Email ID</label>
+            <div className="input-container">
+              <Field
+                id="managerEmail"
+                name="metadata.manager_email"
+                component={InputField}
+                className="form-control"
+                placeholder="manager@razorpay.com"
+                validate={[required(), email("Invalid Manager's Email")]}
+              />
+            </div>
+          </Box>
+
+          <Box flex={1}>
             <label>Business Unit Head</label>
             <div className="input-container">
               <Field

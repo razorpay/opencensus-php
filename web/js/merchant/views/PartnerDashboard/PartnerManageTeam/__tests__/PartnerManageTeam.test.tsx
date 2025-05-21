@@ -154,7 +154,7 @@ describe('PartnerManageTeam', () => {
     expect(trackInviteNewMemberModalLoadedSpy).toHaveBeenCalled();
     await userEvent.click(screen.getByRole('button', { name: 'Send Invitation' }));
     const errorElements = screen.getAllByText('Required');
-    expect(errorElements).toHaveLength(5);
+    expect(errorElements).toHaveLength(6);
     errorElements.forEach((element) => {
       expect(element).toBeInTheDocument();
     });
@@ -173,6 +173,10 @@ describe('PartnerManageTeam', () => {
     await userEvent.type(screen.getByPlaceholderText(/john doe/i), 'john hm');
     await userEvent.type(screen.getByPlaceholderText(/john will/i), 'john bu');
     await userEvent.type(screen.getByPlaceholderText(/koramangala/i), 'shantinagar');
+    await userEvent.type(
+      screen.getByPlaceholderText(/manager@razorpay.com/i),
+      'manager@razorpay.com',
+    );
     expect(trackInviteNewMemberModalLoadedSpy).toHaveBeenCalled();
     await userEvent.click(screen.getByRole('button', { name: 'Send Invitation' }));
     expect(trackInviteNewMemberModalClickedSpy).toHaveBeenCalled();
@@ -193,6 +197,10 @@ describe('PartnerManageTeam', () => {
     await userEvent.type(screen.getByPlaceholderText(/john doe/i), 'john hm');
     await userEvent.type(screen.getByPlaceholderText(/john will/i), 'john bu');
     await userEvent.type(screen.getByPlaceholderText(/koramangala/i), 'shantinagar');
+    await userEvent.type(
+      screen.getByPlaceholderText(/manager@razorpay.com/i),
+      'manager@razorpay.com',
+    );
     await userEvent.click(screen.getByRole('button', { name: 'Send Invitation' }));
 
     await waitFor(() => {
