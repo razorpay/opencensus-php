@@ -261,6 +261,10 @@ Route::group(['middleware' => ['web']], function () {
             ->where(['path' => '.*'])
             ->name('ucs_admin_generic_handler');
 
+        Route::post('/admin/mes/{path}', 'MerchantExperienceController@mesGenericHandler')
+                    ->where(['path' => '.*'])
+                    ->name('mes_admin_generic_handler');
+
         Route::any('/admin/stats/{id}', 'AdminController@getMerchantStats')->name('admin_merchant_stats');
         Route::get('/admin/user', 'AdminController@getAdmin')->name('get_admin_user');
         Route::post('/admin/user/logout', 'AdminController@getLogout')->name('admin_user_logout');

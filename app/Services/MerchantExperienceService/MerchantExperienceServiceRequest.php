@@ -9,9 +9,10 @@ use App\Http\Headers;
 use GuzzleHttp\Client;
 use App\Trace\TraceCode;
 use App\Metrics\Constants;
-use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use Illuminate\Http\Response;
 use Route;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use App\User\Constants as UserConstants;
@@ -134,7 +135,7 @@ class MerchantExperienceServiceRequest {
     {
         $options = $this->requestOptions;
         $options["body"] = ! empty($body) ? json_encode($body) : null;;
-        $request = new Request($this->getMethod(), $this->getPath());
+        $request = new GuzzleRequest($this->getMethod(), $this->getPath());
         $httpCode = Response::HTTP_OK;
         $data = [];
 
@@ -522,6 +523,12 @@ class MerchantExperienceServiceRequest {
         }
 
         $routeName = Route::currentRouteName();
+
+        if (in_array($routeName,  ['mes_admin_generic_handler']))
+        {
+            $this->clientType = 'admin';
+            return;
+        }
 
         if (in_array($routeName, ['merchant', 'admin', 'extension_merchant', 'oauth_merchant', 'oauth_user_logout'], true) === false)
         {
