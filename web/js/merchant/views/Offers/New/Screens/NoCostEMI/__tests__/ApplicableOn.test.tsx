@@ -53,6 +53,11 @@ const mockProps = {
   minAmount: 3000,
   handleChange: jest.fn(),
   onOffersChange: jest.fn(),
+  setFieldTouched: jest.fn(),
+  setFieldValue: jest.fn(),
+  setErrors: jest.fn(),
+  offersData: {},
+  isFormLocked: false,
 };
 
 const renderComponent = (props = {}) => render(<ApplicableOn {...mockProps} {...props} />);

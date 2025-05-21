@@ -25,12 +25,14 @@ export const OFFER_TYPES = {
   Instant: 'instant',
   Cashback: 'deferred',
   AlreadyDiscounted: 'already_discounted',
+  Clubbed: 'clubbed',
 };
 
 export const OFFER_TYPE_LABELS = {
   [OFFER_TYPES.Instant]: 'Instant',
   [OFFER_TYPES.Cashback]: 'Cashback',
   [OFFER_TYPES.AlreadyDiscounted]: 'Already Discounted',
+  [OFFER_TYPES.Clubbed]: 'Clubbed',
 };
 
 export const OFFER_TYPES_OPTIONS = [
@@ -357,4 +359,15 @@ export const PAYER_ACCOUNT_TYPES_DISPLAY = [
   { label: 'Bank Account on UPI', name: PAYER_ACCOUNT_TYPES_OPTIONS.BANK_ACCCOUNT },
   { label: 'Credit Card on UPI', name: PAYER_ACCOUNT_TYPES_OPTIONS.CREDIT_CARD },
   { label: 'Wallet on UPI', name: PAYER_ACCOUNT_TYPES_OPTIONS.WALLET },
+];
+
+export const ADDITIONAL_OFFER_VALUES = {
+  INSTANT_DISCOUNT: 'instant_discount',
+  CASHBACK: 'cashback',
+};
+
+export const ADDITIONAL_OFFER_OPTIONS = [
+  { label: '--Select Additional Offer--', name: '' },
+  { label: 'Instant Discount', name: ADDITIONAL_OFFER_VALUES.INSTANT_DISCOUNT },
+  { label: 'Cashback', name: ADDITIONAL_OFFER_VALUES.CASHBACK },
 ];

@@ -11,6 +11,7 @@ export const NoCostOfferForm = ({
   handleChange,
   errors,
   onOffersChange,
+  setFieldValue,
   tenure,
 }): JSX.Element => {
   return (
@@ -32,6 +33,7 @@ export const NoCostOfferForm = ({
             values={values}
             handleChange={handleChange}
             errors={errors}
+            setFieldValue={setFieldValue}
           />
         ))}
       </div>

@@ -1782,6 +1782,27 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: [/offers.*/i],
+      abExperiments: [
+        {
+          uniqueHashKey: 'offer_clubbing',
+          experimentId: {
+            beta: 'QJf5sT9RfEWOoP',
+            production: 'QJfISZFaMD3RMc',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       routesToMatch: [/^(\/magic(\/.*)?|\/configuration\/magic\/.*)$/, '/dashboard/*'],
       abExperiments: [
         {

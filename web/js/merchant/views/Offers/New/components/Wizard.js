@@ -33,26 +33,42 @@ export default class CreateOfferWizard extends React.Component {
   }
 
   toggleDisableState = () => {
-    // HINT: Render taking sometime so we need to delay the validations by 100 milli sec
     setTimeout(() => {
       const { state } = this;
-      const { errors } = this.props;
+      const { errors, values = {} } = this.props;
+      const currentTabName = this.TABS_DATA[state.currentTab].name;
+
+      // Get required fields for current tab
+      const requiredFields = this.getRequiredFieldsForTab(currentTabName);
+
+      // Check for both errors and missing required values
       const invalidFields = Object.entries(errors)
-        // eslint-disable-next-line no-unused-vars
         .filter(([_key, value]) => value !== false)
-        // eslint-disable-next-line no-unused-vars
         .map(([key, _value]) => key);
 
-      const currentTabStatus = invalidFields.length === 0;
-      let isValidTabsUpdate = false;
-      const newValidTabs = state.validTabs.map((tabStatus, idx) => {
-        if (state.currentTab === idx && tabStatus !== currentTabStatus) {
-          isValidTabsUpdate = true;
-          return currentTabStatus;
+      // Check if any required field is empty
+      const missingRequiredFields = requiredFields.some((field) => {
+        // Special handling for min_amount in Applicable On tab
+        if (field === 'min_amount' && currentTabName === 'Applicable On') {
+          return !values[field];
         }
-
-        return tabStatus;
+        // For other required fields
+        return requiredFields.includes(field) && !values[field];
       });
+
+      const currentTabStatus = invalidFields.length === 0 && !missingRequiredFields;
+      let isValidTabsUpdate = false;
+
+      // Create a new validTabs array with the correct length based on actual tabs
+      const newValidTabs = Array(this.TABS_DATA.length)
+        .fill(false)
+        .map((_, idx) => {
+          if (state.currentTab === idx && state.validTabs[idx] !== currentTabStatus) {
+            isValidTabsUpdate = true;
+            return currentTabStatus;
+          }
+          return state.validTabs[idx] || false;
+        });
 
       if (isValidTabsUpdate) {
         this.setState({
@@ -62,19 +78,58 @@ export default class CreateOfferWizard extends React.Component {
     }, 100);
   };
 
+  getRequiredFieldsForTab = (tabName) => {
+    const commonFields = {
+      Description: ['name', 'display_text', 'terms'],
+      'Offer Validity': ['ends_at', 'block'],
+      Overview: ['creation_terms_accepted'],
+      'Discount type': [],
+    };
+
+    const formSpecificFields = {
+      'Applicable On': this.isNoCostEMIForm()
+        ? ['min_amount', 'issuer', 'emi_durations'] // NoCostEMI form
+        : [], // Regular Offers form - let it use default validation
+      'Additional Offer type':
+        this.isNoCostEMIForm() && this.props.values?.additional_offer
+          ? this.props.values?.additional_offer_discount_type === 1
+            ? ['tenures_applicable', 'additional_offer_discount_type', 'flat_cashback']
+            : [
+                'tenures_applicable',
+                'additional_offer_discount_type',
+                'percent_rate',
+                'max_cashback',
+              ]
+          : [],
+    };
+
+    return [...(commonFields[tabName] || []), ...(formSpecificFields[tabName] || [])];
+  };
+
+  isNoCostEMIForm = () => {
+    const { values } = this.props;
+    return values?.discount_type === 'no_cost_emi';
+  };
+
   handleTabChange = ({ currentTarget }) => {
-    this.setState({ currentTab: Number(currentTarget.dataset.index) });
-    this.props.setErrors({});
+    const newTab = Number(currentTarget.dataset.index);
+    const { currentTab } = this.state;
+
+    // Only clear errors if we're moving to a different tab
+    if (newTab !== currentTab) {
+      this.setState({ currentTab: newTab });
+    }
   };
 
   changeTab = (step) => () => {
     const validTabs = [...this.state.validTabs];
     validTabs[this.state.currentTab] = true;
-    this.setState((prevState) => ({
-      currentTab: prevState.currentTab + step,
+    const newTab = this.state.currentTab + step;
+
+    this.setState({
+      currentTab: newTab,
       validTabs,
-    }));
-    this.props.setErrors({});
+    });
   };
 
   renderForm() {
@@ -100,28 +155,167 @@ export default class CreateOfferWizard extends React.Component {
 
     const disabled = validTabs.some((tab) => tab === false) || props.disabled || props.isLoading;
     const layout = !isLastTab && 'tabular';
-    const { offersData, isLowCostExperimentEnabled } = this.props;
+    const { offersData, values, errors = {} } = this.props;
 
-    const isApplicableOnStepValid = () => {
+    const isApplicableOnTabInvalid = () => {
       const { currentTab } = this.state;
-      return (
-        // TODO: Change hardcoded
-        currentTab === 2 &&
-        isLowCostExperimentEnabled &&
-        offersData &&
-        (!Object.keys(offersData).length ||
-          isOfferTypeAbsent(offersData) ||
-          isLowCostAmountMissing(offersData))
-      );
+      const currentTabName = this.TABS_DATA[currentTab].name;
+
+      if (currentTabName !== 'Applicable On' || !this.isNoCostEMIForm()) {
+        return false;
+      }
+
+      // Check if min_amount is missing
+      if (!values?.min_amount) {
+        return true;
+      }
+
+      // Check if issuer is missing
+      if (!values?.issuer) {
+        return true;
+      }
+
+      // Check if emi_durations is empty
+      if (values?.emi_durations?.length === 0) {
+        return true;
+      }
+
+      // Only check low-cost offer validation if the experiment is enabled
+      if (this.props.isLowCostExperimentEnabled) {
+        // Check if offersData is missing
+        if (!offersData) {
+          return true;
+        }
+
+        // If we have offersData, check if:
+        // 1. Offer type is present (isOfferTypeAbsent should be false)
+        // 2. Amount is properly set (isLowCostAmountMissing should be false)
+        if (Object.keys(offersData).length > 0) {
+          const hasOfferType = !isOfferTypeAbsent(offersData);
+          const hasValidAmount = !isLowCostAmountMissing(offersData);
+
+          // Tab is invalid if either offer type is missing OR amount is missing
+          return !hasOfferType || !hasValidAmount;
+        }
+
+        // If no offers data yet, tab is invalid
+        return true;
+      }
+
+      // If low-cost experiment is disabled, only check basic fields
+      return false;
+    };
+
+    const isAdditionalOffersTabInvalid = () => {
+      const { currentTab } = this.state;
+      const currentTabName = this.TABS_DATA[currentTab].name;
+
+      if (currentTabName !== 'Additional Offer type') {
+        return false;
+      }
+
+      // If additional offer is not selected, tab is valid
+      if (!values?.additional_offer) {
+        return false;
+      }
+
+      if (!values?.tenures_applicable || !values?.tenures_applicable.length) {
+        return true;
+      }
+
+      // If additional offer is selected, check required fields based on discount type
+      if (values.additional_offer_discount_type === 1) {
+        return !values.flat_cashback || errors?.flat_cashback;
+      } else if (values.additional_offer_discount_type === 2) {
+        return (
+          !values.percent_rate ||
+          !values.max_cashback ||
+          errors?.percent_rate ||
+          errors?.max_cashback
+        );
+      }
+
+      // If no discount type selected yet, tab is invalid
+      return values.additional_offer && !values.additional_offer_discount_type;
     };
 
     const isDisabled = () => {
       const { currentTab } = this.state;
-      // Validate Low cost offer form if the experiment is enabled
-      if (isApplicableOnStepValid()) {
+      const currentTabName = this.TABS_DATA[currentTab].name;
+
+      // Special handling for Additional Offers tab
+      if (currentTabName === 'Additional Offer type') {
+        return isAdditionalOffersTabInvalid();
+      }
+
+      // Special handling for Applicable On tab - only for NoCostEMI
+      if (currentTabName === 'Applicable On' && this.isNoCostEMIForm()) {
+        return isApplicableOnTabInvalid();
+      }
+
+      // Check if current tab has any errors
+      const hasErrors = Object.entries(errors).some(([key, value]) => {
+        const requiredFields = this.getRequiredFieldsForTab(currentTabName);
+        return requiredFields.includes(key) && value !== false;
+      });
+
+      return hasErrors || !validTabs[currentTab];
+    };
+
+    const isPrevTabInvalid = (tabIndex) => {
+      for (let i = 0; i < tabIndex; i++) {
+        const prevTabName = this.TABS_DATA[i].name;
+        let isPrevTabInvalid = false;
+
+        // Use the same validation logic as isDisabled
+        if (prevTabName === 'Additional Offer type' && this.isNoCostEMIForm()) {
+          isPrevTabInvalid = isAdditionalOffersTabInvalid();
+        } else if (prevTabName === 'Applicable On' && this.isNoCostEMIForm()) {
+          isPrevTabInvalid = isApplicableOnTabInvalid();
+        } else {
+          const hasErrors = Object.entries(errors).some(([key, value]) => {
+            const requiredFields = this.getRequiredFieldsForTab(prevTabName);
+            return requiredFields.includes(key) && value !== false;
+          });
+          isPrevTabInvalid = hasErrors || !validTabs[i];
+        }
+
+        if (isPrevTabInvalid) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    const disableTabCondition = (tabIndex) => {
+      // First check if any previous tab is invalid
+      if (this.isNoCostEMIForm() && isPrevTabInvalid(tabIndex)) {
         return true;
       }
-      return !validTabs[currentTab];
+
+      let isTabDisabled = tabIndex !== 0 && !validTabs[tabIndex - 1];
+      const tabName = this.TABS_DATA[tabIndex].name;
+
+      // Special handling for NoCostEMI form
+      if (this.isNoCostEMIForm()) {
+        if (tabIndex >= 3 && isApplicableOnTabInvalid()) {
+          return true;
+        }
+
+        // For Additional Offers tab, only check validation if an offer is selected
+        if (tabName === 'Additional Offer type' && values?.additional_offer) {
+          isTabDisabled = isTabDisabled || isAdditionalOffersTabInvalid();
+        }
+      }
+
+      if (tabIndex === this.TABS_DATA.length - 1) {
+        validTabs.forEach((isValidTab, idx) => {
+          if (!isValidTab && idx !== this.TABS_DATA.length - 1 && !isTabDisabled) {
+            isTabDisabled = true;
+          }
+        });
+      }
+      return isTabDisabled;
     };
 
     return (
@@ -137,21 +331,7 @@ export default class CreateOfferWizard extends React.Component {
               activeTab={currentTab}
               tabsValidity={validTabs}
               tabClickHandler={this.handleTabChange}
-              disableTabCondition={(tabIndex) => {
-                let isDisabled = tabIndex !== 0 && !validTabs[tabIndex - 1];
-                // If low cost tenure selected but form is invalid disable next step in sidebar
-                if (tabIndex >= 3 && isApplicableOnStepValid()) {
-                  return true;
-                }
-                if (tabIndex === 4) {
-                  validTabs.forEach((isValidTab, idx) => {
-                    if (!isValidTab && idx !== 4 && !isDisabled) {
-                      isDisabled = true;
-                    }
-                  });
-                }
-                return isDisabled;
-              }}
+              disableTabCondition={disableTabCondition}
             />
 
             <main className="form-container">

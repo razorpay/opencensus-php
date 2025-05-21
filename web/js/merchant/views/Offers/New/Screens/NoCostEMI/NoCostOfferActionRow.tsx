@@ -21,6 +21,7 @@ const EMITenureAction = ({
   values,
   handleChange,
   errors,
+  setFieldValue,
 }): JSX.Element => {
   const [emiTypeSelected, setEmiTypeSelected] = useState<EmiTypes>(EmiTypes.NONE);
   const [merchantInterest, setMerchantInterest] = useState<number>(0);
@@ -88,12 +89,16 @@ const EMITenureAction = ({
     (duration: number, handleChange) => (e) => {
       let emi_durations: number[] = [...(values.emi_durations ? values.emi_durations : [])];
 
+      let plan_merchant_payback = values.plan_merchant_payback || {};
+  
       if (!e.isChecked) {
         emi_durations = emi_durations.filter((ele) => ele != duration);
+        delete plan_merchant_payback[duration];
       }
 
       if (e.isChecked && !emi_durations.includes(duration)) {
         emi_durations.push(duration);
+        plan_merchant_payback[duration] = plan.merchant_payback;
       }
 
       handleChange({
@@ -102,6 +107,9 @@ const EMITenureAction = ({
           value: emi_durations,
         },
       });
+
+      setFieldValue(offerPayloadKeys.plan_merchant_payback, plan_merchant_payback);
+      
       updateOfferState({
         key: offerStateKeys.TENURE,
         tenure: duration,

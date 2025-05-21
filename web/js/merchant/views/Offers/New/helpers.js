@@ -15,6 +15,99 @@ export const isGranularPSPOfferEnabled = (payment_method, type) => {
 export const getIinsRegexToTest = (is10DigitBinExperimentEnabled, isSubscription) =>
   isSubscription ? /^\d{6}$/ : is10DigitBinExperimentEnabled ? /^\d{6,10}$/ : /^\d{6}$/;
 
+export const getClubbedOfferRules = (formData) => {
+  let isAdditionalOffer = false;
+
+  if (Array.isArray(formData.emi_durations) && formData.emi_durations.length) {
+    const lowCostEMISet = new Set((formData.low_cost_emi || []).map((item) => item?.tenure));
+
+    const isDebitCard = formData?.issuer?.toLowerCase()?.includes('_dc');
+
+    const rules = formData.emi_durations.reduce((acc, tenure) => {
+      const filters = {
+        includes: {
+          orders: [
+            {
+              min_amount: +formData.min_amount,
+              applies_to: 'total_amount',
+            },
+          ],
+          payment_instruments: [
+            {
+              method: 'emi',
+              card: {
+                iins: [],
+                issuers: [formData.issuer],
+                types: [isDebitCard ? 'DEBIT' : 'CREDIT'],
+              },
+              emi_durations: [tenure],
+            },
+          ],
+        },
+      };
+
+      const limit_type = formData.additional_offer_discount_type
+        ? formData.additional_offer_discount_type === 2
+          ? 'UPTO'
+          : 'FLAT'
+        : 'FLAT';
+
+      const isLowCostEmi = lowCostEMISet.has(tenure);
+
+      const benefits = [
+        {
+          offer_type: isLowCostEmi ? 'low_cost_emi' : 'no_cost_emi',
+          limit_type: 'FLAT',
+          tenures: [tenure],
+          unit: 2,
+          value: isLowCostEmi
+            ? +formData.low_cost_emi.find((item) => item.tenure === tenure).discount_to_avail
+                .discount_percentage
+            : formData.plan_merchant_payback[tenure] * 100 || 0,
+        },
+      ];
+
+      if (formData.additional_offer && formData.tenures_applicable.includes(tenure)) {
+        isAdditionalOffer = true;
+        benefits.push({
+          offer_type: formData.additional_offer,
+          limit_type,
+          unit: formData.additional_offer_discount_type,
+          value: +(formData.flat_cashback || formData.percent_rate),
+          ...(formData.percent_rate ? { max_discount: formData.max_cashback } : {}),
+        });
+      }
+
+      return [
+        ...acc,
+        {
+          filters,
+          benefits,
+        },
+      ];
+    }, []);
+
+    return {
+      rules,
+      isAdditionalOffer,
+    };
+  }
+
+  return {
+    rules: [],
+    isAdditionalOffer: false,
+  };
+};
+
+const clubbedOfferAdditionalFields = [
+  'additional_offer',
+  'additional_offer_discount_type',
+  'max_cashback',
+  'flat_cashback',
+  'percent_rate',
+  'tenures_applicable',
+];
+
 export function prepareDataForSubmit(
   formData,
   isLowCostExperimentEnabled,
@@ -59,6 +152,7 @@ export function prepareDataForSubmit(
     'upiApps',
     'upiAppsList',
     'selectedInstruments',
+    'plan_merchant_payback',
   ];
 
   const checkboxFields = ['default_offer', 'block', 'creation_terms_accepted'];
@@ -135,6 +229,16 @@ export function prepareDataForSubmit(
     transformedFormData.emi_subvention = 1;
     transformedFormData.payment_method = 'emi';
 
+    const { rules, isAdditionalOffer } = getClubbedOfferRules(formData);
+
+    if (rules.length) {
+      transformedFormData.rules = rules;
+
+      if (isAdditionalOffer) {
+        transformedFormData.type = 'clubbed';
+      }
+    }
+
     if (isLowCostExperimentEnabled && formData.low_cost_emi && formData.low_cost_emi.length) {
       // check if emi tenure is selected for low cost offer
       // if yes remove it from emi_durations
@@ -147,6 +251,8 @@ export function prepareDataForSubmit(
       fieldsToBeDeleted.push('low_cost_emi');
       fieldsToBeDeleted.push('merchant_borne_discount');
     }
+
+    fieldsToBeDeleted.push(...clubbedOfferAdditionalFields);
   } else {
     fieldsToBeDeleted.push('low_cost_emi');
     fieldsToBeDeleted.push('emi_durations');

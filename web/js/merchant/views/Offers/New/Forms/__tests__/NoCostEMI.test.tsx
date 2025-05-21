@@ -42,7 +42,6 @@ describe('NoCostEMIForm Component', () => {
       expect(screen.getAllByText('Description').length).toBe(2);
     });
 
-    expect(screen.getByText('Discount type')).toBeInTheDocument();
     expect(screen.getByText('Applicable On')).toBeInTheDocument();
     expect(screen.getByText('Offer Validity')).toBeInTheDocument();
     expect(screen.getByText('Overview')).toBeInTheDocument();

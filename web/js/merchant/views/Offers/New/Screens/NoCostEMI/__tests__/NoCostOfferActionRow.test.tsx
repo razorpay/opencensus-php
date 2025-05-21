@@ -16,6 +16,7 @@ const initProps = {
   },
   handleChange: jest.fn(),
   onOffersChange: jest.fn(),
+  setFieldValue: jest.fn(),
   key: 1,
   offersData: {},
   errors: {},

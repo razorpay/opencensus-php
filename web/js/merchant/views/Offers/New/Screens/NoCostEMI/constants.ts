@@ -47,4 +47,5 @@ export const offerStateKeys = {
 export const offerPayloadKeys = {
   emi_durations: 'emi_durations',
   low_cost_emi: 'low_cost_emi',
+  plan_merchant_payback: 'plan_merchant_payback',
 };

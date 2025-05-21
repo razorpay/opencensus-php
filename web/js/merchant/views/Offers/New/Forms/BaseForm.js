@@ -82,7 +82,7 @@ export default class BaseForm extends React.Component {
       if (values.issuer) {
         newState.values.issuer = null;
 
-        newValidTabs[2] = false;
+        newValidTabs[1] = false;
         invalidateTabs = true;
         newValidTabs[4] = false;
       }
@@ -90,7 +90,7 @@ export default class BaseForm extends React.Component {
       if (values.emi_durations) {
         newState.values.emi_durations = null;
 
-        newValidTabs[2] = false;
+        newValidTabs[1] = false;
         invalidateTabs = true;
         newValidTabs[4] = false;
       }
