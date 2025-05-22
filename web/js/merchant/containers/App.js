@@ -1409,8 +1409,7 @@ class App extends Component {
 
     const showNewHomePage = isRTUXHomepage || isFtuxV2Enabled;
 
-    const isSidebarV2 =
-      user.isOrgRZP &&
+    const isSidebarV2 = user.isOrgRZP &&
       !user.isPartner() &&
       !user.isSourceRX &&
       !user.isPartnerAgentRole &&

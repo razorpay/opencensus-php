@@ -13,7 +13,7 @@ import { fetchProgramsByResellerId } from 'merchant/views/GCMS/Programs/queries'
 import { SKU } from 'merchant/views/GCMS/Programs/types';
 import ProgramHeaderSection from 'merchant/views/GCMS/shared/ProgramHeaderSection';
 import { GCMSSession, SessionContext } from 'merchant/views/GCMS/shared/context';
-import { getFormattedAmountNewDenom, isPositiveInteger } from 'merchant/views/GCMS/shared/utils';
+import { getFormattedAmountNewDenom, isNonNegativeInteger } from 'merchant/views/GCMS/shared/utils';
 import { ListApiResponse } from 'merchant/views/Wallet/types';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -199,7 +199,7 @@ const OrderCartItemsSection = ({ showNotification }: Props) => {
                                       placeholder="0"
                                       defaultValue={item.quantity}
                                       onChange={debounce(({ value }) => {
-                                        if (isPositiveInteger(value || '')) {
+                                        if (isNonNegativeInteger(value || '')) {
                                           updateOrderItem({
                                             quantity: value,
                                             item,

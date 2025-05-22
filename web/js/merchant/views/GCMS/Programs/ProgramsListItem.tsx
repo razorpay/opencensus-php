@@ -1,99 +1,95 @@
 import React, { memo } from 'react';
-import { Box, Card, CardBody, Divider, Text } from '@razorpay/blade/components';
+import { Box, Card, CardBody, Divider, Text, Skeleton } from '@razorpay/blade/components';
 import { truncatedString } from 'common/utils/rzp-utils';
-//import { StyledProgramTypeContainer } from 'merchant/views/GCMS/Programs/styled';
 import { Program } from 'merchant/views/GCMS/Programs/types';
-//import { PROGRAM_TYPES } from 'merchant/views/GCMS/shared/constants';
-import { daysToMonths, getProgramDenomination } from 'merchant/views/GCMS/shared/utils';
+import { displayExpiryValidity, getProgramDenomination } from 'merchant/views/GCMS/shared/utils';
+import { DEFAULT_IMAGE } from '../shared/constants';
+import { displayPriceDenominations } from './constants';
 
 type Props = {
   program: Program;
   onClick: () => void;
 };
 
-const ProgramsListItem: React.FC<Props> = ({ program, onClick }) => {
-  // const programType =
-  //   Object.keys(PROGRAM_TYPES).find((key) => PROGRAM_TYPES[key].id === program.type) || 'VOUCHER';
+const ProgramsListItem: React.FC<Props> = ({
+  program,
+  onClick,
+  programImages,
+  isProgramImagesLoading,
+}) => {
   return (
-    <Box paddingX="0px" paddingY="spacing.3" flexBasis="25%">
+    <Box
+      paddingX="spacing.0"
+      paddingY="spacing.0"
+      width="210px"
+      height="257px"
+      borderRadius="medium"
+      borderColor="surface.border.gray.muted"
+      overflow="hidden"
+    >
       <Card
         onClick={onClick}
         accessibilityLabel="GCMS Programs Card"
         elevation="midRaised"
-        onHover={function noRefCheck() {}}
-        shouldScaleOnHover
-        width={{
-          m: '272px',
-          s: '100%',
-        }}
-        height="382px"
-        padding="spacing.5"
-        borderRadius="xlarge"
+        padding="16px"
+        width="100%"
+        height="100%"
+        testID="program-card"
       >
         <CardBody>
-          <Box width="240px" height="140px">
-            <img src={program.policies?.image_link} width="100%" height="100%" alt={program.name} />
+          <Box
+            width="100%"
+            height="117px"
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+          >
+            {isProgramImagesLoading ? (
+              <Skeleton borderRadius="medium" height="100%" width="100%" />
+            ) : (
+              <img
+                src={(programImages && programImages[program.id]) || DEFAULT_IMAGE}
+                height="100%"
+                width="100%"
+                style={{ 'object-fit': 'cover', 'border-radius': '5px' }}
+                alt={program.name}
+                className="card-image"
+              />
+            )}
           </Box>
-          <Box paddingTop="spacing.4">
-            <Box>
-              <Text weight="semibold" size="large">
+          <Box>
+            <Box marginTop="12px" height="32px" marginBottom="8px">
+              <Text weight="semibold" size="small" truncateAfterLines={2}>
                 {program.name}
               </Text>
             </Box>
-            <Box display="flex" flexDirection="row" alignItems="center" paddingTop="spacing.2">
-              <Box>
-                <Text color="surface.text.gray.muted">
-                  {truncatedString(program.policies?.program_category, 18)}
-                </Text>
-              </Box>
-              {/* <StyledProgramTypeContainer
-                backgroundColor={PROGRAM_TYPES[programType as keyof typeof PROGRAM_TYPES].color}
-              >
-                <Text color="interactive.text.staticWhite.normal" weight="semibold" size="small">
-                  {capitalize(PROGRAM_TYPES[programType as keyof typeof PROGRAM_TYPES].name)}
-                </Text>
-              </StyledProgramTypeContainer> */}
-            </Box>
-            <Box paddingTop="spacing.5">
+            <Box>
               <Divider />
             </Box>
-            <Box
-              paddingTop="spacing.5"
-              display="flex"
-              flexDirection="row"
-              alignItems="center"
-              justifyContent="space-between"
-              gap="8px"
-            >
-              <Box paddingTop="spacing.2" height="38px" width="116px">
-                <Box>
-                  <Text color="surface.text.gray.muted">Validity</Text>
-                </Box>
-                <Box paddingTop="spacing.1">
-                  <Text>
-                    {program.policies?.gift_card_validity_in_days
-                      ? program.policies?.gift_card_validity_in_days > 30
-                        ? `${daysToMonths(program.policies?.gift_card_validity_in_days)} months`
-                        : `${program.policies?.gift_card_validity_in_days} days`
-                      : '-'}
-                  </Text>
-                </Box>
+            <Box paddingTop="12px" display="flex" flexDirection="column" gap="8px">
+              <Box display="flex" flexDirection="row" justifyContent="space-between">
+                <Text color="surface.text.gray.muted" size="xsmall">
+                  Validity
+                </Text>
+                <Text size="xsmall">{displayExpiryValidity(program)}</Text>
               </Box>
-              <Box paddingTop="spacing.2" height="38px" width="116px">
-                <Box>
-                  <Text color="surface.text.gray.muted">Denomination</Text>
-                </Box>
-                <Box paddingTop="spacing.1">
-                  <Text>{getProgramDenomination({ policy: program.policies })}</Text>
-                </Box>
-              </Box>
-            </Box>
-            <Box paddingTop="spacing.5" height="38px" width="240px">
-              <Box>
-                <Text color="surface.text.gray.muted">Maximum Discount</Text>
-              </Box>
-              <Box paddingTop="spacing.1">
-                <Text>{program.policies.max_discount_percent}%</Text>
+              <Box
+                paddingTop="spacing.2"
+                display="flex"
+                flexDirection="row"
+                justifyContent="space-between"
+              >
+                <Text color="surface.text.gray.muted" size="xsmall">
+                  Denomination
+                </Text>
+                <Text truncateAfterLines={1} size="xsmall">
+                  {displayPriceDenominations(
+                    program.policies.gift_card_price_type,
+                    program.policies.gift_card_price_denominations,
+                    program.policies.gift_card_minimum_price,
+                    program.policies.gift_card_maximum_price,
+                  )}
+                </Text>
               </Box>
             </Box>
           </Box>

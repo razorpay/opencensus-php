@@ -11,6 +11,10 @@ import { Button, DownloadIcon } from '@razorpay/blade/components';
 import { type AxiosResponse } from 'axios';
 import { useSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
+import {
+  isCreateGiftCardBatchEnabled as isGCBatchEnabled,
+  isGiftCardTransferEnabled as isGCTransferEnabled,
+} from '../../GCMS/shared/utils';
 
 const typesLabelMap = {
   create_wallet_accounts: 'Accounts',
@@ -71,16 +75,15 @@ interface ListProps {
 }
 
 export const List = ({ fetchAll, batchDownload, ...rest }: ListProps): JSX.Element => {
-  const onDownload = (id) => batchDownload(id).then((res) => (window.location = res.data?.url));
+  const onDownload = (id) =>
+    batchDownload(id)
+      .then((res) => (window.location = res.data?.url))
+      .catch((err) => console.error(err));
 
   const splitz = useSplitzService();
-  const isCreateGiftCardBatchEnabled = isExperimentEnabled(
-    splitz?.abExperiments?.create_bulk_gift_cards,
-  );
+  const isCreateGiftCardBatchEnabled = isGCBatchEnabled(splitz);
 
-  const isGiftCardsTransferBatchEnabled = isExperimentEnabled(
-    splitz?.abExperiments?.gift_cards_transfer,
-  );
+  const isGiftCardsTransferBatchEnabled = isGCTransferEnabled(splitz);
 
   useEffect(() => {
     if (fetchAll) {

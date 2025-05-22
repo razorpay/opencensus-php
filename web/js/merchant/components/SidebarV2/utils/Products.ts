@@ -35,7 +35,6 @@ import {
   ShoppingBagIcon,
   StorefrontIcon,
   TransactionsIcon,
-  TrendingUpIcon,
   WalletIcon,
   ZapIcon,
   BuildingIcon,
@@ -413,41 +412,9 @@ export const PRODUCTS_DATA: Record<string, Partial<ProductData>> = {
       return isBillMeMerchant({ abExperiments });
     },
   },
-  gcms_programs: {
+  gcms: {
     bladeIcon: ZapIcon,
     icon: 'i-program',
-    additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
-      user.isIssuingDashboardEnabled &&
-      isExperimentEnabled(abExperiments.razorpay_gcms) &&
-      user.isIssuingGcmsEnabled,
-  },
-  gcms_resellers: {
-    bladeIcon: StorefrontIcon,
-    icon: 'i-reseller',
-    additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
-      user.isIssuingDashboardEnabled &&
-      isExperimentEnabled(abExperiments.razorpay_gcms) &&
-      user.isIssuingGcmsEnabled,
-  },
-  gcms_orders: {
-    bladeIcon: ShoppingBagIcon,
-    icon: 'i-order',
-    additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
-      user.isIssuingDashboardEnabled &&
-      isExperimentEnabled(abExperiments.razorpay_gcms) &&
-      user.isIssuingGcmsEnabled,
-  },
-  gcms_funds: {
-    bladeIcon: TrendingUpIcon,
-    icon: 'i-funds',
-    additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
-      user.isIssuingDashboardEnabled &&
-      isExperimentEnabled(abExperiments.razorpay_gcms) &&
-      user.isIssuingGcmsEnabled,
-  },
-  gcms_reports: {
-    bladeIcon: ReportsIcon,
-    icon: 'i-reports',
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
       user.isIssuingDashboardEnabled &&
       isExperimentEnabled(abExperiments.razorpay_gcms) &&

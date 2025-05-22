@@ -1,129 +1,126 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Box, Text, Heading, Divider } from '@razorpay/blade/components';
+import React, { useState, useEffect } from 'react';
+import { Box, Button, PlusIcon, Spinner, ToastContainer } from '@razorpay/blade/components';
 import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import { ModeT } from 'common/services/mode';
-import Spinner from 'common/ui/Spinner';
 import EmptyList from 'merchant/components/EmptyList';
 import ProgramsListItem from 'merchant/views/GCMS/Programs/ProgramsListItem';
-import { fetchPrograms, LIST_FETCH_BATCH_SIZE } from 'merchant/views/GCMS/Programs/queries';
-import { Program as ProgramType } from 'merchant/views/GCMS/Programs/types';
 import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
-import { ListApiResponse } from 'merchant/views/GCMS/shared/types';
-import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
+import Pagination from '@dashboards/payments/views/GCMS/Programs/Pagination';
+import useFetchPrograms from './hooks/useFetchPrograms';
 
 import { trackProgramsCardClicked, trackProgramsPageLoadSuccess } from './events';
+import CreateProgram from './CreateProgram';
+import PageLayout from 'merchant/views/GCMS/shared/PageLayout';
 
-const Programs = ({ mode }: { mode: ModeT }) => {
+const Programs = ({ mode, merchantId }: { mode: ModeT }) => {
+  const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const [paginationState, setPaginationState] = useState({
-    skip: 0,
-    count: LIST_FETCH_BATCH_SIZE,
+  const {
+    isLoading,
+    programs,
+    next,
+    prev,
+    skip,
+    count,
+    changePageSize,
+    programImages,
+    isImageLoading,
+    refetch,
+  } = useFetchPrograms({
+    mode,
   });
-  const { isLoading, data: programs } = useQuery<ListApiResponse<ProgramType>, Error>({
-    queryKey: ['gcms:programs', mode, paginationState],
-    queryFn: () => fetchPrograms({ ...paginationState, mode }),
-  });
-
-  const next = useCallback(() => {
-    const skipValue = paginationState.skip + paginationState.count;
-    setPaginationState({
-      skip: skipValue,
-      count: paginationState.count,
-    });
-  }, [paginationState.count, paginationState.skip]);
-
-  const prev = useCallback(() => {
-    const skipValue = paginationState.skip - paginationState.count;
-    setPaginationState({
-      skip: skipValue,
-      count: paginationState.count,
-    });
-  }, [paginationState.count, paginationState.skip]);
-
-  useEffect(() => {
-    trackProgramsPageLoadSuccess();
-  }, []);
+  const startProgramCreationFlow = () => {
+    setIsOpen(true);
+  };
 
   return (
     <Wrapper>
-      <div className="tabbed-container">
-        <Box>
-          <Heading color="surface.text.gray.subtle" size="large">
-            Programs
-          </Heading>
-          <Box paddingTop="spacing.4" paddingBottom="spacing.4">
-            <Divider />
+      <PageLayout
+        title="Gift Card Programs"
+        subtitle="A gift card program is a set of rules that determines how your gift cards work for different resellers."
+        leading={
+          <Button
+            icon={PlusIcon}
+            variant="primary"
+            onClick={startProgramCreationFlow}
+            testID="program-creation-flow"
+            size="medium"
+          >
+            New Program
+          </Button>
+        }
+      >
+        {isLoading ? (
+          <Box display="flex" alignItems="center" justifyContent="center" minHeight="200px">
+            <Spinner
+              accessibilityLabel="loading programs"
+              label="loading..."
+              labelPosition="bottom"
+            />
           </Box>
-        </Box>
-        <div>
-          {isLoading ? (
-            <div className="page-spinner-container">
-              <Spinner center={undefined} />
-            </div>
-          ) : (
-            <Box
-              maxWidth={{
-                l: '1200px',
-                m: '100%',
-                s: '100%',
-              }}
-            >
-              <Box
-                marginTop="spacing.4"
-                display="flex"
-                flex={1}
-                flexDirection="row"
-                flexWrap="wrap"
-              >
-                {/* @ts-expect-error array-undefined-check */}
-                {Array.isArray(programs?.items) && programs.items.length > 0 ? (
-                  programs?.items.map((program) => (
-                    <ProgramsListItem
-                      key={program.id}
-                      program={program}
-                      onClick={() => {
-                        trackProgramsCardClicked({
-                          programId: program?.id,
-                          programName: program?.name,
-                        });
-                        navigate(`/gcms/programs/${program.id}`);
-                      }}
-                    />
-                  ))
-                ) : (
-                  <Box width="100%" height="100%">
-                    <EmptyList
-                      description={
-                        <React.Fragment>
-                          <div>There are no programs yet!!</div>
-                          <div>Start creating new programs now.</div>
-                        </React.Fragment>
-                      }
-                    />
-                  </Box>
-                )}
-              </Box>
-              <Box>
-                <Box position="absolute" paddingLeft="spacing.6" paddingTop="spacing.1">
-                  <Text size="small" color="surface.text.gray.muted">{`Total ${
-                    programs?.total_count || 0
-                  } Programs`}</Text>
+        ) : (
+          <Box backgroundColor="#F9FAFC" padding="spacing.5" borderRadius="large">
+            <Box display="flex" rowGap="10px" columnGap="10px" flexWrap="wrap">
+              {Array.isArray(programs?.items) && programs.items.length > 0 ? (
+                programs?.items.map((program) => (
+                  <ProgramsListItem
+                    key={program.id}
+                    program={program}
+                    programImages={programImages}
+                    isProgramImagesLoading={isImageLoading}
+                    onClick={() => {
+                      trackProgramsCardClicked({
+                        programId: program?.id,
+                        programName: program?.name,
+                      });
+                      navigate(`/gcms/programs/${program.id}`);
+                    }}
+                  />
+                ))
+              ) : (
+                <Box width="100%" height="100%">
+                  <EmptyList
+                    description={
+                      <React.Fragment>
+                        <div>There are no programs yet!!</div>
+                        <div>Start creating new programs now.</div>
+                      </React.Fragment>
+                    }
+                  />
                 </Box>
+              )}
+            </Box>
+            {programs?.items?.length && (
+              <Box marginTop="spacing.4">
                 <Pagination
                   next={next}
                   prev={prev}
                   listData={programs?.items || []}
-                  skip={paginationState.skip}
-                  count={paginationState.count}
+                  skip={skip}
+                  count={count}
+                  changePageSize={changePageSize}
+                  totalCount={programs?.total_count}
                 />
               </Box>
-            </Box>
-          )}
-        </div>
-      </div>
+            )}
+          </Box>
+        )}
+      </PageLayout>
+      <Box zIndex="10001">
+        <ToastContainer />
+      </Box>
+      {isOpen && (
+        <CreateProgram
+          submitText="Create Program"
+          merchantId={merchantId}
+          mode={mode}
+          onClose={() => setIsOpen(false)}
+          refetch={refetch}
+        />
+      )}
     </Wrapper>
   );
 };

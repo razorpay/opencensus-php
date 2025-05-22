@@ -501,40 +501,7 @@ const PaymentHandle = lazy(() =>
 );
 const Wallet = lazy(() => import(/* webpackChunkName: "IssuingWallet" */ 'merchant/views/Wallet'));
 
-const GCMSFunds = lazy(() =>
-  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Funds'),
-);
-
-const GCMSPrograms = lazy(() =>
-  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Programs'),
-);
-const GCMSResellers = lazy(() =>
-  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Resellers'),
-);
-
-const GCMSProgramDetails = lazy(() =>
-  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Programs/ProgramDetails'),
-);
-
-const GCMSOrders = lazy(() =>
-  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Orders'),
-);
-
-const GCMSOrderDetails = lazy(() =>
-  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Orders/OrderDetails'),
-);
-
-const GCMSResellerDetails = lazy(() =>
-  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Resellers/ResellerDetails'),
-);
-
-const GCMSReports = lazy(() =>
-  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Reports'),
-);
-
-const GCMSOrderCreate = lazy(() =>
-  import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS/Orders/OrderCreate'),
-);
+const GCMS = lazy(() => import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS'));
 
 // const POS = lazy(() => import(/* webpackChunkName: "POS" */ 'merchant/views/POS'));
 const Pos = lazy(() => import(/* webpackChunkName: "POS" */ 'merchant/views/POS'));
@@ -2363,150 +2330,21 @@ class Content extends Component {
               </RouteGuard>
             }
           />
-          <Route path="gcms/*">
-            <Route path="*" element={<Navigate to="/gcms/orders/" replace />} />
-            <Route path="resellers/*">
-              <Route
-                index
-                element={
-                  <RouteGuard
-                    additionalCondition={(user) =>
-                      user.isIssuingDashboardEnabled &&
-                      isGCMSExperimentEnabled(splitz) &&
-                      user.isIssuingGcmsEnabled
-                    }
-                  >
-                    <GCMSResellers />
-                  </RouteGuard>
+          <Route
+            path="gcms/*"
+            element={
+              <RouteGuard
+                additionalCondition={(user) =>
+                  true ||
+                  (user.isIssuingDashboardEnabled &&
+                  isGCMSExperimentEnabled(splitz) &&
+                  user.isIssuingGcmsEnabled)
                 }
-              />
-              <Route
-                path=":resellerId/*"
-                element={
-                  <RouteGuard
-                    additionalCondition={(user) =>
-                      user.isIssuingDashboardEnabled &&
-                      isGCMSExperimentEnabled(splitz) &&
-                      user.isIssuingGcmsEnabled
-                    }
-                  >
-                    <GCMSResellerDetails />
-                  </RouteGuard>
-                }
-              />
-            </Route>
-            <Route
-              path=":reports/*"
-              element={
-                <RouteGuard
-                  additionalCondition={(user) =>
-                    user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
-                  }
-                >
-                  <GCMSReports />
-                </RouteGuard>
-              }
-            />
-
-            <Route path="programs/*">
-              <Route
-                index
-                element={
-                  <RouteGuard
-                    additionalCondition={(user) =>
-                      user.isIssuingDashboardEnabled &&
-                      isGCMSExperimentEnabled(splitz) &&
-                      user.isIssuingGcmsEnabled
-                    }
-                  >
-                    <GCMSPrograms />
-                  </RouteGuard>
-                }
-              />
-              <Route
-                path=":programId/*"
-                element={
-                  <RouteGuard
-                    additionalCondition={(user) =>
-                      user.isIssuingDashboardEnabled &&
-                      isGCMSExperimentEnabled(splitz) &&
-                      user.isIssuingGcmsEnabled
-                    }
-                  >
-                    <GCMSProgramDetails />
-                  </RouteGuard>
-                }
-              />
-            </Route>
-            <Route path="orders/*">
-              <Route
-                index
-                element={
-                  <RouteGuard
-                    additionalCondition={(user) =>
-                      user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
-                    }
-                  >
-                    <GCMSOrders />
-                  </RouteGuard>
-                }
-              />
-              <Route
-                path=":orderId/*"
-                element={
-                  <RouteGuard
-                    additionalCondition={(user) =>
-                      user.isIssuingDashboardEnabled && isGCMSExperimentEnabled(splitz)
-                    }
-                  >
-                    <GCMSOrderDetails />
-                  </RouteGuard>
-                }
-              />
-            </Route>
-            <Route
-              path="orders/*"
-              element={
-                <RouteGuard
-                  additionalCondition={(user) =>
-                    user.isIssuingDashboardEnabled &&
-                    isGCMSExperimentEnabled(splitz) &&
-                    user.isIssuingGcmsEnabled
-                  }
-                >
-                  <GCMSOrders />
-                </RouteGuard>
-              }
-            />
-            <Route
-              path="orders/create/*"
-              element={
-                <RouteGuard
-                  additionalCondition={(user) =>
-                    user.isIssuingDashboardEnabled &&
-                    isGCMSExperimentEnabled(splitz) &&
-                    user.isIssuingGcmsEnabled
-                  }
-                >
-                  <GCMSOrderCreate />
-                </RouteGuard>
-              }
-            />
-            <Route
-              path="funds/*"
-              element={
-                <RouteGuard
-                  additionalCondition={(user) =>
-                    user.isIssuingDashboardEnabled &&
-                    isGCMSExperimentEnabled(splitz) &&
-                    user.isIssuingGcmsEnabled
-                  }
-                >
-                  <GCMSFunds />
-                </RouteGuard>
-              }
-            />
-          </Route>
+              >
+                <GCMS />
+              </RouteGuard>
+            }
+          />
           <Route
             path="risk-and-fraud/*"
             element={

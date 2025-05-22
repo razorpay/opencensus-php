@@ -11,6 +11,21 @@ export interface ListApiParams {
   orderId?: string;
 }
 
+export interface LinkResellerToProgramParams {
+  merchantId: string;
+  resellerIds: string[];
+  programId: string;
+  defaultDiscount?: number;
+  status?: string;
+  mode?: string;
+}
+
+export interface AddProgramDetailsParams {
+  merchantId: string;
+  formData: object;
+  mode: string;
+}
+
 export interface ListApiResponse<T> {
   entity: string;
   count: number;
@@ -45,4 +60,20 @@ export type MerchantReseller = {
   billing_detail?: MerchantResellerBillingDetail;
   created_at: string;
   pool_account_id?: string;
+};
+
+export type ProgramResellers = {
+  merchant_id: string;
+  name: string;
+  reseller_id: string;
+  program_id: string;
+  default_discount: number;
+  status: string;
+};
+
+export type PageLayoutProps = {
+  title: string;
+  subtitle: string;
+  leading?: React.ReactNode;
+  children: React.ReactNode;
 };

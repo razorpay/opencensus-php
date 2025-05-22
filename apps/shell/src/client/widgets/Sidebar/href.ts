@@ -35,14 +35,10 @@ export const ROUTE_REG = {
   affordability: /^\/affordability(\/(widget))?/,
   developers: /^\/developers(\/(api|webhooks))?/,
   wallet: /^\/(wallet)/,
+  gcms: /^\/(gcms)/,
   internationalPaymentsBtn: /^\/(international)/,
   payment_metrics: /^\/(payment-metrics)/,
   pos: /^\/pos(\/(catalog|dashboard))*/,
-  gcms_programs: /^\/gcms\/programs/,
-  gcms_resellers: /^\/gcms\/resellers/,
-  gcms_orders: /^\/gcms\/orders/,
-  gcms_funds: /^\/gcms\/funds/,
-  gcms_reports: /^\/gcms\/reports/,
   reconciliations: /^\/reconciliations/,
   assisted_financing: /^\/(assisted-financing)/,
 };
@@ -91,11 +87,7 @@ export const BASE_ROUTES = {
   internationalPaymentsBtn: '/payment-methods/international-payments',
   payment_metrics: '/payment-metrics',
   pos: '/pos',
-  gcms_programs: '/gcms/programs',
-  gcms_resellers: '/gcms/resellers',
-  gcms_orders: '/gcms/orders',
-  gcms_funds: '/gcms/funds',
-  gcms_reports: '/gcms/reports',
+  gcms: '/gcms',
   riskAndFraud: '/risk-and-fraud',
   reconciliations: '/reconciliations/dashboard/processes',
   assisted_financing: '/assisted-financing',
@@ -145,20 +137,12 @@ export const initializeRoutes = (location, user) => {
     routes.magic_konnect = pathname.match(ROUTE_REG.magic_konnect)[0];
   } else if (ROUTE_REG.wallet.test(pathname)) {
     routes.wallet = pathname.match(ROUTE_REG.wallet)[0];
+  } else if (ROUTE_REG.gcms.test(pathname)) {
+    routes.gcms = pathname.match(ROUTE_REG.gcms)[0];
   } else if (ROUTE_REG.internationalPaymentsBtn.test(pathname)) {
     routes.internationalPaymentsBtn = pathname.match(ROUTE_REG.internationalPaymentsBtn)[0];
   } else if (user.isRegistrationLinkBasedRole) {
     routes.chargeAtWill = 'registration_links';
-  } else if (ROUTE_REG.gcms_programs.test(pathname)) {
-    routes.gcms_programs = pathname.match(ROUTE_REG.gcms_programs)[0];
-  } else if (ROUTE_REG.gcms_resellers.test(pathname)) {
-    routes.gcms_resellers = pathname.match(ROUTE_REG.gcms_resellers)[0];
-  } else if (ROUTE_REG.gcms_orders.test(pathname)) {
-    routes.gcms_orders = pathname.match(ROUTE_REG.gcms_orders)[0];
-  } else if (ROUTE_REG.gcms_funds.test(pathname)) {
-    routes.gcms_funds = pathname.match(ROUTE_REG.gcms_funds)[0];
-  } else if (ROUTE_REG.gcms_reports.test(pathname)) {
-    routes.gcms_reports = pathname.match(ROUTE_REG.gcms_reports)[0];
   } else if (ROUTE_REG.riskAndFraud.test(pathname)) {
     routes.riskAndFraud = pathname.match(ROUTE_REG.riskAndFraud)[0];
   } else if (ROUTE_REG.assisted_financing.test(pathname)) {

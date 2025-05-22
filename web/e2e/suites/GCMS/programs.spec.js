@@ -11,23 +11,46 @@ test.describe('Test GCMS Programs @flow=programs @project=payments ', () => {
   });
 
   test.skip('should be able view gcms programs page', async ({ page }) => {
-    await expect(await page.getByText('Programs').first()).toBeVisible();
-    await expect(await page.getByText('Inactive Gift Card').first()).toBeVisible();
+    await expect(await page.getByText('Gift Card Programs').first()).toBeVisible();
+    await expect(await page.getByText('rows / page').first()).toBeVisible();
   });
 
   test.skip('should be able to navigate to program details page', async ({ page }) => {
-    const firstCard = await page
-      .locator('div')
-      .filter({ hasText: 'Inactive Gift Cardtest description' })
-      .first();
+    // Simumlating user click on the first program card 
+    const firstCard = await page.locator('[data-blade-component="card-body"]')
     await expect(firstCard).toBeVisible();
-    await firstCard.click();
+    var box = await firstCard.boundingBox()
+    await page.mouse.click(box.x + box.width/2, box.y + box.height/2)
+
+    // Tabs to be visible
+    await expect(await page.getByText('Details').first()).toBeVisible();
+    await expect(await page.getByText('Resellers').first()).toBeVisible();
 
     // Program Details section to be visible
     await expect(await page.getByText('Program Details')).toBeVisible();
-    // Basic Details section to be visible
-    await expect(await page.getByText('Basic Details')).toBeVisible();
-    // Denomination section to be visible
-    await expect(await page.getByText('Denomination').first()).toBeVisible();
+    // Gift Card Details section to be visible
+    await expect(await page.getByText('Gift Card Details')).toBeVisible();
   });
+
+  test('should be able to navigate to reseller mapping tab', async ({ page }) => {
+   
+    // Simumlating user click on the first program card 
+    const firstCard = await page.locator('[data-blade-component="card-body"]')
+    await expect(firstCard).toBeVisible();
+    var box = await firstCard.boundingBox()
+    await page.mouse.click(box.x + box.width/2, box.y + box.height/2)
+
+    // Tabs to be visible
+    await expect(await page.getByText('Details').first()).toBeVisible();
+    await expect(await page.getByText('Resellers').first()).toBeVisible();
+    
+    const resellersTab = await page.locator("text=Resellers").locator("..");
+    // const resellersTab = await page.getByText("Resellers").first()
+    await resellersTab.click();
+
+    await expect(await page.getByText("No reseller added")).toBeVisible()
+ 
+
+  });
+
 });

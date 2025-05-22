@@ -20,7 +20,7 @@ import { OrderItemDenomination, ModalTypeEnum } from 'merchant/views/GCMS/Orders
 import { SKU } from 'merchant/views/GCMS/Programs/types';
 import ProgramHeaderSection from 'merchant/views/GCMS/shared/ProgramHeaderSection';
 import { GCMSSession, SessionContext } from 'merchant/views/GCMS/shared/context';
-import { getFormattedAmountNewDenom, isPositiveInteger } from 'merchant/views/GCMS/shared/utils';
+import { getFormattedAmountNewDenom, isNonNegativeInteger } from 'merchant/views/GCMS/shared/utils';
 import { ErrorText } from 'merchant/views/Marketplace/PlatformFee/components/styles';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -175,7 +175,7 @@ const OrderCreateProgramDenominationsModal = ({
           })),
         )
         /* @ts-expect-error type-check-regex */
-        .filter((item) => isPositiveInteger(item?.quantity))
+        .filter((item) => isNonNegativeInteger(item?.quantity))
         .filter((item) => item.program_id && item.sku_id);
 
       const data = items.reduce(

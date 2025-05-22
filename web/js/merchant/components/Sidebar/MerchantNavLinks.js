@@ -20,6 +20,7 @@ import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/
 import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
 import MainNavLink from 'merchant_common/components/MainNavLink';
+import { isGCMSExperimentEnabled } from 'merchant/views/GCMS/shared/utils';
 
 import { trackViewedBankingNavBar } from './ga';
 import {
@@ -44,6 +45,7 @@ function MerchantNavLinks(props) {
   const showMagicKonnectTab = abExperiments?.magic_konnect?.variables?.result === 'on';
   const showCustomerTrustTab = abExperiments?.customer_trust?.variables?.result === 'on';
   const showMyDevicesTab = abExperiments?.my_devices?.variables?.result === 'on';
+
   const isOmniJkFlow = isJKOfflineMerchant(org, user);
   useEffect(() => {
     //set recommend product to localstorage.
@@ -459,6 +461,17 @@ function MerchantNavLinks(props) {
             currentUser.isIssuingDashboardEnabled ||
             currentUser.isIssuingBulkUploadEnabled ||
             user.isIssuingFundsTabEnabled
+          }
+        />
+
+        <MainNavLink
+          label="Gift Cards"
+          icon="i i-program text-primary"
+          to="/gcms"
+          additionalCondition={(currentUser) =>
+            currentUser.isIssuingDashboardEnabled &&
+            isGCMSExperimentEnabled({ abExperiments }) &&
+            currentUser.isIssuingGcmsEnabled
           }
         />
 

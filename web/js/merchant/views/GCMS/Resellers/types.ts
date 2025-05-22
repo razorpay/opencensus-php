@@ -21,6 +21,13 @@ export interface ListApiResponse<T> {
   items: T[];
 }
 
+export interface InviteResellerParams {
+  name: string;
+  email: string;
+  phone: string;
+  mode?: string;
+}
+
 export type ResellerBalance = {
   id: string;
   merchant_id: string;

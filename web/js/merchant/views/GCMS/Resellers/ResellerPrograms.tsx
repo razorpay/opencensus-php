@@ -48,6 +48,8 @@ const ResellerPrograms = ({ mode }: { mode: ModeT }) => {
             padding="spacing.4"
             display="flex"
             flex={1}
+            columnGap="8px"
+            rowGap="8px"
             flexDirection="row"
             flexWrap="wrap"
           >

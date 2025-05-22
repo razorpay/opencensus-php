@@ -3,7 +3,6 @@ import {
   Badge,
   Box,
   Text,
-  Heading,
   TableBody,
   Table,
   TableHeader,
@@ -25,6 +24,7 @@ import { ORDERS_STATUS } from 'merchant/views/GCMS/shared/constants';
 import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
 
 import OrdersFilter from './OrdersFilters';
+import PageLayout from 'merchant/views/GCMS/shared/PageLayout';
 import { trackOrdersItemClicked, trackOrdersPageLoadSuccess } from './events';
 import { LIST_FETCH_BATCH_SIZE, fetchOrders } from './queries';
 import { convertUnixToShortDate } from '../shared/utils';
@@ -126,48 +126,7 @@ const Orders = ({ mode }: { mode: ModeT }) => {
 
   return (
     <Wrapper>
-      <div className="tabbed-container">
-        <Box marginBottom="spacing.5">
-          <Heading color="surface.text.gray.subtle" size="large">
-            Orders
-          </Heading>
-        </Box>
-        {/**
-         * TODO: layout breaks on small screens
-         */}
-        {/* <Box
-        display={'flex'}
-        flex={1}
-        backgroundColor={'brand.gray.400.lowContrast'}
-        paddingY={'spacing.4'}
-        width={'100%'}
-      >
-        <MetricsOverview title="Monthly Volume" b2bValue={26839} b2cValue={3764} />
-        <MetricsOverview title="Discount Burn" b2bValue={15672} b2cValue={8372} />
-        <MetricsOverview title="Breakage" b2bValue={74873} b2cValue={2992} />
-      </Box> */}
-        {/* <Box
-        backgroundColor={'transparent'}
-        marginY={'spacing.4'}
-        display={'flex'}
-        justifyContent={'space-between'}
-      >
-        <Box
-          width={{
-            l: '50%',
-            m: '80%',
-            s: '80%',
-          }}
-        >
-          <TextInput placeholder="Search" icon={SearchIcon} />
-        </Box>
-        <IconButton
-          size="large"
-          accessibilityLabel="filter"
-          icon={FilterIcon}
-          onClick={() => {}}
-        />
-      </Box> */}
+      <PageLayout title="Orders" subtitle="A list of orders processed for Gift Cards.">
         <div className="content">
           <OrdersFilter onSearch={handleSearch} />
           {isLoading ? (
@@ -229,7 +188,7 @@ const Orders = ({ mode }: { mode: ModeT }) => {
             </Box>
           )}
         </div>
-      </div>
+      </PageLayout>
     </Wrapper>
   );
 };

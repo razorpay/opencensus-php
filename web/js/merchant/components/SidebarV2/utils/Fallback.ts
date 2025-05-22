@@ -171,43 +171,6 @@ export const FALLBACK_PRODUCTS = [
     ],
     max_default_options: 3,
   },
-  {
-    section_name: 'GIFT CARDS',
-    section_id: 'engageHQ',
-    product_options: [
-      {
-        title: SIDEEBAR_PRODUCTS_TITLES.gcms_programs,
-        product_id: 'gcms_programs',
-        category: '',
-        tags: [],
-      },
-      {
-        title: SIDEEBAR_PRODUCTS_TITLES.gcms_resellers,
-        product_id: 'gcms_resellers',
-        category: '',
-        tags: [],
-      },
-      {
-        title: SIDEEBAR_PRODUCTS_TITLES.gcms_orders,
-        product_id: 'gcms_orders',
-        category: '',
-        tags: [],
-      },
-      {
-        title: SIDEEBAR_PRODUCTS_TITLES.gcms_funds,
-        product_id: 'gcms_funds',
-        category: '',
-        tags: [],
-      },
-      {
-        title: SIDEEBAR_PRODUCTS_TITLES.gcms_reports,
-        product_id: 'gcms_reports',
-        category: '',
-        tags: [],
-      },
-    ],
-    max_default_options: 3,
-  },
 ];
 
 export const LOYALTY_PRODUCTS_SECTION = {
@@ -218,6 +181,12 @@ export const LOYALTY_PRODUCTS_SECTION = {
     {
       title: SIDEEBAR_PRODUCTS_TITLES.wallet,
       product_id: 'wallet',
+      category: '',
+      tags: [],
+    },
+    {
+      title: SIDEEBAR_PRODUCTS_TITLES.gcms,
+      product_id: 'gcms',
       category: '',
       tags: [],
     },

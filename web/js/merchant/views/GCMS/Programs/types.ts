@@ -7,6 +7,8 @@ export enum ProgramPriceType {
 
 export type ProgramApiParams = { programId?: string } & ListApiParams;
 
+type voidFn = (x: never) => void;
+
 export type ProgramPolicy = {
   gift_card_brand_name: string;
   gift_card_pin_enabled: boolean;
@@ -41,3 +43,12 @@ export type Program = {
 export interface SKU extends Program {
   program_id: string;
 }
+
+export type LinkedResellerProps = {
+  program: Program;
+  mode: string;
+  merchantId: string;
+  isOpen: voidFn;
+  closeModal: voidFn;
+  selectedTab: string;
+};

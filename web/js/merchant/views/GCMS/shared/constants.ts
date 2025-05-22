@@ -23,6 +23,9 @@ export const PROGRAM_TYPES = {
   },
 };
 
+export const DEFAULT_IMAGE =
+  'https://d1o7uku192uawx.cloudfront.net/mobile/media/catalog/product/a/m/amazon_312x200_21092022_2.png';
+
 export const ORDERS_STATUS = {
   //For status in filters dropdown
   all: {
@@ -92,4 +95,22 @@ export const RESELLERS_STATUS = {
     value: 'all',
     color: 'neutral',
   },
+};
+
+export const GCMS_PATHS = {
+  PROGRAMS: '/gcms/programs',
+  RESELLERS: '/gcms/resellers',
+  ORDERS: '/gcms/orders',
+  FUNDS: '/gcms/funds',
+  REPORTS: '/gcms/reports',
+  BATCH_ACTIONS: '/gcms/batch-actions',
+};
+
+export const VALID_NUMBER_REGEX = new RegExp(/^\d*\.?\d*$/);
+
+export const NON_NEGATIVE_INTEGER = /^\d+$/;
+
+export const DENOMINATION_TYPE_ENUM = {
+  RANGE: 'range',
+  FIXED: 'fixed',
 };
