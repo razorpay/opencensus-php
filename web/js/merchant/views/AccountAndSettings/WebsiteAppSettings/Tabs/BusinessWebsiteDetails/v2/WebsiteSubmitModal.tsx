@@ -457,8 +457,10 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
             type: 'error',
             message: errorMessage,
           });
-          // do not dismiss modal if error is related to policy pages generation
-          if (!errorSuggestsToGeneratePolicyPages.includes(error?.message)) {
+          // do not dismiss modal if error is related to policy pages generation and go back to previous step
+          if (errorSuggestsToGeneratePolicyPages.includes(error?.message)) {
+            setCurrentStep(WebsiteSubmitModalSteps.ADD_MISSING_POLICY_PAGES);
+          } else {
             onDismiss();
           }
         },
