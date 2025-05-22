@@ -1,4 +1,6 @@
 import { UseQueryResult, useQuery } from '@tanstack/react-query';
+import { useStore } from '@federated/apps/shell/commonStore';
+import { PARTNER_TYPE } from '@dashboards/payments/views/PartnerDashboard/constants';
 
 import { ShowNotificationType } from 'common/typings';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -31,6 +33,10 @@ const useReferralLinks = ({
 }: {
   showNotification: ShowNotificationType;
 }): UseQueryResult<ReferralData> => {
+  const isPurePlatformPartner = useStore(
+    (state) => state.session.user.partner_type === PARTNER_TYPE.PURE_PLATFORM,
+  );
+
   return useQuery({
     queryKey: ['fetch-referrals'],
     queryFn: async (): Promise<ReferralData> => {
@@ -42,7 +48,7 @@ const useReferralLinks = ({
       });
       return data.referrals;
     },
-    enabled: true,
+    enabled: !isPurePlatformPartner,
     retry: false,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
