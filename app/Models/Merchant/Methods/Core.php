@@ -75,7 +75,7 @@ class Core extends Base\Core
 
         Entity::CREDIT_EMI_PROVIDERS  => [
 
-            CreditEmiProvider::HDFC => '1',
+            CreditEmiProvider::HDFC => '0',
             CreditEmiProvider::SBIN => '0',
             CreditEmiProvider::UTIB => '1',
             CreditEmiProvider::ICIC => '1',

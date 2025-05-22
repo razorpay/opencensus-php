@@ -59,7 +59,7 @@ class Validator extends Base\Validator
     ];
 
     protected static array $globalCustomerCreateRules = [
-        Entity::CONTACT             => 'required|contact_syntax|phone:AUTO,LENIENT,IN,MY,SG,mobile,fixed_line',
+        Entity::CONTACT             => 'required|contact_syntax|phone:AUTO,LENIENT,mobile,fixed_line',
         Entity::EMAIL               => 'sometimes|email',
         'address_consent'           => 'sometimes|array',
         'address_consent.device_id' => 'sometimes|string|max:65',
@@ -100,7 +100,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $contactRules = [
-        Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,MY,SG,mobile,fixed_line',
+        Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,mobile,fixed_line',
         'language_code'         => 'sometimes',
     ];
 
@@ -203,6 +203,11 @@ class Validator extends Base\Validator
      */
     public static function validateAndParseContactInInput(array $input): array
     {
+        $usesCountryCode = str_starts_with($input[Entity::CONTACT], '+');
+        if($usesCountryCode === false && strlen($input[Entity::CONTACT]) === 10)
+        {
+            $input[Entity::CONTACT] = '+91' . $input[Entity::CONTACT];
+        }
         (new static)->validateInput('contact', array_only($input, [Entity::CONTACT]));
 
         $lib = App::getFacadeRoot()['libphonenumber'];

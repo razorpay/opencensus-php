@@ -1763,7 +1763,7 @@ class Service extends Base\Service
 
         try
         {
-            $transfers = $this->getNewProcessor()->transfer($paymentId, $input);
+            $transfers = $this->transfer($paymentId, $input);
         }
         catch (\Exception $ex)
         {
@@ -1784,19 +1784,14 @@ class Service extends Base\Service
 
         (new Transfer\Metric)->pushCreateSuccessMetrics(current($input['transfers']));
 
-        //
-        // Exactly 1 transfer is created in this flow.
-        //
-        $transfer = $transfers->pop();
-
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_VIA_BATCH_SUCCESSFUL,
             [
-                'transfer_id' => $transfer->getPublicId(),
+                'transfer_id' =>  $transfers['items'][0]['id'],
             ]
         );
 
-        return $transfer->toArrayPublic();
+        return $transfers['items'][0];
     }
 
     /**
@@ -1910,33 +1905,40 @@ class Service extends Base\Service
         // exp check
         $isExpEnabled = (new Transfer\Service())->isPaymentTransferRearchExpEnabled($id, $this->merchant->getId(), $input);
 
-        if (!$isRouteAppAuth && !$shouldProcessViaApi && ($shouldProcessViaRoute || $isExpEnabled))
-        {
-            $resp = $this->app['route']->createPaymentTransfer($id, $input);
+        $sendRequestToMicroservice = !$isRouteAppAuth && !$shouldProcessViaApi && ($shouldProcessViaRoute || $isExpEnabled);
 
-            $this->trace->info(
-                TraceCode::PAYMENT_TRANSFER_RESPONSE_VIA_ROUTE_SERVICE,
-                [
-                    'input'      => $input,
-                    'response'   => $resp,
-                ]
-            );
+        $response = $this->mutex->acquireAndReleaseStrict(
+            'rearch_trf' . $payment->getId(), function () use ($sendRequestToMicroservice, $id, $input) {
+                if ($sendRequestToMicroservice === true)
+                {
+                    $resp = $this->app['route']->createPaymentTransfer($id, $input);
 
-            return $resp;
-        }
+                    $this->trace->info(
+                        TraceCode::PAYMENT_TRANSFER_RESPONSE_VIA_ROUTE_SERVICE,
+                        [
+                            'input'      => $input,
+                            'response'   => $resp,
+                        ]
+                    );
 
-        try
-        {
-            $transfers = $this->getNewProcessor()->transfer($id, $input);
+                    return $resp;
+                }
 
-            return $transfers->toArrayPublic();
-        }
-        catch (\Exception $e)
-        {
-            (new Transfer\Metric)->pushCreateFailedMetrics($e);
+                try
+                {
+                    $transfers = $this->getNewProcessor()->transfer($id, $input);
 
-            throw $e;
-        }
+                    return $transfers->toArrayPublic();
+                }
+                catch (\Exception $e)
+                {
+                    (new Transfer\Metric)->pushCreateFailedMetrics($e);
+
+                    throw $e;
+                }
+        });
+
+        return $response;
     }
 
     public function fixTransferAmountTransferred(string $id, array $input) : array
@@ -3000,7 +3002,7 @@ class Service extends Base\Service
             $input["isProxyAuth"] = $this->app['basicauth']->isProxyAuth();
             $input["internalApp"] = $this->app['basicauth']->getInternalApp();
 
-            $this->pushPaymentFetchByIdForParity($payment, $input);
+            $this->pushPaymentFetchByIdForParity($entity, $input);
         }
 
         return $entity;

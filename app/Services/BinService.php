@@ -92,6 +92,16 @@ class BinService
         // To be removed later, once made non-mandatory field in bin services
         $namespace = 'RZP/IN/DEBIT';
 
+        $callerFunc = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,3)[1]['function'];
+        $callerFunc2 = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,3)[2]['function'];
+
+        $this->trace->info(TraceCode::BIN_SERVICE_FETCH_IIN_REQUEST, [
+            'first6'        => substr($iin, 0, 6),
+            'iinLength'     => strlen($iin),
+            'callerFunc'    => $callerFunc,
+            'callerFunc2'   => $callerFunc2,
+        ]);
+
         $entity = $this->sendRequest($url, Requests::GET, null, $namespace, BinService::FETCH_IIN);
 
         if(isset($entity) && !empty($entity) && isset($entity['iin']))

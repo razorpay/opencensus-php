@@ -362,7 +362,7 @@ class Webhooks extends Base\Core
                 ]);
             return;
         }
-        $refundFromWebhook = $refundFromTxn;
+        $refundFromWebhook = $this->formatAmountStringToPaise($input['transactions'][0]['amount']);
         // As keyless auth is not properly supported we only support LIVE mode in production and ignore
         // any errors which occur when a refund is issued against a test payment via Shopify for 1cc orders.
         $mode = $this->app->environment(Environment::PRODUCTION) === true ? Mode::LIVE : Mode::TEST;

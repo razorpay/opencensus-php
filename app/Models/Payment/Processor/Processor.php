@@ -2394,7 +2394,7 @@ class Processor
                     if (empty($input[Payment\Entity::TOKEN]))
                     {
                         $card_number = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
-                        $iinId = substr($card_number, 0, 6);
+                        $iinId = substr($card_number, 0, 8);
                         $iin = $this->repo->iin->find($iinId);
                         if ($iin->getCountry() !== 'IN')
                         {
@@ -2489,7 +2489,7 @@ class Processor
             }
 
             $card_number = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
-            $iinId = substr($card_number, 0, 6);
+            $iinId = substr($card_number, 0, 8);
             $iin = $this->repo->iin->find($iinId);
 
             if ((empty($input['currency']) === false and
@@ -8895,6 +8895,16 @@ class Processor
         if($order->getAttempts() > 9)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ATTEMPTS_EXCEEDED);
+        }
+
+        $currentDayPaymentsCount = $this->repo->payment->fetchCurrentDayPaymentsCountByOrderID(
+            Order\Entity::verifyIdAndSilentlyStripSign($input['order_id'])
+        );
+
+        // we are allowing only 3 payment attempts for an order on a single calendar day as per npci compliance
+        if($currentDayPaymentsCount > 2)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSACTION_RETRY_LIMIT_EXCEEDED);
         }
 
         //debit amount should be same as order amount.

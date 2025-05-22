@@ -780,9 +780,7 @@ class CrossBorderCommonUseCases extends Job
                 ]);
 
             $this->trace->count(Metrics::CROSS_BORDER_MERCHANT_ACTIVATION_FAILED, [
-                'action' => 'ACTIVATE_INTERNATIONAL_MODULAR_MERCHANT',
-                'error_code' => $ex->getCode(),
-                'error_message' => $ex->getMessage(),
+                'action' => 'ACTIVATE_INTERNATIONAL_MODULAR_MERCHANT'
             ]);
         }
     }
@@ -916,9 +914,7 @@ class CrossBorderCommonUseCases extends Job
             );
 
             $this->trace->count(Metrics::CROSS_BORDER_MODULAR_MERCHANT_INTERNATIONAL_PRODUCT_ACTIVATION_FAILED, [
-                'product' => 'cards',
-                'error_code' => $ex->getCode(),
-                'error_message' => $ex->getMessage(),
+                'product' => 'cards'
             ]);
         }
     }
@@ -967,9 +963,7 @@ class CrossBorderCommonUseCases extends Job
             );
 
             $this->trace->count(Metrics::CROSS_BORDER_MODULAR_MERCHANT_INTERNATIONAL_PRODUCT_ACTIVATION_FAILED, [
-                'product' => 'moneysaver',
-                'error_code' => $ex->getCode(),
-                'error_message' => $ex->getMessage(),
+                'product' => 'moneysaver'
             ]);
         }
     }

@@ -70,7 +70,9 @@ class BusinessAuth
         'payment_handle_get',
         'merchant_activation_business_categories_v2',
         'onboarding_get',
-        'onboarding_save'
+        'onboarding_save',
+        'onboarding_create_or_fetch',
+        'setl_merchant_dashboard_config_get'
     ];
 
     public array $whitelistRoutesForSubmerchantOnboarding = [

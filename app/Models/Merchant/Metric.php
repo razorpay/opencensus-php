@@ -41,6 +41,7 @@ final class Metric
     const MERCHANT_ACTIVATION_STATE_TRANSITION = 'merchant_activation_state_transition';
     const MERCHANT_ACTIVATION                  = 'merchant_activation';
     const ACTIVATED_NOT_LIVE = "activated_not_live";
+    const POS_ACTIVATED_OR_KQS_NOT_LIVE = "pos_activated_or_kqs_not_live";
     const INTERNATIONAL_MERCHANT_ACTIVATION    = 'international_merchant_activation';
 
     //activation_flow_metrics constants

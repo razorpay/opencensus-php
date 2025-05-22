@@ -1771,7 +1771,7 @@ class Service extends Base\Service
 
             // add metric
             $this->trace->count(BankTransferMetrics::INTERNATIONAL_B2B_CURRENCY_CLOUD_BANK_ACCOUNT_CREATION_FAILED, [
-                'error_code' => $ex->getCode()
+                'action' => 'B2B Account Creation Failed',
             ]);
 
             throw $ex;
