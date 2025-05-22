@@ -750,6 +750,7 @@ class CCRouter
                 $entityClass = PricingEntity::class;
                 $entityClass::unguard();
                 $pricingEntity = new PricingEntity($response['rule']);
+                $pricingEntity->exists = true;
             } catch (\Throwable $e) {
                 throw new \Exception('Could not map charge collections response to entity');
             } finally {
@@ -770,7 +771,9 @@ class CCRouter
             foreach($response['rules'] as $rule) {
                 try {
                     $entityClass::unguard();
-                    $pricingEntities[] = new PricingEntity($rule);
+                    $pricingEntity = new PricingEntity($rule);
+                    $pricingEntity->exists = true;
+                    $pricingEntities[] = $pricingEntity;
                 } catch (\Throwable $e) {
                     throw new \Exception('Could not map charge collections response to entity');
                 } finally {
