@@ -11,6 +11,7 @@ import {
   getCredentials,
   playwrightTest,
   expect,
+  setUserInteractedWithHomeConsent,
 } from '@libs/shared-qsuite/playwright';
 
 playwrightTest.beforeEach(async ({ context, page }) => {
@@ -26,6 +27,7 @@ playwrightTest.beforeEach(async ({ context, page }) => {
     },
   ]);
   await hideSearchFTUXBannerByLocalStorage({ page });
+  await setUserInteractedWithHomeConsent({ page });
   await page.goto(routes.SIGN_IN_PATH);
   await expect(page).toHaveTitle(/Razorpay Dashboard/);
 });

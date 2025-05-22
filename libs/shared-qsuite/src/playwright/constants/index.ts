@@ -48,6 +48,13 @@ export const playwrightEnvs = {
   POS_SALES_AGENT_PASSWORD: process.env.POS_SALES_AGENT_PASSWORD,
   E2E_SR_LUMBERJACK_KEY: process.env.LUMBERJACK_KEY,
   WALLET_ENABLED_MERCHANT_MOBILE: process.env.WALLET_ENABLED_MERCHANT_MOBILE,
+  ACTIVATED_ONE_NAV_MERCHANT_USERNAME_1: process.env.ACTIVATED_ONE_NAV_MERCHANT_USERNAME_1,
+  ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_1: process.env.ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_1,
+  ACTIVATED_ONE_NAV_MERCHANT_USERNAME_2: process.env.ACTIVATED_ONE_NAV_MERCHANT_USERNAME_2,
+  ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_2: process.env.ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_2,
+  ACTIVATED_ONE_NAV_MERCHANT_USERNAME_3: process.env.ACTIVATED_ONE_NAV_MERCHANT_USERNAME_3,
+  ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_3: process.env.ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_3,
+
   TEST_ENV: process.env.TEST_ENV ?? 'devstack',
 };
 
@@ -72,6 +79,9 @@ export const getStorageStatePath = (targetMode?: 'live' | 'test') => {
     SETTLEMENTS_LOGIN_STATE: `${BASE_PATH}/desktop-settlement-login.json`,
     POS_SALES_AGENT: `${BASE_PATH}/pos-sales-agent.json`,
     WALLET_MERCHANT_LOGIN_STATE: `${BASE_PATH}/wallet-merchant.json`,
+    ACTIVATED_ONE_NAV_MERCHANT_1: `${BASE_PATH}/activated-one-nav-merchant-1.json`,
+    ACTIVATED_ONE_NAV_MERCHANT_2: `${BASE_PATH}/activated-one-nav-merchant-2.json`,
+    ACTIVATED_ONE_NAV_MERCHANT_3: `${BASE_PATH}/activated-one-nav-merchant-3.json`,
   };
 
   const isTestMode = mode === 'test';
@@ -146,6 +156,24 @@ export const getEmailCredentials = () => {
       password: playwrightEnvs.EMAIL_OPTIMIZER_V1_PASSWORD,
       storagePath: StorageStatePath.OPTIMIZER_V1_LOGIN_STATE,
       hasTestMode: true,
+    },
+    {
+      type: 'activated-one-nav-merchant-1.json',
+      username: playwrightEnvs.ACTIVATED_ONE_NAV_MERCHANT_USERNAME_1,
+      password: playwrightEnvs.ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_1,
+      storagePath: StorageStatePath.ACTIVATED_ONE_NAV_MERCHANT_1,
+    },
+    {
+      type: 'activated-one-nav-merchant-2.json',
+      username: playwrightEnvs.ACTIVATED_ONE_NAV_MERCHANT_USERNAME_2,
+      password: playwrightEnvs.ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_2,
+      storagePath: StorageStatePath.ACTIVATED_ONE_NAV_MERCHANT_2,
+    },
+    {
+      type: 'activated-one-nav-merchant-3.json',
+      username: playwrightEnvs.ACTIVATED_ONE_NAV_MERCHANT_USERNAME_3,
+      password: playwrightEnvs.ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_3,
+      storagePath: StorageStatePath.ACTIVATED_ONE_NAV_MERCHANT_3,
     },
   ];
 };
@@ -308,4 +336,6 @@ export const routes: Record<string, string> = {
   BILLME_SETTINGS: '/app/billme-settings/brands-and-terminals',
   STORE_SETTINGS: '/app/store-settings/stores-list',
   ACTIVATION_DETAILS: 'business-settings/account-activation-details',
+  BANKING: '/app/banking',
+  COMPANY_REGISTRATION: '/app/company-registration',
 };

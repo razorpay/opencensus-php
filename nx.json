@@ -11,7 +11,7 @@
       "options": {
         "command": "pnpm exec playwright test",
         "env": {
-          "INCLUDE_GROUPS": "@project=payments|@project=partner-dashboard|@project=no-code-stable|@project=offers|@project=sample-tests",
+          "INCLUDE_GROUPS": "@project=payments|@project=partner-dashboard|@project=no-code-stable|@project=offers|@project=sample-tests|@project=oneNav",
           "EXCLUDE_GROUPS": "@skip-unstable|@project=payment-links"
         }
       }

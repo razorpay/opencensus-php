@@ -124,6 +124,12 @@ export const showStreakRewardTileInAccountPage = async ({ page }: PageParams): P
   });
 };
 
+export const setUserInteractedWithHomeConsent = async ({ page }: { page: Page }): Promise<void> => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('hasUserInteractedWithHomeConsent', 'true');
+  });
+};
+
 /** Switching merchants */
 export const switchMerchant = async ({
   page,
