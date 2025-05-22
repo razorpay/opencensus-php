@@ -439,7 +439,10 @@ export class OffersDetails extends React.Component {
 
                   <EntityDetailRow label="Maximum Usage" value={max_offer_usage} />
 
-                  <EntityDetailRow label="Discount Type" value={discountType} />
+                  <EntityDetailRow
+                    label="Discount Type"
+                    value={isUptoTypeBenefit ? 'Percentage' : discountType}
+                  />
 
                   {this.renderDiscountWorthField({
                     discountWorthBenefit,

@@ -112,8 +112,10 @@ export const getAdditionalBenefitFromRules = (rules, payment_method) => {
   const isUptoTypeBenefit = additionalBenefit?.limit_type === BENEFIT_LIMIT_TYPES.UPTO;
 
   return {
-    discountWorthBenefit: (additionalBenefit?.value || 0) / 100,
-    maxCashbackBenefit: isUptoTypeBenefit ? additionalBenefit?.max_discount : 0,
+    discountWorthBenefit: isUptoTypeBenefit
+      ? (+additionalBenefit?.value || 0) / 100
+      : +additionalBenefit?.value || 0,
+    maxCashbackBenefit: isUptoTypeBenefit ? +additionalBenefit?.max_discount || 0 : 0,
     isUptoTypeBenefit,
     isClubbedOffer: !!additionalBenefit,
     emiTypeBenefit,

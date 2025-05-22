@@ -28,7 +28,7 @@ export const getClubbedOfferRules = (formData) => {
         includes: {
           orders: [
             {
-              min_amount: +formData.min_amount,
+              min_amount: +formData.min_amount * 100,
               applies_to: 'total_amount',
             },
           ],
@@ -74,7 +74,7 @@ export const getClubbedOfferRules = (formData) => {
           limit_type,
           unit: formData.additional_offer_discount_type,
           value: +(formData.flat_cashback || formData.percent_rate) * 100,
-          ...(formData.percent_rate ? { max_discount: formData.max_cashback } : {}),
+          ...(formData.percent_rate ? { max_discount: +formData.max_cashback * 100 || 0 } : {}),
         });
       }
 
