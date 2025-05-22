@@ -53,6 +53,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREATE_MERCHANT_CONSENTS                  = 'CREATE_MERCHANT_CONSENTS';
     const CREATE_MERCHANT_CONSENTS_EXPT             = 'CREATE_MERCHANT_CONSENTS_EXPT';
     const POST_MERCHANT_REKYC_UPDATE                =  'POST_MERCHANT_REKYC_UPDATE';
+    const SELF_SERVE_REKYC_UPDATE                   = 'SELF_SERVE_REKYC_UPDATE';
     const PGOS_CREATE_MERCHANT_CONSENTS_RESPONSE    = 'PGOS_CREATE_MERCHANT_CONSENTS_RESPONSE';
     const PGOS_BDD_VERIFICATION_UPDATE_RESPONSE     = 'PGOS_BDD_VERIFICATION_UPDATE_RESPONSE';
     const FETCH_MERCHANT_CONSENTS                   = 'FETCH_MERCHANT_CONSENTS';
@@ -144,6 +145,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const TRUST_SOCIETY_NGO_EXPERIMENT                          = 'TRUST_SOCIETY_NGO_EXPERIMENT';
     const MANUAL_REKYC_STATUS                                   = 'MANUAL_REKYC_STATUS';
+    const SELF_SERVE_REKYC_STATUS                               = 'SELF_SERVE_REKYC_STATUS';
+    const SELF_SERVE_REKYC_FETCH_FAILED                         = 'SELF_SERVE_REKYC_FETCH_FAILED';
+    const SELF_SERVE_REKYC_UPDATE_SUCCESS                       = 'SELF_SERVE_REKYC_UPDATE_SUCCESS';
+    const SELF_SERVE_REKYC_UPDATE_FAILED                        = 'SELF_SERVE_REKYC_UPDATE_FAILED';
+    const SELF_SERVE_REKYC_UPDATE_RESPONSE                      = 'SELF_SERVE_REKYC_UPDATE_RESPONSE';
 
     const CREDITS_EXPIRE_REQUEST                                = 'CREDITS_EXPIRE_REQUEST';
     const QR_PAYMENT_ES_DEBUG                                   = 'QR_PAYMENT_ES_DEBUG';
@@ -2909,6 +2915,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const WORKFLOW_SERVICE_REQUEST_DETAILS                      = 'WORKFLOW_SERVICE_REQUEST_DETAILS';
     const WORKFLOW_SERVICE_RESPONSE_DETAILS                     = 'WORKFLOW_SERVICE_RESPONSE_DETAILS';
     const WORKFLOW_SERVICE_RAZOR_X_TREATMENT                    = 'WORKFLOW_SERVICE_RAZOR_X_TREATMENT';
+    const WORKFLOW_CREATED_SUCCESSFULLY                         = 'WORKFLOW_CREATED_SUCCESSFULLY';
+    const WORKFLOW_CREATION_ERROR                               = 'WORKFLOW_CREATION_ERROR';
     const SELF_SERVE_WORKFLOW_SERVICE_TRACE_INFO                = 'SELF_SERVE_WORKFLOW_SERVICE_TRACE_INFO';
     const BAD_REQUEST_WORKFLOW_CONFIG_CREATE_FAILED             = 'BAD_REQUEST_WORKFLOW_CONFIG_CREATE_FAILED';
     const BAD_REQUEST_WORKFLOW_CONFIG_UPDATE_FAILED             = 'BAD_REQUEST_WORKFLOW_CONFIG_UPDATE_FAILED';
@@ -7858,6 +7866,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SMART_ROUTING_NOTES_PROCESSING                        = 'SMART_ROUTING_NOTES_PROCESSING';
     const SENDING_DOWNTIME_DATA_TO_SMART_ROUTING                = 'SENDING_DOWNTIME_DATA_TO_SMART_ROUTING';
     const SMART_ROUTING_DOWNTIME_CACHE_WRITE_ERROR              = 'SMART_ROUTING_DOWNTIME_CACHE_WRITE_ERROR';
+    const MES_PROXY_REQUEST                                     = "MES_PROXY_REQUEST";
+    const MES_PROXY_ERROR                                       = "MES_PROXY_ERROR";
+    const MES_PROXY_RESPONSE                                    = "MES_PROXY_RESPONSE";
 
     // Doppler service
     const DOPPLER_SERVICE_SNS_PUBLISH_CANCEL                    = 'DOPPLER_SERVICE_SNS_PUBLISH_CANCEL';
@@ -10960,6 +10971,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKEN_MIGREATE_FOR_TOKENIZED_CARD                   = 'TOKEN_MIGREATE_FOR_TOKENIZED_CARD';
     const EXISTING_TOKEN_CHECK                                = 'EXISTING_TOKEN_CHECK';
     const EXISTING_TOKENS_EXECUTION_TIME                      = 'EXISTING_TOKENS_EXECUTION_TIME';
+    const MERCHANT_REKYC_STATUS_OBSERVER                 = 'MERCHANT_REKYC_STATUS_OBSERVER';
 
 
     const TOKEN_CREATE_FOR_TOKENIZED_CARD_EXCEPTION           = 'TOKEN_CREATE_FOR_TOKENIZED_CARD_EXCEPTION';

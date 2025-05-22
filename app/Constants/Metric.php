@@ -375,5 +375,7 @@ class Metric
     const SUBSCRIPTIONS_PAYMENT_NOTIFY_FAILURE = 'subscriptions_payment_notify_failure';
 
     const TOKEN_CONFIRM_REJECT_NOTIFY_ERROR = 'token_confirm_reject_notify_error';
+    const MERCHANT_REKYC_STATUS_OBSERVER_CREATE_FAILED = 'merchant_rekyc_status_observer_create_failed';
+    const MERCHANT_REKYC_OBSERVER_METRO_PUBLISH = 'merchant_rekyc_observer_publish';
 
 }

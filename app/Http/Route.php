@@ -18524,6 +18524,7 @@ class Route
             'internal_fd_fetch_agent_detail_for_ticket',
             'internal_create_risk_action',
             'dispute_edit',
+            'internal_create_workflow',
         ],
 
         'pgos' => [

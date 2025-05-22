@@ -105,6 +105,7 @@ use \RZP\Models\DeviceDetail\Attribution\Core as AttributionCore;
 use RZP\Models\Merchant\FreshdeskTicket\Entity as FDTicketEntity;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Http\Controllers\NeedsClarificationProxyController;
+use RZP\Http\Controllers\MerchantExperienceProxyController;
 use RZP\Models\Merchant\Invoice\Service as MerchantInvoiceService;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
@@ -161,6 +162,8 @@ class Service extends Base\Service
 
     protected MerchantOnboardingProxyController $pgosProxyController;
 
+    protected MerchantExperienceProxyController $mesProxyController;
+
     protected $config;
 
     protected bool $isGSTBvsSyncFlowSuccess = true;
@@ -182,6 +185,7 @@ class Service extends Base\Service
         $this->ba=$this->app['basicauth'];
 
         $this->pgosProxyController = new MerchantOnboardingProxyController();
+        $this->mesProxyController = new MerchantExperienceProxyController();
 
         $this->mutex = $this->app['api.mutex'];
 
@@ -771,6 +775,36 @@ class Service extends Base\Service
 
         $details = $service->getAdditionalDetailsFromASV($merchantId);
         $service->transitionToNextRekycStatus($merchantId, $details, $input['rekyc_status']);
+    }
+
+    /**
+     * Updates the merchant's self serve re-KYC status upon maker-checker workflow approval.
+     *
+     * @param array $input The input data containing the re-KYC status.
+     * @return bool
+     */
+    public function updateSelfServeReKYCStatus(array $input)
+    {
+        $updatedStatus = $input['rekyc_status'];
+
+        $merchantId = $this->merchant->getMerchantId();
+
+        $success = $this->mesProxyController->UpdateReKYCDetailSelfServeReKYCMerchant($merchantId, $updatedStatus);
+
+        if($success) {
+            $this->app['trace']->info(TraceCode::SELF_SERVE_REKYC_UPDATE_SUCCESS, [
+                'merchant_id' => $merchantId,
+                'status' =>$updatedStatus,
+                'success' => true
+            ]);
+        } else {
+            $this->app['trace']->info(TraceCode::SELF_SERVE_REKYC_UPDATE_FAILED, [
+                'merchant_id' => $merchantId,
+                'status' => $updatedStatus,
+                'success' => false
+            ]);
+        }
+        return $success;
     }
 
     /**
