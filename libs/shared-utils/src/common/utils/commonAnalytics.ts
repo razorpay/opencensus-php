@@ -378,7 +378,7 @@ export const analyticsTrack = ({
       },
       {
         integrations: {
-          CleverTap: toCleverTap,
+          //CleverTap: toCleverTap,
           [Facebook]: toFacebook,
         },
       },
