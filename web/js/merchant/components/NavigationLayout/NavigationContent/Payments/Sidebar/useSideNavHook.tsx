@@ -117,13 +117,12 @@ const useSideNavHook = () => {
   const { abExperiments } = useSplitzService();
   const { isConfigTagEnabled } = useI18Service();
 
-  const [PAYMENTS_PRODUCTS_SECTION, BANKING_PRODUCTS_SECTION, GIFTS_CARD_PRODUCTS_SECTION] =
+  const [PAYMENTS_PRODUCTS_SECTION, BANKING_PRODUCTS_SECTION] =
     getFallbackProductsForConnectedNav(user); // v2 fallback products
 
   const listItemsV2 = [
     PAYMENTS_PRODUCTS_SECTION,
     BANKING_PRODUCTS_SECTION,
-    GIFTS_CARD_PRODUCTS_SECTION,
     LOYALTY_PRODUCTS_SECTION,
   ];
 
