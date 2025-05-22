@@ -193,6 +193,7 @@ class Validator extends Base\Validator
     protected static $createOptimizerRecurringTokenNotesRules = [
         'mandate_id'       => 'required',
         'source'       => 'required',
+        'migrated_reference_id'       => 'sometimes',
     ];
 
 

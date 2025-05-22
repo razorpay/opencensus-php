@@ -8083,9 +8083,19 @@ class Processor
                     $customerId = $input[Payment\Entity::CUSTOMER_ID];
 
                     Customer\Entity::verifyIdAndStripSign($customerId);
-
+                    
                     $token = (new Customer\Token\Core)->getByTokenIdAndCustomerId($tokenId, $customerId);
 
+                    if ($this->isOptimizerMigratedToken($token)) 
+                    {
+                        $this->app['trace']->info(
+                            TraceCode::MISC_TRACE_CODE,
+                            ['MIGRATED_OPTIMIZER_TOKEN' => $token]
+                        );
+
+                        return;
+                    }
+                    
                 } else {
 
                     $token = (new Customer\Token\Core)->getByTokenId($tokenId);
@@ -16393,6 +16403,31 @@ public function isLibrarySupportedForNbplusRearch($library): bool
                 $e,
                 null,
                 TraceCode::BLOCK_MERCHANTS_ON_UPS_SPLITZ_FAILED);
+        }
+
+        return false;
+    }
+
+
+    public function isOptimizerMigratedToken($token) 
+    {
+        if ($token == null) 
+        {
+            return false;
+        }
+
+        $notes = $token->getNotes();
+
+        if (empty($notes) === true) 
+        {
+            return false;
+        }
+
+        if (isset($notes["source"]) && 
+            isset($notes["mandate_id"]) && 
+            isset($notes["migrated_reference_id"])) 
+        {
+            return true;
         }
 
         return false;
