@@ -8,6 +8,7 @@
     "url": "https://github.com/joel-jaimon"
   },
   "dependencies": {
+    "adm-zip": "0.5.10",
     "webpack": "5.76.0",
     "tslib": "2.3.0",
     "inquirer": "12.0.0",
@@ -20,6 +21,7 @@
     "yaml": "2.7.0"
   },
   "devDependencies": {
+    "@types/adm-zip": "0.5.5",
     "@types/webpack": "5.28.5",
     "@types/jest": "^29.4.1"
   },

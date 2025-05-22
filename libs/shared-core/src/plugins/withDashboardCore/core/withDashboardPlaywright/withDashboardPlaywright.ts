@@ -21,7 +21,9 @@ export const withDashboardPlaywright: WithDashboardJestType = (args) => {
     retries: isCI ? 2 : 0,
     timeout: 6 * 60 * 1000,
     // @ts-ignore
-    reporter: getReporter(),
+    reporter: getReporter({
+      moduleName: targetProject,
+    }),
     fullyParallel: true,
     forbidOnly: !!isCI,
     // This includes retries also in the maxFailures count (45/3 = 15 unique failures - worst case scenario)
@@ -39,7 +41,7 @@ export const withDashboardPlaywright: WithDashboardJestType = (args) => {
       headless: !!isCI,
       screenshot: 'only-on-failure',
       trace: 'retain-on-failure',
-      video: 'on-first-retry',
+      video: 'retain-on-failure',
       actionTimeout: 30 * 1000,
       permissions: ['clipboard-read', 'clipboard-write', 'accessibility-events'],
       contextOptions: {

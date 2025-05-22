@@ -1,23 +1,38 @@
 import { devices } from '@playwright/test';
+import { DASHBOARD_ROOT } from '@src/constants';
 import path from 'path';
 
 // use report portal for CI, and html for development
-export const getReporter = () => {
+export const getReporter = ({ moduleName }: { moduleName: string }) => {
   const isCi = process.env.CI === 'true';
-  const playwrightAnalysisFolder = path.resolve(process.cwd(), '.playwright-analysis/analysis');
-
+  const playwrightAnalysisDir = path.resolve(process.cwd(), '.playwright-analysis');
+  const htmlReportFolder = path.resolve(playwrightAnalysisDir, 'analysis');
+  const fullReportJson = path.resolve(
+    playwrightAnalysisDir,
+    'playwright-report.json',
+  );
   return [
     isCi && ['dot'],
     [
       'html',
       {
-        outputFolder: playwrightAnalysisFolder,
+        outputFolder: htmlReportFolder,
       },
     ],
     [
       'json',
       {
-        outputFile: path.resolve(playwrightAnalysisFolder, '../', 'playwright-report.json'),
+        outputFile: fullReportJson,
+      },
+    ],
+    [
+      path.resolve(
+        DASHBOARD_ROOT,
+        'libs/shared-core/src/plugins/withDashboardCore/core/withDashboardPlaywright/plugins/DashboardPlaywrightRefinedJson/index.ts',
+      ),
+      {
+        analysisDir: playwrightAnalysisDir,
+        fullReportJson,
       },
     ],
   ].filter(Boolean);
