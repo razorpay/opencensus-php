@@ -5845,6 +5845,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'user_service_data_accessor',
         'pricing_hard_delete_plan',
         'pricing_hard_refresh_plan',
         'pricing_create_plan_recon_job_sync',
@@ -12212,7 +12213,6 @@ class Route
     ];
 
     public static $direct = [
-        'user_service_data_accessor',
         'update_late_auth_config_bulk',
         'onboarding_payment_webhook',
         'payment_page_fetch_records',
