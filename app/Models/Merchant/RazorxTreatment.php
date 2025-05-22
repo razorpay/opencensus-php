@@ -377,6 +377,8 @@ final class RazorxTreatment
     const COLLECTX_RBL_MERCHANTS_VA_CREATION_BLOCK = "collectx_rbl_merchants_va_creation_block";
     const COLLECTX_RBL_PAYMENT_TRANSFER_RAMP_UP = "collectx_rbl_payment_transfer_ramp_up";
 
+    const COLLECTX_IDFC_PAYMENT_TRANSFER_RAMP_UP = "collectx_idfc_payment_transfer_ramp_up";
+
     const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
 
     // to a/b test between offer tile vs subtext for cred
