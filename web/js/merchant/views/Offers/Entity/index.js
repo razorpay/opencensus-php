@@ -169,6 +169,9 @@ export class OffersDetails extends React.Component {
       affirmativePendingLabel: 'Requesting...',
       abortLabel: "No, don't!",
       action: () => {
+        const activationValue = active ? 0 : 1;
+        offer.active = activationValue;
+
         return offer
           .save()
           .then((offer) => {
@@ -176,9 +179,6 @@ export class OffersDetails extends React.Component {
               type: 'success',
               message: `Offer ${actionName}d!`,
             });
-
-            const activationValue = active ? 0 : 1;
-            offer.active = activationValue;
 
             fetchOffer(id);
             updateOfferInReduxList(offer);
