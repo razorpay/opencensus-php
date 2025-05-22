@@ -19,8 +19,8 @@ const TransactionBanner = lazy(
 const AddWebsiteNudge = lazy(
   () => import(/* webpackChunkName: 'AddWebsiteNudge' */ './AddWebsiteNudge'),
 );
-const WaysToCollectPayment = lazy(
-  () => import(/* webpackChunkName: 'WaysToCollectPayment' */ './WaysToCollectPayment'),
+const WaysToAcceptPayment = lazy(
+  () => import(/* webpackChunkName: 'WaysToAcceptPayment' */ './WaysToAcceptPayment'),
 );
 const WelcomeHeader = lazy(() => import(/* webpackChunkName: 'WelcomeHeader' */ './WelcomeHeader'));
 
@@ -29,7 +29,7 @@ const ELEMENTS_MAP: Record<HOMEPAGE_ELEMENTS, ReactNode> = {
   [HOMEPAGE_ELEMENTS.NOCODE_NUDGE]: <NocodeSection />,
   [HOMEPAGE_ELEMENTS.BROWSE_ALL]: <BrowseAllProducts />,
   [HOMEPAGE_ELEMENTS.PAYMENT_HANDLE]: <PaymentHandle />,
-  [HOMEPAGE_ELEMENTS.WAYS_FOR_PAYMENT]: <WaysToCollectPayment />,
+  [HOMEPAGE_ELEMENTS.WAYS_FOR_PAYMENT]: <WaysToAcceptPayment />,
   [HOMEPAGE_ELEMENTS.WEBSITE_NUDGE]: <AddWebsiteNudge />,
   [HOMEPAGE_ELEMENTS.COMPLETED_TRANSACTION]: <TransactionBanner />,
 };

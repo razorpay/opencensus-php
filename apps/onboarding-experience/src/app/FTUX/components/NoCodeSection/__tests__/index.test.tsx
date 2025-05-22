@@ -12,7 +12,7 @@ jest.mock('@FTUX/components/PitchProducts', () => ({
       <p data-testid="pitch-subtitle">{subtitle}</p>
       <div data-testid="products-list">
         {products.map((product: any, index: number) => (
-          <div key={index} data-testid={`product-${index}`}>
+          <div key={index} data-testid={`product-${index}`} onClick={product.handleClick}>
             <div data-testid={`product-${index}-tag`}>{product.tagText}</div>
             <div data-testid={`product-${index}-title`}>{product.title}</div>
             <div data-testid={`product-${index}-description`}>{product.description}</div>
@@ -20,6 +20,18 @@ jest.mock('@FTUX/components/PitchProducts', () => ({
           </div>
         ))}
       </div>
+    </div>
+  )),
+}));
+
+// Mock the ProductRecommender component
+jest.mock('@FTUX/modals/ProductRecommender', () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(({ onDismiss }) => (
+    <div data-testid="product-recommender-modal">
+      <button data-testid="dismiss-button" onClick={onDismiss}>
+        Close
+      </button>
     </div>
   )),
 }));
@@ -40,30 +52,30 @@ describe('NoCodeSection Component', () => {
     renderWithWrappers(<NoCodeSection />);
 
     // Check all product tags using test IDs
-    expect(screen.getByTestId('product-0-tag')).toHaveTextContent('Payment');
-
-    // Check for "Set up in 2 mins" in the correct locations
-    expect(screen.getByTestId('product-1-tag')).toHaveTextContent('Set up in 2 mins');
-    expect(screen.getByTestId('product-2-tag')).toHaveTextContent('Set up in 2 mins');
+    expect(screen.getByTestId('product-0-tag')).toHaveTextContent('Personalised to you');
+    expect(screen.getByTestId('product-1-tag')).toHaveTextContent('2 mins setup');
+    expect(screen.getByTestId('product-2-tag')).toHaveTextContent('2 mins setup');
 
     // Check all product titles
-    expect(screen.getByTestId('product-0-title')).toHaveTextContent('Instant payment collection');
+    expect(screen.getByTestId('product-0-title')).toHaveTextContent(
+      'Find the right product for you',
+    );
     expect(screen.getByTestId('product-1-title')).toHaveTextContent('Payment Pages');
     expect(screen.getByTestId('product-2-title')).toHaveTextContent('Payment Links');
 
     // Check all product descriptions
     expect(screen.getByTestId('product-0-description')).toHaveTextContent(
-      'Accept payments on your website with a single integration',
+      "Tell us your needs, and we'll recommend the best Razorpay solution for you.",
     );
     expect(screen.getByTestId('product-1-description')).toHaveTextContent(
-      'Get your own checkout page to sell/ accept payment online, even without a website.',
+      'Create a simple checkout page to accept payments online. No website or coding needed.',
     );
     expect(screen.getByTestId('product-2-description')).toHaveTextContent(
-      'Share a link on WhatsApp, SMS, or email and get paid immediately.',
+      'Generate a link you can share with customers to get paid instantly, without any setup.',
     );
 
     // Check all link texts
-    expect(screen.getByTestId('product-0-link')).toHaveTextContent('Learn more');
+    expect(screen.getByTestId('product-0-link')).toHaveTextContent('Find the right product');
     expect(screen.getByTestId('product-1-link')).toHaveTextContent('Use now');
     expect(screen.getByTestId('product-2-link')).toHaveTextContent('Use now');
   });
@@ -79,27 +91,58 @@ describe('NoCodeSection Component', () => {
     renderWithWrappers(<NoCodeSection />);
 
     // Check first product data using test IDs
-    expect(screen.getByTestId('product-0-tag')).toHaveTextContent('Payment');
-    expect(screen.getByTestId('product-0-title')).toHaveTextContent('Instant payment collection');
-    expect(screen.getByTestId('product-0-description')).toHaveTextContent(
-      'Accept payments on your website with a single integration',
+    expect(screen.getByTestId('product-0-tag')).toHaveTextContent('Personalised to you');
+    expect(screen.getByTestId('product-0-title')).toHaveTextContent(
+      'Find the right product for you',
     );
-    expect(screen.getByTestId('product-0-link')).toHaveTextContent('Learn more');
+    expect(screen.getByTestId('product-0-description')).toHaveTextContent(
+      "Tell us your needs, and we'll recommend the best Razorpay solution for you.",
+    );
+    expect(screen.getByTestId('product-0-link')).toHaveTextContent('Find the right product');
 
     // Check second product data
-    expect(screen.getByTestId('product-1-tag')).toHaveTextContent('Set up in 2 mins');
+    expect(screen.getByTestId('product-1-tag')).toHaveTextContent('2 mins setup');
     expect(screen.getByTestId('product-1-title')).toHaveTextContent('Payment Pages');
     expect(screen.getByTestId('product-1-description')).toHaveTextContent(
-      'Get your own checkout page to sell/ accept payment online, even without a website.',
+      'Create a simple checkout page to accept payments online. No website or coding needed.',
     );
     expect(screen.getByTestId('product-1-link')).toHaveTextContent('Use now');
 
     // Check third product data
-    expect(screen.getByTestId('product-2-tag')).toHaveTextContent('Set up in 2 mins');
+    expect(screen.getByTestId('product-2-tag')).toHaveTextContent('2 mins setup');
     expect(screen.getByTestId('product-2-title')).toHaveTextContent('Payment Links');
     expect(screen.getByTestId('product-2-description')).toHaveTextContent(
-      'Share a link on WhatsApp, SMS, or email and get paid immediately.',
+      'Generate a link you can share with customers to get paid instantly, without any setup.',
     );
     expect(screen.getByTestId('product-2-link')).toHaveTextContent('Use now');
+  });
+
+  test('opens ProductRecommender modal when Find the right product is clicked', () => {
+    renderWithWrappers(<NoCodeSection />);
+
+    // Click the first product to trigger the modal
+    const firstProductLink = screen.getByTestId('product-0-link');
+    firstProductLink.click();
+
+    // Check if the modal is visible
+    expect(screen.getByTestId('product-recommender-modal')).toBeInTheDocument();
+  });
+
+  test('closes ProductRecommender modal when dismissed', () => {
+    renderWithWrappers(<NoCodeSection />);
+
+    // Open the modal first
+    const firstProductLink = screen.getByTestId('product-0-link');
+    firstProductLink.click();
+
+    // Verify modal is open
+    expect(screen.getByTestId('product-recommender-modal')).toBeInTheDocument();
+
+    // Close the modal
+    const dismissButton = screen.getByTestId('dismiss-button');
+    dismissButton.click();
+
+    // Verify modal is closed
+    expect(screen.queryByTestId('product-recommender-modal')).not.toBeInTheDocument();
   });
 });

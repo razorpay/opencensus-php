@@ -1,7 +1,7 @@
 import React from 'react';
 import { SparklesIcon, ArrowUpRightIcon } from '@razorpay/blade/components';
 import PitchProducts from '@FTUX/components/PitchProducts';
-import ProductCardImg from 'apps/onboarding-experience/src/assets/CardBanner.svg';
+import AddWebsiteCardImg from 'apps/onboarding-experience/src/assets/PaymentPagesCard.svg';
 
 const AddWebsiteNudge = () => {
   const websiteSuggestions = [
@@ -14,7 +14,7 @@ const AddWebsiteNudge = () => {
       linkText: 'Add website/app',
       // nosemgrep : ssc-adb055b9-fed0-4d70-a57d-eb9825b09449
       handleClick: () => {},
-      image: ProductCardImg as string,
+      image: AddWebsiteCardImg as string,
     },
   ];
 

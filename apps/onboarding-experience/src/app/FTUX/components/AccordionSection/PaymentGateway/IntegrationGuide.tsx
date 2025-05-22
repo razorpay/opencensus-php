@@ -1,8 +1,10 @@
 import React, { useMemo, useState, useEffect, Suspense, lazy } from 'react';
 import { Box, Link, Divider, Text, EditIcon, LayersIcon } from '@razorpay/blade/components';
 import { PAYMENT_CHANNEL_OPTIONS } from 'apps/onboarding-experience/src/common/types/merchant';
+import SelectableOptionCard, {
+  SelectableOptionCardProps,
+} from 'apps/onboarding-experience/src/common/components/SelectableOptionCard';
 import IntegrationOptionIcon from 'apps/onboarding-experience/src/assets/IntegrationOption.svg';
-import SelectableOptionCard from 'apps/onboarding-experience/src/common/components/SelectableOptionCard';
 import { getSpecificPlatformType } from 'apps/onboarding-experience/src/common/utils/merchant';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
 import { INTEGRATION_GUIDE } from '@FTUX/constants/accordion';
@@ -35,10 +37,14 @@ const IntegrationGuide = () => {
       ?.accept;
 
   const handleAddPlugin = async (newPlugin: string) => {
-    await addMerchantWebsitePlugin({ websiteUrl: websiteUrl || '', pluginName: newPlugin });
+    try {
+      await addMerchantWebsitePlugin({ websiteUrl: websiteUrl || '', pluginName: newPlugin });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const websiteIntegrationOptions = useMemo(() => {
+  const websiteIntegrationOptions: SelectableOptionCardProps[] = useMemo(() => {
     if (!websiteUrl || platformType !== 'website') {
       return [];
     }
@@ -56,7 +62,7 @@ const IntegrationGuide = () => {
 
       return [
         {
-          title: (
+          customTitle: (
             <Box display="flex" flexDirection="row">
               <Link href={integrationGuide} size="medium" icon={LayersIcon} target="_blank">
                 Build on {websitePluginName}
@@ -64,9 +70,9 @@ const IntegrationGuide = () => {
               <Text size="medium"> - step-by-step guide to set up</Text>
             </Box>
           ),
-          subtitle: `${websitePluginName}`,
-          image: activePluginConfig?.icon || IntegrationOptionIcon,
-          onClick: () => {
+          subTitle: `${websitePluginName}`,
+          cardImageUrl: activePluginConfig?.icon || IntegrationOptionIcon,
+          handleClick: () => {
             window.open(integrationGuide, '_blank');
           },
         },
@@ -77,18 +83,15 @@ const IntegrationGuide = () => {
     return [
       {
         title: 'Custom website',
-        subtitle: 'On my own CMS',
-        image: IntegrationOptionIcon,
-        onClick: () => handleAddPlugin(''),
+        subTitle: 'On my own CMS',
+        cardImageUrl: IntegrationOptionIcon,
+        handleClick: () => handleAddPlugin(''),
       },
       {
         title: 'Used a web builder',
-        subtitle: 'Like Shopify, WooCommerce, Wix.',
-        image: IntegrationOptionIcon,
-        onClick: () => {
-          console.log('open plugin modal');
-          setWebsitePluginModalVisible(true);
-        },
+        subTitle: 'Like Shopify, WooCommerce, Wix.',
+        cardImageUrl: IntegrationOptionIcon,
+        handleClick: () => setWebsitePluginModalVisible(true),
       },
     ];
   }, [websiteUrl, platformType, selectedWebsitePlugin]);
@@ -134,11 +137,12 @@ const IntegrationGuide = () => {
           >
             {websiteIntegrationOptions.map((option) => (
               <SelectableOptionCard
-                key={option.subtitle}
+                key={option.subTitle}
                 title={option.title}
-                subTitle={option.subtitle}
-                cardImageUrl={option.image}
-                handleClick={option.onClick}
+                customTitle={option.customTitle}
+                subTitle={option.subTitle}
+                cardImageUrl={option.cardImageUrl}
+                handleClick={option.handleClick}
                 isDisabled={isAddingWebsitePlugin}
               />
             ))}
@@ -154,7 +158,7 @@ const IntegrationGuide = () => {
             </Text>
             <Box paddingTop="spacing.5">
               <SelectableOptionCard
-                title={
+                customTitle={
                   <Box display="flex" flexDirection="row">
                     <Text size="medium">Here is a detailed set up guide - </Text>
                     {hasAndroidIntegration ? (

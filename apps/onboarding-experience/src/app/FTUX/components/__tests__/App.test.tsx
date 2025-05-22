@@ -46,7 +46,7 @@ jest.mock('../AddWebsiteNudge', () => ({
   default: () => <div data-testid="website-nudge">Add Website Nudge</div>,
 }));
 
-jest.mock('../WaysToCollectPayment', () => ({
+jest.mock('../WaysToAcceptPayment', () => ({
   __esModule: true,
   default: () => <div data-testid="ways-for-payment">Ways to Collect Payment</div>,
 }));

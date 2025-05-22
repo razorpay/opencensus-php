@@ -10,7 +10,8 @@ interface ImagePostCardProps {
   description: string;
   linkIcon: IconComponent;
   linkText: string;
-  handleClick: () => void;
+  handleClick?: () => void;
+  linkUrl?: string;
 }
 
 const ImagePostCard = ({
@@ -19,6 +20,7 @@ const ImagePostCard = ({
   tagText,
   title,
   description,
+  linkUrl,
   linkIcon,
   linkText,
   handleClick,
@@ -63,9 +65,22 @@ const ImagePostCard = ({
               {description}
             </Text>
           </Box>
-          <Link onClick={handleClick} icon={linkIcon} iconPosition="right">
-            {linkText}
-          </Link>
+          {linkUrl && (
+            <Link
+              icon={linkIcon}
+              iconPosition="right"
+              variant="anchor"
+              href={linkUrl}
+              target={'_blank'}
+            >
+              {linkText}
+            </Link>
+          )}
+          {handleClick && (
+            <Link icon={linkIcon} iconPosition="right" onClick={handleClick}>
+              {linkText}
+            </Link>
+          )}
         </Box>
       </Box>
     </Card>

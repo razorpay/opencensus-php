@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Heading, Badge } from '@razorpay/blade/components';
 import useAccordionSectionData from '@FTUX/hooks/useAccordionSectionData';
-import AccordionHeaderBg from 'apps/onboarding-experience/src/assets/AccordionHeaderBg.svg';
+import CollectPaymentsBannerImg from 'apps/onboarding-experience/src/assets/CollectPaymentsBanner.svg';
 import CollectPaymentsAccordion from './CollectPaymentsAccordion';
 
 const AccordionSection = () => {
@@ -15,6 +15,7 @@ const AccordionSection = () => {
           base: 'column-reverse',
           l: 'row',
         }}
+        alignItems="center"
         gap="spacing.4"
         marginBottom="spacing.5"
       >
@@ -38,14 +39,10 @@ const AccordionSection = () => {
         <Box
           width={{
             base: '100%',
-            l: 'fit-content',
-          }}
-          maxHeight={{
-            base: 'auto',
-            l: 'spacing.11',
+            l: '360px',
           }}
         >
-          <img src={AccordionHeaderBg} alt="accordionHeader" width="100%" height="100%" />
+          <img src={CollectPaymentsBannerImg} alt="accordionHeader" width="100%" />
         </Box>
       </Box>
       <CollectPaymentsAccordion activeStep={activeStep} data={accordionData} />

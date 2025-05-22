@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, Heading, Text, Link } from '@razorpay/blade/components';
 import SettlementsGuideModal from '@FTUX/modals/SettlementsGuideModal';
 import PaymentHandleActions from './PaymentHandleActions';
+import PaymentHandleBannerImg from 'apps/onboarding-experience/src/assets/PaymentHandleBanner.svg';
 
 /**
  * PaymentHandle component displays information about payment handle functionality
@@ -17,11 +18,9 @@ const PaymentHandle = () => {
         display={{ base: 'block', l: 'none' }}
         width="100%"
         minHeight="80px"
-        borderRadius="medium"
-        backgroundColor="surface.background.primary.subtle"
         marginBottom="spacing.4"
       >
-        <img src="" alt="payment-handle" />
+        <img src={PaymentHandleBannerImg} alt="payment-handle" width="100%" />
       </Box>
       {/* Section heading */}
       <Box
@@ -35,7 +34,7 @@ const PaymentHandle = () => {
       {/* Main content container */}
       <Box
         display="flex"
-        alignItems="flex-start"
+        alignItems="center"
         justifyContent="space-between"
         padding={{
           base: 'spacing.5',
@@ -67,26 +66,19 @@ const PaymentHandle = () => {
           <PaymentHandleActions />
           {/* Settlement information with modal trigger */}
           <Text color="surface.text.gray.muted" size="small">
-            By default, settlement cycles are 2 days{' '}
+            Your money will be credited to your account as per your{' '}
             <Link
               variant="button"
               size="small"
-              color="neutral"
               onClick={() => setIsSettlementsGuideModalOpen(true)}
             >
-              here.
+              settlement schedule
             </Link>
           </Text>
         </Box>
         {/* Desktop-only payment handle image */}
-        <Box
-          display={{ base: 'none', l: 'block' }}
-          width="280px"
-          height="126px"
-          borderRadius="medium"
-          backgroundColor="surface.background.primary.subtle"
-        >
-          <img src="" alt="payment-handle" />
+        <Box display={{ base: 'none', l: 'block' }}>
+          <img src={PaymentHandleBannerImg} alt="payment-handle" width="280px" />
         </Box>
       </Box>
       {isSettlementsGuideModalOpen && (

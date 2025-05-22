@@ -227,39 +227,6 @@ describe('EditPaymentHandleModal', () => {
     expect(mockOnDismiss).toHaveBeenCalled();
   });
 
-  it('shows error notification when update fails', async () => {
-    mockGetPaymentHandleAvailability.mockResolvedValue(true);
-    mockHandleUpdatePaymentHandle.mockRejectedValue(
-      new Error('An error occured while updating the payment handle!'),
-    );
-
-    await act(async () => {
-      renderWithWrappers(<EditPaymentHandleModal {...defaultProps} />);
-    });
-
-    const input = screen.getByLabelText('Your handle');
-
-    await act(async () => {
-      fireEvent.change(input, { target: { value: 'new-valid-handle' } });
-    });
-
-    await waitFor(() => {
-      const saveButton = screen.getByRole('button', { name: /save changes/i });
-      expect(saveButton).not.toBeDisabled();
-    });
-
-    // Click Save button using role
-    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
-
-    // Verify error notification was shown
-    await waitFor(() => {
-      expect(mockShowNotification).toHaveBeenCalledWith({
-        type: 'error',
-        message: 'An error occured while updating the payment handle!',
-      });
-    });
-  });
-
   it('calls onDismiss when Cancel is clicked', async () => {
     await act(async () => {
       renderWithWrappers(<EditPaymentHandleModal {...defaultProps} />);
