@@ -55,7 +55,7 @@ jest.mock('../WaysToAcceptPayment', () => ({
 import useHomepageState from '@FTUX/hooks/useHomepageState';
 
 // Mock page layout loader
-jest.mock('apps/onboarding-experience/src/common/components/PageLayoutLoader', () => ({
+jest.mock('@OnboardingExperienceCommons/components/PageLayoutLoader', () => ({
   PageLayoutLoader: () => <div data-testid="page-loader">Loading...</div>,
 }));
 

@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import { Button, Radio, RadioGroup, Box, Text } from '@razorpay/blade/components';
 import { isMobileDevice } from '@libs/shared-utils';
 import { useModalComponents } from '@libs/shared-ui';
-import {
-  ApiKeyDelay,
-  RegenerateApiKeyProps,
-} from 'apps/onboarding-experience/src/common/types/apiKeys';
+import { ApiKeyDelay, DeactivateApiKeyProps } from '@OnboardingExperienceCommons/types/apiKeys';
 
 /**
  * Confirmation screen for API key regeneration with deactivation options
@@ -16,7 +13,7 @@ const DeactivateKeys = ({
   isLoading = false,
   handleRegenerateApiKeys,
   onDismiss,
-}: RegenerateApiKeyProps) => {
+}: DeactivateApiKeyProps) => {
   const isMobile = isMobileDevice();
   const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
 
@@ -34,11 +31,13 @@ const DeactivateKeys = ({
           display="flex"
           flexDirection="column"
           alignItems="flex-start"
-          gap="spacing.5"
+          gap="spacing.4"
           alignSelf="stretch"
           testID="regenerate-api-key-modal-body"
         >
-          <Text color="surface.text.gray.muted">Select only one</Text>
+          <Text color="surface.text.gray.muted" size="medium" weight="semibold">
+            Select only one
+          </Text>
           <RadioGroup
             value={keyRollDelay}
             onChange={(e) => setKeyRollDelay(e.value as ApiKeyDelay)}

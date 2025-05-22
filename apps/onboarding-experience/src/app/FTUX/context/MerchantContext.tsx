@@ -1,10 +1,15 @@
 import { createContext, useContext } from 'react';
 import { deepClone } from '@libs/shared-utils';
-import { MerchantResponseType } from 'apps/onboarding-experience/src/common/types/merchant';
+import { ApiKeys, MerchantResponseType } from '@OnboardingExperienceCommons/types/merchant';
 import {
   MerchantOnboardingDataResponseType,
   SelectedPlugin,
-} from 'apps/onboarding-experience/src/common/types/onboarding';
+} from '@OnboardingExperienceCommons/types/onboarding';
+import {
+  ApiKeyDelay,
+  MerchantApiKeyRegenerateResponse,
+  MerchantApiKeysCreateResponse,
+} from '@OnboardingExperienceCommons/types/apiKeys';
 
 // State type definition
 export interface MerchantState {
@@ -21,7 +26,8 @@ export type MerchantAction =
   | { type: 'SET_ONBOARDING_DATA'; payload: MerchantOnboardingDataResponseType }
   | { type: 'SET_LOADING_MERCHANT'; payload: boolean }
   | { type: 'SET_LOADING_ONBOARDING_DATA'; payload: boolean }
-  | { type: 'UPDATE_SELECTED_PLUGINS'; payload: SelectedPlugin[] };
+  | { type: 'UPDATE_SELECTED_PLUGINS'; payload: SelectedPlugin[] }
+  | { type: 'UPDATE_MERCHANT_API_KEY'; payload: ApiKeys };
 
 // Reducer function
 export const merchantReducer = (state: MerchantState, action: MerchantAction): MerchantState => {
@@ -40,6 +46,13 @@ export const merchantReducer = (state: MerchantState, action: MerchantAction): M
         updatedState.onboardingData.merchantOnboardingData.selectedPlugins = action.payload;
       }
       return updatedState || initialState;
+    case 'UPDATE_MERCHANT_API_KEY':
+      const apiKeyUpdatedState = deepClone(state);
+      if (apiKeyUpdatedState?.merchantData?.merchantById) {
+        apiKeyUpdatedState.merchantData.merchantById.apiKeys = [action.payload];
+        return apiKeyUpdatedState;
+      }
+      return initialState;
     default:
       return state;
   }
@@ -60,6 +73,11 @@ export interface MerchantContextType extends MerchantState {
   refetchOnboardingData: () => Promise<any>;
   refetchAllData: () => Promise<any>;
   addMerchantWebsitePlugin: (data: { websiteUrl: string; pluginName: string }) => Promise<any>;
+  generateApiKey: () => Promise<MerchantApiKeysCreateResponse>;
+  regenerateApiKey: (data: {
+    keyRollDelay: ApiKeyDelay;
+    oldApiKeyId: string;
+  }) => Promise<MerchantApiKeyRegenerateResponse>;
   isAddingWebsitePlugin: boolean;
 }
 

@@ -1,23 +1,71 @@
 import React, { useMemo, useState, useEffect, Suspense, lazy } from 'react';
 import { Box, Link, Divider, Text, EditIcon, LayersIcon } from '@razorpay/blade/components';
-import { PAYMENT_CHANNEL_OPTIONS } from 'apps/onboarding-experience/src/common/types/merchant';
+import { PAYMENT_CHANNEL_OPTIONS } from '@OnboardingExperienceCommons/types/merchant';
 import SelectableOptionCard, {
   SelectableOptionCardProps,
-} from 'apps/onboarding-experience/src/common/components/SelectableOptionCard';
+} from '@OnboardingExperienceCommons/components/SelectableOptionCard';
+import {
+  getSpecificPlatformType,
+  hasAddedWebsite,
+} from '@OnboardingExperienceCommons/utils/merchant';
 import IntegrationOptionIcon from 'apps/onboarding-experience/src/assets/IntegrationOption.svg';
-import { getSpecificPlatformType } from 'apps/onboarding-experience/src/common/utils/merchant';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
 import { INTEGRATION_GUIDE } from '@FTUX/constants/accordion';
 
 const WebsitePluginModal = lazy(
-  () => import('apps/onboarding-experience/src/common/components/WebsitePluginModal'),
+  () => import('@OnboardingExperienceCommons/components/WebsitePluginModal'),
 );
+
+const AppIntegrationGuide = ({
+  hasAndroidIntegration,
+  hasIOSIntegration,
+  // In case of keyless activation or when website is not verified, we will also show app integration guides
+  isWebsiteVerified,
+}: {
+  hasAndroidIntegration?: boolean;
+  hasIOSIntegration?: boolean;
+  isWebsiteVerified?: boolean;
+}) => {
+  return (
+    <Box>
+      <Text color="surface.text.gray.subtle" weight="medium">
+        Resources for Apps
+      </Text>
+      <Box paddingTop="spacing.5">
+        <SelectableOptionCard
+          customTitle={
+            <Box display="flex" flexDirection="row">
+              <Text size="medium">Here is a detailed set up guide - </Text>
+              {hasAndroidIntegration || !isWebsiteVerified ? (
+                <Link size="medium" icon={LayersIcon} href={INTEGRATION_GUIDE['android']}>
+                  Build API Integration on Android
+                </Link>
+              ) : null}
+              {hasIOSIntegration || !isWebsiteVerified ? (
+                <Link size="medium" icon={LayersIcon} href={INTEGRATION_GUIDE['ios']}>
+                  Build API Integration on iOS
+                </Link>
+              ) : null}
+            </Box>
+          }
+          subTitle={'App integration'}
+          cardImageUrl={IntegrationOptionIcon}
+        />
+      </Box>
+    </Box>
+  );
+};
 
 const IntegrationGuide = () => {
   const { merchantData, onboardingData, addMerchantWebsitePlugin, isAddingWebsitePlugin } =
     useMerchantContext();
   const [selectedWebsitePlugin, setSelectedWebsitePlugin] = useState<string | null>(null);
   const [websitePluginModalVisible, setWebsitePluginModalVisible] = useState(false);
+
+  // Check if the merchant has added a website and has API key access
+  const isWebsiteVerified =
+    Boolean(merchantData?.merchantById?.hasApiKeyAccess) &&
+    hasAddedWebsite(merchantData?.merchantById?.business?.paymentAcceptanceChannels);
 
   const websiteUrl =
     merchantData?.merchantById?.business?.paymentAcceptanceChannels?.[
@@ -51,7 +99,7 @@ const IntegrationGuide = () => {
 
     // If selected plugin is empty, it means the merchant has selected "None Of the Above"
     const websitePluginName =
-      selectedWebsitePlugin === '' ? 'Custom Website' : selectedWebsitePlugin;
+      selectedWebsitePlugin === '' || !isWebsiteVerified ? 'Custom Website' : selectedWebsitePlugin;
 
     if (websitePluginName) {
       const activePluginConfig = onboardingData?.merchantOnboardingData?.supportedPlugins?.find(
@@ -83,9 +131,9 @@ const IntegrationGuide = () => {
     return [
       {
         title: 'Custom website',
-        subTitle: 'On my own CMS',
-        cardImageUrl: IntegrationOptionIcon,
-        handleClick: () => handleAddPlugin(''),
+        subtitle: 'Built on my own',
+        image: IntegrationOptionIcon,
+        onClick: () => handleAddPlugin(''),
       },
       {
         title: 'Used a web builder',
@@ -116,7 +164,9 @@ const IntegrationGuide = () => {
             gap="spacing.4"
           >
             <Text color="surface.text.gray.subtle" weight="medium">
-              What did you use to build your website?
+              {typeof selectedWebsitePlugin === 'string'
+                ? `You selected ${selectedWebsitePlugin || 'Custom Website'}`
+                : 'What did you use to build your website?'}
             </Text>
             {websiteIntegrationOptions?.length === 1 && (
               <Link
@@ -149,37 +199,18 @@ const IntegrationGuide = () => {
           </Box>
         </Box>
       )}
-      {(hasAndroidIntegration || hasIOSIntegration) && (
+
+      {(hasAndroidIntegration || hasIOSIntegration || !isWebsiteVerified) && (
         <>
           {websiteIntegrationOptions?.length > 0 && <Divider />}
-          <Box>
-            <Text color="surface.text.gray.subtle" weight="medium">
-              Resources for Apps
-            </Text>
-            <Box paddingTop="spacing.5">
-              <SelectableOptionCard
-                customTitle={
-                  <Box display="flex" flexDirection="row">
-                    <Text size="medium">Here is a detailed set up guide - </Text>
-                    {hasAndroidIntegration ? (
-                      <Link size="medium" icon={LayersIcon} href={INTEGRATION_GUIDE['android']}>
-                        Build API Integration on Android
-                      </Link>
-                    ) : null}
-                    {hasIOSIntegration ? (
-                      <Link size="medium" icon={LayersIcon} href={INTEGRATION_GUIDE['ios']}>
-                        Build API Integration on iOS
-                      </Link>
-                    ) : null}
-                  </Box>
-                }
-                subTitle={'App integration'}
-                cardImageUrl={IntegrationOptionIcon}
-              />
-            </Box>
-          </Box>
+          <AppIntegrationGuide
+            hasAndroidIntegration={hasAndroidIntegration}
+            hasIOSIntegration={hasIOSIntegration}
+            isWebsiteVerified={isWebsiteVerified}
+          />
         </>
       )}
+
       {websitePluginModalVisible && (
         <Suspense fallback={<Box>Loading...</Box>}>
           <WebsitePluginModal

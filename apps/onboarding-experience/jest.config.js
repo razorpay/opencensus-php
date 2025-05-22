@@ -9,6 +9,7 @@ module.exports = withDashboardCore({
       ...config.moduleNameMapper,
       '^apps/onboarding-experience/(.*)$': '<rootDir>/$1',
       '^@FTUX/(.*)$': '<rootDir>/src/app/FTUX/$1',
+      '^@OnboardingExperienceCommons/(.*)$': '<rootDir>/src/common/$1',
     };
 
     config.coverageThreshold = {

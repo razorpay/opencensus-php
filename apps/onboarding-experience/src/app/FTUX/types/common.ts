@@ -6,3 +6,8 @@ export type TwoFaAuthProps = {
   onWrongOtpCallback?: () => void;
   onFlowTermination?: () => void;
 };
+
+export enum ApiKeysModalScreens {
+  REGEN = 'REGEN',
+  REVEAL = 'REVEAL',
+}

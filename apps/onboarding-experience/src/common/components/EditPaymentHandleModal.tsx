@@ -13,7 +13,7 @@ import {
   Link,
 } from '@razorpay/blade/components';
 import { useDebounce } from '@libs/shared-utils';
-import { removePaymentHandleSlugPrefix } from 'apps/onboarding-experience/src/common/utils/paymentHandle';
+import { removePaymentHandleSlugPrefix } from '@OnboardingExperienceCommons/utils/paymentHandle';
 import { useStore } from '@federated/apps/shell/commonStore';
 
 const EditPaymentHandleModal = ({

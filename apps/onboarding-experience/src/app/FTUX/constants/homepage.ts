@@ -1,9 +1,9 @@
 import { HOMEPAGE_ELEMENTS } from '@FTUX/types/homepage';
-import { PAYMENT_CHANNEL_OPTIONS } from 'apps/onboarding-experience/src/common/types/merchant';
+import { PAYMENT_CHANNEL_OPTIONS } from '@OnboardingExperienceCommons/types/merchant';
 import {
   MERCHANT_FEATURE_FLAGS,
   MerchantOnboardingDataRequestEnum,
-} from 'apps/onboarding-experience/src/common/types/onboarding';
+} from '@OnboardingExperienceCommons/types/onboarding';
 
 /**
  * Feature flags that must be fetched for the FTUX homepage to function correctly

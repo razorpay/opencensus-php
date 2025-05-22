@@ -7,15 +7,25 @@ import {
   Link,
   SettlementsIcon,
   CopyIcon,
-  TextInput,
   Alert,
   InfoIcon,
   Spinner,
+  DownloadIcon,
+  CheckCircleIcon,
 } from '@razorpay/blade/components';
 import { useStore } from '@federated/apps/shell/commonStore';
 import { copyToClipboard, isMobileDevice } from '@libs/shared-utils';
 import { useModalComponents } from '@libs/shared-ui';
-import { RevealApiKeyProps } from 'apps/onboarding-experience/src/common/types/apiKeys';
+import { RevealKeysModalProps } from '@OnboardingExperienceCommons/types/apiKeys';
+
+/**
+ * Enum representing possible download states
+ */
+enum DownloadState {
+  INITIAL = 'initial',
+  IN_PROGRESS = 'in_progress',
+  SUCCESS = 'success',
+}
 
 /**
  * Component that displays newly created credentials
@@ -30,13 +40,14 @@ const RevealApiKey = ({
   isFetching,
   handleDownloadApiKeys,
   onDismiss,
-}: RevealApiKeyProps) => {
+}: RevealKeysModalProps) => {
   const showNotification = useStore((state) => state.showNotification);
   const mode = useStore((state) => state.session.mode);
   const isMobile = isMobileDevice();
   const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
 
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadStatus, setDownloadStatus] = useState<DownloadState>(DownloadState.INITIAL);
+
   // Dynamic label that reflects current environment context (Test/Live)
   const activeModeLabel = mode === 'test' ? 'Test' : 'Live';
 
@@ -49,12 +60,12 @@ const RevealApiKey = ({
 
   /**
    * Initiates secure download of API credentials as file
-   * With proper error handling for download failures
    */
   const handleDownload = async () => {
     try {
-      setIsDownloading(true);
+      setDownloadStatus(DownloadState.IN_PROGRESS);
       await handleDownloadApiKeys(apiKeys);
+      setDownloadStatus(DownloadState.SUCCESS);
     } catch (error) {
       showNotification({
         type: 'error',
@@ -63,13 +74,25 @@ const RevealApiKey = ({
             ? error.message
             : 'Unable to Download Api Keys! - Please try again later',
       });
-    } finally {
-      setIsDownloading(false);
+      setDownloadStatus(DownloadState.INITIAL);
     }
   };
 
+  const dataListWithCopy = [
+    {
+      testId: 'api-keys-modal-key-id',
+      label: `${activeModeLabel} Key ID`,
+      value: apiKeys.id,
+    },
+    {
+      testId: 'api-keys-modal-key-secret',
+      label: `${activeModeLabel} Key Secret`,
+      value: apiKeys.secret,
+    },
+  ];
+
   return (
-    <Modal isOpen onDismiss={onDismiss}>
+    <Modal isOpen onDismiss={onDismiss} snapPoints={[1, 1, 1]}>
       <ModalHeader title="Key ID & Secret" subtitle="Integration Details" />
       <ModalBody>
         <Box
@@ -80,74 +103,54 @@ const RevealApiKey = ({
           alignSelf="stretch"
           testID="api-keys-modal-body"
         >
-          {/* API Key ID field with copy action */}
-          <Box
-            display="flex"
-            alignItems="center"
-            gap="spacing.3"
-            alignSelf="stretch"
-            flex="1"
-            testID="api-keys-modal-key-id"
-          >
-            <Box flex="1">
-              {isFetching ? (
-                <Spinner accessibilityLabel="api-keys-spinner" />
-              ) : (
-                <TextInput
-                  label={`${activeModeLabel} Key ID`}
-                  value={apiKeys.id}
-                  labelPosition="left"
-                  isDisabled
-                />
-              )}
-            </Box>
-            <Popover
-              title="Copied"
-              titleLeading={<SettlementsIcon />}
-              content={<Text textAlign="center">{apiKeys.id}</Text>}
+          {/* API Key ID and secret fields with copy action */}
+          {dataListWithCopy.map(({ testId, label, value }) => (
+            <Box
+              display="flex"
+              alignItems="center"
+              gap="spacing.3"
+              alignSelf="stretch"
+              flex="1"
+              testID={testId}
             >
-              <Link
-                size="large"
-                icon={CopyIcon}
-                onClick={() => handleCopy(apiKeys.id)}
-                isDisabled={isFetching}
-              />
-            </Popover>
-          </Box>
-          {/* API Secret field with copy action - most sensitive data */}
-          <Box
-            display="flex"
-            alignItems="center"
-            gap="spacing.3"
-            alignSelf="stretch"
-            flex="1"
-            testID="api-keys-modal-key-secret"
-          >
-            <Box flex="1">
+              <Box minWidth="130px">
+                <Text color="surface.text.gray.subtle" size="medium" weight="semibold">
+                  {label}
+                </Text>
+              </Box>
               {isFetching ? (
-                <Spinner accessibilityLabel="api-keys-spinner" />
+                <Box flex="1">
+                  <Spinner accessibilityLabel="api-keys-spinner" />
+                </Box>
               ) : (
-                <TextInput
-                  label={`${activeModeLabel} Key Secret`}
-                  value={apiKeys.secret}
-                  labelPosition="left"
-                  isDisabled
-                />
+                <Box
+                  paddingX="spacing.4"
+                  paddingY="spacing.3"
+                  borderColor="surface.border.gray.muted"
+                  borderWidth="thick"
+                  borderRadius="medium"
+                  flex="1"
+                  display="grid"
+                >
+                  <Text color="surface.text.gray.normal" size="medium" truncateAfterLines={1}>
+                    {value}
+                  </Text>
+                </Box>
               )}
+              <Popover
+                title="Copied"
+                titleLeading={<SettlementsIcon />}
+                content={<Text textAlign="center">{value}</Text>}
+              >
+                <Link
+                  size="large"
+                  icon={CopyIcon}
+                  onClick={() => handleCopy(value || '')}
+                  isDisabled={isFetching}
+                />
+              </Popover>
             </Box>
-            <Popover
-              title="Copied"
-              titleLeading={<SettlementsIcon />}
-              content={<Text textAlign="center">{apiKeys.secret}</Text>}
-            >
-              <Link
-                size="large"
-                icon={CopyIcon}
-                onClick={() => handleCopy(apiKeys.secret)}
-                isDisabled={isFetching}
-              />
-            </Popover>
-          </Box>
+          ))}
           {/* Label about one-time visibility */}
           <Alert
             title="Alert"
@@ -167,9 +170,17 @@ const RevealApiKey = ({
           alignItems="center"
           alignSelf="stretch"
           testID="api-keys-modal-footer"
+          width="100%"
         >
-          <Button onClick={handleDownload} isLoading={isDownloading}>
-            Download
+          <Button
+            onClick={handleDownload}
+            isLoading={downloadStatus === DownloadState.IN_PROGRESS}
+            isFullWidth={isMobile ? true : false}
+            color={downloadStatus === DownloadState.SUCCESS ? 'positive' : 'primary'}
+            icon={downloadStatus === DownloadState.SUCCESS ? CheckCircleIcon : DownloadIcon}
+            isDisabled={isFetching}
+          >
+            {downloadStatus === DownloadState.SUCCESS ? 'Downloaded' : 'Download'}
           </Button>
         </Box>
       </ModalFooter>

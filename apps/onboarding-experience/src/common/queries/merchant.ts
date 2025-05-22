@@ -19,6 +19,7 @@ const MERCHANT_FRAGMENT = gql`
       isActivated
       isTransacted
     }
+    hasApiKeyAccess
     apiKeys {
       id
       createdAt

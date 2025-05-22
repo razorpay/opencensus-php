@@ -1,12 +1,12 @@
 import { graphqlRequest } from '@federated/apps/shell/graphql';
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { WORKFLOW_TYPES } from 'apps/onboarding-experience/src/common/types/merchant';
+import { WORKFLOW_TYPES } from '@OnboardingExperienceCommons/types/merchant';
 import {
   MERCHANT_FEATURE_FLAGS,
   MerchantOnboardingDataResponseType,
   MerchantOnboardingDataRequestEnum,
-} from 'apps/onboarding-experience/src/common/types/onboarding';
-import { MERCHANT_ONBOARDING_DATA_QUERY } from 'apps/onboarding-experience/src/common/queries/onboarding';
+} from '@OnboardingExperienceCommons/types/onboarding';
+import { MERCHANT_ONBOARDING_DATA_QUERY } from '@OnboardingExperienceCommons/queries/onboarding';
 
 type merchantOnboardingDataPropsType = {
   /** The type of workflow to fetch data for (defaults to business website workflow) */

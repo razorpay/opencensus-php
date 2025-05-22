@@ -7,7 +7,7 @@ import {
 } from 'apps/onboarding-experience/src/services/test/jest-utils';
 import renderWithWrappers from 'apps/onboarding-experience/src/services/test/renderWithWrappers';
 import RevealApiKey from '../RevealApiKey';
-import { copyToClipboard } from '@libs/shared-utils';
+import { copyToClipboard, isMobileDevice } from '@libs/shared-utils';
 
 // Mock shared dependencies
 jest.mock('@libs/shared-utils', () => ({
@@ -16,10 +16,11 @@ jest.mock('@libs/shared-utils', () => ({
 }));
 
 // Mock the store
+const mockShowNotification = jest.fn();
 jest.mock('@federated/apps/shell/commonStore', () => ({
   useStore: jest.fn().mockImplementation((selector) =>
     selector({
-      showNotification: jest.fn(),
+      showNotification: mockShowNotification,
       session: {
         mode: 'test',
       },
@@ -50,8 +51,10 @@ describe('RevealApiKey Component', () => {
       />,
     );
     expect(screen.getByText('Key ID & Secret')).toBeInTheDocument();
-    expect(screen.getByLabelText('Test Key ID')).toBeInTheDocument();
-    expect(screen.getByLabelText('Test Key Secret')).toBeInTheDocument();
+    expect(screen.getByTestId('api-keys-modal-key-id')).toBeInTheDocument();
+    expect(screen.getByTestId('api-keys-modal-key-secret')).toBeInTheDocument();
+    expect(screen.getByText('Test Key ID')).toBeInTheDocument();
+    expect(screen.getByText('Test Key Secret')).toBeInTheDocument();
     expect(screen.getByText('Download')).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -102,7 +105,28 @@ describe('RevealApiKey Component', () => {
     expect(mockHandleDownloadApiKeys).toHaveBeenCalledWith(apiKeys);
   });
 
-  it('shows spinner during loading state', () => {
+  it('changes button state to "Downloaded" after successful download', async () => {
+    renderWithWrappers(
+      <RevealApiKey
+        apiKeys={apiKeys}
+        handleDownloadApiKeys={mockHandleDownloadApiKeys}
+        onDismiss={mockOnDismiss}
+        isFetching={false}
+      />,
+    );
+
+    // Click download button
+    await act(async () => {
+      fireEvent.click(screen.getByText('Download'));
+    });
+
+    // Wait for the download to complete
+    await waitFor(() => {
+      expect(screen.getByText('Downloaded')).toBeInTheDocument();
+    });
+  });
+
+  it('shows spinner during fetching state', () => {
     renderWithWrappers(
       <RevealApiKey
         apiKeys={apiKeys}
@@ -122,17 +146,6 @@ describe('RevealApiKey Component', () => {
     const mockError = new Error('Download failed');
     mockHandleDownloadApiKeys.mockRejectedValueOnce(mockError);
 
-    // Mock the notification service
-    const mockShowNotification = jest.fn();
-    jest.mock('@federated/apps/shell/commonStore', () => ({
-      useStore: jest.fn().mockImplementation((selector) =>
-        selector({
-          showNotification: mockShowNotification,
-          session: { mode: 'test' },
-        }),
-      ),
-    }));
-
     renderWithWrappers(
       <RevealApiKey
         apiKeys={apiKeys}
@@ -149,18 +162,21 @@ describe('RevealApiKey Component', () => {
 
     // Verify error handling process
     expect(mockHandleDownloadApiKeys).toHaveBeenCalledWith(apiKeys);
+
+    await waitFor(() => {
+      expect(mockShowNotification).toHaveBeenCalledWith({
+        type: 'error',
+        message: 'Download failed',
+      });
+    });
+
+    // Button should not show "Downloaded" state after error
+    expect(screen.getByText('Download')).toBeInTheDocument();
   });
 
-  it('displays live environment key labels when in live mode', () => {
-    // Override the default mock to use live mode
-    jest.mock('@federated/apps/shell/commonStore', () => ({
-      useStore: jest.fn().mockImplementation((selector) =>
-        selector({
-          showNotification: jest.fn(),
-          session: { mode: 'live' },
-        }),
-      ),
-    }));
+  it('shows generic error message when error has no message', async () => {
+    // Mock the error scenario with no message
+    mockHandleDownloadApiKeys.mockRejectedValueOnce(new Error());
 
     renderWithWrappers(
       <RevealApiKey
@@ -171,8 +187,53 @@ describe('RevealApiKey Component', () => {
       />,
     );
 
-    // For test purposes - we can't actually verify the Live label due to mock limitations
-    // but the component should at least render properly
-    expect(screen.getByText('Key ID & Secret')).toBeInTheDocument();
+    // Click download button
+    await act(async () => {
+      fireEvent.click(screen.getByText('Download'));
+    });
+
+    await waitFor(() => {
+      expect(mockShowNotification).toHaveBeenCalledWith({
+        type: 'error',
+        message: 'Unable to Download Api Keys! - Please try again later',
+      });
+    });
+  });
+
+  describe('Live mode', () => {
+    beforeEach(() => {
+      // Override the default mock to use live mode
+      jest.mock('@federated/apps/shell/commonStore', () => ({
+        useStore: jest.fn().mockImplementation((selector) =>
+          selector({
+            showNotification: mockShowNotification,
+            session: { mode: 'live' },
+          }),
+        ),
+      }));
+    });
+
+    it('displays live environment key labels when in live mode', () => {
+      // Mock useStore explicitly for this test
+      const useStoreMock = require('@federated/apps/shell/commonStore').useStore;
+      useStoreMock.mockImplementation((selector: (state: any) => any) =>
+        selector({
+          showNotification: mockShowNotification,
+          session: { mode: 'live' },
+        }),
+      );
+
+      renderWithWrappers(
+        <RevealApiKey
+          apiKeys={apiKeys}
+          handleDownloadApiKeys={mockHandleDownloadApiKeys}
+          onDismiss={mockOnDismiss}
+          isFetching={false}
+        />,
+      );
+
+      expect(screen.getByText('Live Key ID')).toBeInTheDocument();
+      expect(screen.getByText('Live Key Secret')).toBeInTheDocument();
+    });
   });
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Heading, Text, IconComponent } from '@razorpay/blade/components';
-import ImagePostCard from 'apps/onboarding-experience/src/common/components/ImagePostCard';
+import ImagePostCard from '@OnboardingExperienceCommons/components/ImagePostCard';
 
 interface Product {
   tagIcon: IconComponent;

@@ -5,13 +5,13 @@ import { HOMEPAGE_ELEMENTS } from '@FTUX/types/homepage';
 import {
   areAnyOptionsAccepted,
   hasAddedWebsite,
-} from 'apps/onboarding-experience/src/common/utils/merchant';
+} from '@OnboardingExperienceCommons/utils/merchant';
 import { getLayoutByMerchantType } from '@FTUX/utils/homepage';
 import { useStore } from '@federated/apps/shell/commonStore';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
 
 // Mock dependencies
-jest.mock('apps/onboarding-experience/src/common/utils/merchant');
+jest.mock('@OnboardingExperienceCommons/utils/merchant');
 jest.mock('@FTUX/utils/homepage');
 jest.mock('@federated/apps/shell/commonStore');
 jest.mock('@FTUX/context/MerchantContext');

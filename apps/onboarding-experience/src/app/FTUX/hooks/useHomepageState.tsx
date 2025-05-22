@@ -5,7 +5,7 @@ import { PG_CHANNEL_OPTIONS, NO_CODE_CHANNEL_OPTIONS } from '@FTUX/constants/hom
 import {
   areAnyOptionsAccepted,
   hasAddedWebsite,
-} from 'apps/onboarding-experience/src/common/utils/merchant';
+} from '@OnboardingExperienceCommons/utils/merchant';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
 
 /**
@@ -44,7 +44,9 @@ const useHomepageState = (): HOMEPAGE_ELEMENTS[] => {
   const pageElements = getLayoutByMerchantType({
     isPgMerchant,
     isNoCodeMerchant,
-    hasWebsite: hasAddedWebsite(activeUser) || isWebsiteAddInProgress,
+    hasWebsite:
+      hasAddedWebsite(merchantData?.merchantById?.business?.paymentAcceptanceChannels) ||
+      isWebsiteAddInProgress,
   });
 
   // If merchant has completed a transaction, add the transaction banner at the top

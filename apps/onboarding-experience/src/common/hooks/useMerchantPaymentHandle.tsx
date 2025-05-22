@@ -7,11 +7,11 @@ import {
   MERCHANT_PAYMENT_HANDLE_SUGGESTION_QUERY,
   MERCHANT_PAYMENT_HANDLE_AVAILABILITY_QUERY,
   MERCHANT_PAYMENT_HANDLE_UPDATE_MUTATION,
-} from 'apps/onboarding-experience/src/common/queries/paymentHandle';
+} from '@OnboardingExperienceCommons/queries/paymentHandle';
 import {
   addPaymentHandleSlugPrefix,
   toLowestAmountDenomination,
-} from 'apps/onboarding-experience/src/common/utils/paymentHandle';
+} from '@OnboardingExperienceCommons/utils/paymentHandle';
 import {
   MerchantPaymentHandleResponseType,
   MerchantPaymentHandleSuggestionResponseType,
@@ -20,7 +20,7 @@ import {
   MoneyInput,
   MerchantPaymentHandleUpdateResponseType,
   MerchantPaymentHandleAvailabilityResponseType,
-} from 'apps/onboarding-experience/src/common/types/paymentHandle';
+} from '@OnboardingExperienceCommons/types/paymentHandle';
 
 const useMerchantPaymentHandle = (): UseMerchantPaymentHandleReturn => {
   const activeUser = useStore((state) => state.session.user);

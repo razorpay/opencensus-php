@@ -7,7 +7,7 @@ import {
 import {
   PaymentAcceptanceChannelsType,
   PAYMENT_CHANNEL_OPTIONS,
-} from 'apps/onboarding-experience/src/common/types/merchant';
+} from '@OnboardingExperienceCommons/types/merchant';
 
 interface LayoutOptions {
   isPgMerchant: boolean;

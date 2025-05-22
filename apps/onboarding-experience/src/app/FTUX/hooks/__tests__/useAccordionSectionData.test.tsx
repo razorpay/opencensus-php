@@ -1,14 +1,16 @@
 import { renderHook } from 'apps/onboarding-experience/src/services/test/jest-utils';
 import useAccordionSectionData from '../useAccordionSectionData';
 import { useStore } from '@federated/apps/shell/commonStore';
-import { PAYMENT_CHANNEL_OPTIONS } from 'apps/onboarding-experience/src/common/types/merchant';
+import { PAYMENT_CHANNEL_OPTIONS } from '@OnboardingExperienceCommons/types/merchant';
 import { getAccordionWebsiteTitle } from '@FTUX/utils/homepage';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
+import { hasAddedWebsite } from '@OnboardingExperienceCommons/utils/merchant';
 
-jest.mock('apps/onboarding-experience/src/common/hooks/useMerchant');
+jest.mock('@OnboardingExperienceCommons/hooks/useMerchant');
 jest.mock('@federated/apps/shell/commonStore');
 jest.mock('@FTUX/utils/homepage');
 jest.mock('@FTUX/context/MerchantContext');
+jest.mock('@OnboardingExperienceCommons/utils/merchant');
 
 describe('useAccordionSectionData hook', () => {
   beforeEach(() => {
@@ -21,18 +23,18 @@ describe('useAccordionSectionData hook', () => {
       const state = {
         session: {
           mode: 'test',
-          user: {
-            business_website: '',
-            id: 'test-user-id',
-          },
         },
       };
       return selector(state);
     });
     (getAccordionWebsiteTitle as jest.Mock).mockReturnValue('Add your website details');
+    (hasAddedWebsite as jest.Mock).mockReturnValue(false);
   });
 
   test('returns correct active step when no website, API keys, or transactions', () => {
+    // Mock hasAddedWebsite to return false
+    (hasAddedWebsite as jest.Mock).mockReturnValue(false);
+
     // Mock merchant data with no website, API keys, or transactions
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
@@ -55,22 +57,12 @@ describe('useAccordionSectionData hook', () => {
     // Verify the correct active step is returned
     expect(result.current.activeStep).toBe(0);
     expect(result.current.accordionData.length).toBe(3);
+    expect(hasAddedWebsite).toHaveBeenCalledWith({});
   });
 
   test('returns correct active step when website exists but no API keys', () => {
-    // Mock user with a website
-    (useStore as unknown as jest.Mock).mockImplementation((selector) => {
-      const state = {
-        session: {
-          mode: 'test',
-          user: {
-            business_website: 'https://example.com',
-            id: 'test-user-id',
-          },
-        },
-      };
-      return selector(state);
-    });
+    // Mock hasAddedWebsite to return true
+    (hasAddedWebsite as jest.Mock).mockReturnValue(true);
 
     // Mock merchant data with no API keys or transactions
     (useMerchantContext as jest.Mock).mockReturnValue({
@@ -93,22 +85,12 @@ describe('useAccordionSectionData hook', () => {
 
     // Verify the active step is 1 (next step after website)
     expect(result.current.activeStep).toBe(1);
+    expect(hasAddedWebsite).toHaveBeenCalledWith({});
   });
 
   test('returns correct active step when website and API keys exist but no transactions', () => {
-    // Mock user with a website
-    (useStore as unknown as jest.Mock).mockImplementation((selector) => {
-      const state = {
-        session: {
-          mode: 'test',
-          user: {
-            business_website: 'https://example.com',
-            id: 'test-user-id',
-          },
-        },
-      };
-      return selector(state);
-    });
+    // Mock hasAddedWebsite to return true
+    (hasAddedWebsite as jest.Mock).mockReturnValue(true);
 
     // Mock merchant data with API keys but no transactions
     (useMerchantContext as jest.Mock).mockReturnValue({
@@ -131,22 +113,12 @@ describe('useAccordionSectionData hook', () => {
 
     // Verify the active step is 2 (transactions step)
     expect(result.current.activeStep).toBe(2);
+    expect(hasAddedWebsite).toHaveBeenCalledWith({});
   });
 
   test('returns active step 3 when all steps are completed', () => {
-    // Mock user with a website
-    (useStore as unknown as jest.Mock).mockImplementation((selector) => {
-      const state = {
-        session: {
-          mode: 'test',
-          user: {
-            business_website: 'https://example.com',
-            id: 'test-user-id',
-          },
-        },
-      };
-      return selector(state);
-    });
+    // Mock hasAddedWebsite to return true
+    (hasAddedWebsite as jest.Mock).mockReturnValue(true);
 
     // Mock merchant data with API keys and completed transactions
     (useMerchantContext as jest.Mock).mockReturnValue({
@@ -169,6 +141,7 @@ describe('useAccordionSectionData hook', () => {
 
     // Verify the active step is 3 (all steps completed)
     expect(result.current.activeStep).toBe(3);
+    expect(hasAddedWebsite).toHaveBeenCalledWith({});
   });
 
   test('calls getAccordionWebsiteTitle with payment channels', () => {
@@ -197,6 +170,7 @@ describe('useAccordionSectionData hook', () => {
 
     // Verify getAccordionWebsiteTitle was called with payment channels
     expect(getAccordionWebsiteTitle).toHaveBeenCalledWith(mockPaymentChannels);
+    expect(hasAddedWebsite).toHaveBeenCalledWith(mockPaymentChannels);
   });
 
   test('returns test mode badge for payment gateway section when in test mode', () => {
@@ -205,10 +179,6 @@ describe('useAccordionSectionData hook', () => {
       const state = {
         session: {
           mode: 'test',
-          user: {
-            business_website: 'https://example.com',
-            id: 'test-user-id',
-          },
         },
       };
       return selector(state);
@@ -231,10 +201,6 @@ describe('useAccordionSectionData hook', () => {
       const state = {
         session: {
           mode: 'live',
-          user: {
-            business_website: 'https://example.com',
-            id: 'test-user-id',
-          },
         },
       };
       return selector(state);
@@ -252,19 +218,8 @@ describe('useAccordionSectionData hook', () => {
   });
 
   test('returns pending badge for website section when active step is 0', () => {
-    // Set active step to 0 (website step)
-    (useStore as unknown as jest.Mock).mockImplementation((selector) => {
-      const state = {
-        session: {
-          mode: 'test',
-          user: {
-            business_website: '',
-            id: 'test-user-id',
-          },
-        },
-      };
-      return selector(state);
-    });
+    // Set active step to 0 (website step) by mocking hasAddedWebsite
+    (hasAddedWebsite as jest.Mock).mockReturnValue(false);
 
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
@@ -293,19 +248,8 @@ describe('useAccordionSectionData hook', () => {
   });
 
   test('does not return badge for collapsed sections that are not the active step', () => {
-    // Set active step to 1 (API keys step)
-    (useStore as unknown as jest.Mock).mockImplementation((selector) => {
-      const state = {
-        session: {
-          mode: 'test',
-          user: {
-            business_website: 'https://example.com',
-            id: 'test-user-id',
-          },
-        },
-      };
-      return selector(state);
-    });
+    // Set active step to 1 (API keys step) by mocking hasAddedWebsite
+    (hasAddedWebsite as jest.Mock).mockReturnValue(true);
 
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {

@@ -1,6 +1,6 @@
 import { graphqlRequestMutation } from '@federated/apps/shell/graphql';
 import { useMutation } from '@tanstack/react-query';
-import { ADD_MERCHANT_PLUGIN_MUTATION } from 'apps/onboarding-experience/src/common/queries/website';
+import { ADD_MERCHANT_PLUGIN_MUTATION } from '@OnboardingExperienceCommons/queries/website';
 
 type WebsitePluginInput = {
   websiteUrl: string;

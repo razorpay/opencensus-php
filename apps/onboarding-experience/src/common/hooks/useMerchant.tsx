@@ -1,8 +1,8 @@
 import { useStore } from '@federated/apps/shell/commonStore';
 import { graphqlRequest } from '@federated/apps/shell/graphql';
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
-import { MERCHANT_DETAILS_QUERY } from 'apps/onboarding-experience/src/common/queries/merchant';
-import { MerchantResponseType } from 'apps/onboarding-experience/src/common/types/merchant';
+import { MERCHANT_DETAILS_QUERY } from '@OnboardingExperienceCommons/queries/merchant';
+import { MerchantResponseType } from '@OnboardingExperienceCommons/types/merchant';
 
 const useMerchant = (): UseQueryResult<MerchantResponseType> => {
   const activeUser = useStore((state) => state.session.user);

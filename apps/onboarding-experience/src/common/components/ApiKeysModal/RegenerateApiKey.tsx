@@ -3,9 +3,9 @@ import { useStore } from '@federated/apps/shell/commonStore';
 import {
   ApiKeyDelay,
   ApiKeys,
-  ApiKeysModalProps,
+  RegenerateKeysModalProps,
   RegenerateModalScreens,
-} from 'apps/onboarding-experience/src/common/types/apiKeys';
+} from '@OnboardingExperienceCommons/types/apiKeys';
 import DeactivateKeys from './DeactivateKeys';
 import RevealApiKey from './RevealApiKey';
 
@@ -20,7 +20,7 @@ const RegenerateApiKey = ({
   handleDownloadApiKeys,
   handleRegenerateApiKeys,
   onDismiss,
-}: ApiKeysModalProps) => {
+}: RegenerateKeysModalProps) => {
   const showNotification = useStore((state) => state.showNotification);
 
   // Track loading state during API calls

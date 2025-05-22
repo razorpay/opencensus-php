@@ -8,7 +8,7 @@ import {
 import renderWithWrappers from 'apps/onboarding-experience/src/services/test/renderWithWrappers';
 import PaymentHandleActions from '../PaymentHandleActions';
 import { isMobileDevice } from '@libs/shared-utils';
-import useMerchantPaymentHandle from 'apps/onboarding-experience/src/common/hooks/useMerchantPaymentHandle';
+import useMerchantPaymentHandle from '@OnboardingExperienceCommons/hooks/useMerchantPaymentHandle';
 
 // Mock dependencies
 jest.mock('@libs/shared-utils', () => ({
@@ -16,7 +16,7 @@ jest.mock('@libs/shared-utils', () => ({
   copyToClipboard: jest.fn().mockImplementation(() => {}),
 }));
 
-jest.mock('apps/onboarding-experience/src/common/hooks/useMerchantPaymentHandle', () => ({
+jest.mock('@OnboardingExperienceCommons/hooks/useMerchantPaymentHandle', () => ({
   __esModule: true,
   default: jest.fn(),
 }));

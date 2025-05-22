@@ -7,10 +7,7 @@ import {
 } from 'apps/onboarding-experience/src/services/test/jest-utils';
 import renderWithWrappers from 'apps/onboarding-experience/src/services/test/renderWithWrappers';
 import RegenerateApiKey from '../RegenerateApiKey';
-import {
-  ApiKeyDelay,
-  RegenerateModalScreens,
-} from 'apps/onboarding-experience/src/common/types/apiKeys';
+import { ApiKeyDelay, RegenerateModalScreens } from '@OnboardingExperienceCommons/types/apiKeys';
 
 // Mock the store
 jest.mock('@federated/apps/shell/commonStore', () => ({

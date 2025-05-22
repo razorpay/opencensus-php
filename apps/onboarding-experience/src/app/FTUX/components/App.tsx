@@ -2,7 +2,7 @@ import React, { ReactNode, Suspense, lazy } from 'react';
 import { Box } from '@razorpay/blade/components';
 import useHomepageState from '@FTUX/hooks/useHomepageState';
 import { HOMEPAGE_ELEMENTS } from '@FTUX/types/homepage';
-import { PageLayoutLoader } from 'apps/onboarding-experience/src/common/components/PageLayoutLoader';
+import { PageLayoutLoader } from '@OnboardingExperienceCommons/components/PageLayoutLoader';
 
 // Lazy load components
 const AccordionSection = lazy(

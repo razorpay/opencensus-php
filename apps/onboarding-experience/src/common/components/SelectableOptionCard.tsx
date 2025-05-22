@@ -5,8 +5,8 @@ import { isMobileDevice } from '@libs/shared-utils';
 export type SelectableOptionCardProps = {
   title?: string;
   customTitle?: ReactNode;
-  subTitle: string;
-  cardImageUrl: string;
+  subTitle?: string;
+  cardImageUrl?: string;
   handleClick?: () => void;
   isDisabled?: boolean;
   link?: string;
@@ -61,9 +61,11 @@ const SelectableOptionCard = ({
           ) : (
             customTitle
           )}
-          <Text testID="card-subtitle" size="small" color="surface.text.gray.subtle">
-            {subTitle}
-          </Text>
+          {subTitle && (
+            <Text testID="card-subtitle" size="small" color="surface.text.gray.subtle">
+              {subTitle}
+            </Text>
+          )}
         </Box>
       </Box>
     </Card>

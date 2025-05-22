@@ -3,7 +3,7 @@ import { PaymentsDashboardUser } from '@libs/shared-types/payments';
 import {
   PaymentAcceptanceChannelsType,
   PAYMENT_CHANNEL_OPTIONS,
-} from 'apps/onboarding-experience/src/common/types/merchant';
+} from '@OnboardingExperienceCommons/types/merchant';
 
 // Checks if any of the specified payment channel options are accepted by the merchant
 export const areAnyOptionsAccepted = (
@@ -14,13 +14,15 @@ export const areAnyOptionsAccepted = (
 };
 
 // Checks if the merchant has added any website or android or app store URL
-export const hasAddedWebsite = (user: LADashboardUser | PaymentsDashboardUser): boolean => {
-  return Boolean(
-    !!user.business_website ||
-      !!user.appstore_url ||
-      !!user.playstore_url ||
-      !!user.additional_websites?.length,
-  );
+export const hasAddedWebsite = (
+  paymentChannels?: PaymentAcceptanceChannelsType,
+  options = [
+    PAYMENT_CHANNEL_OPTIONS.Android,
+    PAYMENT_CHANNEL_OPTIONS.IOS,
+    PAYMENT_CHANNEL_OPTIONS.Websites,
+  ],
+): boolean => {
+  return options.some((option) => !!paymentChannels?.[option]?.urls?.[0]?.value);
 };
 
 export const PLAY_STORE_APP_URL_PATTERN =

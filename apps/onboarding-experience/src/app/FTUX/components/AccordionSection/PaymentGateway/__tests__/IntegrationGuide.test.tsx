@@ -4,7 +4,7 @@ import renderWithWrappers from 'apps/onboarding-experience/src/services/test/ren
 import userEvent from '@testing-library/user-event';
 import IntegrationGuide from '../IntegrationGuide';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
-import { PAYMENT_CHANNEL_OPTIONS } from 'apps/onboarding-experience/src/common/types/merchant';
+import { PAYMENT_CHANNEL_OPTIONS } from '@OnboardingExperienceCommons/types/merchant';
 
 // Mock the MerchantContext hook
 jest.mock('@FTUX/context/MerchantContext');
@@ -25,19 +25,12 @@ describe('IntegrationGuide Component', () => {
     });
   });
 
-  test('renders nothing when no relevant data is available', () => {
-    renderWithWrappers(<IntegrationGuide />);
-
-    // The component should render an empty box without integration options
-    expect(screen.queryByText('What did you use to build your website?')).not.toBeInTheDocument();
-    expect(screen.queryByText('Resources for Apps')).not.toBeInTheDocument();
-  });
-
   test('renders website integration options when website URL is available', () => {
     // Mock merchant data with a website URL
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
         merchantById: {
+          hasApiKeyAccess: true,
           business: {
             paymentAcceptanceChannels: {
               [PAYMENT_CHANNEL_OPTIONS.Websites]: {
@@ -80,6 +73,7 @@ describe('IntegrationGuide Component', () => {
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
         merchantById: {
+          hasApiKeyAccess: true,
           business: {
             paymentAcceptanceChannels: {
               [PAYMENT_CHANNEL_OPTIONS.Websites]: {
@@ -120,8 +114,12 @@ describe('IntegrationGuide Component', () => {
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
         merchantById: {
+          hasApiKeyAccess: true,
           business: {
             paymentAcceptanceChannels: {
+              [PAYMENT_CHANNEL_OPTIONS.Websites]: {
+                urls: [{ value: 'https://example.com' }],
+              },
               [PAYMENT_CHANNEL_OPTIONS.Android]: {
                 accept: true,
               },
@@ -148,8 +146,12 @@ describe('IntegrationGuide Component', () => {
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
         merchantById: {
+          hasApiKeyAccess: true,
           business: {
             paymentAcceptanceChannels: {
+              [PAYMENT_CHANNEL_OPTIONS.Websites]: {
+                urls: [{ value: 'https://example.com' }],
+              },
               [PAYMENT_CHANNEL_OPTIONS.IOS]: {
                 accept: true,
               },
@@ -171,6 +173,69 @@ describe('IntegrationGuide Component', () => {
     expect(screen.getByText('Build API Integration on iOS')).toBeInTheDocument();
   });
 
+  test('shows app integration options when website is not verified', () => {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
+        merchantById: {
+          hasApiKeyAccess: false,
+          business: {
+            paymentAcceptanceChannels: {
+              [PAYMENT_CHANNEL_OPTIONS.Websites]: {
+                urls: [{ value: 'https://example.com' }],
+              },
+            },
+          },
+        },
+      },
+      onboardingData: {
+        merchantOnboardingData: {
+          supportedPlugins: [],
+        },
+      },
+      addMerchantWebsitePlugin: jest.fn(),
+      isAddingWebsitePlugin: false,
+    });
+
+    renderWithWrappers(<IntegrationGuide />);
+
+    // Should show app integration options even without Android/iOS channels
+    expect(screen.getByText('Resources for Apps')).toBeInTheDocument();
+    expect(screen.getByText('Build API Integration on Android')).toBeInTheDocument();
+    expect(screen.getByText('Build API Integration on iOS')).toBeInTheDocument();
+  });
+
+  test('shows app integration options when API key access is not available', () => {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
+        merchantById: {
+          hasApiKeyAccess: false,
+          business: {
+            paymentAcceptanceChannels: {
+              [PAYMENT_CHANNEL_OPTIONS.Websites]: {
+                urls: [{ value: 'https://example.com' }],
+              },
+            },
+          },
+        },
+      },
+      onboardingData: {
+        merchantOnboardingData: {
+          supportedPlugins: [],
+          selectedPlugins: [{ website: 'https://example.com', selectedPlugin: 'Custom Website' }],
+        },
+      },
+      addMerchantWebsitePlugin: jest.fn(),
+      isAddingWebsitePlugin: false,
+    });
+
+    renderWithWrappers(<IntegrationGuide />);
+
+    // With no API key access, will see both Android and iOS links
+    expect(screen.getByText('Resources for Apps')).toBeInTheDocument();
+    expect(screen.getByText('Build API Integration on Android')).toBeInTheDocument();
+    expect(screen.getByText('Build API Integration on iOS')).toBeInTheDocument();
+  });
+
   test('resets selected plugin when clicking on Edit button', async () => {
     const user = userEvent.setup();
 
@@ -178,6 +243,7 @@ describe('IntegrationGuide Component', () => {
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
         merchantById: {
+          hasApiKeyAccess: true,
           business: {
             paymentAcceptanceChannels: {
               [PAYMENT_CHANNEL_OPTIONS.Websites]: {

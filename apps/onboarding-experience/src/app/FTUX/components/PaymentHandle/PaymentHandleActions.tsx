@@ -11,10 +11,10 @@ import {
   CheckIcon,
 } from '@razorpay/blade/components';
 import { copyToClipboard, isMobileDevice, shareContent } from '@libs/shared-utils';
-import useMerchantPaymentHandle from 'apps/onboarding-experience/src/common/hooks/useMerchantPaymentHandle';
-import SharePaymentHandleModal from 'apps/onboarding-experience/src/common/components/SharePaymentHandleModal';
-import { removePaymentHandleSlugPrefix } from 'apps/onboarding-experience/src/common/utils/paymentHandle';
-import EditPaymentHandleModal from 'apps/onboarding-experience/src/common/components/EditPaymentHandleModal';
+import useMerchantPaymentHandle from '@OnboardingExperienceCommons/hooks/useMerchantPaymentHandle';
+import SharePaymentHandleModal from '@OnboardingExperienceCommons/components/SharePaymentHandleModal';
+import { removePaymentHandleSlugPrefix } from '@OnboardingExperienceCommons/utils/paymentHandle';
+import EditPaymentHandleModal from '@OnboardingExperienceCommons/components/EditPaymentHandleModal';
 import { useStore } from '@federated/apps/shell/commonStore';
 
 /**

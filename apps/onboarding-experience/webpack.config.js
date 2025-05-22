@@ -21,6 +21,7 @@ module.exports = withDashboardCore({
 
     config.resolve.alias = {
       'apps/onboarding-experience': path.resolve(__dirname),
+      '@OnboardingExperienceCommons': path.resolve(__dirname, 'src/common'),
       '@FTUX': path.resolve(__dirname, 'src/app/FTUX'),
     };
 

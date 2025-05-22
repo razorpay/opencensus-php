@@ -2,7 +2,7 @@ import React from 'react';
 import { screen, fireEvent } from 'apps/onboarding-experience/src/services/test/jest-utils';
 import renderWithWrappers from 'apps/onboarding-experience/src/services/test/renderWithWrappers';
 import DeactivateKeys from '../DeactivateKeys';
-import { ApiKeyDelay } from 'apps/onboarding-experience/src/common/types/apiKeys';
+import { ApiKeyDelay } from '@OnboardingExperienceCommons/types/apiKeys';
 
 describe('DeactivateKeys Component', () => {
   const mockHandleRegenerateApiKeys = jest.fn();

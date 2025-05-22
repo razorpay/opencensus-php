@@ -1,7 +1,7 @@
 import React, { ReactNode, useReducer, useEffect } from 'react';
-import useMerchant from 'apps/onboarding-experience/src/common/hooks/useMerchant';
-import useMerchantOnboardingData from 'apps/onboarding-experience/src/common/hooks/useMerchantOnboardingData';
-import { WORKFLOW_TYPES } from 'apps/onboarding-experience/src/common/types/merchant';
+import useMerchant from '@OnboardingExperienceCommons/hooks/useMerchant';
+import useMerchantOnboardingData from '@OnboardingExperienceCommons/hooks/useMerchantOnboardingData';
+import { ApiKeys, WORKFLOW_TYPES } from '@OnboardingExperienceCommons/types/merchant';
 import { FTUX_FEATURE_FLAGS, FTUX_REQUIRED_DATA_REQUEST } from '@FTUX/constants/homepage';
 import {
   MerchantContext,
@@ -9,9 +9,11 @@ import {
   initialState,
   MerchantContextType,
 } from './MerchantContext';
-import useWebsitePlugin from 'apps/onboarding-experience/src/common/hooks/useWebsitePlugin';
-import { AddMerchantSelectedPluginResponse } from 'apps/onboarding-experience/src/common/types/onboarding';
+import useWebsitePlugin from '@OnboardingExperienceCommons/hooks/useWebsitePlugin';
+import { AddMerchantSelectedPluginResponse } from '@OnboardingExperienceCommons/types/onboarding';
 import { TwoFaAuthProps } from '@FTUX/types/common';
+import useMerchantApiKeys from '@OnboardingExperienceCommons/hooks/useMerchantApiKeys';
+import { ApiKeyDelay } from '@OnboardingExperienceCommons/types/apiKeys';
 
 interface MerchantProviderProps {
   children: ReactNode;
@@ -47,6 +49,8 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children, triggerTw
   const { mutateAsync: addMerchantPluginMutation, isLoading: isAddingWebsitePlugin } =
     useWebsitePlugin();
 
+  const { generateApiKeyMutation, regenerateApiKeyMutation } = useMerchantApiKeys();
+
   // Function to add merchant plugin
   const addMerchantWebsitePlugin = ({
     websiteUrl,
@@ -59,12 +63,47 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children, triggerTw
       { websiteUrl, pluginName },
       {
         onSuccess: (data) => {
-          console.log('data', data);
           // Update the state with the new selected plugins
           dispatch({
             type: 'UPDATE_SELECTED_PLUGINS',
             payload: (data as AddMerchantSelectedPluginResponse).addMerchantSelectedPlugin.plugins,
           });
+        },
+      },
+    );
+  };
+
+  const generateApiKey = () => {
+    return generateApiKeyMutation(undefined, {
+      onSuccess: (response) => {
+        if (response.merchantApiKeysCreate?.id)
+          dispatch({
+            type: 'UPDATE_MERCHANT_API_KEY',
+            payload: response.merchantApiKeysCreate as ApiKeys,
+          });
+      },
+    });
+  };
+
+  const regenerateApiKey = ({
+    keyRollDelay,
+    oldApiKeyId,
+  }: {
+    keyRollDelay: ApiKeyDelay;
+    oldApiKeyId: string;
+  }) => {
+    return regenerateApiKeyMutation(
+      {
+        keyRollDelay,
+        oldApiKeyId,
+      },
+      {
+        onSuccess: (response) => {
+          if (response.merchantApiKeyRegenerate?.newApiKey?.id)
+            dispatch({
+              type: 'UPDATE_MERCHANT_API_KEY',
+              payload: response.merchantApiKeyRegenerate.newApiKey as ApiKeys,
+            });
         },
       },
     );
@@ -116,6 +155,8 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children, triggerTw
     addMerchantWebsitePlugin,
     isAddingWebsitePlugin,
     initiateTwoFaAuth,
+    generateApiKey,
+    regenerateApiKey,
   };
 
   return <MerchantContext.Provider value={contextValue}>{children}</MerchantContext.Provider>;

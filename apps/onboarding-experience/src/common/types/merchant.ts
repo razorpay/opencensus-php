@@ -15,30 +15,23 @@ export enum PAYMENT_CHANNEL_OPTIONS {
   Others = 'others',
 }
 
-export type PaymentAcceptanceChannelsType = {
-  [PAYMENT_CHANNEL_OPTIONS.Websites]?: {
-    urls: { value: string }[];
-    accept: boolean;
-  };
-  [PAYMENT_CHANNEL_OPTIONS.IOS]?: {
-    urls: { value: string }[];
-    accept: boolean;
-  };
-  [PAYMENT_CHANNEL_OPTIONS.Android]?: {
-    urls: { value: string }[];
-    accept: boolean;
-  };
-  [PAYMENT_CHANNEL_OPTIONS.SocialMedia]?: {
-    accept: boolean;
-    socialMediaUrls: string[];
-  };
-  [PAYMENT_CHANNEL_OPTIONS.WhatsappSmsEmail]?: {
-    accept: boolean;
-  };
-  [PAYMENT_CHANNEL_OPTIONS.Others]?: {
-    accept: boolean;
-    value: string;
-  };
+export type PaymentChannelData = {
+  accept: boolean;
+  urls?: { value: string }[];
+  value?: string;
+  socialMediaUrls?: string[];
+};
+
+export type PaymentAcceptanceChannelsType = Record<
+  Partial<PAYMENT_CHANNEL_OPTIONS>,
+  PaymentChannelData
+>;
+
+export type ApiKeys = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  expiredAt: string | null;
 };
 
 /**
@@ -58,12 +51,8 @@ export type MerchantActivationDataType = {
     isActivated: boolean;
     isTransacted: boolean;
   };
-  apiKeys?: {
-    id: string;
-    createdAt: string;
-    updatedAt: string;
-    expiredAt: string | null;
-  }[];
+  hasApiKeyAccess?: boolean;
+  apiKeys?: ApiKeys[];
   business?: {
     paymentAcceptanceChannels?: PaymentAcceptanceChannelsType;
   };
