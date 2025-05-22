@@ -782,6 +782,13 @@ class App extends Component {
       this.loadThirdPartyLibraries(user);
     }
 
+    // Schedule the API fetch to run when the browser is idle (or immediately if using fallback)
+    scheduleIdleTask(() => {
+      if (!this.backgroundAPIsCalled) {
+        this.fetchBackgroundAPIs();
+      }
+    });
+
     this.handleOpenModal();
   }
   componentDidUpdate(prevProps) {
@@ -801,15 +808,10 @@ class App extends Component {
       } else if (!isFeedbackFormCreated) {
         this.createFeedbackForms();
       }
-      // Schedule the API fetch to run when the browser is idle (or immediately if using fallback)
-      scheduleIdleTask(() => {
-        if (!this.backgroundAPIsCalled) {
-          this.fetchBackgroundAPIs();
-        }
-      });
     }
     this.handleOpenModal();
   }
+
   UNSAFE_componentWillReceiveProps({ user, location, baseLocation, org }) {
     const { goLiveNPSEnableTypeForm, nonGoLiveNPSEnableTypeForm, isPartnerModeEnabled } =
       this.state;
