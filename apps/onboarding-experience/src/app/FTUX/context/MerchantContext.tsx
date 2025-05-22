@@ -12,6 +12,7 @@ export interface MerchantState {
   onboardingData: MerchantOnboardingDataResponseType | undefined;
   isLoadingMerchant: boolean;
   isLoadingOnboardingData: boolean;
+  initiateTwoFaAuth?: () => Promise<boolean>;
 }
 
 // Action type definitions
@@ -50,6 +51,7 @@ export const initialState: MerchantState = {
   onboardingData: undefined,
   isLoadingMerchant: true,
   isLoadingOnboardingData: true,
+  initiateTwoFaAuth: undefined,
 };
 
 // Context type with state and actions

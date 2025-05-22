@@ -11,16 +11,18 @@ import {
 } from './MerchantContext';
 import useWebsitePlugin from 'apps/onboarding-experience/src/common/hooks/useWebsitePlugin';
 import { AddMerchantSelectedPluginResponse } from 'apps/onboarding-experience/src/common/types/onboarding';
+import { TwoFaAuthProps } from '@FTUX/types/common';
 
 interface MerchantProviderProps {
   children: ReactNode;
+  triggerTwoFaAuth: (data: TwoFaAuthProps) => void;
 }
 
 /**
  * Provider that manages merchant and onboarding data fetching and state
  * Exposes data, loading states, and refetch methods through context
  */
-const MerchantProvider: React.FC<MerchantProviderProps> = ({ children }) => {
+const MerchantProvider: React.FC<MerchantProviderProps> = ({ children, triggerTwoFaAuth }) => {
   const [state, dispatch] = useReducer(merchantReducer, initialState);
 
   // Fetch merchant data
@@ -68,6 +70,24 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children }) => {
     );
   };
 
+  // Function to trigger two factor authentication and return boolean based on result
+  const initiateTwoFaAuth = async (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      triggerTwoFaAuth({
+        modes: ['test', 'live'],
+        enforceVerifyOtp: true,
+        // nosemgrep : ssc-adb055b9-fed0-4d70-a57d-eb9825b09449
+        onUserTwoFaVerified: () => {
+          resolve(true);
+        },
+        // nosemgrep : ssc-adb055b9-fed0-4d70-a57d-eb9825b09449
+        onFlowTermination: () => {
+          resolve(false);
+        },
+      });
+    });
+  };
+
   // Update state when data changes
   useEffect(() => {
     if (merchantData) {
@@ -95,6 +115,7 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children }) => {
     refetchAllData,
     addMerchantWebsitePlugin,
     isAddingWebsitePlugin,
+    initiateTwoFaAuth,
   };
 
   return <MerchantContext.Provider value={contextValue}>{children}</MerchantContext.Provider>;
