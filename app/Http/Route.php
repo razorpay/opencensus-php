@@ -4829,7 +4829,7 @@ class Route
         'tokens_push_fetch'                       => ['get',           'tokens/push/{id}',                                     'TokenController@tokensPushFetch'                             ],
 
         //VCPP Token Push Provisioning
-        'vcpp_tokens_push'                        => ['post',          'notifysp/enroll',                                       'TokenController@vcppTokensPush'                            ],
+        'vcpp_tokens_push'                        => ['post',          'internal/notifysp/enroll',                                       'TokenController@vcppTokensPush'                            ],
 
         // Async tokenisation
         'tokenisation_local_cards'                => ['post',        'tokenisation/local_cards',                                 'TokenController@localSavedCardAsyncTokenisation'          ],
@@ -5859,6 +5859,7 @@ class Route
         'customer_fetch_addresses_by_contact',
         'internal_merchant_get_tags',
         'rupay_push_token',
+        'vcpp_tokens_push',
         'pricing_fetch_plan_internal',
         'internal_fetch_merchant_users',
         'internal_workflow_create',
@@ -12350,7 +12351,7 @@ class Route
         'payment_button_create_order',
         'payment_links_demo',
         'payment_links_demo_cors',
-        'vcpp_tokens_push',
+//        'vcpp_tokens_push',
 
         //virtual cards - capital
         'capital_virtual_cards_validate_token',
@@ -18667,6 +18668,7 @@ class Route
         'card_vault' => [
             'token_status',
             'rupay_push_token',
+            'vcpp_tokens_push',
         ],
 
         'growth_internal' => [
