@@ -123,7 +123,7 @@ const MERCHANT_KYC = {
     return 'pending';
   },
   checkIfDisabled: ({ values }) => !values.merchantId,
-  checkIfCompleted: ({ states }) => !!states.merchantDetails?.activation.isFormSubmitted,
+  checkIfCompleted: ({ states }) => !!states.merchantDetails?.activation?.isFormSubmitted,
   icon: <FileTextIcon />,
   components: [
     {

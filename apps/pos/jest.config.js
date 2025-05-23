@@ -21,9 +21,8 @@ module.exports = withDashboardCore({
 
     config.coveragePathIgnorePatterns = [
       ...config.coveragePathIgnorePatterns,
-      '<rootDir>/src/bootstrap',
-      '<rootDir>/src/coverage',
-    ]
+      '<rootDir>/new-coverage.js',
+    ];
 
     return config;
   },

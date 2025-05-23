@@ -151,6 +151,12 @@ export const withDashboardBrowserJestConfig: withDashboardBrowserJestConfigType 
       '<rootDir>/.babelrc.js',
       '<rootDir>/tsconfig.json',
       '<rootDir>/package.json',
+      '<rootDir>/src/bootstrap',
+      '<rootDir>/src/coverage',
+      '<rootDir>/src/.*/mocks(/.*)?',
+      '<rootDir>/src/app/.*?(styled|styles)\\.(ts|tsx|js|jsx)$',
+      '<rootDir>/.*\\.(eslintrc|lintstagedrc|prettierrc|secretlintrc|stylelintrc)\\.js$',
+      '<rootDir>/jest.config.js',
     ],
     coverageReporters: [
       'json',

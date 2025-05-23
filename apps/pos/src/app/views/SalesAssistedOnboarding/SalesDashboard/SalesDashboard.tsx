@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useState, useCallback } from 'react';
+import React, { Suspense, useEffect, useState, useCallback } from 'react';
 import {
   Badge,
   Box,
@@ -9,7 +9,6 @@ import {
   PlusIcon,
   Text,
   useToast,
-  SearchIcon,
   SearchInput,
 } from '@razorpay/blade/components';
 
@@ -19,8 +18,8 @@ import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 
 import SalesTable from './SalesTable';
-import { SALES_ONBOARDED_MERCHANTS } from 'apps/pos/src/services/queries/SalesDashboard';
 import Search from './components/Search';
+import { SALES_ONBOARDED_MERCHANTS } from 'apps/pos/src/services/queries/SalesDashboard';
 import { useScreen } from 'apps/pos/src/app/utils/hooks/useScreen';
 import {
   SalesOnboardedMerchants,
