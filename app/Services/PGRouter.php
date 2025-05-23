@@ -1410,7 +1410,7 @@ class PGRouter
                 'testcaseId' => $this->request->header('X-RZP-TESTCASE-ID')
             ]);
 
-        if (isset($this->app['rzp.mode']) and $this->app['rzp.mode'] === 'test')
+        if (isset($this->app['rzp.mode']) and ($this->app['rzp.mode'] === 'test' or ($this->app['rzp.mode'] === 'live' and $this->app['env'] === 'beta')))
         {
             $testCaseId = $this->request->header('X-RZP-TESTCASE-ID');
 
