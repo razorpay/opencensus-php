@@ -1401,6 +1401,15 @@ class PGRouter
             $headers['PARTNER_MERCHANT_ID'] = $partnerId;
         }
 
+        $this->trace->info(
+            TraceCode::MISC_TRACE_CODE,
+            [
+                'pg-router before checking mode to add test case id in header',
+                'header' => $headers,
+                'mode' => $this->app['rzp.mode'],
+                'testcaseId' => $this->request->header('X-RZP-TESTCASE-ID')
+            ]);
+
         if (isset($this->app['rzp.mode']) and $this->app['rzp.mode'] === 'test')
         {
             $testCaseId = $this->request->header('X-RZP-TESTCASE-ID');
@@ -1410,6 +1419,14 @@ class PGRouter
                 $headers['X-RZP-TESTCASE-ID'] = $testCaseId;
             }
         }
+
+        $this->trace->info(
+            TraceCode::MISC_TRACE_CODE,
+            [
+                'pg-router after checking mode to add test case id in header',
+                'header'    => $headers,
+                'mode' => $this->app['rzp.mode']
+            ]);
 
         // Add X-Api-Bypass-Payment-Id header in case proxy request gets routed to PgRouter again
         $apiBypassPayId = $this->request->header(RequestHeader::X_API_BYPASS_PAYMENT_ID);
