@@ -46,6 +46,7 @@ export const GENERIC_ROUTES: RouteItem[] = [
     Component: SSODashboard,
     condition: (_user: User, abExperiments: any) =>
       abExperiments?.magic_sso_dashboard?.variables?.result === 'on',
+    onRCOD: true,
   },
   {
     path: '/magic/reports-analytics/reports',
