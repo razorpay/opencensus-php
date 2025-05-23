@@ -44,6 +44,28 @@ export const BANK_NAMES = {
   HDFC_GIG: 'HDFC GIG',
   /** https://sib.razorpay.com/signin */
   SIB: 'SIBL',
+  /** https://hdfcbank.razorpay.com/signin */
+  HDFC_CTSP: 'HDFC CTSP',
+  /** https://iob.razorpay.com/signin */
+  INDIAN_OVERSEAS: 'IOBA',
+  /** https://americanexpress.razorpay.com/signin */
+  AMEX: 'AMEX',
+  /** https://yesbankltd.razorpay.com/signin */
+  YES_BANK_LTD: 'yesb',
+  /** https://dbms.razorpay.com/signin */
+  DBMS: 'dbms',
+  /** https://db.razorpay.com/signin */
+  DEUT: 'deut',
+  /** https://csb.razorpay.com/signin */
+  CSBK: 'CSBK',
+  /** https://bankingprograms.razorpay.com/signin */
+  SNGO: 'SNGO',
+  /** https://mobikwik.razorpay.com/signin */
+  MOBI: 'MOBI',
+  /** https://bharatpe.razorpay.com/signin */
+  BHAR: 'BHAR',
+  /** https://partnervas.razorpay.com/signin */
+  VASP: 'VASP',
 };
 
 export const headingDescriptionList = {
@@ -81,6 +103,28 @@ export const IGNORE_BG_IMAGES_BANKS = [
   BANK_NAMES.HDFC_COLLECT_NOW,
   BANK_NAMES.YES_BANK,
   BANK_NAMES.HDFC_GIG,
+  BANK_NAMES.HDFC,
+  BANK_NAMES.HDFC_CTSP,
+  BANK_NAMES.AXIS_EASY_PAY,
+  BANK_NAMES.INDIAN_OVERSEAS,
+  BANK_NAMES.INDUSIND_BANK,
+  BANK_NAMES.INDUSIND_BANK_LTD,
+  BANK_NAMES.BOB,
+  BANK_NAMES.KKBK,
+  BANK_NAMES.IDFC,
+  BANK_NAMES.ICICI,
+  BANK_NAMES.AMEX,
+  BANK_NAMES.YES_BANK_LTD,
+  BANK_NAMES.HSBC,
+  BANK_NAMES.SIBL,
+  BANK_NAMES.DBMS,
+  BANK_NAMES.DEUT,
+  BANK_NAMES.CSBK,
+  BANK_NAMES.SNGO,
+  BANK_NAMES.JKB,
+  BANK_NAMES.MOBI,
+  BANK_NAMES.BHAR,
+  BANK_NAMES.VASP,
 ];
 
 export const getCookie = (name) => {
