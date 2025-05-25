@@ -17648,7 +17648,11 @@ class Route
             'payment_refund',
             'payment_fetch_refunds',
             'payment_fetch_refund_by_id',
-            'create_qr_for_single_stack'
+            'create_qr_for_single_stack',
+            'payment_links_create',
+            'payment_links_cancel',
+            'payment_links_notify_by_medium',
+            'payment_links_get',
         ],
 
         'billme' => [
