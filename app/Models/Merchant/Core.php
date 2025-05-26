@@ -4607,8 +4607,8 @@ class Core extends Base\Core
             'partner_type'         => $partnerType,
         ];
 
-        $this->app['segment-analytics']->pushIdentifyEvent(
-            $merchant, $properties);
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant, $properties, SegmentEvent::PARTNER_SIGNUP);
 
         $this->trace->info(
             TraceCode::PARTNER_CREATION_SUCCESSFUL,

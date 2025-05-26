@@ -1633,6 +1633,41 @@ class Processor
         return false;
     }
 
+    private function evaluateSplitzExperimentForCardRecurringRearchRupayInitial($merchant)
+    {
+        try
+        {
+            $experimentId = $this->app['config']->get('app.enable_rearch_card_recurring_initial_rupay');
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $experimentId,
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties' => $properties,
+                'response' => $response,
+            ]);
+            $variant = $response['response']['variant']['name'] ?? '';
+            if ($variant === 'enable') {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CARD_RECURRING_REARCH_EXPERIMENT_SPLITZ_ERROR
+            );
+        }
+        return false;
+    }
+
+
     private function evaluateSplitzExperimentForCardRecurringRearchMerchant($merchant, $routeName)
     {
         try
@@ -1717,6 +1752,39 @@ class Processor
                     try
                     {
                         $experimentId = $this->app['config']->get('app.enable_rearch_card_recurring_flow_hub_mandatehq');
+                        $properties = [
+                            'id'            => UniqueIdEntity::generateUniqueId(),
+                            'experiment_id' => $experimentId,
+                            'request_data'  => json_encode(
+                                [
+                                    'merchant_id' => $merchant->getId(),
+                                ]),
+                        ];
+                        $response = $this->app['splitzService']->evaluateRequest($properties);
+                        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                            'properties' => $properties,
+                            'response' => $response,
+                        ]);
+                        $variant = $response['response']['variant']['name'] ?? '';
+                        if ($variant === 'enable') {
+                            return true;
+                        }
+                    }
+                    catch (\Exception $e)
+                    {
+                        $this->trace->traceException(
+                            $e,
+                            null,
+                            TraceCode::CARD_RECURRING_REARCH_EXPERIMENT_SPLITZ_ERROR
+                        );
+                    }
+                    return false;
+                }
+
+                if ($cardMandate->getMandateHub() === 'rupay_sihub'){
+                    try
+                    {
+                        $experimentId = $this->app['config']->get('app.enable_rearch_card_recurring_subsequent_rupay');
                         $properties = [
                             'id'            => UniqueIdEntity::generateUniqueId(),
                             'experiment_id' => $experimentId,
@@ -2407,7 +2475,8 @@ class Processor
                         }
 
                         $app = App::getFacadeRoot();
-                        if ($iin->isRupay() || ($app->mandateHQ->isBinSupported($iin->getIin()) && !$this->evaluateSplitzExperimentForCardRecurringRearchMandateHqInitial($merchant)))
+                        if ($iin->isRupay() && !$this->evaluateSplitzExperimentForCardRecurringRearchRupayInitial($merchant) ||
+                            ($app->mandateHQ->isBinSupported($iin->getIin()) && !$this->evaluateSplitzExperimentForCardRecurringRearchMandateHqInitial($merchant)))
                         {
                             $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                                 'reason' => "initial_hub_mhq_rupay",
@@ -2433,7 +2502,8 @@ class Processor
 
                         $iin = $card->getIin();
                         $app = App::getFacadeRoot();
-                        if ($card->isRupay() || ($app->mandateHQ->isBinSupported($iin) && !$this->evaluateSplitzExperimentForCardRecurringRearchMandateHqInitial($merchant)))
+                        if ($card->isRupay() && !$this->evaluateSplitzExperimentForCardRecurringRearchRupayInitial($merchant) ||
+                            ($app->mandateHQ->isBinSupported($iin) && !$this->evaluateSplitzExperimentForCardRecurringRearchMandateHqInitial($merchant)))
                         {
                             $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                                 'reason' => "initial_hub_mhq_rupay",
@@ -8013,9 +8083,19 @@ class Processor
                     $customerId = $input[Payment\Entity::CUSTOMER_ID];
 
                     Customer\Entity::verifyIdAndStripSign($customerId);
-
+                    
                     $token = (new Customer\Token\Core)->getByTokenIdAndCustomerId($tokenId, $customerId);
 
+                    if ($this->isOptimizerMigratedToken($token)) 
+                    {
+                        $this->app['trace']->info(
+                            TraceCode::MISC_TRACE_CODE,
+                            ['MIGRATED_OPTIMIZER_TOKEN' => $token]
+                        );
+
+                        return;
+                    }
+                    
                 } else {
 
                     $token = (new Customer\Token\Core)->getByTokenId($tokenId);
@@ -16323,6 +16403,31 @@ public function isLibrarySupportedForNbplusRearch($library): bool
                 $e,
                 null,
                 TraceCode::BLOCK_MERCHANTS_ON_UPS_SPLITZ_FAILED);
+        }
+
+        return false;
+    }
+
+
+    public function isOptimizerMigratedToken($token) 
+    {
+        if ($token == null) 
+        {
+            return false;
+        }
+
+        $notes = $token->getNotes();
+
+        if (empty($notes) === true) 
+        {
+            return false;
+        }
+
+        if (isset($notes["source"]) && 
+            isset($notes["mandate_id"]) && 
+            isset($notes["migrated_reference_id"])) 
+        {
+            return true;
         }
 
         return false;

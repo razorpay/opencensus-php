@@ -83,6 +83,7 @@ class Constants
         'merchant_gstin_update_permission'    => 'RZP\Http\Controllers\MerchantController@postGstinSelfServe',
         'merchant_rekyc_update'                => 'RZP\Http\Controllers\MerchantController@postMerchantReKycUpdate',
         'merchant_bdd_verification_status_update' => 'RZP\Http\Controllers\MerchantController@postMerchantBddVerificationStatusUpdate',
+        'merchant_self_serve_rekyc_update'      => 'RZP\Http\Controllers\MerchantController@updateSelfServeReKYCStatus',
     ];
 
     const PERMISSION_VS_CONTROLLER_FUNCTION = [

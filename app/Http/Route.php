@@ -4830,7 +4830,7 @@ class Route
         'tokens_push_fetch'                       => ['get',           'tokens/push/{id}',                                     'TokenController@tokensPushFetch'                             ],
 
         //VCPP Token Push Provisioning
-        'vcpp_tokens_push'                        => ['post',          'notifysp/enroll',                                       'TokenController@vcppTokensPush'                            ],
+        'vcpp_tokens_push'                        => ['post',          'internal/notifysp/enroll',                                       'TokenController@vcppTokensPush'                            ],
 
         // Async tokenisation
         'tokenisation_local_cards'                => ['post',        'tokenisation/local_cards',                                 'TokenController@localSavedCardAsyncTokenisation'          ],
@@ -5861,6 +5861,7 @@ class Route
         'customer_fetch_addresses_by_contact',
         'internal_merchant_get_tags',
         'rupay_push_token',
+        'vcpp_tokens_push',
         'pricing_fetch_plan_internal',
         'internal_fetch_merchant_users',
         'internal_workflow_create',
@@ -12352,7 +12353,7 @@ class Route
         'payment_button_create_order',
         'payment_links_demo',
         'payment_links_demo_cors',
-        'vcpp_tokens_push',
+//        'vcpp_tokens_push',
 
         //virtual cards - capital
         'capital_virtual_cards_validate_token',
@@ -17649,7 +17650,11 @@ class Route
             'payment_refund',
             'payment_fetch_refunds',
             'payment_fetch_refund_by_id',
-            'create_qr_for_single_stack'
+            'create_qr_for_single_stack',
+            'payment_links_create',
+            'payment_links_cancel',
+            'payment_links_notify_by_medium',
+            'payment_links_get',
         ],
 
         'billme' => [
@@ -18526,6 +18531,7 @@ class Route
             'internal_fd_fetch_agent_detail_for_ticket',
             'internal_create_risk_action',
             'dispute_edit',
+            'internal_create_workflow',
         ],
 
         'pgos' => [
@@ -18668,6 +18674,7 @@ class Route
         'card_vault' => [
             'token_status',
             'rupay_push_token',
+            'vcpp_tokens_push',
         ],
 
         'growth_internal' => [

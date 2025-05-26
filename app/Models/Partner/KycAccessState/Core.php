@@ -122,7 +122,7 @@ class Core extends Base\Core
 
         $viewPayload['merchant'] = $merchant->toArray();
         $viewPayload['partner']  = $partner->toArray();
-        
+
         $urls = $this->getApproveRejectUrls($websiteUrl, $kycAccess, $partner);
         $viewPayload['approve_url'] = $urls['approve_url'];
         $viewPayload['reject_url'] = $urls['reject_url'];
@@ -163,15 +163,17 @@ class Core extends Base\Core
     protected function isPartnerMkycAccessExperimentEnabled($partner): bool
     {
         $expId = $this->app['config']->get('app.mkyc_reseller_experiment_id');
+        $variant = 'mkyc_reseller_flow_enabled';
         if ($partner->getPartnerType() === MerchantConstants::AGGREGATOR)
         {
             $expId = $this->app['config']->get('app.mkyc_aggregator_experiment_id');
+            $variant = 'mkyc_aggregator_flow_enabled';
         }
         $properties = [
             'id'            => $partner->getId(),
             'experiment_id' => $expId,
         ];
-        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, $variant);
     }
 
     protected function getApproveRejectUrls($websiteUrl, $kycAccess, $partner)
@@ -194,7 +196,7 @@ class Core extends Base\Core
             $approveUrl = $this->getMkycAccessUrl($websiteUrl, json_encode($approveRequestData));
             $rejectUrl = $this->getMkycAccessUrl($websiteUrl, json_encode($rejectRequestData));
         }
-        
+
         return ['approve_url' => $approveUrl, 'reject_url' => $rejectUrl];
     }
 
@@ -324,7 +326,7 @@ class Core extends Base\Core
         {
             if (isset($input[Constants::CREATE_CONSENT]) && $input[Constants::CREATE_CONSENT]) {
                 try {
-                    $this->generateConsentInPRTSOrFail($partner, $input); 
+                    $this->generateConsentInPRTSOrFail($partner, $input);
                 } catch (\Throwable $e) {
                     $this->trace->traceException(
                         $e,
@@ -337,7 +339,7 @@ class Core extends Base\Core
             }
             $accessRequest = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityIdAndToken($input[Entity::PARTNER_ID], $input[Entity::ENTITY_ID], 'approve_token', $input[Entity::APPROVE_TOKEN]);
         }
-        
+
         elseif (isset($input[Entity::REJECT_TOKEN]) === true)
         {
             $accessRequest = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityIdAndToken($input[Entity::PARTNER_ID], $input[Entity::ENTITY_ID], 'reject_token', $input[Entity::REJECT_TOKEN]);
@@ -411,13 +413,13 @@ class Core extends Base\Core
     private function createConsentPayload(string $merchantId, string $eventName, string $partnerId = ''): array
     {
         $baseMetadata = ['consent_timestamp' => time()];
-    
+
         $consentInput = [
             'merchant_id' => $merchantId,
             'event_name'  => $eventName,
             'metadata'    => $baseMetadata,
         ];
-    
+
         if (in_array($eventName, [
             Constants::PARTNER_KYC_ACCESS_CONSENT_FOR_RESELLER,
             Constants::PARTNER_KYC_ACCESS_CONSENT_FOR_AGGREGATOR,
@@ -425,10 +427,10 @@ class Core extends Base\Core
             $consentInput['entity_type'] = 'partner';
             $consentInput['entity_id']   = $partnerId ?? '';
         }
-    
+
         return $consentInput;
     }
-    
+
 
     private function createKycAccessConsent(string $partnerId, string $merchantId, string $partnerType): void
     {
@@ -515,7 +517,7 @@ class Core extends Base\Core
             }
             $partnerId = $payload['partner_kyc_access_state']['partner_id'];
             $merchantId = $payload['partner_kyc_access_state']['entity_id'];
-        
+
 
 
             $this->app['api.mutex']->acquireAndRelease(

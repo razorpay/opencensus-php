@@ -155,6 +155,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const REFERRAL_CODE                      = 'referral_code';
     const FUND_ACCOUNT_VALIDATION_ID         = 'fund_account_validation_id';
     const GSTIN_VERIFICATION_STATUS          = 'gstin_verification_status';
+    const SELF_SERVE_REKYC_STATUS            = 'rekyc_status';
 
     const PERSONAL_PAN_DOC_VERIFICATION_STATUS = 'personal_pan_doc_verification_status';
     const COMPANY_PAN_DOC_VERIFICATION_STATUS  = 'company_pan_doc_verification_status';

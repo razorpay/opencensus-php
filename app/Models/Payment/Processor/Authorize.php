@@ -9940,7 +9940,20 @@ trait Authorize
                 ($token->card->isRuPay()))
             {
                 $cardMandateId = $token->getCardMandateId();
-                $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($cardMandateId, $payment->merchant);
+
+                if(empty($cardMandateId) === false) {
+                    try {
+                        $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($cardMandateId, $payment->merchant);
+                    } catch (\Throwable $e) {
+                        // If card mandate not found by ID, try getting it from token fallback
+                        $cardMandate = $token->cardMandate;
+
+                        if ($cardMandate === null) {
+                            throw new Exception\BadRequestException(
+                                'Card mandate not found either by ID or from token relationship');
+                        }
+                    }
+                }
 
                 $mandate_end_date = $cardMandate->getEndAt();
 
