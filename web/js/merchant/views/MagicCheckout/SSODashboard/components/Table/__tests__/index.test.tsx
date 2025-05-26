@@ -5,9 +5,9 @@ import { DateCell, BaseCell } from 'merchant/views/MagicCheckout/SSODashboard/co
 describe('Table Cells', () => {
   describe('DateCell', () => {
     it('formats date correctly', () => {
-      const date = '2024-01-01T12:00:00Z';
+      const date = '1748013150';
       render(<DateCell value={date} />);
-      expect(screen.getByText('01/01/2024 12:00 PM')).toBeInTheDocument();
+      expect(screen.getByText('23/05/2025 03:12 PM')).toBeInTheDocument();
     });
 
     it('handles invalid date', () => {
