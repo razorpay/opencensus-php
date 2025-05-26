@@ -18930,6 +18930,12 @@ class Route
         'identity_provider' => [
             'user_fetch_merchants',
             'multiple_users_fetch_internal'
+        ],
+
+        'user_service' => [
+            'internal_org_get',
+            'contact_get_internal',
+            'feature_get_merchants_internal'
         ]
     ];
 
