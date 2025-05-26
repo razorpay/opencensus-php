@@ -12,8 +12,6 @@ class Service
     protected $app;
     const FETCH_MERCHANT_GATEWAY_DATA              = 'fetch_merchant_gateway_data';
     const FETCH_PROVIDER = 'fetch_provider';
-    const SELECT_PROVIDER = 'select_provider';
-    const BANK_TRANSFER = 'bank_transfer';
     const PATH                                  = 'path';
     const OPTIMIZER_PROVIDER_GATEWAY_DATA_CACHE_PREFIX = 'PROVIDER_GATEWAY_DATA:';
     const OPTIMIZER_PROVIDER_GATEWAY_DATA_CACHE_VALIDITY_SECONDS   = 900; // 5 minutes
@@ -25,12 +23,6 @@ class Service
         self::FETCH_PROVIDER  => [
             self::PATH   => '/v1/provider/'
         ],
-        self::SELECT_PROVIDER => [
-            self::PATH   => '/v1/provider'
-        ],
-        self::BANK_TRANSFER => [
-            self::PATH   => '/v1/bank_transfer'
-        ]
     ];
 
     public function __construct($app = null)
@@ -188,94 +180,5 @@ class Service
             );
         }
         return [];
-    }
-
-    /**
-     * Select provider for virtual account creation
-     *
-     * @param array $input
-     * @return array
-     */
-    public function selectProvider(array $input): array
-    {
-        try
-        {
-            $params = self::PARAMS[self::SELECT_PROVIDER];
-
-            $response = $this->app['optimizer_core_service_client']->sendRequest(
-                $params[self::PATH],
-                $input,
-                Requests::POST
-            );
-
-            $this->app['trace']->info(TraceCode::OPTIMIZER_SELECT_PROVIDER_RESPONSE, [
-                'response' => $response
-            ]);
-
-            return $response;
-        }
-        catch (\Throwable $e)
-        {
-            $this->app['trace']->error(TraceCode::OPTIMIZER_SELECT_PROVIDER_ERROR,
-                [
-                    'type'    => get_class($e),
-                    'message' => $e->getMessage(),
-                    'code'    => $e->getCode(),
-                    'trace'   => $e->getTraceAsString(),
-                ]
-            );
-
-            throw $e;
-        }
-    }
-
-    /**
-     * Process bank transfer through optimizer service
-     *
-     * @param array $input
-     * @return array
-     */
-    public function processBankTransfer(array $input): array
-    {
-        try
-        {
-            $params = self::PARAMS[self::BANK_TRANSFER];
-            
-            $response = $this->app['optimizer_core_service_client']->sendRequest(
-                $params[self::PATH],
-                $input,
-                Requests::POST
-            );
-
-            $this->app['trace']->info(TraceCode::OPTIMIZER_BANK_TRANSFER_RESPONSE, [
-                'response' => $response
-            ]);
-
-            return $response;
-        }
-        catch (\Throwable $e)
-        {
-            $this->app['trace']->error(TraceCode::OPTIMIZER_BANK_TRANSFER_ERROR,
-                [
-                    'type'    => get_class($e),
-                    'message' => $e->getMessage(),
-                    'code'    => $e->getCode(),
-                    'trace'   => $e->getTraceAsString(),
-                ]
-            );
-
-            throw $e;
-        }
-    }
-
-    /**
-     * Check if provider is an optimizer provider
-     *
-     * @param array $provider
-     * @return bool
-     */
-    public function isOptimizerProvider(array $provider): bool
-    {
-        return ($provider['type'] ?? '') === 'optimizer';
     }
 }

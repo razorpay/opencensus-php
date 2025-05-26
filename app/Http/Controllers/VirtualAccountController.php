@@ -29,6 +29,13 @@ class VirtualAccountController extends Controller
     {
         $input = Request::all();
 
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CREATE_REQUEST, [
+            'message_id' => 'VIRTUAL_ACCOUNT_CREATE_REQUEST_117',
+            'order_id' => $id,
+            'input' => $input,
+            'request' => Request::all()
+        ]);
+
         $response = $this->service()->createForOrder($id, $input);
 
         $resp = ApiResponse::json($response);
