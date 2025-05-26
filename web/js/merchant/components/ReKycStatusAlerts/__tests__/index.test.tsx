@@ -7,7 +7,7 @@ import { REKYC_STATUS_OPTIONS } from '../constants';
 
 jest.mock('common/splitz', () => ({
   useSplitzService: jest.fn(() => ({
-    abExperiments: { enable_manual_rekyc: { variables: { result: 'on' } } },
+    abExperiments: { enable_manual_rekyc: { variables: { result: 'on' } }, enable_self_serve_rekyc: { variables: { result: 'off' } } },
   })),
 }));
 

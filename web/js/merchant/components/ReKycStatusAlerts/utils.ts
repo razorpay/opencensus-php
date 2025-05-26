@@ -8,8 +8,10 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { REKYC_STATUS_OPTIONS } from './constants';
 
 export const isEligibleForReKyc = (splitz, user: User) => {
+  const isManualRekycEnabled = isExperimentEnabled(splitz?.abExperiments?.enable_manual_rekyc);
+  const isSelfServeRekycEnabled = isExperimentEnabled(splitz?.abExperiments?.enable_self_serve_rekyc);
   return (
-    isExperimentEnabled(splitz?.abExperiments?.enable_manual_rekyc) &&
+    isManualRekycEnabled && !isSelfServeRekycEnabled &&
     user.isCountryIndia &&
     user.isOrgRZP &&
     user.isActivated
