@@ -2456,6 +2456,8 @@ class Constants
      */
     const WALLET_LINK_AND_PAY = 'wallet_link_and_pay';
 
+    const ODS_MICROSERVICE = 'ods_microservice';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -3399,7 +3401,7 @@ class Constants
         self::ENABLE_IMPORT_FLOW           => true,
         self::AUTO_CLOSURE_CBK_MF_MX       => true,
         self::HIDE_RX_PAYROLL_PAYOUTS   => true,
-
+        self::ODS_MICROSERVICE => true,
     ];
 
     // Entity type constants
@@ -4966,6 +4968,11 @@ class Constants
             'display_name' => 'Feature flag to hide payroll payouts in payouts view',
             'documentation' => ''
         ],
+        self::ODS_MICROSERVICE => [
+            'feature' => self::ODS_MICROSERVICE,
+            'display_name' => 'Feature flag to indicate that the merchant has been migrated to the microservice for ondemand settlements',
+            'documentation' => ''
+        ]
     ];
 
     /**

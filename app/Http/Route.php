@@ -17844,6 +17844,9 @@ class Route
             'contact_create_internal',
             'fund_account_create_internal',
             'merchant_integration_get_by_param',
+            'payout_create_internal',
+            'pricing_fetch_plan',
+            'setl_adj_add',
         ],
 
         'leegality' => [
