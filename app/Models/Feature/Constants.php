@@ -2260,6 +2260,13 @@ class Constants
      */
     const ENABLE_INTL_PRICING_AMEX = 'enable_intl_pricing_amex';
 
+   /** Enable auto assignment of terminal as merchant onboards
+    in vas
+    */
+
+    const UPI_DMO_FOR_VAS = 'upi_dmo_for_vas';
+
+
     /**
      * Enable payment via reward_points for merchant.
      */
@@ -3161,6 +3168,7 @@ class Constants
         self::LRSNonStandardCheckout                       => true,
         self::RazorpayTaxOnboarding                        => true,
         self::RazorpayTaxProcessing                        => true,
+        self::UPI_DMO_FOR_VAS                             => true,
         self::RazorpayTaxInclusiveTaxPricing               => true,
         DcsConstants::LRSImportFeeBreakup                  => true,
         self::ONE_CLICK_OVERRIDE_THEME                     => true,
