@@ -4958,6 +4958,11 @@ class Service extends Base\Service
                 $responseData = $this->fetchAuthzRoleNames($input);
                 break;
 
+            case 'fetch_methods':
+                $merchantEntity = $this->repo->merchant->findOrFail($input['merchant_id']);
+                $responseData = $merchantEntity->getMethods();
+                break;
+
             case 'fetch_role_name':
                 $responseData = $this->repo->roles->fetchRoleName($input['role_name']);
                 break;
@@ -4967,7 +4972,7 @@ class Service extends Base\Service
                 break;
 
             case 'fetch_additional_data':
-                $merchantEntity = $this->repo->merchant->findOrFailPublic($input['merchant_id']);
+                $merchantEntity = $this->repo->merchant->findOrFail($input['merchant_id']);
                 $responseData = [
                     'permissions' =>  $this->core->userPermissions($input['merchant']),
                     'attributes' => $this->core->fetchMerchantAttribute($input['merchant_id']),
