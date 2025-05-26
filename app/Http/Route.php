@@ -3354,6 +3354,7 @@ class Route
         'oauth_sync_merchant_map'                  => ['post',     'oauth/update_merchant_map',                      'MerchantController@updateMerchantAccessMapFromTokens'              ],
 
         'merchant_analytics'                       => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
+        'merchant_analytics_private'               => ['post',     'internal/merchant/analytics',                    'MerchantController@postAnalytics'                                  ],
         'get_merchant_data_for_segment'            => ['get',      'merchant/data_for_segment',                      'MerchantController@getMerchantDataForSegment'                      ],
         'merchant_settlements_events_cron'         => ['post',     'merchant/settlements_events_cron',               'MerchantController@postSettlementsEventsCron'                      ],
 
@@ -5837,7 +5838,8 @@ class Route
         '1cc_wooc_ingestion_plugins_post',
         '1cc_process_prepay_cod_orders',
 
-        'wallet_dashboard_proxy'
+        'wallet_dashboard_proxy',
+        'merchant_analytics_private',
     ];
 
     // Only routes defined in internalApps go here
@@ -20462,6 +20464,7 @@ class Route
         'payment_get_flows_private'                         => HeartbeatLagChecker::SLAVE,
         'org_get_by_hostname'                               => HeartbeatLagChecker::SLAVE,
         'merchant_analytics'                                => HeartbeatLagChecker::SLAVE,
+        'merchant_analytics_private'                        => HeartbeatLagChecker::SLAVE,
         'inspector_view_get'                                => HeartbeatLagChecker::SLAVE,
         'account'                                           => HeartbeatLagChecker::SLAVE,
         'merchant_methods'                                  => HeartbeatLagChecker::SLAVE,
@@ -20703,6 +20706,7 @@ class Route
         'payment_get_flows_private',
         'org_get_by_hostname',
         'merchant_analytics',
+        'merchant_analytics_private',
         'inspector_view_get',
         'account',
         'merchant_methods',
