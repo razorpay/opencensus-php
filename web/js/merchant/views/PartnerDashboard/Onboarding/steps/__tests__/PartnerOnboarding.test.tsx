@@ -76,22 +76,4 @@ describe('PartnerOnboarding', () => {
     expect(screen.queryByTestId('tnc-footer')).not.toBeNull();
   });
 
-  test('Should render partner type screen for isOnboardAsResellers = false', async () => {
-    renderApp({ isOnboardAsResellers: false });
-    const nextButton = screen.getByRole('button', { name: 'Next' });
-    expect(nextButton).toBeInTheDocument();
-    // click next
-    await userEvent.click(nextButton);
-
-    const nextButton2 = screen.getByRole('button', { name: 'Next' });
-    expect(nextButton2).toBeInTheDocument();
-    expect(screen.queryByTestId('tnc-footer')).toBeNull();
-
-    // click next again
-    await userEvent.click(nextButton2);
-
-    const getStartedButton = screen.getByRole('button', { name: 'Get Started' });
-    expect(getStartedButton).toBeInTheDocument();
-    expect(screen.queryByTestId('tnc-footer')).not.toBeNull();
-  });
 });

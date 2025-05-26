@@ -234,7 +234,6 @@ class BaseScreen extends React.Component {
   render() {
     const { user, session } = this.props;
     const orgDetails = session.org;
-    const isHidePartnerType = user?.isOnboardAsResellers && user.role === 'owner';
     return (
       <div className={this.partnerOnboardingClass}>
         <Slider>
@@ -257,7 +256,7 @@ class BaseScreen extends React.Component {
             <S1
               key={1}
               handleOtherCTAClicks={this.handleOtherCTAClicks}
-              isLastStep={isHidePartnerType}
+              isLastStep={true}
               onCompleteClick={this.onCompleteClick}
               onNext={this.handleNewUserGetStarted}
               orgDetails={orgDetails}
@@ -265,23 +264,6 @@ class BaseScreen extends React.Component {
               sliderProps={sliderProps}
             />
           )}
-          {!isHidePartnerType
-            ? (sliderProps) => (
-                <S2
-                  key={2}
-                  abort={this.handleCloseClick}
-                  handleOtherCTAClicks={this.handleOtherCTAClicks}
-                  isMobile={this.props.isMobileResolution}
-                  isOrgCurlec={user.isOrgCurlec}
-                  onCompleteClick={this.onCompleteClick}
-                  onRoleSelect={this.onRoleSelect}
-                  orgDetails={orgDetails}
-                  role={this.state.role}
-                  screenName={this.screenName}
-                  sliderProps={sliderProps}
-                />
-              )
-            : null}
         </Slider>
         {!this.props.disableClose && (
           <button
