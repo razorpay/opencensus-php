@@ -522,11 +522,7 @@ class Entity extends Base\Entity
                            ->pluck(Feature\Entity::NAME)
                            ->toArray();
 
-        $this->getTrace()->info(TraceCode::DCS_RESPONSE, ['dcsResponse'=>$dcsResponse]);
-
         $this->loadedFeatures = $this->mergeUniqueArrays($apiResponse, $dcsResponse);
-
-        $this->getTrace()->info(TraceCode::DCS_RESPONSE, ['loadedFeatures'=>$this->loadedFeatures]);
 
         return $this->loadedFeatures;
     }

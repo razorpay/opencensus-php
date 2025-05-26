@@ -1316,9 +1316,7 @@ class Service extends Base\Service
 
             case 'feature':
                 // Retrieve features of the source organization
-                $this->trace->info(TraceCode::ORG_FEATURE_REPLICATION, [$this->merchant->org]);
                 $org = $this->repo->org->find($fromOrgId);
-//                $orgFeatures = $this->merchant->org->getEnabledFeatures();
                 $orgFeatures = $org->getEnabledFeatures();
 
                 // Retrieve existing feature names of the target organization
