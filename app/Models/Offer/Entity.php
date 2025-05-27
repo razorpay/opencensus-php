@@ -223,6 +223,7 @@ class Entity extends Base\PublicEntity
         self::PRODUCT_TYPE,
         self::UPI,
         self::INSTRUMENTS,
+        self::RULES,
 
         SubscriptionOfferEntity::APPLICABLE_ON,
         SubscriptionOfferEntity::NO_OF_CYCLES,
@@ -266,6 +267,7 @@ class Entity extends Base\PublicEntity
         self::PRODUCT_TYPE,
         self::UPI,
         self::INSTRUMENTS,
+        self::RULES,
         SubscriptionOfferEntity::APPLICABLE_ON,
         SubscriptionOfferEntity::NO_OF_CYCLES,
         SubscriptionOfferEntity::REDEMPTION_TYPE,
@@ -881,6 +883,11 @@ class Entity extends Base\PublicEntity
     public function setInstruments($instruments)
     {
         $this->setAttribute(self::INSTRUMENTS, $instruments);
+    }
+
+    public function setRules($rules)
+    {
+        $this->setAttribute(self::RULES, $rules);
     }
 
     protected function setLinkedOfferIdsAttribute(array $linkedOfferIds)

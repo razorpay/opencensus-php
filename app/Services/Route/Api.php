@@ -57,7 +57,16 @@ class Api extends Base
     }
     public function createPaymentTransfer(string $paymentId, array $input) : array
     {
-        if ((new Config())->shouldCreateNewPassportToken())
+        $routeName = $this->app['api.route']->getCurrentRouteName() ?? '';
+
+        $isBatchApi = false;
+
+        if (in_array($routeName, ['payment_transfer_batch', 'payment_transfer_retry_batch']))
+        {
+            $isBatchApi = true;
+        }
+
+        if ((new Config())->shouldCreateNewPassportToken() || $isBatchApi)
         {
             $this->addNewPassportToken();
         }

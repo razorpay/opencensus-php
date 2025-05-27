@@ -884,6 +884,8 @@ return array(
 
     'amp_merchant_to_under_review' => env('AMP_MERCHANT_TO_UNDER_REVIEW'),
 
+    'online_pg_india_merchant_version' => env('ONLINE_PG_INDIA_MERCHANT_VERSION'),
+
     'ignore_signature_error_exp_id' => env('IGNORE_SIGNATURE_ERROR_EXP_ID'),
 
     'nc_automation_activation_exp_id' => env('NC_AUTOMATION_ACTIVATION_EXP_ID'),
@@ -1281,6 +1283,10 @@ return array(
 
     'enable_rearch_card_recurring_initial_flow' => env('ENABLE_REARCH_CARD_RECURRING_INITIAL_FLOW'),
 
+    'enable_rearch_card_recurring_flow_with_limit' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_WITH_LIMIT'),
+
+    'enable_rearch_card_recurring_initial_flow_with_limit' => env('ENABLE_REARCH_CARD_RECURRING_INITIAL_FLOW_WITH_LIMIT'),
+
     'enable_rearch_card_recurring_flow_hub' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_HUB'),
 
     'enable_rearch_card_recurring_flow_route' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_ROUTE'),
@@ -1291,9 +1297,11 @@ return array(
 
     'enable_rearch_card_recurring_flow_hub_mandatehq' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_HUB_MANDATEHQ'),
 
-    'enable_rearch_card_recurring_flow_initial_mandatehq' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_INITIAL_MANDATEHQ'),
+    'enable_rearch_card_recurring_subsequent_rupay' => env('ENABLE_REARCH_CARD_RECURRING_SUBSEQUENT_RUPAY'),
 
-    'enable_rearch_card_recurring_flow_mandate_ts' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_MANDATE_TS'),
+    'enable_rearch_card_recurring_initial_rupay'    =>env('ENABLE_REARCH_CARD_RECURRING_INITIAL_RUPAY'),
+
+    'enable_rearch_card_recurring_flow_initial_mandatehq' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_INITIAL_MANDATEHQ'),
 
     'merchant_checkout_optimizer_affordability_emi_enabled_exp_id' => env('MERCHANT_CHECKOUT_OPTIMIZER_AFFORDABILITY_EMI_ENABLED_EXP_ID'),
 

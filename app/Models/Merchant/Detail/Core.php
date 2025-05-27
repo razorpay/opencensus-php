@@ -870,6 +870,63 @@ class Core extends Base\Core
         return $summaryData;
     }
 
+    public function updatePosActivatedOrKqsNotLiveMerchantsCron()
+    {
+        $merchantList = $this->repo->merchant->getPOSMerchantsWithActivatedOrKqsButNotLive();
+
+        $this->trace->info(TraceCode::POS_ACTIVATED_OR_KQS_LIVE_DATA_FIX_VIA_CRON, [
+            'merchantList'        => $merchantList
+        ]);
+
+        $succeededIds = [];
+        $failedIds = [];
+        $validator = new Validator();
+        foreach ($merchantList as $merchantId)
+        {
+            try {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $validator->validateRiskTagsForPos($merchant);
+                $merchant->LiveEnable();
+
+                $this->trace->info(Tracecode::POS_ACTIVATED_OR_KQS_LIVE_DATA_FIX_VIA_CRON, [
+                    'merchant_id' => $merchantId,
+                    'Live' => $merchant->isLive()
+                ]);
+
+                $this->repo->merchant->saveOrFail($merchant);
+
+                $succeededIds[$merchantId] = true;
+                $this->trace->count(Metric::POS_ACTIVATED_OR_KQS_NOT_LIVE, ['status' => 'success']);
+
+            }
+            catch(\Throwable $ex)
+            {
+                $this->trace->error(
+                    TraceCode::POS_ACTIVATED_OR_KQS_LIVE_DATA_FIX_VIA_CRON_FAILED,
+                    [
+                        'msg' => 'Failed',
+                        'error_message' => $ex->getMessage()
+                    ]
+                );
+
+                $failedIds[$merchantId] = false;
+                $this->trace->count(Metric::POS_ACTIVATED_OR_KQS_NOT_LIVE, ['status' => 'failed']);
+            }
+
+        }
+
+        $summaryData = [
+            "succeeded_ids" => $succeededIds,
+            "failed_ids" => $failedIds,
+            "success_count" => sizeof($succeededIds),
+            "failed_count" => sizeof($failedIds),
+        ];
+
+        $this->trace->info(Tracecode::POS_LIVE_DISABLED_DATA_FIX_CRON_SUMMARY_RESULT, $summaryData);
+
+        return $summaryData;
+    }
     public function updateActivationProgressPGOSInternal($merchantId, $input)
     {
         // this also sends the lumberjack events

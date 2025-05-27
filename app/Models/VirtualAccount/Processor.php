@@ -23,6 +23,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\FundAccount\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
 use \WpOrg\Requests\Exception as RequestsException;
@@ -441,7 +442,7 @@ abstract class Processor extends Base\Core
             $paymentInput = array_except($input, [Payment\Entity::ORDER_ID]);
         }
 
-        $this->getPaymentProcessor()->process($paymentInput, $gatewayData);
+        $this->getPaymentProcessor(true)->process($paymentInput, $gatewayData);
     }
 
     protected function createPayment(array $input, array $gatewayData = [], $isCollectXPayment = false)
@@ -457,7 +458,7 @@ abstract class Processor extends Base\Core
 
             throw $e;
         }
-        catch (\Exception $e)
+        catch (\Exception | BadRequestException $e)
         {
             /*
              * Exception might have been because of Validation Failure on Order.

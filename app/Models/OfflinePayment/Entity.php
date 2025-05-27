@@ -316,4 +316,28 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::SOURCE,$source);
     }
 
+    /**
+     * Sets payer_details to an empty object if blank, else sets as is.
+     */
+    public function setPayerDetails($value)
+    {
+        if ($value === '') {
+           return $this->setAttribute(self::PAYER_DETAILS, new \stdClass());
+        } else {
+            return $this->setAttribute(self::PAYER_DETAILS, $value);
+        }
+    }
+
+    /**
+     * Sets payment_instrument_details to an empty object if blank, else sets as is.
+     */
+    public function setPaymentInstrumentDetails($value)
+    {
+        if ($value === '') {
+            return $this->setAttribute(self::PAYMENT_INSTRUMENT_DETAILS, new \stdClass());
+        } else {
+            return $this->setAttribute(self::PAYMENT_INSTRUMENT_DETAILS, $value);
+        }
+    }
+
 }

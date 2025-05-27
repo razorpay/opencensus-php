@@ -238,6 +238,8 @@ class Base extends BaseProcessor
                 {
                     $processor = new Processor($merchant);
 
+                    $this->trace->info(TraceCode::EMANDATE_CAPTURE_PAYMENT, ['payment_id' => $payment->getId()]);
+
                     $processor->processCapture($payment);
                 }
                 elseif ($payment->hasBeenCaptured() === true)

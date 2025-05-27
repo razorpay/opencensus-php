@@ -7982,8 +7982,7 @@ class Core extends Base\Core
 
                                     $this->trace->gauge(Metric::BENE_BANK_UP_REDIS_KEY_UNSET, time(),
                                         [
-                                            'bene_code' => $beneBankIfsc,
-                                            'downtime_id' => $input['payload']['id'],
+                                            'bene_code' => $beneBankIfsc
                                         ]
                                     );
                                 }
@@ -7994,8 +7993,7 @@ class Core extends Base\Core
 
                                 $this->trace->gauge(Metric::BENE_BANK_DOWN_REDIS_KEY_SET, time(),
                                     [
-                                        'bene_code' => $beneBankIfsc,
-                                        'downtime_id' => $input['payload']['id'],
+                                        'bene_code' => $beneBankIfsc
                                     ]
                                 );
                             }

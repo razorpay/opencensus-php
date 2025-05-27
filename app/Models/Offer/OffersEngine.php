@@ -940,6 +940,7 @@ class OffersEngine extends Base\Core
     {
         if (isset($publicOffer[Constants::RULES]) === true)
         {
+            $offer->setRules($publicOffer[Constants::RULES]);
             foreach ($publicOffer[Constants::RULES] as $rule)
             {
                 if (isset($rule[Constants::FILTERS]) === true)

@@ -26,6 +26,9 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT             = 'updated_at';
     const METADATA               = 'metadata';
 
+    const MODULAR_WITHOUT_MKYC                            = 'modular_without_mkyc';
+    const UDD_DECOMP_ONBOARDING_WORKFLOW_DETAILS_METADATA = 'udd_decomp_onboarding_workflow_details_metadata';
+
     protected $entity            = 'user_device_detail';
 
     protected $generateIdOnCreate = true;
@@ -101,58 +104,89 @@ class Entity extends Base\PublicEntity
             'experiment_id' => $app['config']->get('app.pgos_read_for_metadata_enabled'),
         ];
 
-        $isPGOSReadForMetadataEnabled = (new \RZP\Models\Merchant\Core())->isSplitzExperimentEnable($properties,'enable');
+        $onboardingWorkflowDetailsCacheKey = sprintf('%s_%s', self::UDD_DECOMP_ONBOARDING_WORKFLOW_DETAILS_METADATA, $this->getMerchantId());
+        $onboardingDetails = $app['cache']->get($onboardingWorkflowDetailsCacheKey);
+        $app['trace']->info(TraceCode::ONBOARDING_WORKFLOW_DETAILS_FROM_CACHE, [
+            'onboarding_details' => $onboardingDetails,
+        ]);
 
-        if ($isPGOSReadForMetadataEnabled === true) {
+        $isPGOSReadForMetadataEnabled = false;
+        $onlinePgIndiaMerchantVersion = "";
+        $readingWorkflowDetailsFromCache = true;
 
-            if ($key === Constants::WORKFLOW_DETAILS || $key === Constants::SERVICE) {
+        if (empty($onboardingDetails) === true) {
+            $isPGOSReadForMetadataEnabled = (new \RZP\Models\Merchant\Core())->isSplitzExperimentEnable($properties,'enable');
+            $onlinePgIndiaMerchantVersion = (new \RZP\Models\Merchant\Detail\Core())->getSplitzResponse($this->getMerchantId(), 'online_pg_india_merchant_version');
+            $readingWorkflowDetailsFromCache = false;
 
+            $app['trace']->info(TraceCode::ONBOARDING_WORKFLOW_DETAILS_NOT_PRESENT_IN_CACHE, [
+                'online_pg_india_merchant_version' => $onlinePgIndiaMerchantVersion,
+                'is_pgos_read_for_metadata_enabled' => $isPGOSReadForMetadataEnabled,
+            ]);
+        }
+
+        $shouldUsePGOSOnboardingDetails = $isPGOSReadForMetadataEnabled ||
+                                          $onlinePgIndiaMerchantVersion === self::MODULAR_WITHOUT_MKYC ||
+                                          !empty($onboardingDetails);
+
+
+        if ($shouldUsePGOSOnboardingDetails && ($key === Constants::WORKFLOW_DETAILS || $key === Constants::SERVICE)) {
+
+            if (empty($onboardingDetails) === true) {
                 try {
-
                     $onboardingDetails = (new Core())->fetchOnboardingWorkflowDataFromPGOS($this->getMerchantId());
+
+                    // Todo: IMP :: Move to context based approach instead of saving data to cache before ramping up WORKFLOW SEGREGATION.
+                    // To be owned by workflow segregation / udd decomp project owners
+
+                    if (!empty($onboardingDetails) and !empty($onboardingDetails[Constants::WORKFLOW_DETAILS])) {
+                        $app['cache']->put($onboardingWorkflowDetailsCacheKey, $onboardingDetails, 3600);
+                        $app['trace']->info(TraceCode::SAVING_WOKFLOW_DETAILS_TO_CACHE, [
+                            'onboarding_details'           => $onboardingDetails,
+                        ]);
+                    }
 
                 } catch (\Throwable $e) {
 
                     throw new ServerErrorException(PublicErrorDescription::SERVER_ERROR, ErrorCode::SERVER_ERROR);
 
                 }
+            }
 
-                if (!empty($onboardingDetails) && array_get($onboardingDetails, Constants::WORKFLOW_DETAILS_OWNER_SERVICE) === Constants::SERVICE_PGOS) {
+            if (!empty($onboardingDetails) && array_get($onboardingDetails, Constants::WORKFLOW_DETAILS_OWNER_SERVICE) === Constants::SERVICE_PGOS) {
 
-                    if ($key === Constants::WORKFLOW_DETAILS) {
+                if ($key === Constants::WORKFLOW_DETAILS) {
 
-                        if ($transformToApiRes === false && isset($onboardingDetails[Constants::WORKFLOW_DETAILS])) {
+                    if ($transformToApiRes === false && isset($onboardingDetails[Constants::WORKFLOW_DETAILS])) {
 
-                            $fetchedFromOnboardingDetails = true;
+                        $fetchedFromOnboardingDetails = true;
 
-                            $metaData[Constants::WORKFLOW_DETAILS] = $onboardingDetails[Constants::WORKFLOW_DETAILS];
-
-                        } else {
-
-                            $mergeRes = $this->mergeResponses($onboardingDetails, $metaData);
-
-                            $metaData = $mergeRes[Constants::MERGED_OBJECT];
-
-                            $fetchedFromOnboardingDetails = $mergeRes[Constants::FETCHED_FROM_ONBOARDING_DETAILS];
-                        }
+                        $metaData[Constants::WORKFLOW_DETAILS] = $onboardingDetails[Constants::WORKFLOW_DETAILS];
 
                     } else {
 
-                        $metaData[Constants::SERVICE] = Constants::SERVICE_PGOS;
+                        $mergeRes = $this->mergeResponses($onboardingDetails, $metaData);
 
+                        $metaData = $mergeRes[Constants::MERGED_OBJECT];
+
+                        $fetchedFromOnboardingDetails = $mergeRes[Constants::FETCHED_FROM_ONBOARDING_DETAILS];
                     }
+
+                } else {
+
+                    $metaData[Constants::SERVICE] = Constants::SERVICE_PGOS;
 
                 }
 
             }
-
         }
 
         $app['trace']->info(TraceCode::GET_VALUE_FROM_METADATA, [
-            'merchant_id'                  => $this->getMerchantId(),
-            'metadata_key'                 => $key,
-            'metaData'                     => $metaData,
-            'fetchedFromOnboardingDetails' => $fetchedFromOnboardingDetails,
+            'merchant_id'                     => $this->getMerchantId(),
+            'metadata_key'                    => $key,
+            'metaData'                        => $metaData,
+            'fetchedFromOnboardingDetails'    => $fetchedFromOnboardingDetails,
+            'readingWorkflowDetailsFromCache' => $readingWorkflowDetailsFromCache,
         ]);
 
         $metricData = [
@@ -194,9 +228,11 @@ class Entity extends Base\PublicEntity
 
                 if (is_array($value)) {
 
-                    $newKey = $productKey . '_' . 'workflow_type';
+                    $workflowTypeKey = $productKey . '_' . 'workflow_type';
+                    $workflowVersionKey = $productKey . '_' . 'workflow_version';
 
-                    $mergedObject[Constants::WORKFLOW_DETAILS] = [$newKey => !empty($value[Constants::WORKFLOW_TYPE]) ? $value[Constants::WORKFLOW_TYPE] : null];
+                    $mergedObject[Constants::WORKFLOW_DETAILS][$workflowTypeKey] = !empty($value[Constants::WORKFLOW_TYPE]) ? $value[Constants::WORKFLOW_TYPE] : null;
+                    $mergedObject[Constants::WORKFLOW_DETAILS][$workflowVersionKey] = !empty($value[Constants::VERSION_ID]) ? $value[Constants::VERSION_ID] : null;
 
                     return [
                         Constants::MERGED_OBJECT                     => $mergedObject,

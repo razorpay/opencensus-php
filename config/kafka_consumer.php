@@ -5,5 +5,7 @@ return array(
 
     'client_id' => 'api-rx-kafka',
 
-    'fts_status_update_retry_topic' => env('FTS_STATUS_UPDATE_RETRY_TOPIC', 'rx-fts-status-update-retry-events')
+    'fts_status_update_retry_topic' => env('FTS_STATUS_UPDATE_RETRY_TOPIC', 'rx-fts-status-update-retry-events'),
+
+    'cmma_case_events_topic' => env('CMMA_CASE_EVENTS_TOPIC_NAME', 'cmma-case-events')
 );

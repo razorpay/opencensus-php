@@ -2836,6 +2836,20 @@ EOT;
                     ->get();
     }
 
+    public function fetchCurrentDayPaymentsCountByOrderID($orderId){
+        // Get current day's start and end timestamps in IST
+        $startOfDay = Carbon::now(Timezone::IST)->startOfDay()->timestamp;
+        $endOfDay = Carbon::now(Timezone::IST)->endOfDay()->timestamp;
+
+        // First get all payments for the order
+        $paymentCount = $this->newQuery()
+            ->where(Payment\Entity::ORDER_ID, '=', $orderId)
+            ->whereBetween(Payment\Entity::CREATED_AT, [$startOfDay, $endOfDay])
+            ->count();
+
+        return $paymentCount;
+    }
+
     protected function addQueryParamBank($query, $params)
     {
         if (Payment\Processor\Netbanking::isSupportedBank($params['bank']) === false)

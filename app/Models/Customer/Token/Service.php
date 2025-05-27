@@ -2734,7 +2734,7 @@ class Service extends Base\Service
 
         //For recurring, migrate the token in sync and store recurring details
         if(!empty($input['additional_data']) && !empty($input['additional_data']['card_mandate_id'])){
-
+            $token->setCardMandateId($input['additional_data']['card_mandate_id']);
             $payment->localToken()->associate($token);
 
             (new Payment\Processor\Processor($token->merchant))->migrateTokenIfApplicable($payment, $callbackData);
