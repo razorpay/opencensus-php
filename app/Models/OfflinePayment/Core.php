@@ -40,11 +40,14 @@ class Core extends Base\Core
         $errorMessage = null;
 
         $input[Entity::CURRENCY] = "INR";
-
         $offlinePayment = (new Entity)->build($input);
-
-        $offlinePayment->setSource($input[Entity::SOURCE]);
-
+        
+         if($input[Entity::SOURCE] === Entity::FILE)
+         {
+             $offlinePayment->setPayerDetails($input[Entity::PAYER_DETAILS]);
+             $offlinePayment->setPaymentInstrumentDetails($input[Entity::PAYMENT_INSTRUMENT_DETAILS]);
+         }
+         
         $processor = new Processor();
 
         //on basis of challan_number

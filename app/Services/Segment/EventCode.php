@@ -43,6 +43,8 @@ class EventCode
 
     const KYC_STATUS_CHANGE = 'KYC Status Change';
 
+    const PARTNER_SIGNUP = 'Partner Signup';
+
     const PARTNER_HAVE_COMMISSION = 'Partner Have Commission';
 
     const AFFILIATE_ACCOUNT_ADDED = 'Affiliate Account Added';

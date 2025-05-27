@@ -1452,7 +1452,7 @@ class Activate extends Base\Core
      */
     private function sendTerminalCreationRequestForUPI($paymentMethod, $merchant, $action, $merchantGenre, $instrument): void
     {
-        if ((new MethodsCore())->isUPIPaymentMethodAllowed($merchant) === true && $this->shouldDispatchTerminalCreationEvent($merchant))
+        if ((((new MethodsCore())->isUPIPaymentMethodAllowed($merchant) === true) or ($merchant->org->isFeatureEnabled(Feature\Constants::UPI_DMO_FOR_VAS))) and ($this->shouldDispatchTerminalCreationEvent($merchant)))
         {
             $topic = env('PAYMENT_METHOD_ENABLE_KAFKA_TOPIC_NAME');
 
