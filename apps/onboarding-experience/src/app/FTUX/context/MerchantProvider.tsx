@@ -46,8 +46,7 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children, triggerTw
   });
 
   // Add merchant plugin mutation
-  const { mutateAsync: addMerchantPluginMutation, isLoading: isAddingWebsitePlugin } =
-    useWebsitePlugin();
+  const { mutateAsync: addMerchantPluginMutation } = useWebsitePlugin();
 
   const { generateApiKeyMutation, regenerateApiKeyMutation } = useMerchantApiKeys();
 
@@ -153,7 +152,6 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children, triggerTw
     refetchOnboardingData,
     refetchAllData,
     addMerchantWebsitePlugin,
-    isAddingWebsitePlugin,
     initiateTwoFaAuth,
     generateApiKey,
     regenerateApiKey,

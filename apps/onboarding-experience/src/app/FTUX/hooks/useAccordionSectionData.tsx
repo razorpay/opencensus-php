@@ -83,7 +83,7 @@ const useAccordionSectionData = (): { activeStep: number; accordionData: Accordi
     },
     {
       title: 'Accept your first payment',
-      content: <AcceptTransactions />,
+      content: <AcceptTransactions mode={mode} />,
     },
   ];
 

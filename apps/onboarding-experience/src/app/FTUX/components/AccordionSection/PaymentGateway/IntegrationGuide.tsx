@@ -1,5 +1,8 @@
 import React, { useMemo, useState, useEffect, Suspense, lazy } from 'react';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { Box, Link, Divider, Text, EditIcon, LayersIcon } from '@razorpay/blade/components';
+import { useMerchantContext } from '@FTUX/context/MerchantContext';
+import { INTEGRATION_GUIDE } from '@FTUX/constants/accordion';
 import { PAYMENT_CHANNEL_OPTIONS } from '@OnboardingExperienceCommons/types/merchant';
 import SelectableOptionCard, {
   SelectableOptionCardProps,
@@ -9,8 +12,6 @@ import {
   hasAddedWebsite,
 } from '@OnboardingExperienceCommons/utils/merchant';
 import IntegrationOptionIcon from 'apps/onboarding-experience/src/assets/IntegrationOption.svg';
-import { useMerchantContext } from '@FTUX/context/MerchantContext';
-import { INTEGRATION_GUIDE } from '@FTUX/constants/accordion';
 
 const WebsitePluginModal = lazy(
   () => import('@OnboardingExperienceCommons/components/WebsitePluginModal'),
@@ -57,8 +58,8 @@ const AppIntegrationGuide = ({
 };
 
 const IntegrationGuide = () => {
-  const { merchantData, onboardingData, addMerchantWebsitePlugin, isAddingWebsitePlugin } =
-    useMerchantContext();
+  const showNotification = useStore((state) => state.showNotification);
+  const { merchantData, onboardingData, addMerchantWebsitePlugin } = useMerchantContext();
   const [selectedWebsitePlugin, setSelectedWebsitePlugin] = useState<string | null>(null);
   const [websitePluginModalVisible, setWebsitePluginModalVisible] = useState(false);
 
@@ -85,10 +86,20 @@ const IntegrationGuide = () => {
       ?.accept;
 
   const handleAddPlugin = async (newPlugin: string) => {
+    // Find if there's a plugin used for this website
+    const previouslySelectedPlugin = selectedWebsitePlugin;
+
     try {
+      setSelectedWebsitePlugin(newPlugin);
+      // Set the chosen plugin and mutate parallely
       await addMerchantWebsitePlugin({ websiteUrl: websiteUrl || '', pluginName: newPlugin });
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      // Rollback to previous plugin in case of error
+      setSelectedWebsitePlugin(previouslySelectedPlugin);
+      showNotification({
+        type: 'error',
+        message: 'An error occurred while selecting the plugin!',
+      });
     }
   };
 
@@ -193,7 +204,6 @@ const IntegrationGuide = () => {
                 subTitle={option.subTitle}
                 cardImageUrl={option.cardImageUrl}
                 handleClick={option.handleClick}
-                isDisabled={isAddingWebsitePlugin}
               />
             ))}
           </Box>

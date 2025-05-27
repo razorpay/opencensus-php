@@ -26,6 +26,14 @@ interface NewInvitationProps {
   experiments?: SpiltzContextState;
   screen?: string;
   isRenderedFromPartnerRoute: boolean;
+  customRolesData?: Record<
+    string,
+    {
+      label: string;
+      desc?: string;
+    }
+  >;
 }
-const NewInvitation = NewInvitationJS as ComponentType<NewInvitationProps>;
+
+const NewInvitation = NewInvitationJS as unknown as ComponentType<NewInvitationProps>;
 export default NewInvitation;

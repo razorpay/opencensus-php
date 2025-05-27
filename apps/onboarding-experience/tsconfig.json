@@ -12,6 +12,7 @@
       "@libs/shared-types/la": ["libs/shared-types/src/dashboards/la/index.ts"],
       "@libs/shared-types/payments": ["libs/shared-types/src/dashboards/payments/index.ts"],
       "@libs/shared-utils": ["libs/shared-utils/src/common/index.ts"],
+      "@federated/dashboards/payments/*": ["web/js/merchant/exposed/*"],
       "@libs/shared-ui": ["libs/shared-ui/src/common/index.ts"],
       "@OnboardingExperienceCommons/*": ["apps/onboarding-experience/src/common/*"]
     }

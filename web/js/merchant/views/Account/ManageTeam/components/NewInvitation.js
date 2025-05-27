@@ -161,6 +161,7 @@ class NewInvitation extends Component {
           message: typeof successMsg === 'function' ? successMsg(payload) : successMsg,
         });
         this.props.closeModal();
+        this.props.onSuccess?.();
       })
       .catch((err) => {
         analyticsTrack({
@@ -344,10 +345,15 @@ class NewInvitation extends Component {
       isInviteTeamMember2faEnabled,
       isRenderedFromPartnerRoute,
       isHandlingPosPartnerAgent,
+      customRolesData,
       ...props
     } = this.props;
 
     let ROLES = this.filterRoles();
+
+    if (customRolesData && typeof customRolesData === 'object') {
+      ROLES = { ...customRolesData };
+    }
 
     if (user.isAgentRole) {
       ROLES = { ...ROLES, ...agentRole };
