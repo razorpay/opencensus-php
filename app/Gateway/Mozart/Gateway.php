@@ -2257,13 +2257,6 @@ class Gateway extends Base\Gateway
                 'auth' => $authentication
             ]
         ];
-        $this->trace->info(
-            TraceCode::MISC_TRACE_CODE,
-            [
-                'mozart gateway before checking mode to add test case id in header',
-                'header'    => $mozartRequest['headers'],
-                'mode' => $this->app['rzp.mode']
-            ]);
         
         if (isset($this->app['rzp.mode']) and $this->app['rzp.mode'] === 'test')
         {
@@ -2274,13 +2267,6 @@ class Gateway extends Base\Gateway
                 $mozartRequest['headers']['X-RZP-TESTCASE-ID'] = $testCaseId;
             }
         }
-        $this->trace->info(
-            TraceCode::MISC_TRACE_CODE,
-            [
-                'mozart gateway after checking mode to add test case id in header',
-                'header'    => $mozartRequest['headers'],
-                'mode' => $this->app['rzp.mode']
-            ]);
         
         return $mozartRequest;
     }

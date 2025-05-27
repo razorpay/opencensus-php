@@ -1945,14 +1945,6 @@ class Gateway
             ]
         ];
 
-        $this->trace->info(
-            TraceCode::MISC_TRACE_CODE,
-            [
-                'before adding test case id in header',
-                'header'    => $request['headers'],
-                'mode' => $this->app['rzp.mode']
-            ]);
-
         if (isset($this->app['rzp.mode']) and $this->app['rzp.mode'] === 'test')
         {
             $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
@@ -1962,14 +1954,6 @@ class Gateway
                 $request['headers']['X-RZP-TESTCASE-ID'] = $testCaseId;
             }
         }
-
-        $this->trace->info(
-            TraceCode::MISC_TRACE_CODE,
-            [
-                'after checking mode to add test case id in header',
-                'header'    => $request['headers'],
-                'mode' => $this->app['rzp.mode']
-            ]);
 
         $response = $this->sendGatewayRequest($request);
 
