@@ -884,6 +884,8 @@ return array(
 
     'amp_merchant_to_under_review' => env('AMP_MERCHANT_TO_UNDER_REVIEW'),
 
+    'online_pg_india_merchant_version' => env('ONLINE_PG_INDIA_MERCHANT_VERSION'),
+
     'ignore_signature_error_exp_id' => env('IGNORE_SIGNATURE_ERROR_EXP_ID'),
 
     'nc_automation_activation_exp_id' => env('NC_AUTOMATION_ACTIVATION_EXP_ID'),
