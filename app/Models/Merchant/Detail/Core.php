@@ -332,7 +332,7 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateBusinessTypeForBankingMerchants($input, $merchant);
 
-        if ((new Detail\Core)->isIndianMerchant($merchant) === true)
+        if (((new Detail\Core)->isIndianMerchant($merchant) === true) && ($merchant->isLinkedAccount() === false))
         {
             $merchantDetails->getValidator()->validateMerchantFieldsForBankingCompliance($input, $merchant);
         }
