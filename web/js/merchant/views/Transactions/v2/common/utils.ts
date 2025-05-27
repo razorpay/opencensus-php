@@ -304,7 +304,7 @@ export const getCountryTaxDefinition = ({ countryCode = '' }: { countryCode: str
 };
 
 export const shouldHideAnalytics = (user: User, mode: Environments): boolean => {
-  // Hide analytics overview for JnK Omni merchant
+  // Hide analytics overview for JnK Omni merchant.
   if (user.isJnKOmniEnabled) {
     return true;
   }
