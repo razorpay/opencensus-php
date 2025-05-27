@@ -5289,6 +5289,7 @@ class Gateway
         PayLater::AMAZONPAY,
         CardlessEmi::INSTANT_EMI,
         CardlessEmi::SHOPSE,
+        CardlessEmi::SNAPMINT,
     ];
 
     public static $verifyClientOnS2s = [
