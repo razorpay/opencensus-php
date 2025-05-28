@@ -12609,8 +12609,7 @@ class Core extends Base\Core
         // merchants for whom pgos is serving onboarding requests
         // merchants who are not completely activated
         if (($merchant->getService() === Merchant\Constants::PGOS or
-            array_intersect_key(array_flip($skipPGOSCheckForFields), $data)) and
-            $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
+            array_intersect_key(array_flip($skipPGOSCheckForFields), $data)))
             {
                 $merchantDetails = $this->repo->merchant_detail->getByMerchantId($data['merchant_id']);
 
