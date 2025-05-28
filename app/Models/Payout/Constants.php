@@ -157,6 +157,8 @@ class Constants
     const CONTACT_ID              = 'contact_id';
     const NAME                    = 'name';
     const CONTACT                 = 'contact';
+    const CONTACT_TYPE           = 'contact_type';
+    const PAYOUT_PURPOSE         = 'payout_purpose';
     const EMAIL                   = 'email';
     const PROCESS_TYPE_KAFKA_EVENT_VIA_PS = "kafka_event_via_ps";
     const NAME_MATCHING_THRESHOLD_DEFAULT = 75;

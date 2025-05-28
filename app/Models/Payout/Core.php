@@ -12618,7 +12618,15 @@ class Core extends Base\Core
         // Fetch fund account and contact details for enrichment
         $fundAccountContactData = null;
         try {
-            $fundAccountContactData = $this->repo->fund_account->fetchFundAccountWithContactForStatementEnrichment($payout->getFundAccountId());
+            // Get fund account ID from payout and check for "fa_" prefix
+            $fundAccountId = $payout->getFundAccountId();
+
+            // Remove "fa_" prefix if present
+            if (strpos($fundAccountId, 'fa_') === 0) {
+                $fundAccountId = substr($fundAccountId, 3); // Remove "fa_" prefix (3 characters)
+            }
+
+            $fundAccountContactData = $this->repo->fund_account->fetchFundAccountWithContactForStatementEnrichment($fundAccountId);
         } catch (\Throwable $e) {
             $this->trace->traceException(
                 $e,
@@ -12640,6 +12648,8 @@ class Core extends Base\Core
             PayoutConstants::MODE                    => $payout->getMode(),
             PayoutConstants::AMOUNT                  => $payout->getAmount(),
             PayoutConstants::BALANCE_ID              => $payout->getBalanceId(),
+            PayoutConstants::PAYOUT_PURPOSE          => $payout->getPurpose(),
+
         ];
 
         // Add enhanced data if available
@@ -12649,6 +12659,7 @@ class Core extends Base\Core
             $baseData[PayoutConstants::NAME] = $fundAccountContactData['name'] ?? "";
             $baseData[PayoutConstants::CONTACT] = $fundAccountContactData['contact'] ?? "";
             $baseData[PayoutConstants::EMAIL] = $fundAccountContactData['email'] ?? "";
+            $baseData[PayoutConstants::CONTACT_TYPE] = $fundAccountContactData['contact_type'] ?? "";
         }
 
         return $baseData;

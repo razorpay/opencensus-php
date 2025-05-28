@@ -34,7 +34,7 @@ class CoreTest extends TestCase
         ]);
 
         $fundAccount = $this->fixtures->create('fund_account', [
-            'id' => '1000000fundac',
+            'id' => 'DC66xJ6xbcOLqU',
             'merchant_id' => '10000000000000',
             'source_type' => 'contact',
             'source_id' => $contact->getId(),
@@ -79,7 +79,7 @@ class CoreTest extends TestCase
     {
         // Create fund account without contact (merchant fund account)
         $fundAccount = $this->fixtures->create('fund_account', [
-            'id' => '1000000fundac',
+            'id' => 'DC66xJ6xbcOLqU',
             'merchant_id' => '10000000000000',
             'source_type' => 'merchant',
             'source_id' => '10000000000000',
@@ -123,7 +123,7 @@ class CoreTest extends TestCase
     public function testGetSourceEventInfoForStatementEnrichmentHandlesRepositoryError()
     {
         $fundAccount = $this->fixtures->create('fund_account', [
-            'id' => '1000000fundac',
+            'id' => 'DC66xJ6xbcOLqU',
             'merchant_id' => '10000000000000',
             'source_type' => 'contact',
             'source_id' => '1000000contact',
@@ -170,6 +170,179 @@ class CoreTest extends TestCase
         // Base data should still be present
         $this->assertEquals($payout->getId(), $result[Payout\Constants::ENTITY_ID]);
         $this->assertEquals('TEST123456789', $result[Payout\Constants::UTR]);
+    }
+
+    /**
+     * Test getSourceEventInfoForStatementEnrichment with StatementController payout data structure
+     */
+    public function testGetSourceEventInfoForStatementEnrichmentWithStatementControllerData()
+    {
+        // Create test entities that match StatementController implementation
+        $contact = $this->fixtures->create('contact', [
+            'id' => '1000000contact',
+            'name' => 'Statement Controller Contact',
+            'email' => 'statement@example.com',
+            'contact' => '9876543210',
+            'merchant_id' => '10000000000000'
+        ]);
+
+        $fundAccount = $this->fixtures->create('fund_account', [
+            'id' => 'DC66xJ6xbcOLqU',
+            'merchant_id' => '10000000000000',
+            'source_type' => 'contact',
+            'source_id' => $contact->getId(),
+            'account_type' => 'bank_account',
+        ]);
+
+        $balance = $this->fixtures->create('balance', [
+            'id' => '1000000balance',
+            'merchant_id' => '10000000000000',
+            'type' => 'banking',
+            'account_type' => 'direct',
+        ]);
+
+        // Create payout with data structure matching StatementController
+        $payout = $this->fixtures->create('payout', [
+            'id' => 'QLnondjZwtjPUL',
+            'merchant_id' => 'OGJDenfkpc6whP',
+            'fund_account_id' => 'DC66xJ6xbcOLqU',
+            'balance_id' => 'OGJDgn9X7zdiD8',
+            'amount' => 100000,
+            'currency' => 'INR',
+            'fees' => 590,
+            'tax' => 90,
+            'mode' => 'NEFT',
+            'status' => 'processed',
+            'purpose' => 'RANDOM TEST PURPOSE',
+            'utr' => 'TEST123456789',
+            'narration' => 'CLSBen Fund Transfer',
+        ]);
+
+        // Test the enhanced core method
+        $core = new Payout\Core();
+        $result = $core->getSourceEventInfoForStatementEnrichment($payout);
+
+        // Verify enhanced data is included with StatementController values
+        $this->assertEquals('DC66xJ6xbcOLqU', $result[Payout\Constants::FUND_ACCOUNT_ID]);
+        $this->assertEquals($contact->getId(), $result[Payout\Constants::CONTACT_ID]);
+        $this->assertEquals('Statement Controller Contact', $result[Payout\Constants::NAME]);
+        $this->assertEquals('statement@example.com', $result[Payout\Constants::EMAIL]);
+        $this->assertEquals('9876543210', $result[Payout\Constants::CONTACT]);
+        
+        // Verify base payout data
+        $this->assertEquals('QLnondjZwtjPUL', $result[Payout\Constants::ENTITY_ID]);
+        $this->assertEquals('TEST123456789', $result[Payout\Constants::UTR]);
+        $this->assertEquals('NEFT', $result[Payout\Constants::MODE]);
+        $this->assertEquals(100000, $result[Payout\Constants::AMOUNT]);
+        $this->assertEquals('OGJDgn9X7zdiD8', $result[Payout\Constants::BALANCE_ID]);
+    }
+
+    /**
+     * Test getSourceEventInfoForStatementEnrichment handles "fa_" prefix correctly
+     */
+    public function testGetSourceEventInfoForStatementEnrichmentHandlesFaPrefixCorrectly()
+    {
+        // Create test entities
+        $contact = $this->fixtures->create('contact', [
+            'id' => '1000000contact',
+            'name' => 'Test Contact',
+            'email' => 'test@example.com',
+            'contact' => '9876543210',
+            'merchant_id' => '10000000000000'
+        ]);
+
+        $fundAccount = $this->fixtures->create('fund_account', [
+            'id' => 'DC66xJ6xbcOLqU',
+            'merchant_id' => '10000000000000',
+            'source_type' => 'contact',
+            'source_id' => $contact->getId(),
+            'account_type' => 'bank_account',
+        ]);
+
+        $balance = $this->fixtures->create('balance', [
+            'id' => '1000000balance',
+            'merchant_id' => '10000000000000',
+            'type' => 'banking',
+            'account_type' => 'direct',
+        ]);
+
+        // Create payout with fund_account_id that has "fa_" prefix
+        $payout = $this->fixtures->create('payout', [
+            'id' => '1000000payout',
+            'merchant_id' => '10000000000000',
+            'fund_account_id' => 'fa_DC66xJ6xbcOLqU', // Note: "fa_" prefix added
+            'balance_id' => $balance->getId(),
+            'amount' => 100000,
+            'currency' => 'INR',
+            'mode' => 'IMPS',
+            'status' => 'processed',
+            'utr' => 'TEST123456789',
+        ]);
+
+        // Test the enhanced core method
+        $core = new Payout\Core();
+        $result = $core->getSourceEventInfoForStatementEnrichment($payout);
+
+        // Verify enhanced data is included - the method should strip "fa_" prefix and find the fund account
+        $this->assertEquals('DC66xJ6xbcOLqU', $result[Payout\Constants::FUND_ACCOUNT_ID]);
+        $this->assertEquals($contact->getId(), $result[Payout\Constants::CONTACT_ID]);
+        $this->assertEquals('Test Contact', $result[Payout\Constants::NAME]);
+        $this->assertEquals('test@example.com', $result[Payout\Constants::EMAIL]);
+        $this->assertEquals('9876543210', $result[Payout\Constants::CONTACT]);
+    }
+
+    /**
+     * Test getSourceEventInfoForStatementEnrichment handles fund account ID without "fa_" prefix correctly
+     */
+    public function testGetSourceEventInfoForStatementEnrichmentHandlesNonFaPrefixCorrectly()
+    {
+        // Create test entities
+        $contact = $this->fixtures->create('contact', [
+            'id' => '1000000contact',
+            'name' => 'Test Contact',
+            'email' => 'test@example.com',
+            'contact' => '9876543210',
+            'merchant_id' => '10000000000000'
+        ]);
+
+        $fundAccount = $this->fixtures->create('fund_account', [
+            'id' => 'DC66xJ6xbcOLqU',
+            'merchant_id' => '10000000000000',
+            'source_type' => 'contact',
+            'source_id' => $contact->getId(),
+            'account_type' => 'bank_account',
+        ]);
+
+        $balance = $this->fixtures->create('balance', [
+            'id' => '1000000balance',
+            'merchant_id' => '10000000000000',
+            'type' => 'banking',
+            'account_type' => 'direct',
+        ]);
+
+        // Create payout with fund_account_id that does NOT have "fa_" prefix
+        $payout = $this->fixtures->create('payout', [
+            'id' => '1000000payout',
+            'merchant_id' => '10000000000000',
+            'fund_account_id' => 'DC66xJ6xbcOLqU', // Note: NO "fa_" prefix
+            'balance_id' => $balance->getId(),
+            'amount' => 100000,
+            'currency' => 'INR',
+            'mode' => 'IMPS',
+            'status' => 'processed',
+            'utr' => 'TEST123456789',
+        ]);
+
+        // Test the enhanced core method
+        $core = new Payout\Core();
+        $result = $core->getSourceEventInfoForStatementEnrichment($payout);
+
+        // Verify enhanced data is included - the method should use the ID as-is
+        $this->assertEquals('DC66xJ6xbcOLqU', $result[Payout\Constants::FUND_ACCOUNT_ID]);
+        $this->assertEquals($contact->getId(), $result[Payout\Constants::CONTACT_ID]);
+        $this->assertEquals('Test Contact', $result[Payout\Constants::NAME]);
+        $this->assertEquals('test@example.com', $result[Payout\Constants::EMAIL]);
+        $this->assertEquals('9876543210', $result[Payout\Constants::CONTACT]);
     }
 
     protected function tearDown(): void
