@@ -157,6 +157,7 @@ class Validator extends Base\Validator
     protected static $checkUserExistsRules = [
         Entity::CONTACT_MOBILE                  => 'required_without:email|max:15|contact_syntax',
         Entity::EMAIL                           => 'required_without:contact_mobile|email',
+        Entity::FINGERPRINT                     => 'sometimes|string'
     ];
 
     protected static $sendEmailOtpRules = [
