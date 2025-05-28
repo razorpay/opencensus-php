@@ -830,6 +830,8 @@ class Entity
 
     const PAYMENT_METHOD_TRANSFER = 'payment_method_transfer';
 
+    const AMAZON_PAYOUT = 'AMAZON.';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
