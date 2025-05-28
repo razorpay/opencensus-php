@@ -38,7 +38,6 @@ export const initializeE2EInfra = async () => {
     /**
      * @warning Remove this once the devstack changes are merged
      */
-    const tempKubeManifestRef = 'devstack/dashboard-shell-master';
 
     const payload = {
       workflow_name: process.env.ASSIGNED_ARGO_WORKFLOW_NAME,
@@ -46,7 +45,7 @@ export const initializeE2EInfra = async () => {
       commit_id: selfCommit,
       devstack_label: assigneddevstackLabel,
       repository,
-      kube_manifests_ref: tempKubeManifestRef,
+      kube_manifests_ref: 'master',
       author,
       self,
       dependencies,
