@@ -2207,11 +2207,22 @@ class Processor
                     ($order->getProductId() !== null and
                         ($order->getProductType() === ProductType::PAYMENT_LINK or
                             $order->getProductType() === ProductType::PAYMENT_LINK_V2))) {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "temporary_block_PL",
-                        'merchant_id' => $merchant->getId(),
-                    ]);
-                    return false;
+
+                    // this experiment is for testing payments link fix in offers engine
+                    // NOTE -> for code to come here, $result should be 'on' i.e. mid should be in the above offers experiment also
+                    $isPaymentLinkOfferEnabled = (new Payment\Service())->getSplitzExpResponse($merchant->getId(), 'app.cps-pl-offers-ramp-exp');
+                    if ($isPaymentLinkOfferEnabled === 'enable') {
+                        $this->trace->info(TraceCode::ROUTING_CARD_PAYMENT_WITH_OFFER_TO_REARCH, [
+                            'reason' => "enabled_payment_link_offer_via_splitz",
+                            'merchant_id' => $merchant->getId(),
+                        ]);
+                    } else {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => "temporary_block_PL",
+                            'merchant_id' => $merchant->getId(),
+                        ]);
+                        return false;
+                    }
                 }
 
                 if ((empty($order) === false) and ($order->isDiscountApplicable() === true)) {
