@@ -2,6 +2,7 @@
 
 namespace RZP\Listeners;
 
+use App;
 use Razorpay\Trace\Logger;
 use RZP\Constants;
 use RZP\Constants\Metric;
@@ -47,6 +48,7 @@ use RZP\Models\Merchant\Account\Entity as AccountEntity;
 use RZP\Models\Merchant\WebhookV2\Metric as WebhookMetric;
 use RZP\Models\Merchant\Detail as MerchantDetail;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\Decomp as MagicDecomp;
+use RZP\Services\Dcs\Features\Constants as DcsConstant;
 
 class ApiEventSubscriber extends Base\Core
 {
@@ -608,7 +610,15 @@ class ApiEventSubscriber extends Base\Core
 
         $this->dispatchEventToStork($payload);
 
-        if($payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        $features = $this->fetchRequiredDcsFeatureFlags($payment->getMerchantId());
+
+        if (empty($features)) {
+            $isOmniSingleStackEnabled = $payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK);
+        } else {
+            $isOmniSingleStackEnabled = in_array(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK, $features, true);
+        }
+
+        if($isOmniSingleStackEnabled !== true)
         {
             $this->dispatchEventToEzetapNotification($payload);
         }
@@ -798,7 +808,16 @@ class ApiEventSubscriber extends Base\Core
 
         $this->dispatchPaymentCaptureEvent($payment);
 
-        if($payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+
+        $features = $this->fetchRequiredDcsFeatureFlags($payment->getMerchantId());
+
+        if (empty($features)) {
+            $isOmniSingleStackEnabled = $payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK);
+        } else {
+            $isOmniSingleStackEnabled = in_array(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK, $features, true);
+        }
+
+        if($isOmniSingleStackEnabled !== true)
         {
             $this->dispatchEventToEzetapNotification($payload);
         }
@@ -1079,7 +1098,15 @@ class ApiEventSubscriber extends Base\Core
 
         $this->dispatchEventToStork($payload);
 
-        if($qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        $features = $this->fetchRequiredDcsFeatureFlags($qrCode->getMerchantId());
+
+        if (empty($features)) {
+            $isOmniSingleStackEnabled = $qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK);
+        } else {
+            $isOmniSingleStackEnabled = in_array(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK, $features, true);
+        }
+
+        if($isOmniSingleStackEnabled !== true)
         {
             $this->dispatchEventToEzetapNotification($payload);
         }
@@ -1098,17 +1125,72 @@ class ApiEventSubscriber extends Base\Core
 
         $gateway=$payment->getGateway();
 
-        if($qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        // Fetch required DCS feature flags before dispatching event
+        $features = $this->fetchRequiredDcsFeatureFlags($qrCode->getMerchantId());
+
+        if (empty($features)) {
+            $isOmniSingleStackEnabled = $qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK);
+        } else {
+            $isOmniSingleStackEnabled = in_array(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK, $features, true);
+        }
+
+
+        if($isOmniSingleStackEnabled !== true)
         {
             $this->dispatchEventToEzetapNotification($payload);
         }
 
-        if($this->checkIfGatewayEnabledToSendDeviceNotification($gateway) === true or $qrCode->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) === true)
+        if($this->checkIfGatewayEnabledToSendDeviceNotification($gateway) === true or $isOmniSingleStackEnabled === true)
         {
             $DevicePayload = $this->getQrCodePaymentPayloadForDevice($payment);
             $this->dispatchEventToEzetapDevice($DevicePayload);
         }
+    }
 
+    private function fetchRequiredDcsFeatureFlags($merchantId)
+    {
+        try
+        {
+
+            // List of feature flags needed for QR code processing
+            $featureNames = [
+                Feature\Constants::OMNI_SINGLE_STACK => "direct",
+                DcsConstant::OmniMerchantEnabled     => "direct"
+            ];
+
+            $dcs = App::getFacadeRoot()['dcs'];
+            $features = $dcs->fetchByEntityIdAndNamesViaProxy(
+                $merchantId,
+                $featureNames,
+                $this->getMode(),
+                Feature\Constants::MERCHANT,
+            );
+
+            $this->trace->info(
+                TraceCode::DCS_FEATURE_FLAGS_FETCHED,
+                [
+                    'event' => $this->event,
+                    'merchant_id' => $merchantId,
+                    'features' => $features
+                ]
+            );
+
+            return $features;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::DCS_FEATURE_FLAGS_FETCH_FAILED,
+                [
+                    'event' => $this->event,
+                    'merchant_id' => $merchantId ?? null,
+                ]
+            );
+        }
+
+        return [];
     }
 
     protected function onInvoicePartiallyPaid($payment)
@@ -1367,7 +1449,15 @@ class ApiEventSubscriber extends Base\Core
         $this->event = 'refund.created';
         $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
 
-        if($refund->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        $features = $this->fetchRequiredDcsFeatureFlags($refund->getMerchantId());
+
+        if (empty($features)) {
+            $isOmniSingleStackEnabled = $refund->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK);
+        } else {
+            $isOmniSingleStackEnabled = in_array(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK, $features, true);
+        }
+
+        if($isOmniSingleStackEnabled !== true)
         {
             $this->dispatchEventToEzetapNotification($payload);
         }
@@ -1379,7 +1469,15 @@ class ApiEventSubscriber extends Base\Core
         $this->event = 'refund.processed';
         $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
 
-        if($refund->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        $features = $this->fetchRequiredDcsFeatureFlags($refund->getMerchantId());
+
+        if (empty($features)) {
+            $isOmniSingleStackEnabled = $refund->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK);
+        } else {
+            $isOmniSingleStackEnabled = in_array(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK, $features, true);
+        }
+
+        if($isOmniSingleStackEnabled !== true)
         {
             $this->dispatchEventToEzetapNotification($payload);
         }
@@ -1391,7 +1489,15 @@ class ApiEventSubscriber extends Base\Core
         $this->event = 'refund.failed';
         $this->setContextForEntity($refund->getMerchantId(), 'payment', $refund->payment->getId());
 
-        if($refund->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK) !== true)
+        $features = $this->fetchRequiredDcsFeatureFlags($refund->getMerchantId());
+
+        if (empty($features)) {
+            $isOmniSingleStackEnabled = $refund->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK);
+        } else {
+            $isOmniSingleStackEnabled = in_array(\RZP\Models\Feature\Constants::OMNI_SINGLE_STACK, $features, true);
+        }
+
+        if($isOmniSingleStackEnabled !== true)
         {
             $this->dispatchEventToEzetapNotification($payload);
         }

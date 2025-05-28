@@ -13267,6 +13267,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_METHODS_DIFF_FOUND = 'PAYMENT_METHODS_DIFF_FOUND';
     const PAYMENT_METHODS_SERVICE_CALL_FAILED = 'PAYMENT_METHODS_SERVICE_CALL_FAILED';
 
+    const DCS_FEATURE_FLAGS_FETCHED = 'DCS_FEATURE_FLAGS_FETCHED';
+    const DCS_FEATURE_FLAGS_FETCH_FAILED = 'DCS_FEATURE_FLAGS_FETCH_FAILED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
