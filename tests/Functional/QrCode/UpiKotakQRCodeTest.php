@@ -137,7 +137,8 @@ class UpiKotakQRCodeTest extends TestCase
     public function testCreateDynamicKotakQrCode(): void
     {
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
         $this->createQrCode(
             [
@@ -220,7 +221,8 @@ class UpiKotakQRCodeTest extends TestCase
     public function testCloseKotakQrWithCloseQrOnDemandFlagEnabled(): void
     {
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
 
 //        $this->expectException(BadRequestException::class);
@@ -342,7 +344,8 @@ class UpiKotakQRCodeTest extends TestCase
     public function testQrPaymentOnDynamicQrCode()
     {
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
         $this->createQrCode(
             [
@@ -367,7 +370,8 @@ class UpiKotakQRCodeTest extends TestCase
     public function testQrPaymentOnIntentSubType()
     {
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
         $this->createQrCode(
             [
@@ -394,7 +398,8 @@ class UpiKotakQRCodeTest extends TestCase
     public function testQrPaymentOnInvalidQrCode()
     {
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
         $this->createQrCode(
             [
@@ -435,7 +440,8 @@ class UpiKotakQRCodeTest extends TestCase
     public function testMultipleQrPaymentsOnDynamicQrCode()
     {
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
         $this->createQrCode(
             [
@@ -464,7 +470,8 @@ class UpiKotakQRCodeTest extends TestCase
     public function testQrPaymentFailedCallback()
     {
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
         $this->createQrCode(
             [
@@ -511,7 +518,8 @@ class UpiKotakQRCodeTest extends TestCase
     public function testProcessKotakQrReconInternalWithoutPayment(): void
     {
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
         $this->createQrCode(
             [
@@ -546,7 +554,8 @@ class UpiKotakQRCodeTest extends TestCase
     public function testProcessKotakQrReconInternalWithExistingPayment(): void
     {
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
         $this->createQrCode(
             [
@@ -653,7 +662,8 @@ class UpiKotakQRCodeTest extends TestCase
     public function testCreateUpiQRWithOrgLogoFeatureFlagAndHDFCOrg()
     {
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
         $org = $this->createTestOrg();
 
@@ -696,7 +706,8 @@ class UpiKotakQRCodeTest extends TestCase
     public function testCreateUpiQRWithOrgLogoFeatureFlagAndkotakOrg()
     {
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
         $org = $this->createTestOrg('kotak', 'kotak');
 
@@ -739,7 +750,8 @@ class UpiKotakQRCodeTest extends TestCase
     public function testCreateUpiQRWithOrgLogoAndMerchantFeatureFlagAndkotakOrg()
     {
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
         $this->fixtures->merchant->addFeatures(['custom_merchant_upi_qr']);
 
@@ -783,7 +795,8 @@ class UpiKotakQRCodeTest extends TestCase
     public function testCreateUpiQRWithOrgLogoAndMerchantFeatureFlagAndHDFCOrg()
     {
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
         $this->fixtures->merchant->addFeatures(['custom_merchant_upi_qr']);
 
@@ -826,7 +839,8 @@ class UpiKotakQRCodeTest extends TestCase
     public function testCreateUpiQRWithOrgLogoAndOrgFeatureFlagAndkotakOrg()
     {
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
         $org = $this->createTestOrg('kotak', 'kotak');
 
@@ -874,7 +888,8 @@ class UpiKotakQRCodeTest extends TestCase
     public function testCreateUpiQRWithOrgLogoAndOrgFeatureFlagAndHDFCOrg()
     {
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
         $org = $this->createTestOrg();
 

@@ -118,7 +118,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
     }
 
     /**
@@ -263,7 +264,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -312,7 +314,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -367,7 +370,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -492,7 +496,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -543,7 +548,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -612,7 +618,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -685,7 +692,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -830,7 +838,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -910,7 +919,8 @@ class QrCodeStatusCheckTest extends TestCase
         $newCount = count($this->getDbEntities('qr_code', []));
         $this->assertEquals($previousCount + 1, $newCount);
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -982,7 +992,8 @@ class QrCodeStatusCheckTest extends TestCase
         $newCount = count($this->getDbEntities('qr_code', []));
         $this->assertEquals($previousCount + 1, $newCount);
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -1036,7 +1047,8 @@ class QrCodeStatusCheckTest extends TestCase
         $newCount = count($this->getDbEntities('qr_code'));
         $this->assertEquals($previousCount + 1, $newCount);
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -1080,7 +1092,8 @@ class QrCodeStatusCheckTest extends TestCase
         $newCount = count($this->getDbEntities('qr_code'));
         $this->assertEquals($previousCount + 1, $newCount);
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -1143,7 +1156,8 @@ class QrCodeStatusCheckTest extends TestCase
         $newCount = count($this->getDbEntities('qr_code', []));
         $this->assertEquals($previousCount + 1, $newCount);
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -1212,7 +1226,8 @@ class QrCodeStatusCheckTest extends TestCase
         $newCount = count($this->getDbEntities('qr_code', []));
         $this->assertEquals($previousCount + 1, $newCount);
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -1326,7 +1341,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         Queue::fake();
 
@@ -1568,7 +1584,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrPayment = $this->getLastEntity('qr_payment', true,'live');
         $upi = $this->getLastEntity('upi', true,'live');
@@ -1671,7 +1688,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         Queue::fake();
 
@@ -1834,7 +1852,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -1895,7 +1914,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -1957,7 +1977,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -2018,7 +2039,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -2229,7 +2251,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrPayment = $this->getLastEntity('qr_payment', true,'live');
         $upi = $this->getLastEntity('upi', true,'live');
@@ -2309,7 +2332,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         Queue::fake();
 
@@ -2442,7 +2466,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -2545,7 +2570,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -2648,7 +2674,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
@@ -2749,7 +2776,8 @@ class QrCodeStatusCheckTest extends TestCase
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals(1, $remindersCallCount);
+        // One call will be made to expire the qr and one call for status check
+        $this->assertEquals(2, $remindersCallCount);
 
         $qrCodeId = $qrCode['id'];
 
