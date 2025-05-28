@@ -288,6 +288,8 @@ class Entity
     // free payout migration - free payout supported modes - settings attributes
     const FREE_PAYOUT_SUPPORTED_MODES_CREATED_AT  = 'free_payout_supported_modes_created_at';
 
+    const Description                = 'description';
+
     //
     // Workflow Entities
     //

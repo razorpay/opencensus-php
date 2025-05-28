@@ -1303,6 +1303,8 @@ return array(
 
     'enable_rearch_card_recurring_initial_rupay'    =>env('ENABLE_REARCH_CARD_RECURRING_INITIAL_RUPAY'),
 
+    'enable_description_validation_for_merchant'    => env('ENABLE_DESCRIPTION_VALIDATION_FOR_MERCHANT'),
+
     'enable_rearch_card_recurring_flow_initial_mandatehq' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_INITIAL_MANDATEHQ'),
 
     'merchant_checkout_optimizer_affordability_emi_enabled_exp_id' => env('MERCHANT_CHECKOUT_OPTIMIZER_AFFORDABILITY_EMI_ENABLED_EXP_ID'),
