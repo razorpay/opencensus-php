@@ -127,17 +127,7 @@ class OffersEngine
 
         $this->config = $app['config']->get('applications.offers_engine');
 
-//        $this->mode = (isset($app['rzp.mode']) === true) ? $app['rzp.mode'] : Mode::LIVE;
-        $this->mode = Mode::LIVE;
-        
-        $app['trace']->trace(
-            TraceCode::MISC_TRACE_CODE,
-            [
-                'offer engine modes',
-                'before mode' => $app['rzp.mode'],
-                'after mode' => $this->mode,
-            ]
-        );
+        $this->mode = (isset($app['rzp.mode']) === true) ? $app['rzp.mode'] : Mode::LIVE;
 
         $this->baseUrl = $this->config['base_url'][$this->mode];
 
