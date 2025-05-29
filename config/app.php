@@ -1359,6 +1359,8 @@ return array(
 
     'cms_lazy_read_override_live_experiment_id' => env('CMS_LAZY_READ_OVERRIDE_LIVE_EXPERIMENT_ID'),
 
+    'cms_query_log_enable_experiment_id' => env('CMS_QUERY_LOG_ENABLE_EXPERIMENT_ID'),
+
     'stop_async_capture_card_gateways' => env('STOP_ASYNC_CAPTURE_CARD_GATEWAYS'),
 
     'read_token_iin_bin_service_primary' => env('READ_TOKEN_IIN_BIN_SERVICE_PRIMARY'),
