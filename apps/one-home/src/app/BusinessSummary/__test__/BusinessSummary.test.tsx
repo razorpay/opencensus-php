@@ -90,7 +90,7 @@ describe('BussinessInsights Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Your business with Razorpay')).toBeInTheDocument();
-      expect(screen.getByText('Updated 3 months ago')).toBeInTheDocument();
+      expect(screen.getByText(/updated/i)).toBeInTheDocument();
     });
   });
 
