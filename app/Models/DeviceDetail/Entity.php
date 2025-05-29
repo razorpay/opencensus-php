@@ -99,58 +99,86 @@ class Entity extends Base\PublicEntity
 
         $metaData = $this->getAttribute(self::METADATA);
 
-        $properties = [
-            'id'            => $this->getMerchantId(),
-            'experiment_id' => $app['config']->get('app.pgos_read_for_metadata_enabled'),
-        ];
-
-        $onboardingWorkflowDetailsCacheKey = sprintf('%s_%s', self::UDD_DECOMP_ONBOARDING_WORKFLOW_DETAILS_METADATA, $this->getMerchantId());
-        $onboardingDetails = $app['cache']->get($onboardingWorkflowDetailsCacheKey);
-        $app['trace']->info(TraceCode::ONBOARDING_WORKFLOW_DETAILS_FROM_CACHE, [
+        $readingWorkflowDetailsFromCache = false;
+        $readingWorkflowDetailsFromContext = false;
+        $onboardingDetails = $app['request.ctx.v2']->merchantOnboardingDetails ?? null;
+        $app['trace']->info(TraceCode::ONBOARDING_WORKFLOW_DETAILS_FROM_CONTEXT, [
             'onboarding_details' => $onboardingDetails,
         ]);
+        if (!empty($onboardingDetails) === true)
+        {
+            $readingWorkflowDetailsFromContext = true;
+        }
+
+        if (empty($onboardingDetails) === true)
+        {
+            $onboardingWorkflowDetailsCacheKey = sprintf('%s_%s', self::UDD_DECOMP_ONBOARDING_WORKFLOW_DETAILS_METADATA, $this->getMerchantId());
+            $onboardingDetails = $app['cache']->get($onboardingWorkflowDetailsCacheKey);
+            $app['trace']->info(TraceCode::ONBOARDING_WORKFLOW_DETAILS_FROM_CACHE, [
+                'onboarding_details' => $onboardingDetails,
+            ]);
+            $readingWorkflowDetailsFromCache = true;
+        }
+
 
         $isPGOSReadForMetadataEnabled = false;
         $onlinePgIndiaMerchantVersion = "";
-        $readingWorkflowDetailsFromCache = true;
+        $isPGEOToMOMerchant = false;
 
-        if (empty($onboardingDetails) === true) {
+        if (empty($onboardingDetails) === true)
+        {
+            $properties = [
+                'id'            => $this->getMerchantId(),
+                'experiment_id' => $app['config']->get('app.pgos_read_for_metadata_enabled'),
+            ];
             $isPGOSReadForMetadataEnabled = (new \RZP\Models\Merchant\Core())->isSplitzExperimentEnable($properties,'enable');
-            $onlinePgIndiaMerchantVersion = (new \RZP\Models\Merchant\Detail\Core())->getSplitzResponse($this->getMerchantId(), 'online_pg_india_merchant_version');
+            if ($isPGOSReadForMetadataEnabled === false)
+            {
+                $isPGEOToMOMerchant = (new \RZP\Models\Merchant\Detail\Core())->getSplitzResponse($this->getMerchantId(), 'online_pg_india_merchant_version') === self::MODULAR_WITHOUT_MKYC;
+            }
             $readingWorkflowDetailsFromCache = false;
 
-            $app['trace']->info(TraceCode::ONBOARDING_WORKFLOW_DETAILS_NOT_PRESENT_IN_CACHE, [
+            $app['trace']->info(TraceCode::ONBOARDING_WORKFLOW_DETAILS_NOT_PRESENT_IN_CACHE_OR_CONTEXT, [
                 'online_pg_india_merchant_version' => $onlinePgIndiaMerchantVersion,
                 'is_pgos_read_for_metadata_enabled' => $isPGOSReadForMetadataEnabled,
             ]);
         }
 
-        $shouldUsePGOSOnboardingDetails = $isPGOSReadForMetadataEnabled ||
-                                          $onlinePgIndiaMerchantVersion === self::MODULAR_WITHOUT_MKYC ||
-                                          !empty($onboardingDetails);
-
+        $shouldUsePGOSOnboardingDetails = $isPGOSReadForMetadataEnabled || $isPGEOToMOMerchant || !empty($onboardingDetails);
 
         if ($shouldUsePGOSOnboardingDetails && ($key === Constants::WORKFLOW_DETAILS || $key === Constants::SERVICE)) {
 
-            if (empty($onboardingDetails) === true) {
-                try {
+            try
+            {
+                if (empty($onboardingDetails))
+                {
                     $onboardingDetails = (new Core())->fetchOnboardingWorkflowDataFromPGOS($this->getMerchantId());
-
-                    // Todo: IMP :: Move to context based approach instead of saving data to cache before ramping up WORKFLOW SEGREGATION.
-                    // To be owned by workflow segregation / udd decomp project owners
-
-                    if (!empty($onboardingDetails) and !empty($onboardingDetails[Constants::WORKFLOW_DETAILS])) {
-                        $app['cache']->put($onboardingWorkflowDetailsCacheKey, $onboardingDetails, 3600);
-                        $app['trace']->info(TraceCode::SAVING_WOKFLOW_DETAILS_TO_CACHE, [
-                            'onboarding_details'           => $onboardingDetails,
-                        ]);
+                    if (!empty($onboardingDetails) === true)
+                    {
+                        if ($isPGOSReadForMetadataEnabled === true)
+                        {
+                            $app['request.ctx.v2']->merchantOnboardingDetails = $onboardingDetails;
+                            $app['trace']->info(TraceCode::SAVING_WOKFLOW_DETAILS_TO_CONTEXT, [
+                                'onboarding_details' => $onboardingDetails,
+                            ]);
+                        }
+                        if ($isPGEOToMOMerchant === true and !empty($onboardingDetails))
+                        {
+                            $app['cache']->put($onboardingWorkflowDetailsCacheKey, $onboardingDetails, 3600);
+                            $app['trace']->info(TraceCode::SAVING_WOKFLOW_DETAILS_TO_CACHE, [
+                                'onboarding_details' => $onboardingDetails,
+                            ]);
+                        }
                     }
-
-                } catch (\Throwable $e) {
-
-                    throw new ServerErrorException(PublicErrorDescription::SERVER_ERROR, ErrorCode::SERVER_ERROR);
-
                 }
+            }
+            catch (\Throwable $e)
+            {
+                $app['trace']->error(TraceCode::GET_WORKFLOW_DETAILS_FROM_PGOS_ERROR, [
+                    'error'  => $e->getMessage(),
+                    'trace_code' => $e->getTraceAsString(),
+                ]);
+                throw new ServerErrorException(PublicErrorDescription::SERVER_ERROR, ErrorCode::SERVER_ERROR);
             }
 
             if (!empty($onboardingDetails) && array_get($onboardingDetails, Constants::WORKFLOW_DETAILS_OWNER_SERVICE) === Constants::SERVICE_PGOS) {
@@ -176,6 +204,7 @@ class Entity extends Base\PublicEntity
 
                     $metaData[Constants::SERVICE] = Constants::SERVICE_PGOS;
 
+                    $fetchedFromOnboardingDetails = true;
                 }
 
             }
@@ -187,12 +216,14 @@ class Entity extends Base\PublicEntity
             'metaData'                        => $metaData,
             'fetchedFromOnboardingDetails'    => $fetchedFromOnboardingDetails,
             'readingWorkflowDetailsFromCache' => $readingWorkflowDetailsFromCache,
+            'fetchedFromRequestContext'       => $readingWorkflowDetailsFromContext,
         ]);
 
         $metricData = [
             'route' => $app['request.ctx']->getRoute(),
             'source' => $fetchedFromOnboardingDetails ? "onboarding_details" : "user_device_detail",
-            'key' => $key
+            'key' => $key,
+            'fetch_source' => $readingWorkflowDetailsFromContext ? 'context' : ($readingWorkflowDetailsFromCache ? 'cache' : 'default'),
         ];
 
         $app['trace']->count(Metric::FETCH_WORKFLOW_DETAILS_SUCCESS, $metricData);

@@ -22,6 +22,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\BankTransfer\Collectx\Processor\Factory;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\UpiTransfer\Entity as UpiTransferEntity;
 use RZP\Models\UpiTransfer\Service as UpiTransferService;
@@ -1845,6 +1846,8 @@ class Service extends Base\Service
                 ]);
             }
 
+            $this->core->sendSegmentEventIfApplicable($merchantId, BankTransferConstants::MONEYSAVER_ACTIVATED);
+
             return (new InternationalIntegration\Core)->fetchIntlVirtualBankAccountsForGateway($merchantId, Constants\Entity::CURRENCY_CLOUD);
         } catch (\Exception $ex)
         {
@@ -2205,7 +2208,7 @@ class Service extends Base\Service
 
         $limit = isset($input['limit']) ? $input['limit'] : 10;
 
-        $payments = $this->repo->payment->getPaymentsWithReferenceId(Constants\Entity::CURRENCY_CLOUD, Payment\Status::AUTHORIZED, $limit);
+        $payments = $this->core->fetchPaymentsToBeCaptured($limit);
 
         foreach ($payments as $payment) {
             try {
@@ -2227,9 +2230,7 @@ class Service extends Base\Service
                     ['type' => Address\Type::BILLING_ADDRESS]);
 
                 // Transfer_id which we get from CC is stored in Reference16 attribute
-                if ($payment->getReference16() != null or
-                    !$merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B) or
-                    ($addresses->isEmpty() === true)) {
+                if ($this->core->paymentInvalidForCapture($payment,$merchant,$addresses)) {
 
                     $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
                         'flow' => TraceCode::B2B_TRANSFER_COMPLETION_PENDING,
@@ -2606,6 +2607,8 @@ class Service extends Base\Service
 
         $payments = $this->core->createAndAuthorizePaymentForIntlBankTransfer($response['data'], $merchantId, $input);
 
+        $this->core->sendSegmentEventIfApplicable($merchantId, Payment\status::AUTHORIZED);
+
         return [
             'success' => 'true',
             'payment_ids' => array_pluck($payments, 'id'),
@@ -2646,7 +2649,7 @@ class Service extends Base\Service
         // merchants should add customer billing addresses before payments can be captured
         $addresses = $this->repo->address->fetchAddressesForEntity($payment,
             ['type' => Address\Type::BILLING_ADDRESS]);
-
+        
         if ($addresses->isEmpty() === true) {
 
             $this->trace->info(TraceCode::B2B_TRANSFER_COMPLETED_NOTIFICATION_PROCESSING_FAILURE, [
@@ -3137,6 +3140,10 @@ class Service extends Base\Service
         if ($this->app['env'] != Environment::TESTING) {
             $this->app['rzp.mode'] = Mode::LIVE;
         }
+
+        // Adding bank_transfer method and date range filter in query
+        $input['methods'] = [Method::BANK_TRANSFER];
+        $input['timestamp_filter'] = true;
 
         $payments = $this->repo->payment->getIntlBankTransferPayments( $input, Payment\Status::AUTHORIZED, Gateway::PING_PONG);
         $encryptionKey = $this->app['config']['app']['cross_border_handle']['aes_encryption_key'];

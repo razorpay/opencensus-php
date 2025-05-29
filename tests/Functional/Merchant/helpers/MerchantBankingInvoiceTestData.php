@@ -1404,7 +1404,7 @@ return [
             ],
             'seller_details' => [
                 'gstin' => '29AAGCR4375J1ZU',
-                'legal_name' => 'Razorpay Software Private Limited',
+                'legal_name' => 'Razorpay Software Limited (formerly Razorpay Software Pvt. Ltd.)',
                 'location' => 'Bangalore',
                 'pincode' => 560030,
                 'state_code' => '29',

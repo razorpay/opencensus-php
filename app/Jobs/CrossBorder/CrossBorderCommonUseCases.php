@@ -1008,15 +1008,23 @@ class CrossBorderCommonUseCases extends Job
 
     protected function sendActivatedSegmentEvent($merchant)
     {
-        $merchantDetails = $this->repo->merchant_detail->findOrFail($merchant->getId());
-        $properties = [
-            "u_em" => $merchantDetails->getContactEmail(),
-            "u_mb" => $merchantDetails->getContactMobile(),
-            "first_name" => $merchantDetails->getContactName(),
-            "merchant_type" => "cross_border_money_saver",
-        ];
-        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
-            $merchant, $properties, "Merchant Activated");
+        try {
+            $merchantDetails = $this->repo->merchant_detail->findOrFail($merchant->getId());
+            $properties = [
+                "u_em" => $merchantDetails->getContactEmail(),
+                "u_mb" => $merchantDetails->getContactMobile(),
+                "first_name" => $merchantDetails->getContactName(),
+                "merchant_type" => "cross_border_money_saver",
+            ];
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $properties, "Merchant Activated");
+            $this->app['segment-analytics']->buildRequestAndSend();
+        } catch (\Throwable $ex) {
+            $this->trace->error(TraceCode::CROSS_BORDER_MODULAR_MERCHANT_SEGMENT_EVENT_FAILED, [
+                'merchant_id' => $merchant->getId(),
+                'segment_error' => $ex->getMessage()
+            ]);
+        }
     }
 
     protected function zipFIRS()

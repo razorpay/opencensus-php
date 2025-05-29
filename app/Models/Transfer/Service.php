@@ -372,6 +372,32 @@ class Service extends Base\Service
                              ->transfer
                              ->findByPublicIdAndMerchant($id, $this->merchant);
 
+            $shouldSendToRouteService = false;
+
+            if ($transfer->isExternal())
+            {
+                if ($this->isReversalRearchExpEnabled($transfer->getMerchantId()))
+                {
+                    $shouldSendToRouteService = true;
+                }
+            }
+
+            if ($shouldSendToRouteService === true)
+            {
+                // make request to micro service
+                $resp = App::getFacadeRoot()['route']->createTransferReversal($input);
+
+                $this->trace->info(
+                    TraceCode::TRANSFER_REVERSAL_RESPONSE_VIA_ROUTE_SERVICE,
+                    [
+                        'input'      => $input,
+                        'response'   => $resp,
+                    ]
+                );
+
+                return $resp;
+            }
+
             $reversal = (new Reversal\Core)->reverseForTransferAndCustomerRefund($transfer, $input, $this->merchant, $this->merchant);
 
             (new Metric)->pushReversalSuccessMetrics();
@@ -413,6 +439,31 @@ class Service extends Base\Service
                 $transfer = $this->repo
                     ->transfer
                     ->fetchByPublicIdAndLinkedAccountMerchant($id, $this->merchant);
+            }
+
+            $shouldSendToRouteService = false;
+
+            if ($transfer->isRearch())
+            {
+                if ($this->isReversalRearchExpEnabled($transfer->getMerchantId()))
+                {
+                    $shouldSendToRouteService = true;
+                }
+
+                if ($shouldSendToRouteService === true) {
+                    // make request to micro service
+                    $resp = App::getFacadeRoot()['route']->createTransferReversal($input);
+
+                    $this->trace->info(
+                        TraceCode::TRANSFER_REVERSAL_RESPONSE_VIA_ROUTE_SERVICE,
+                        [
+                            'input' => $input,
+                            'response' => $resp,
+                        ]
+                    );
+
+                    return $resp;
+                }
             }
 
             $reversal = (new Reversal\Core)->linkedAccountReverseForTransfer($transfer, $input, $this->merchant);
@@ -2951,6 +3002,42 @@ class Service extends Base\Service
         }
     }
 
+    public function isReversalRearchExpEnabled(string $merchantId): bool
+    {
+        if ($this->mode === Mode::TEST && app()->runningUnitTests() === false)
+        {
+            return false;
+        }
+
+        try
+        {
+            $properties = [
+                'id'            => Base\UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.transfer_reversal_rearch_exp_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::TRANSFER_REVERSAL_REARCH_SPLITZ_EXP_RESULT, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.transfer_reversal_rearch_exp_id') ?? null
+            ]);
+
+            return false;
+        }
+    }
 
     public function isRouteTidbFetchExpEnabled(string $merchantId): bool
     {

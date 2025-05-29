@@ -101,8 +101,7 @@ class Core extends Base\Core
         // dual write only for below merchants
         // merchants for whom pgos is serving onboarding requests
         // merchants who are not completely activated
-        if ($merchant->getService() === MerchantConstants::PGOS and
-            $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
+        if ($merchant->getService() === MerchantConstants::PGOS)
         {
             $verification = (new Repository())->getDetailsForTypeAndIdentifier($data[Entity::MERCHANT_ID],
                                                                                $data[Entity::ARTEFACT_TYPE],

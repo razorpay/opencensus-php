@@ -5437,6 +5437,17 @@ GROUP BY
             ->get();
     }
 
+    public function getPaymentsWithOutInvoice($gateway, $status, $limit){
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::GATEWAY, $gateway)
+            ->status($status)
+            ->whereNull(Entity::REFERENCE2)
+            ->whereNull(Entity::REFERENCE16)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
     public function getPaymentsDuplicateReferenceId($gateway, $merchantId, $referenceId, $statuses, $from, $to)
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
@@ -5503,20 +5514,25 @@ GROUP BY
     {
         $limit = isset($input['limit']) ? $input['limit'] : 100;
 
-        $from = $input['from'] ?? Carbon::now(Timezone::IST)->subHours(24)->getTimestamp();
-        $to = $input['to'] ?? Carbon::now(Timezone::IST)->getTimestamp();
-
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->where(Entity::INTERNATIONAL, 1)
-            ->where(Entity::METHOD, Method::BANK_TRANSFER)
             ->where(Entity::GATEWAY, $gateway)
             ->where(Entity::STATUS, $status)
-            ->whereBetween(Entity::CREATED_AT, [$from, $to])
             ->orderBy(Entity::CREATED_AT, 'desc')
             ->limit($limit);
 
         if (isset($input['merchant_ids']) && sizeof($input['merchant_ids']) > 0) {
             $query = $query->whereIn(Entity::MERCHANT_ID, $input['merchant_ids']);
+        }
+
+        if (isset($input['methods']) && sizeof($input['methods']) > 0) {
+            $query = $query->whereIn(Entity::METHOD, $input['methods']);
+        }
+
+        if(isset($input['timestamp_filter'])){
+            $from = $input['from'] ?? Carbon::now(Timezone::IST)->subHours(24)->getTimestamp();
+            $to = $input['to'] ?? Carbon::now(Timezone::IST)->getTimestamp();
+            $query = $query->whereBetween(Entity::CREATED_AT, [$from, $to]);
         }
 
         return $query->get();

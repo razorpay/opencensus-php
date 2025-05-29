@@ -979,10 +979,6 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
             return new RZP\Models\Payment\Store\Api($app);
         });
-
-        $this->app->singleton('payment_methods_service', function ($app) {
-            return new \RZP\Models\Merchant\Methods\PaymentMethodsService();
-        });
     }
 
     protected function registerCacheManager()

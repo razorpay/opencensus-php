@@ -73,6 +73,7 @@ class QrCodeRefactorTest extends TestCase
             [
                 $this->config->get('app.qr_code_create_refactor_gateway') => 'on',
                 $this->config->get('app.qr_payment_refactor_gateway')=> 'on',
+                $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
             ]
         );
 
@@ -189,6 +190,239 @@ class QrCodeRefactorTest extends TestCase
         $this->assertEquals('upi_qr', $qrCode->getProvider());
         $this->assertEquals('single_use', $qrCode->getUsageType());
         $this->assertEquals('active', $qrCode->getStatus());
+
+        // This asserts that we are actually using the response from Mozart
+        $this->assertEquals('RandomQrString', $qrCode->getQrString());
+
+        // This asserts that calls are going to the mock Mozart layer properly
+        $this->assertEquals(1, $count);
+    }
+
+    public function testCreateQrCodeWithCloseByGreaterThanTwoHoursViaRefactorFlow()
+    {
+        // Set up mocks for splitz experiment
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'on',
+                $this->config->get('app.qr_payment_refactor_gateway')=> 'on',
+                $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'off',
+            ]
+        );
+
+        // These are used during assertions at the end of the test
+        $count = 0;
+
+        $this->mockMozartResponse(
+            count: $count
+        );
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 100,
+                'close_by' => now()->addHours(3)->getTimestamp(),
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->assertEquals(100, $qrCode->getAmount());
+        $this->assertEquals('LiveAccountMer', $qrCode->getMerchantId());
+        $this->assertEquals('upi_qr', $qrCode->getProvider());
+        $this->assertEquals('single_use', $qrCode->getUsageType());
+        $this->assertEquals('active', $qrCode->getStatus());
+        $this->assertGreaterThanOrEqual($qrCode->getCloseBy(), now()->addHours(2)->getTimestamp());
+
+        // This asserts that we are actually using the response from Mozart
+        $this->assertEquals('RandomQrString', $qrCode->getQrString());
+
+        // This asserts that calls are going to the mock Mozart layer properly
+        $this->assertEquals(1, $count);
+    }
+
+    public function testCreateQrCodeWithCloseByLessThanEqualToTwoHoursViaRefactorFlow()
+    {
+        // Set up mocks for splitz experiment
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'on',
+                $this->config->get('app.qr_payment_refactor_gateway')=> 'on',
+                $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'off',
+            ]
+        );
+
+        // These are used during assertions at the end of the test
+        $count = 0;
+
+        $this->mockMozartResponse(
+            count: $count
+        );
+
+        $closeByInput = now()->addHours(1)->getTimestamp();
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 100,
+                'close_by' => $closeByInput,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->assertEquals(100, $qrCode->getAmount());
+        $this->assertEquals('LiveAccountMer', $qrCode->getMerchantId());
+        $this->assertEquals('upi_qr', $qrCode->getProvider());
+        $this->assertEquals('single_use', $qrCode->getUsageType());
+        $this->assertEquals('active', $qrCode->getStatus());
+        $this->assertEquals($closeByInput, $qrCode->getCloseBy());
+
+        // This asserts that we are actually using the response from Mozart
+        $this->assertEquals('RandomQrString', $qrCode->getQrString());
+
+        // This asserts that calls are going to the mock Mozart layer properly
+        $this->assertEquals(1, $count);
+    }
+
+    public function testCreateQrCodeWithCloseByGreaterThanTwoHoursForExcludedMerchantsViaRefactorFlow()
+    {
+        // Set up mocks for splitz experiment
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'on',
+                $this->config->get('app.qr_payment_refactor_gateway')=> 'on',
+                $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
+            ]
+        );
+        // These are used during assertions at the end of the test
+        $count = 0;
+
+        $this->mockMozartResponse(
+            count: $count
+        );
+
+        $closeByInput = now()->addHours(3)->getTimestamp();
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 100,
+                'close_by' => $closeByInput,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->assertEquals(100, $qrCode->getAmount());
+        $this->assertEquals('LiveAccountMer', $qrCode->getMerchantId());
+        $this->assertEquals('upi_qr', $qrCode->getProvider());
+        $this->assertEquals('single_use', $qrCode->getUsageType());
+        $this->assertEquals('active', $qrCode->getStatus());
+        $this->assertEquals($closeByInput, $qrCode->getCloseBy());
+
+        // This asserts that we are actually using the response from Mozart
+        $this->assertEquals('RandomQrString', $qrCode->getQrString());
+
+        // This asserts that calls are going to the mock Mozart layer properly
+        $this->assertEquals(1, $count);
+    }
+
+    public function testCreateQrCodeWithCloseByNullForExcludedMerchantsViaRefactorFlow()
+    {
+        // Set up mocks for splitz experiment
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'on',
+                $this->config->get('app.qr_payment_refactor_gateway')=> 'on',
+                $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
+            ]
+        );
+
+        // These are used during assertions at the end of the test
+        $count = 0;
+
+        $this->mockMozartResponse(
+            count: $count
+        );
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 100,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->assertEquals(100, $qrCode->getAmount());
+        $this->assertEquals('LiveAccountMer', $qrCode->getMerchantId());
+        $this->assertEquals('upi_qr', $qrCode->getProvider());
+        $this->assertEquals('single_use', $qrCode->getUsageType());
+        $this->assertEquals('active', $qrCode->getStatus());
+        $this->assertEquals(null, $qrCode->getCloseBy());
+
+        // This asserts that we are actually using the response from Mozart
+        $this->assertEquals('RandomQrString', $qrCode->getQrString());
+
+        // This asserts that calls are going to the mock Mozart layer properly
+        $this->assertEquals(1, $count);
+    }
+
+    public function testCreateQrCodeWithCloseByNullViaRefactorFlow()
+    {
+        // Set up mocks for splitz experiment
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'on',
+                $this->config->get('app.qr_payment_refactor_gateway')=> 'on',
+                $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'off',
+            ]
+        );
+
+        // These are used during assertions at the end of the test
+        $count = 0;
+
+        $this->mockMozartResponse(
+            count: $count
+        );
+
+        $twoHoursFromNow = now()->addHours(2)->timestamp;
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 100,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->assertEquals(100, $qrCode->getAmount());
+        $this->assertEquals('LiveAccountMer', $qrCode->getMerchantId());
+        $this->assertEquals('upi_qr', $qrCode->getProvider());
+        $this->assertEquals('single_use', $qrCode->getUsageType());
+        $this->assertEquals('active', $qrCode->getStatus());
+        $this->assertGreaterThanOrEqual($twoHoursFromNow, $qrCode->getCloseBy());
 
         // This asserts that we are actually using the response from Mozart
         $this->assertEquals('RandomQrString', $qrCode->getQrString());

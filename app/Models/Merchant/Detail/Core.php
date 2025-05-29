@@ -5122,12 +5122,32 @@ class Core extends Base\Core
 
     public function getActivationStatusMappingForModularMerchants(): array
     {
+        $merchant = $this->app['basicauth']->getMerchant();
+        if (empty($merchant) === false)
+        {
+            $merchantId = $merchant->getId();
+            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
+            $workflowDetails = $userDeviceDetail ? $userDeviceDetail->getValueFromMetadata(DDConstants::WORKFLOW_DETAILS) : [];
+        }
+
         $allowedNextActivationStatusMap = Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_EDD_PENDING;
 
         if ($this->app['basicauth']->isAdminAuth() === true)
         {
             $allowedNextActivationStatusMap[Status::EDD_PENDING] = [];
         }
+
+        if (empty($workflowDetails) === false and
+            isset($workflowDetails[DetailConstants::PG_ONBOARDING_WORKFLOW_VERSION]) and
+            $workflowDetails[DetailConstants::PG_ONBOARDING_WORKFLOW_VERSION] === DetailConstants::MODULAR_VERSION_V2
+        )
+        {
+            $allowedNextActivationStatusMap = Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_FOR_EO_TO_MO_MERCHANTS;
+        }
+
+        $this->app->trace->info(TraceCode::ALLOWABLE_ACITVATION_STATUS_MAP_FOR_MODULAR_MERCHANT, [
+            'allowed_next_activation_status_map' => $allowedNextActivationStatusMap,
+        ]);
 
         return $allowedNextActivationStatusMap;
     }
@@ -12609,8 +12629,7 @@ class Core extends Base\Core
         // merchants for whom pgos is serving onboarding requests
         // merchants who are not completely activated
         if (($merchant->getService() === Merchant\Constants::PGOS or
-            array_intersect_key(array_flip($skipPGOSCheckForFields), $data)) and
-            $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
+            array_intersect_key(array_flip($skipPGOSCheckForFields), $data)))
             {
                 $merchantDetails = $this->repo->merchant_detail->getByMerchantId($data['merchant_id']);
 
