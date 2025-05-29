@@ -25,6 +25,7 @@ class Entity extends Base\PublicEntity
     const ROLE_NAME         = 'role_name';
     const DELETED_AT        = 'deleted_at';
     const PRODUCT           = 'product';
+    const MERCHANT_ID       =  'merchant_id';
 
     const INVITATIONTYPE = 'invitation_type';
     const INVITATION_DETAILS = 'invitation_details';
@@ -64,6 +65,7 @@ class Entity extends Base\PublicEntity
         self::PRODUCT,
         self::IS_DRAFT,
         self::METADATA,
+        self::MERCHANT_ID,
     ];
 
     protected $casts = [
