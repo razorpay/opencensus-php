@@ -254,7 +254,6 @@ class Base
         $code = $response[self::CODE];
         $body = $response[self::BODY];
 
-
         if ($code !== 200 && isset($body['details']))
         {
             $errorBody = $body['details'][0]['error'];

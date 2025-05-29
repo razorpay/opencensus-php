@@ -2395,6 +2395,23 @@ class Header
     const TOKEN_CONTINUITY_JUSPAY_MERCHANT_REFERENCE_ID = "juspay_merchant_reference_id";
     const TOKEN_CONTINUITY_TERMINAL_ID = "terminal_id";
 
+     // SMS Pay headers
+
+    const HDFC_SMS_MERCHANT_NAME     = 'MerchantName';
+    const HDFC_SMS_DBA_NAME          = 'DBAName';
+    const HDFC_SMS_ID                = 'HDFCID';
+    const HDFC_SMS_MCC_CODE          = 'MCCCode';
+    const HDFC_SMS_PG_LID            = 'PG_LID';
+    const HDFC_SMS_SCHEME_CODE       = 'Scheme Code';
+    const HDFC_SMS_ENCRYPTION_KEY    = 'Encry.Key';
+    const HDFC_SMS_ENCRYPTION_IV     = 'Encry.IV';
+    const HDFC_SMS_LOGIN_ID          = 'Login ID';
+    const HDFC_SMS_PASSWORD          = 'Password';
+    const HDFC_SMS_STATUS            = 'Status';
+    const HDFC_SMS_ERROR_CODE        = 'Error Code';
+    const HDFC_SMS_ERROR_DESCRIPTION = 'Error Description';
+    const HDFC_SMS_RAZORPAY_MID      = 'Razorpay MID';
+
 
     // mandatory headers for wallet account batch
     const MANDATORY_HEADERS_FOR_WALLET_ACCOUNTS = [
@@ -7860,6 +7877,38 @@ class Header
             ],
             self::OUTPUT => [],
         ],
+
+        Type::HDFC_SMS_PAY_ONBOARDING => [
+            self::INPUT => [
+                self::HDFC_SMS_MERCHANT_NAME,
+                self::HDFC_SMS_DBA_NAME,
+                self::HDFC_SMS_ID,
+                self::HDFC_SMS_MCC_CODE,
+                self::HDFC_SMS_PG_LID,
+                self::HDFC_SMS_SCHEME_CODE,
+                self::HDFC_SMS_ENCRYPTION_KEY,
+                self::HDFC_SMS_ENCRYPTION_IV,
+                self::HDFC_SMS_LOGIN_ID,
+                self::HDFC_SMS_PASSWORD,
+            ],
+            self::OUTPUT => [
+                self::HDFC_SMS_MERCHANT_NAME,
+                self::HDFC_SMS_DBA_NAME,
+                self::HDFC_SMS_ID,
+                self::HDFC_SMS_MCC_CODE,
+                self::HDFC_SMS_PG_LID,
+                self::HDFC_SMS_SCHEME_CODE,
+                self::HDFC_SMS_ENCRYPTION_KEY,
+                self::HDFC_SMS_ENCRYPTION_IV,
+                self::HDFC_SMS_LOGIN_ID,
+                self::HDFC_SMS_PASSWORD,
+                self::HDFC_SMS_STATUS,
+                self::HDFC_SMS_ERROR_CODE,
+                self::HDFC_SMS_ERROR_DESCRIPTION,
+                self::HDFC_SMS_RAZORPAY_MID,
+            ],
+        ],
+        
     ];
 
     /**
@@ -7888,6 +7937,8 @@ class Header
         self::FIELD14,
         self::FIELD15
     ];
+
+    
 
     /**
      * Validates headers of batch input file.

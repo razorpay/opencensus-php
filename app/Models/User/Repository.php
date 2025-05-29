@@ -149,10 +149,10 @@ class Repository extends Base\Repository
     /***
     It is for checking the uniqueness of the mobile number
      ***/
-    public function getUserFromMobile(string $mobile)
+    public function getUserFromMobile(array $mobileNumbers)
     {
         return $this->newQuery()
-            ->where(Entity::CONTACT_MOBILE, '=', $mobile)
+            ->whereIn(Entity::CONTACT_MOBILE, $mobileNumbers)
             ->first();
     }
 

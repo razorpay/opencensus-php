@@ -988,6 +988,11 @@ class Constants
     const ENABLE_B2B_EXPORT = 'enable_b2b_export';
 
     /**
+     * Enables Skipping of Invoices for B2B export transactions
+     */
+    const CB_SKIP_B2B_EXPORT_INVOICE = 'skip_b2b_export_invoice';
+
+    /**
      * Enabled Global Bank Account solution (Temporary)
      */
     const ENABLE_GLOBAL_ACCOUNT = 'enable_global_account';
@@ -3159,6 +3164,7 @@ class Constants
         self::INTER_ACCOUNT_TEST_PAYOUT                    => true,
         self::CART_API_AMOUNT_CHECK                        => true,
         self::ENABLE_B2B_EXPORT                            => true,
+        self::CB_SKIP_B2B_EXPORT_INVOICE                   => true,
         self::ENABLE_GLOBAL_ACCOUNT                        => true,
         self::ENABLE_INTL_BANK_TRANSFER                    => true,
         self::ENABLE_SETTLEMENT_FOR_B2B                    => true,
@@ -4967,6 +4973,11 @@ class Constants
             'feature' => self::HIDE_RX_PAYROLL_PAYOUTS,
             'display_name' => 'Feature flag to hide payroll payouts in payouts view',
             'documentation' => ''
+        ],
+        self::CB_SKIP_B2B_EXPORT_INVOICE => [
+            'feature'       => self::CB_SKIP_B2B_EXPORT_INVOICE,
+            'display_name'  => 'Feature to enable skipping of invoice for B2B Export Merchants',
+            'documentation' => '',
         ],
         self::ODS_MICROSERVICE => [
             'feature' => self::ODS_MICROSERVICE,

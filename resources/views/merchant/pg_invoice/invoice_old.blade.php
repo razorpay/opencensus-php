@@ -520,11 +520,13 @@ height:25.0pt;width:278pt'>&nbsp;</td>
 <td height=21 colspan=8 style='height:16.0pt;mso-ignore:colspan'></td>
 <td class=xl69 width=87 style='width:65pt'></td>
 </tr>
-<tr height=25 style='height:19.0pt'>
-<td height=25 class=xl79 colspan=2 style='height:19.0pt;mso-ignore:colspan'>Razorpay
-    Software Pvt Ltd</td>
-<td colspan=7 style='mso-ignore:colspan'></td>
-</tr>
+    <tr height=25 style='height:19.0pt'>
+        <td height=25 class=xl79 colspan=2 style='height:19.0pt;mso-ignore:colspan'>
+            Razorpay Software Limited.<br>(formerly Razorpay Software Pvt. Ltd.)
+        </td>
+        <td colspan=7 style='mso-ignore:colspan'></td>
+    </tr>
+
 <tr height=25 style='height:19.0pt'>
 <td height=25 class=xl79 colspan=2 style='height:19.0pt;mso-ignore:colspan'>PAN
     No.<span style='mso-spacerun:yes'>&nbsp; </span> - <code>AAGCR4375J</code></td>
@@ -564,11 +566,13 @@ height:25.0pt;width:278pt'>&nbsp;</td>
 <tr height=21 style='height:16.0pt'>
 <td height=21 colspan=9 style='height:16.0pt;mso-ignore:colspan'></td>
 </tr>
-<tr height=23 style='height:17.0pt'>
-<td height=23 style='height:17.0pt'></td>
-<td colspan=2 class=xl92>Razorpay Software Pvt. Ltd.</td>
-<td colspan=6 style='mso-ignore:colspan'></td>
-</tr>
+    <tr height=23 style='height:17.0pt'>
+        <td height=23 style='height:17.0pt'></td>
+        <td colspan=2 class=xl92>
+            Razorpay Software Limited<br>(formerly Razorpay Software Pvt. Ltd.)
+        </td>
+        <td colspan=6 style='mso-ignore:colspan'></td>
+    </tr>
 <tr height=21 style='mso-height-source:userset;height:16.0pt'>
 <td height=21 style='height:16.0pt'></td>
 <td colspan=2 rowspan=3 class=xl84 width=370 style='width:278pt'>
