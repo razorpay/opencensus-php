@@ -29,3 +29,7 @@ export const getIsRouteOndemandSettlementEnabled = (user: any) => {
 export const getIsSamedaySettlementEnabled = (user: any) => {
   return user.isAutomaticSettlementEnabled || user.isAutomaticSettlementRestricted;
 };
+
+export function getIsOdsMigrationEnabled(user: any) {
+  return user?.isOdsMigrationEnabled ?? false;
+}
