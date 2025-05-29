@@ -1699,6 +1699,7 @@ class Entity
         self::TRANSFER   => 'route',
         self::PAYMENT_METHOD_TRANSFER   => 'route',
         self::TRANSFER_PAYMENT => 'route',
+        self::REVERSAL => 'route',
         self::CARD_MANDATE => 'card.payments',
     ];
 
