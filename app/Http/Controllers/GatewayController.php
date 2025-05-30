@@ -2491,7 +2491,7 @@ class GatewayController extends Controller
             return null;
         }
 
-        if ($payment->isUpi() === false)
+        if ($payment->isUpi() === false && $payment->isBankTransfer() === false)
         {
             return null;
         }

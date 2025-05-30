@@ -99,39 +99,8 @@ class Service extends Base\Service
         $this->modifyRequestFromOldFormat($input);
 
         (new Validator)->validateDefaultCloseBy($input);
-
-        // Call optimizer service to select provider
-        $optimizerService = new \RZP\Services\OptimizerCore\Service();
-
-        // $response = [
-        //     "id" => "va_QXt2nb6hKNZP3s",
-        //     "name" => "Razorpay",
-        //     "entity" => "virtual_account",
-        //     "status" => "active",
-        //     "description" => null,
-        //     "amount_expected" => 100,
-        //     "notes" => [],
-        //     "amount_paid" => 0,
-        //     "customer_id" => null,
-        //     "receivers" => [
-        //         [
-        //             "id" => "ba_QXt2npNoJA0S2G",
-        //             "entity" => "bank_account",
-        //             "ifsc" => "UTIB000PAYU",
-        //             "bank_name" => "Axis Bank",
-        //             "name" => "PayU Test",
-        //             "notes" => [],
-        //             "account_number" => "403993715533966941"
-        //         ]
-        //     ],
-        //     "close_by" => null,
-        //     "closed_at" => null,
-        //     "created_at" => 1747897721
-        // ];
-
-        // return $response;
         
-        try 
+        try
         {
             $data = [
                 'amount' => $input['amount_expected'] ?? null,
@@ -140,64 +109,117 @@ class Service extends Base\Service
                 'method' => 'bank_transfer',
                 'merchant_id' => $this->merchant->getId(),
                 'description' => 'Virtual Account Payment',
-                'email' => 'anmol.bansal@razorpay.com',
-                'contact' => '919811051945',
-                'upi' => [
-                    'flow' => 'collect',
-                    'vpa' => '9811051945@rapl'
-                ],
+                'email' => $input['email'],
+                'contact' => $input['contact'],
                 'recurring' => 1
             ];
             $paymentResponse = $this->app['pg_router']->validateAndCreatePayment($data, true);
 
-            $this->trace->info(TraceCode::OPTIMIZER_SELECT_PROVIDER_RESPONSE, [
-                'response' => $paymentResponse
+            // $paymentResponse = [
+            //     "data" => [
+            //         "payment" => [
+            //             "status" => "created",
+            //             "id" => "QZYluEe71NQfPS",
+            //             "order_id" => "QYHMXzg8L8NOMM",
+            //             "created_at" => 1748263014,
+            //             "method" => "bank_transfer",
+            //             "gateway" => "payu",
+            //             "amount" => 104,
+            //             "fee" => 0,
+            //             "currency" => "INR",
+            //             "order_status" => "attempted",
+            //             "contact" => "919811051945",
+            //             "merchant_id" => "FjCOcHGBziO0Eu",
+            //             "cps_route" => 100,
+            //             "base_amount" => 104,
+            //             "terminal_id" => "QXuoKJbvk9hXtH",
+            //             "settled_by" => "payu",
+            //             "vpa" => "",
+            //             "email" => "anmol.bansal@razorpay.com",
+            //             "error_code" => "",
+            //             "error_description" => "",
+            //             "fee_bearer" => "FEE_BEARER_PLATFORM",
+            //             "notes" => [
+            //                 "key1" => "value3",
+            //                 "key2" => "value2",
+            //                 "optimizer_provider_name" => "payu_banktransfer"
+            //             ],
+            //             "description" => "Virtual Account Payment",
+            //             "updated_at" => 1748263018,
+            //             "tax" => 0,
+            //             "amount_authorized" => 104,
+            //             "amount_refunded" => 0,
+            //             "refund_status" => "",
+            //             "international" => false,
+            //             "reference1" => "403993715533989587",
+            //             "bank" => "",
+            //             "wallet" => "",
+            //             "amount_transferred" => 0,
+            //             "bank_transfer" => [
+            //                 "beneficiary_name" => "PayU Test",
+            //                 "beneficiary_account_number" => "403993715533989587",
+            //                 "beneficiary_ifsc" => "UTIB000PAYU",
+            //                 "beneficiary_bank_name" => "Axis Bank"
+            //             ]
+            //         ],
+            //         "upi" => [],
+            //         "meta" => [
+            //             "amount" => 104,
+            //             "currency" => "INR"
+            //         ],
+            //         "previous_status" => "created",
+            //         "bank_transfer" => [
+            //             "beneficiary_name" => "PayU Test",
+            //             "beneficiary_account_number" => "403993715533989587",
+            //             "beneficiary_ifsc" => "UTIB000PAYU",
+            //             "beneficiary_bank_name" => "Axis Bank"
+            //         ]
+            //     ],
+            //     "metadata" => []
+            // ];
+
+            $payment = $paymentResponse['data']['payment'];
+            $bankTransfer = $payment['bank_transfer'];
+
+            $this->trace->info(TraceCode::OPTIMIZER_BANK_TRANSFER_RESPONSE, [
+                'payment_id' => $payment['id'],
+                'bank_transfer' => $bankTransfer,
             ]);
 
-            $input['optimizer_bank_transfer'] = true;
-            $virtualAccount = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_SERVICE_CREATE], function() use($input, $customer, $order)
-            {
-                return $this->core->create($input, $this->merchant, $customer, $order);
-            });
+            $virtualAccount = [
+                'id' => $payment['id'],
+                'name' => 'Razorpay',
+                'entity' => 'virtual_account',
+                'status' => 'active',
+                'description' => null,
+                'amount_expected' => $payment['amount'],
+                'notes' => [],
+                'amount_paid' => 0,
+                'customer_id' => $customer->getId(),
+                'receivers' => [
+                    [
+                        'id' => $payment['id'],
+                        'entity' => 'bank_account',
+                        'ifsc' => $bankTransfer['beneficiary_ifsc'],
+                        'bank_name' => $bankTransfer['beneficiary_bank_name'],
+                        'name' => $bankTransfer['beneficiary_name'],
+                        'notes' => [],
+                        'account_number' => $bankTransfer['beneficiary_account_number'],
+                    ],
+                ],
+                'close_by' => null,
+                'closed_at' => null,
+                'created_at' => time()
+            ];
 
-            return $virtualAccount->toArrayPublic();
+            return $virtualAccount;
         }
         catch (\Throwable $e)
         {
-            $this->trace->error(TraceCode::OPTIMIZER_CORE_SERVICE_ERROR, [
+            $this->trace->error(TraceCode::OPTIMIZER_BANK_TRANSFER_ERROR, [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
-                'order' => $order->toArray(),
-                'input' => $input,
             ]);
-
-            $response = [
-                "id" => "va_QXt2nb6hKNZP3s",
-                "name" => "Razorpay",
-                "entity" => "virtual_account",
-                "status" => "active",
-                "description" => null,
-                "amount_expected" => 100,
-                "notes" => [],
-                "amount_paid" => 0,
-                "customer_id" => null,
-                "receivers" => [
-                    [
-                        "id" => "ba_QXt2npNoJA0S2G",
-                        "entity" => "bank_account",
-                        "ifsc" => "UTIB000PAYU",
-                        "bank_name" => "Axis Bank",
-                        "name" => "PayU Test",
-                        "notes" => [],
-                        "account_number" => "403993715533966941"
-                    ]
-                ],
-                "close_by" => null,
-                "closed_at" => null,
-                "created_at" => 1747897721
-            ];
-
-            return $response;
             
             // Continue with regular flow if optimizer service fails
         }
