@@ -468,6 +468,8 @@ return array(
 
     'apply_mutex_on_pgos_dual_write_experiment_id' => env('APPLY_MUTEX_ON_PGOS_DUAL_WRITE_EXPERIMENT_ID'),
 
+    'remove_verification_details_dual_write_on_merchant_details_and_stakeholder_experiment_id' => env('REMOVE_VERIFICATION_DETAILS_DUAL_WRITE_ON_MERCHANT_DETAILS_AND_STAKEHOLDER_EXPERIMENT_ID'),
+
     'workflow_wfg_proxying_experiment_id' => env('WORKFLOW_WFG_PROXYING_EXPERIMENT_ID'),
 
     'gift_cards_payments_via_pg_router_experiment_id' => env('GIFT_CARDS_PAYMENTS_VIA_PG_ROUTER_EXPERIMENT_ID'),
@@ -884,6 +886,8 @@ return array(
 
     'amp_merchant_to_under_review' => env('AMP_MERCHANT_TO_UNDER_REVIEW'),
 
+    'online_pg_india_merchant_version' => env('ONLINE_PG_INDIA_MERCHANT_VERSION'),
+
     'ignore_signature_error_exp_id' => env('IGNORE_SIGNATURE_ERROR_EXP_ID'),
 
     'nc_automation_activation_exp_id' => env('NC_AUTOMATION_ACTIVATION_EXP_ID'),
@@ -1201,6 +1205,8 @@ return array(
 
     'patch_transfer_rearch_exp_id' => env('PATCH_TRANSFER_REARCH_EXP_ID'),
 
+    'transfer_reversal_rearch_exp_id' => env('TRANSFER_REVERSAL_REARCH_EXP_ID'),
+
     'route_tidb_fetch_exp_id' => env('ROUTE_TIDB_FETCH_EXP_ID'),
 
     'amount_transferred_rearch_exp_id' => env('AMOUNT_TRANSFERRED_REARCH_EXP_ID'),
@@ -1281,6 +1287,10 @@ return array(
 
     'enable_rearch_card_recurring_initial_flow' => env('ENABLE_REARCH_CARD_RECURRING_INITIAL_FLOW'),
 
+    'enable_rearch_card_recurring_flow_with_limit' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_WITH_LIMIT'),
+
+    'enable_rearch_card_recurring_initial_flow_with_limit' => env('ENABLE_REARCH_CARD_RECURRING_INITIAL_FLOW_WITH_LIMIT'),
+
     'enable_rearch_card_recurring_flow_hub' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_HUB'),
 
     'enable_rearch_card_recurring_flow_route' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_ROUTE'),
@@ -1291,9 +1301,13 @@ return array(
 
     'enable_rearch_card_recurring_flow_hub_mandatehq' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_HUB_MANDATEHQ'),
 
-    'enable_rearch_card_recurring_flow_initial_mandatehq' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_INITIAL_MANDATEHQ'),
+    'enable_rearch_card_recurring_subsequent_rupay' => env('ENABLE_REARCH_CARD_RECURRING_SUBSEQUENT_RUPAY'),
 
-    'enable_rearch_card_recurring_flow_mandate_ts' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_MANDATE_TS'),
+    'enable_rearch_card_recurring_initial_rupay'    =>env('ENABLE_REARCH_CARD_RECURRING_INITIAL_RUPAY'),
+
+    'enable_description_validation_for_merchant'    => env('ENABLE_DESCRIPTION_VALIDATION_FOR_MERCHANT'),
+
+    'enable_rearch_card_recurring_flow_initial_mandatehq' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_INITIAL_MANDATEHQ'),
 
     'merchant_checkout_optimizer_affordability_emi_enabled_exp_id' => env('MERCHANT_CHECKOUT_OPTIMIZER_AFFORDABILITY_EMI_ENABLED_EXP_ID'),
 
@@ -1346,6 +1360,8 @@ return array(
     'cms_lazy_read_override_test_experiment_id' => env('CMS_LAZY_READ_OVERRIDE_TEST_EXPERIMENT_ID'),
 
     'cms_lazy_read_override_live_experiment_id' => env('CMS_LAZY_READ_OVERRIDE_LIVE_EXPERIMENT_ID'),
+
+    'cms_query_log_enable_experiment_id' => env('CMS_QUERY_LOG_ENABLE_EXPERIMENT_ID'),
 
     'stop_async_capture_card_gateways' => env('STOP_ASYNC_CAPTURE_CARD_GATEWAYS'),
 
@@ -1448,6 +1464,8 @@ return array(
 
     'cps_offers_rearch' => env('CPS_OFFERS_REARCH'),
 
+    'cps-pl-offers-ramp-exp' => env('CPS_PL_OFFERS_RAMP_EXP'),
+
     'emandate_pod_termination_reprocess_payment' => env('EMANDATE_POD_TERMINATION_REPROCESS_PAYMENT'),
 
     'DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED' => env('DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED'),
@@ -1476,4 +1494,5 @@ return array(
 
     'workflow_segregation_store_user_signup_state' => env('WORKFLOW_SEGREGATION_STORE_USER_SIGNUP_STATE'),
 
+    'merchant_with_qr_expiry_gt_2_hours' => env('MERCHANT_WITH_QR_EXPIRY_GT_2_HOURS'),
 );

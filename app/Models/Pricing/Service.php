@@ -93,7 +93,8 @@ class Service extends Base\Service
                     'max_fee' => 'int',
                     'amount_range_min' => 'int',
                     'amount_range_max' => 'int',
-                    'percent_rate_scale_factor' => 'int'
+                    'percent_rate_scale_factor' => 'int',
+                    'emi_duration' => 'string'
                 ] as $key => $type) {
                     if (isset($item[$key])) {
                         settype($item[$key], $type);

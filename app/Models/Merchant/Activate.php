@@ -3,14 +3,19 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
+use RZP\Exception\ServerErrorException;
+use \RZP\Models\Ledger\Constants as LedgerConstants;
 use Carbon\Carbon;
+use Ramsey\Uuid\Uuid;
 use RZP\Constants\Country;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Models\IdempotencyKey\Metric;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Models\Merchant\Detail\Validator;
 use RZP\Models\User\Role;
+use RZP\Services\Ledger as LedgerService;
 use RZP\Services\TerminalsService;
 use Throwable;
 use RZP\Exception;
@@ -203,14 +208,14 @@ class Activate extends Base\Core
         $merchantCore = new Core();
 
         $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
+      
+        $this->activateCrossBorderProductsIfApplicable($merchant);      
 
-        $this->activateCrossBorderProductsIfApplicable($merchant);
+        $balanceId = $this->updateLedger($merchant);
 
-        $merchantBalance = $merchantCore->createBalance($merchant, 'live');
+        $merchantBalance = $merchantCore->createBalance($merchant, 'live', $balanceId);
 
         $merchantCore->createBalanceConfig($merchantBalance, 'live');
-
-        $this->updateLedger($merchant);
 
         $phResponse = (new PaymentLink\Service)->createPaymentHandle($merchant->getPublicId());
 
@@ -282,15 +287,16 @@ class Activate extends Base\Core
                 $this->trace->info(TraceCode::BANK_ACCOUNT_CREATED);
             }
 
-            $merchantBalance = $merchantCore->createBalance($merchant, 'live');
+
+            $balanceId = $this->updateLedger($merchant);
+
+            $merchantBalance = $merchantCore->createBalance($merchant, 'live', $balanceId);
 
             $this->trace->info(TraceCode::MERCHANT_BALANCE_CREATED);
 
             $merchantCore->createBalanceConfig($merchantBalance, 'live');
 
             $this->trace->info(TraceCode::MERCHANT_BALANCE_CONFIG_CREATED);
-
-            $this->updateLedger($merchant);
 
             $this->repo->saveOrFail($merchant);
 
@@ -364,7 +370,9 @@ class Activate extends Base\Core
 
         $merchant->setActivationSource($originProduct);
 
-        $merchantBalance = (new Core)->createBalance($merchant, 'live');
+        $balanceId = $this->updateLedger($merchant);
+
+        $merchantBalance = (new Core)->createBalance($merchant, 'live', $balanceId);
 
         (new Core)->createBalanceConfig($merchantBalance, 'live');
 
@@ -551,10 +559,24 @@ class Activate extends Base\Core
 
     public function updateLedger(Entity $merchant)
     {
+        $ledgerService = $this->app['ledger'];
+
+        $merchantAccounts = $this->getMerchantAccounts($ledgerService,$merchant->getId());
+
+        $balanceId = (new LedgerOutboxCore())->getMerchantAccountId($merchantAccounts);
+
+        $this->trace->debug(TraceCode::MERCHANT_BALANCE_FETCHED_FROM_LEDGER, [
+            "balanceId" => $balanceId
+        ]);
+
+        if ($balanceId !== null) {
+            return $balanceId;
+        }
         if ($this->shouldOnboardToLedger($merchant) === true)
         {
-            $this->repo->transaction(function () use ($merchant) {
+            $balanceId = $this->repo->transaction(function () use ($merchant) {
                 // Create PG and ES ondemand account on ledger service
+                $balanceId = null;
                 $response = (new Feature\Service())->ledgerPGAccountCreateRequest($merchant);
 
                 if ($response[Constants::ACCOUNTS_CREATED_RESPONSE] === true and $response[Constants::ACCOUNTS_ES_ONDEMAND_CREATED_RESPONSE] === true and $merchant->isFeatureEnabled(Constants::PG_LEDGER_REVERSE_SHADOW) === false) {
@@ -573,6 +595,24 @@ class Activate extends Base\Core
                     ]);
                 }
 
+                if(empty($response[Constants::BALANCE_ID]) === false)
+                {
+                    $balanceId = $response[Constants::BALANCE_ID];
+                } else {
+
+                    $this->trace->debug(TraceCode::MERCHANT_BALANCE_ID_RETURNED_NULL_FROM_LEDGER, [
+                        "merchantId" => $merchant->getId(),
+                    ]);
+
+                    $this->trace->count(Merchant\Metric::EMPTY_BALANCE_ID_FROM_LEDGER, [
+                        'tenant'                => 'pg'
+                    ]);
+
+                    throw new ServerErrorException(
+                        'Balance Id returned null in account creation',
+                        ErrorCode::SERVER_ERROR);
+                }
+
                 $this->trace->info(TraceCode::LEDGER_ONBOARDING_PG_MERCHANT, [
                     "merchantId" => $merchant->getId(),
                     "response" => $response,
@@ -582,8 +622,39 @@ class Activate extends Base\Core
                 $merchantIdsArr = [$merchant->getId()];
 
                 (new Feature\Service())->invalidatePGRouterCachePostMerchantOnboarding($merchantIdsArr);
+
+                return $balanceId;
             });
         }
+        return $balanceId;
+    }
+
+    public function getMerchantAccounts($ledgerService, $merchantId): array
+    {
+        $accountPayload = $this->getAccountFetchPayload($merchantId);
+
+        $requestHeaders = [
+            LedgerService::LEDGER_TENANT_HEADER    => LedgerConstants::TENANT_PG,
+            LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()
+        ];
+
+        $response = $ledgerService->fetchAccountsByEntitiesAndMerchantID($accountPayload, $requestHeaders, true);
+
+        return $response['body']['accounts'] ?? [];
+    }
+
+    private function getAccountFetchPayload($merchantId) :array
+    {
+        return [
+            LedgerConstants::MERCHANT_ID => $merchantId,
+            Constants::ENTITIES => [
+                // PG Merchant Balance Account
+                [
+                    Constants::ACCOUNT_TYPE => [Constants::PAYABLE],
+                    Constants::FUND_ACCOUNT_TYPE => [Constants::MERCHANT_BALANCE]
+                ],
+            ],
+        ];
     }
 
     protected function shouldOnboardToLedger(Entity $merchant): bool
@@ -716,8 +787,10 @@ class Activate extends Base\Core
         //Will be added back when we test e2e flow for onboarding all the merchants
         //(new Core)->checkAndPushMessageToMetroForNetworkOnboard($merchant->getId());
 
+        $balanceId = $this->updateLedger($merchant);
+
         // Create the live mode balance entity for the merchant
-        $merchantBalance = (new Merchant\Core)->createBalance($merchant, Mode::LIVE);
+        $merchantBalance = (new Merchant\Core)->createBalance($merchant, Mode::LIVE, $balanceId);
 
         (new Merchant\Core)->createBalanceConfig($merchantBalance, Mode::LIVE);
 
@@ -1379,7 +1452,7 @@ class Activate extends Base\Core
      */
     private function sendTerminalCreationRequestForUPI($paymentMethod, $merchant, $action, $merchantGenre, $instrument): void
     {
-        if ((new MethodsCore())->isUPIPaymentMethodAllowed($merchant) === true && $this->shouldDispatchTerminalCreationEvent($merchant))
+        if ((((new MethodsCore())->isUPIPaymentMethodAllowed($merchant) === true) or ($merchant->org->isFeatureEnabled(Feature\Constants::UPI_DMO_FOR_VAS))) and ($this->shouldDispatchTerminalCreationEvent($merchant)))
         {
             $topic = env('PAYMENT_METHOD_ENABLE_KAFKA_TOPIC_NAME');
 

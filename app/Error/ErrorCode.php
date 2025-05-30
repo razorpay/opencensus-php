@@ -440,6 +440,7 @@ class ErrorCode
     const BAD_REQUEST_MANDATE_ALREADY_HONOURED                                       = 'BAD_REQUEST_MANDATE_ALREADY_HONOURED';
     const BAD_REQUEST_INVALID_DEBIT_DATE                                             = 'BAD_REQUEST_INVALID_DEBIT_DATE';
     const BAD_REQUEST_ATTEMPTS_EXCEEDED                                              = 'BAD_REQUEST_ATTEMPTS_EXCEEDED';
+    const BAD_REQUEST_TRANSACTION_RETRY_LIMIT_EXCEEDED                               = 'BAD_REQUEST_TRANSACTION_RETRY_LIMIT_EXCEEDED';
     const BAD_REQUEST_MANDATE_PROMISED_DEBIT_DATE_NOT_HONOURED                       = 'BAD_REQUEST_MANDATE_PROMISED_DEBIT_DATE_NOT_HONOURED';
     const BAD_REQUEST_MANDATE_PAUSED                                                 = 'BAD_REQUEST_MANDATE_PAUSED';
     const BAD_REQUEST_MANDATE_REVOKED                                                = 'BAD_REQUEST_MANDATE_REVOKED';

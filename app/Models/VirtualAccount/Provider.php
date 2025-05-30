@@ -196,7 +196,8 @@ class Provider
     const COLLECTX_BANK_TRANSFER_PROVIDER = [
         self::YESBANK,
         self::RBL,
-        self::AXIS
+        self::AXIS,
+        self::IDFC
     ];
 
     public static function getIFSC(bool $useCommonIfsc = false): array

@@ -11689,6 +11689,99 @@ You can now start accepting payments from https://www.example.com.
         $this->assertEquals('activated', $result[Detail\Entity::ACTIVATION_STATUS]);
     }
 
+    public function testDatalakeChangesHandleSubmitMerchantInternalForPosActivatedOrKqsNotLiveFix()
+    {
+        $datalakeQuery = "SELECT distinct m.id FROM realtime_prod_account_service.merchants m JOIN realtime_prod_pg_onboarding.onboarding_details od ON m.id = od.merchant_id LEFT JOIN realtime_hudi_api.tagging_tagged tt ON m.id = tt.taggable_id WHERE m.live = 0 AND m.hold_funds = 0 AND od.pos_activation_status in ('kyc_qualified_stb','activated')  AND od.signup_campaign in ('assisted_onboarding','easy_onboarding') AND ( tt.taggable_id IS NULL OR LOWER(tt.tag_name) NOT IN ('risk_review_suspend','risk_review_onhold','risk_review_disable_live','risk_review_watchlist','sc_risk_review_suspend','sc_risk_review_onhold','sc_risk_review_watchlist','sc_feature_blocked','ms_risk_review_suspend','ms_risk_review_onhold','ms_risk_review_disable_live','ms_risk_review_watchlist'))";
+        $app = App::getFacadeRoot();
+        $input = ['action' => 'POS_ACTIVATED_OR_KQS_NOT_LIVE_FIX'];
+
+        $merchant = $this->fixtures->create('merchant');
+        $mockReturnData = [
+            "succeeded_ids" => [],
+            "failed_ids" => ["10000000000001" => false, "10000000000002" => false],
+            "success_count" => 0,
+            "failed_count" => 2,
+        ];
+
+        $datalakeMock = Mockery::mock('RZP\Services\Mock\DataLakePresto')->makePartial();
+        $datalakeMock->shouldAllowMockingProtectedMethods();
+        $datalakeMock->shouldReceive('getDataFromDataLake')->with($datalakeQuery)->once()->andReturn([['id' => '10000000000001'],['id'=>'10000000000002']]);
+        $this->app['datalake.presto'] = $datalakeMock;
+
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+
+        $mockedCoreReflection = new \ReflectionClass($mockedCore);
+
+        $repoProperty = $mockedCoreReflection->getProperty('repo');
+        $repoProperty->setAccessible(true);
+        $repoProperty->setValue($mockedCore, $app['repo']);
+
+        $traceProperty = $mockedCoreReflection->getProperty('trace');
+        $traceProperty->setAccessible(true);
+        $traceProperty->setValue($mockedCore, $app['trace']);
+
+        $merchantDetailService = new Detail\Service($mockedCore);
+
+        $reflection = new \ReflectionClass(Detail\Service::class);
+
+        $method = $reflection->getMethod('handleSubmitMerchantInternal');
+        $method->setAccessible(true); // Allow access to private method
+        $result = $method->invoke($merchantDetailService, $merchant->getId(), $input);
+
+
+        $this->assertEquals($mockReturnData, $result);
+        $this->assertEquals(0, $result['success_count']);
+        $this->assertEquals(2, $result['failed_count']);
+    }
+
+    public function testRepoChangesHandleSubmitMerchantInternalForPosActivatedOrKqsNotLiveFix2()
+    {
+        $app = App::getFacadeRoot();
+        $input = ['action' => 'POS_ACTIVATED_OR_KQS_NOT_LIVE_FIX'];
+
+        $merchant = $this->fixtures->create('merchant');
+        $mockReturnData = [
+            "succeeded_ids" => ["10000000000001" => true, "10000000000002" => true],
+            "failed_ids" => [],
+            "success_count" => 2,
+            "failed_count" => 0,
+        ];
+
+        $mockedCore = \Mockery::mock('RZP\Models\Merchant\Detail\Core')->makePartial();
+        $mockedCore->shouldAllowMockingProtectedMethods();
+
+        $mockedCoreReflection = new \ReflectionClass($mockedCore);
+
+        $repoProperty = $mockedCoreReflection->getProperty('repo');
+        $repoProperty->setAccessible(true);
+
+        $repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app])->makePartial();
+        $merchantRepoMock =  Mockery::mock('\RZP\Models\Merchant\Repository');
+        $repoMock->shouldReceive('driver')->with('merchant')->andReturn($merchantRepoMock);
+        $merchantRepoMock->shouldReceive('findOrFailPublic')->andReturn($merchant);
+        $merchantRepoMock->shouldReceive('getPOSMerchantsWithActivatedOrKqsButNotLive')->andReturn(['10000000000001','10000000000002']);
+        $merchantRepoMock->shouldReceive('saveOrFail')->andReturn([]);
+        $repoProperty->setValue($mockedCore, $repoMock);
+
+        $traceProperty = $mockedCoreReflection->getProperty('trace');
+        $traceProperty->setAccessible(true);
+        $traceProperty->setValue($mockedCore, $app['trace']);
+
+        $merchantDetailService = new Detail\Service($mockedCore);
+
+        $reflection = new \ReflectionClass(Detail\Service::class);
+
+        $method = $reflection->getMethod('handleSubmitMerchantInternal');
+        $method->setAccessible(true); // Allow access to private method
+        $result = $method->invoke($merchantDetailService, $merchant->getId(), $input);
+
+
+        $this->assertEquals($mockReturnData, $result);
+        $this->assertEquals(2, $result['success_count']);
+        $this->assertEquals(0, $result['failed_count']);
+    }
+
     public function testUpdateBusinessWebsiteWorkflowReject()
     {
         Mail::fake();
@@ -14747,7 +14840,7 @@ We look forward to transacting with you!
             'msg' => 'invalid_inputs'
         ]));
     }
-  
+
     public function testUpdateFieldsForApiSubMerchantsPostActivation()
     {
         $attributes = [

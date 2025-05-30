@@ -32,6 +32,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Services\FTS\CreateAccount;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Constants\Metric as MetricConstant;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -1562,6 +1563,62 @@ class Core extends Base\Core
             $entity->contact->setIsPSPayout(true);
 
             return [true, $entity->toArrayPublic(), $entity];
+
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(
+                TraceCode::FUND_ACCOUNT_FETCH_FOR_PAYOUT_SERVICE_EXCEPTION,
+                [
+                    'error' => $ex->getMessage()
+                ]);
+        }
+
+        return [false, null, null];
+    }
+
+    /*
+     * Creating Separate Function For fetching Fund Account for Payouts Service as Duplicate
+     * Payout Evaluation and Prevention using same Flow
+     */
+    public function fetchFundAccountForPayoutService(string $merchantId, array $input): array
+    {
+        try {
+            if (isset($input[Payout\Entity::FUND_ACCOUNT_ID]) === false)
+            {
+                $this->trace->info(
+                    TraceCode::PAYOUT_SERVICE_REQUEST_FUND_ACCOUNT_ID_NOT_PRESENT,
+                    [
+                        'merchant_id'   => $merchantId,
+                    ]);
+                $this->trace->count(Payout\Metric::PAYOUTS_SERVICE_REQUEST_FUND_ACCOUNT_ID_MISSING, [
+                    MetricConstant::LABEL_MESSAGE => "Payouts Service request fund account id missing",
+
+                ]);
+                return [false, null, null];
+            }
+
+            $fundAccountId = $input[Payout\Entity::FUND_ACCOUNT_ID];
+
+            if ($this->merchant === null)
+            {
+                $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+            }
+
+            $entity = (new FundAccount\Repository)->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
+
+            $entity->load('contact');
+
+            $entity->setIsPSPayout(true);
+            $entity->contact->setIsPSPayout(true);
+
+            $fundAccount = $entity->toArray();
+            if ($fundAccount[BankAccount\Entity::ACCOUNT_TYPE] == FundAccount\Entity::BANK_ACCOUNT)
+            {
+                $fundAccount[FundAccount\Entity::ACCOUNT]['virtual'] = $entity->account->isVirtual();
+            }
+
+            return [true, $fundAccount, $entity];
 
         }
         catch (\Exception $ex)

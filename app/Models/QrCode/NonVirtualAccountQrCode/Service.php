@@ -48,7 +48,7 @@ class Service extends QrCode\Service
     ];
 
     public static $qrBharatQrStatusCheckGateways = [
-        Gateway::UPI_HDFCMINTOAK,
+        Gateway::HDFC_MINTOAK,
         Gateway::UPI_MINDGATE
     ];
 
@@ -89,6 +89,7 @@ class Service extends QrCode\Service
             $gateway = $qrCode->getGatewayFromQrString();
 
             $input[Entity::GATEWAY] = $gateway;
+
         }
         catch (\Exception $ex)
         {
@@ -408,17 +409,16 @@ class Service extends QrCode\Service
     protected function getInputForPartnerSqrCreate($input)
     {
 
-        if (isset($input['vpa']) === false)
+        if (isset($input['vpa']) === false and isset($input['tid']) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_VPA_DOESNT_EXIST);
         }
-
         $qrCreateReq = [
-                        'usage'        => 'multiple_use',
-                        'type'         => 'upi_qr',
-                        'fixed_amount' => false,
-                        'vpa'          => $input['vpa']
-         ];
+            'usage'        => 'multiple_use',
+            'type'         => 'upi_qr',
+            'fixed_amount' => false,
+            'vpa'          => $input['vpa'] ?? null,
+        ];
 
         $qrCreateReq[NonVAQrCodeEntity::REQUEST_SOURCE] = RequestSource::API;
 
@@ -726,6 +726,26 @@ class Service extends QrCode\Service
                 ]
             ];
         }
+        //check if the qr code is mapped to any device id and again trying to map to the same device id
+        if($qrCode->getDeviceId() !== null && $qrCode->getDeviceId() === $deviceId)
+        {
+            $this->trace->info(TraceCode::BAD_REQUEST_DUPLICATE_REQUEST, [
+                'message' => 'BAD_REQUEST_DUPLICATE_REQUEST',
+                'id'  => $id,
+            ]);
+
+            return [
+                "error"=>[
+                    "code"=>ErrorCode::BAD_REQUEST_DUPLICATE_REQUEST,
+                    "description"=>"QR Entity Mapping Device Duplicate Request",
+                    "source"=>"ezetap",
+                    "step"=>"qr_code_device_id_mapping",
+                    "reason"=>"entity_duplicate_request",
+                    "metadata"=>$input
+                ]
+            ];
+
+        }
 
         //check if the device id is already mapped to any qr code
         $qrCodeExists = (new Repository())->findByDeviceId($deviceId);
@@ -768,26 +788,6 @@ class Service extends QrCode\Service
             ];
         }
 
-        //check if the qr code is mapped to any device id and again trying to map to the same device id
-        if($qrCode->getDeviceId() === $deviceId)
-        {
-            $this->trace->info(TraceCode::BAD_REQUEST_DUPLICATE_REQUEST, [
-                'message' => 'BAD_REQUEST_DUPLICATE_REQUEST',
-                'id'  => $id,
-            ]);
-
-            return [
-                "error"=>[
-                    "code"=>ErrorCode::BAD_REQUEST_DUPLICATE_REQUEST,
-                    "description"=>"QR Entity Mapping Device Duplicate Request",
-                    "source"=>"ezetap",
-                    "step"=>"qr_code_device_id_mapping",
-                    "reason"=>"entity_duplicate_request",
-                    "metadata"=>$input
-                ]
-            ];
-
-        }
         return null;
     }
 

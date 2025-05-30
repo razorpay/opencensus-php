@@ -134,6 +134,8 @@ class UserRolesScope
                 Role::PARTNER_AGENT,
                 Role::RAZORPAY_SALES,
                 Role::ADMIN_READONLY,
+                Role::SELLERAPP_PLUS,
+                Role::AGENT,
             ], BankingRole::getAllRoles()),
             'merchant_edit_email_la'                => [Role::OWNER, Role::ADMIN],
             'merchant_create_key'                   => [Role::OWNER, Role::ADMIN],

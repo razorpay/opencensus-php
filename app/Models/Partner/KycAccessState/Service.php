@@ -10,6 +10,9 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Repository as MerchantRepo;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Merchant;
+use RZP\Models\User\Role;
 
 use RZP\Models\Merchant\MerchantApplications as MerchantApplications;
 class Service extends Base\Service
@@ -60,6 +63,9 @@ class Service extends Base\Service
             return $prtsResult['response'];
         }
         $subMerchantKycAccess = $this->core->confirmRequestForSubMerchantKyc($input, $partner);
+        $subMerchant = (new MerchantRepo())->getMerchant($input[Entity::ENTITY_ID]);
+        $merchantCore = new Merchant\Core();
+        $merchantCore->assignSubmerchantDashboardAccessIfApplicable($partner, $subMerchant,  (new MerchantApplications\Core())->getDefaultAppTypeForPartner($partner), Role::OWNER);  
         $this->checkParity($prtsResult, $subMerchantKycAccess->toArrayPublic());
         return $subMerchantKycAccess->toArrayPublic();
     }

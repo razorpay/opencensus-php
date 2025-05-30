@@ -12,6 +12,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use RZP\Models\Merchant\Methods\Entity as MethodsEntity;
 use RZP\Models\Merchant\Methods\PaymentMethodsService;
+use RZP\Models\Merchant\Methods\Metric;
+use RZP\Models\Base\UniqueIdEntity;
 
 class PaymentMethodsServiceTest extends TestCase
 {
@@ -400,5 +402,109 @@ class PaymentMethodsServiceTest extends TestCase
         $responseMock->body = $body;
 
         return $responseMock;
+    }
+
+    // --- Tests for saveMethods ---
+
+    public function testSaveMethods_Success()
+    {
+        $methodsEntity = new MethodsEntity(['merchant_id' => 'test_mid', 'id' => 'meth_test1']);
+        $options = ['key' => 'value'];
+        $expectedPath = '/v1/merchant/methods';
+        $expectedJsonPayload = json_encode($methodsEntity);
+
+        $this->servicePartialMock->shouldReceive('ProxyToMethodsService')
+            ->once()
+            ->with($expectedJsonPayload, 'POST', $expectedPath, $options)
+            ->andReturnNull(); // Simulate success
+
+        $result = $this->servicePartialMock->saveMethods($methodsEntity, $options);
+
+        $this->assertNull($result);
+    }
+
+    public function testSaveMethods_ProxyFails_ReturnsException()
+    {
+        $methodsEntity = new MethodsEntity(['merchant_id' => 'test_mid', 'id' => 'meth_test1']);
+        $options = [];
+        $proxyException = new Exception\IntegrationException('Proxy call failed');
+
+        $this->servicePartialMock->shouldReceive('ProxyToMethodsService')
+            ->once()
+            ->with(json_encode($methodsEntity), 'POST', '/v1/merchant/methods', $options)
+            ->andThrow($proxyException);
+
+        $this->expectException(Exception\IntegrationException::class);
+        $this->expectExceptionMessage('Proxy call failed');
+
+        $this->servicePartialMock->saveMethods($methodsEntity, $options);
+    }
+
+    public function testIsMethodServiceWriteEnabled_VariantOn_ReturnsTrue()
+    {
+        $experimentId = 'exp_write_xyz';
+        $this->configMock->shouldReceive('get')
+            ->with('applications.payment_methods_service.write_experiment')
+            ->once()
+            ->andReturn($experimentId);
+
+        $this->splitzServiceMock->shouldReceive('evaluateRequest')
+            ->once()
+            ->with(Mockery::on(function ($argument) use ($experimentId) {
+                return is_array($argument) &&
+                       isset($argument['experiment_id']) &&
+                       $argument['experiment_id'] === $experimentId &&
+                       isset($argument['id']);
+            }))
+            ->andReturn(['response' => ['variant' => ['name' => 'variant_on']]]);
+
+        $this->assertTrue($this->servicePartialMock->isMethodServiceWriteEnabled());
+    }
+
+    public function testIsMethodServiceWriteEnabled_VariantOff_ReturnsFalse()
+    {
+        $experimentId = 'exp_write_xyz';
+        $this->configMock->shouldReceive('get')
+            ->with('applications.payment_methods_service.write_experiment')
+            ->once()
+            ->andReturn($experimentId);
+
+        $this->splitzServiceMock->shouldReceive('evaluateRequest')
+            ->once()
+            ->andReturn(['response' => ['variant' => ['name' => 'variant_off']]]);
+
+        $this->assertFalse($this->servicePartialMock->isMethodServiceWriteEnabled());
+    }
+
+    public function testIsMethodServiceWriteEnabled_VariantControl_ReturnsFalse()
+    {
+        $experimentId = 'exp_write_xyz';
+        $this->configMock->shouldReceive('get')
+            ->with('applications.payment_methods_service.write_experiment')
+            ->once()
+            ->andReturn($experimentId);
+
+        $this->splitzServiceMock->shouldReceive('evaluateRequest')
+            ->once()
+            ->andReturn(['response' => ['variant' => ['name' => 'control']]]); // Default/control variant
+
+        $this->assertFalse($this->servicePartialMock->isMethodServiceWriteEnabled());
+    }
+
+    public function testIsMethodServiceWriteEnabled_SplitzThrowsException_ThrowsException()
+    {
+        $experimentId = 'exp_write_xyz';
+        $splitzException = new \RuntimeException('Splitz service exploded');
+
+        $this->configMock->shouldReceive('get')
+            ->with('applications.payment_methods_service.write_experiment')
+            ->once()
+            ->andReturn($experimentId);
+
+        $this->splitzServiceMock->shouldReceive('evaluateRequest')
+            ->once()
+            ->andThrow($splitzException);
+
+        $this->assertFalse($this->servicePartialMock->isMethodServiceWriteEnabled());
     }
 }
