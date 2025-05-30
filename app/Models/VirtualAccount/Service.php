@@ -102,117 +102,73 @@ class Service extends Base\Service
         
         try
         {
-            $data = [
-                'amount' => $input['amount_expected'] ?? null,
-                'currency' => $input['currency'] ?? 'INR',
-                'order_id' => $order ? $order->getId() : null,
-                'method' => 'bank_transfer',
+            $splitzResponse = $this->app['splitzService']->evaluateRequest([
+                'id'            => $order->getId(),
+                'experiment_id' => $this->app['config']->get('app.optimizer_bank_transfer_enable'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                    ]),
+            ]);
+    
+            $variant = $splitzResponse['response']['variant']['name'] ?? '';
+    
+            $this->trace->info(TraceCode::OPTIMIZER_BANK_TRANSFER_SPLITZ_RESPONSE, [
                 'merchant_id' => $this->merchant->getId(),
-                'description' => 'Virtual Account Payment',
-                'email' => $input['email'],
-                'contact' => $input['contact'],
-                'recurring' => 1
-            ];
-            $paymentResponse = $this->app['pg_router']->validateAndCreatePayment($data, true);
-
-            // $paymentResponse = [
-            //     "data" => [
-            //         "payment" => [
-            //             "status" => "created",
-            //             "id" => "QZYluEe71NQfPS",
-            //             "order_id" => "QYHMXzg8L8NOMM",
-            //             "created_at" => 1748263014,
-            //             "method" => "bank_transfer",
-            //             "gateway" => "payu",
-            //             "amount" => 104,
-            //             "fee" => 0,
-            //             "currency" => "INR",
-            //             "order_status" => "attempted",
-            //             "contact" => "919811051945",
-            //             "merchant_id" => "FjCOcHGBziO0Eu",
-            //             "cps_route" => 100,
-            //             "base_amount" => 104,
-            //             "terminal_id" => "QXuoKJbvk9hXtH",
-            //             "settled_by" => "payu",
-            //             "vpa" => "",
-            //             "email" => "anmol.bansal@razorpay.com",
-            //             "error_code" => "",
-            //             "error_description" => "",
-            //             "fee_bearer" => "FEE_BEARER_PLATFORM",
-            //             "notes" => [
-            //                 "key1" => "value3",
-            //                 "key2" => "value2",
-            //                 "optimizer_provider_name" => "payu_banktransfer"
-            //             ],
-            //             "description" => "Virtual Account Payment",
-            //             "updated_at" => 1748263018,
-            //             "tax" => 0,
-            //             "amount_authorized" => 104,
-            //             "amount_refunded" => 0,
-            //             "refund_status" => "",
-            //             "international" => false,
-            //             "reference1" => "403993715533989587",
-            //             "bank" => "",
-            //             "wallet" => "",
-            //             "amount_transferred" => 0,
-            //             "bank_transfer" => [
-            //                 "beneficiary_name" => "PayU Test",
-            //                 "beneficiary_account_number" => "403993715533989587",
-            //                 "beneficiary_ifsc" => "UTIB000PAYU",
-            //                 "beneficiary_bank_name" => "Axis Bank"
-            //             ]
-            //         ],
-            //         "upi" => [],
-            //         "meta" => [
-            //             "amount" => 104,
-            //             "currency" => "INR"
-            //         ],
-            //         "previous_status" => "created",
-            //         "bank_transfer" => [
-            //             "beneficiary_name" => "PayU Test",
-            //             "beneficiary_account_number" => "403993715533989587",
-            //             "beneficiary_ifsc" => "UTIB000PAYU",
-            //             "beneficiary_bank_name" => "Axis Bank"
-            //         ]
-            //     ],
-            //     "metadata" => []
-            // ];
-
-            $payment = $paymentResponse['data']['payment'];
-            $bankTransfer = $payment['bank_transfer'];
-
-            $this->trace->info(TraceCode::OPTIMIZER_BANK_TRANSFER_RESPONSE, [
-                'payment_id' => $payment['id'],
-                'bank_transfer' => $bankTransfer,
+                'response' => $splitzResponse,
             ]);
 
-            $virtualAccount = [
-                'id' => $payment['id'],
-                'name' => 'Razorpay',
-                'entity' => 'virtual_account',
-                'status' => 'active',
-                'description' => null,
-                'amount_expected' => $payment['amount'],
-                'notes' => [],
-                'amount_paid' => 0,
-                'customer_id' => $customer->getId(),
-                'receivers' => [
-                    [
-                        'id' => $payment['id'],
-                        'entity' => 'bank_account',
-                        'ifsc' => $bankTransfer['beneficiary_ifsc'],
-                        'bank_name' => $bankTransfer['beneficiary_bank_name'],
-                        'name' => $bankTransfer['beneficiary_name'],
-                        'notes' => [],
-                        'account_number' => $bankTransfer['beneficiary_account_number'],
-                    ],
-                ],
-                'close_by' => null,
-                'closed_at' => null,
-                'created_at' => time()
-            ];
+            // if variant is on, then sent request to pg-router and handle response
+            if ($variant === 'variant_on') {
+                $data = [
+                    'amount' => $input['amount_expected'] ?? null,
+                    'currency' => $input['currency'] ?? 'INR',
+                    'order_id' => $order ? $order->getId() : null,
+                    'method' => 'bank_transfer',
+                    'merchant_id' => $this->merchant->getId(),
+                    'description' => 'Virtual Account Payment',
+                    'email' => $input['email'],
+                    'contact' => $input['contact'],
+                    'recurring' => 1
+                ];
+                $paymentResponse = $this->app['pg_router']->validateAndCreatePayment($data, true);
 
-            return $virtualAccount;
+                $payment = $paymentResponse['data']['payment'];
+                $bankTransfer = $payment['bank_transfer'];
+
+                $this->trace->info(TraceCode::OPTIMIZER_BANK_TRANSFER_RESPONSE, [
+                    'payment_id' => $payment['id'],
+                    'bank_transfer' => $bankTransfer,
+                ]);
+
+                $virtualAccount = [
+                    'id' => $payment['id'],
+                    'name' => 'Razorpay',
+                    'entity' => 'virtual_account',
+                    'status' => 'active',
+                    'description' => null,
+                    'amount_expected' => $payment['amount'],
+                    'notes' => [],
+                    'amount_paid' => 0,
+                    'customer_id' => null,
+                    'receivers' => [
+                        [
+                            'id' => $payment['id'],
+                            'entity' => 'bank_account',
+                            'ifsc' => $bankTransfer['beneficiary_ifsc'],
+                            'bank_name' => $bankTransfer['beneficiary_bank_name'],
+                            'name' => $bankTransfer['beneficiary_name'],
+                            'notes' => [],
+                            'account_number' => $bankTransfer['beneficiary_account_number'],
+                        ],
+                    ],
+                    'close_by' => null,
+                    'closed_at' => null,
+                    'created_at' => time()
+                ];
+
+                return $virtualAccount;
+            }
         }
         catch (\Throwable $e)
         {
@@ -320,6 +276,9 @@ class Service extends Base\Service
                     Entity::ORDER_ID        => $order->getPublicId(),
                     Entity::AMOUNT_EXPECTED => $order->getAmountDue(),
                     Entity::NOTES           => $this->getNotesForMerchantOfflineChallan($input, $orderNotes),
+                    Entity::NAME            => $input['name'],
+                    Entity::EMAIL           => $input['email'],
+                    Entity::CONTACT         => $input['contact'],
                 ];
 
                 if ((isset($input[Entity::RECEIVERS]) === true) and
