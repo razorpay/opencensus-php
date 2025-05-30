@@ -6112,4 +6112,27 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
         ],
     ],
+
+    'testAddPricingPlanRuleWithInstalmentMethod' => [
+        'request' => [
+            'url' => '/pricing/{id}/rule',
+            'method' => 'POST',
+            'content' => [
+                'payment_method' => 'instalment',
+                'emi_duration' => 12,
+                'percent_rate' => 1000,
+                'fixed_rate' => 0,
+                'type' => 'pricing',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'payment_method' => 'instalment',
+                'emi_duration' => 12,
+                'percent_rate' => 1000,
+                'fixed_rate' => 0,
+                'type' => 'pricing',
+            ],
+        ],
+    ],
 ];
