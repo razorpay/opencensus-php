@@ -10239,7 +10239,7 @@ class Service extends Base\Service
         }
 
         else if ($merchant->isAggregatorPartner()) {
-            $isEnabled = (new Referral\Core())->isMKYCFlowEnabled($merchant->getId(), $this->app['config']->get('app.mkyc_aggregator_experiment_id'));
+            $isEnabled = (new Referral\Core())->isMKYCFlowEnabled($merchant->getId(), $this->app['config']->get('app.mkyc_aggregator_experiment_id'), 'mkyc_aggregator_flow_enabled');
         }
 
         return $isEnabled;
@@ -13825,7 +13825,9 @@ class Service extends Base\Service
         }
         */
 
-        $transformers = (new \RZP\Base\Transformer())->getTransformers($sqlBinLogData["table"]);
+        $merchantId = $sqlBinLogData['data']['merchant_id'] ?? $sqlBinLogData['data']['id'] ?? null;
+
+        $transformers = (new \RZP\Base\Transformer())->getTransformers($sqlBinLogData["table"], $merchantId);
 
         foreach ($transformers as $transformer)
         {

@@ -7,6 +7,7 @@ use Config;
 use DateTime;
 use DOMDocument;
 use Lib\PhoneBook;
+use Razorpay\Trace\Logger;
 use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Services\KafkaProducer;
@@ -104,6 +105,7 @@ use \RZP\Models\DeviceDetail\Attribution\Core as AttributionCore;
 use RZP\Models\Merchant\FreshdeskTicket\Entity as FDTicketEntity;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Http\Controllers\NeedsClarificationProxyController;
+use RZP\Http\Controllers\MerchantExperienceProxyController;
 use RZP\Models\Merchant\Invoice\Service as MerchantInvoiceService;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
@@ -160,6 +162,8 @@ class Service extends Base\Service
 
     protected MerchantOnboardingProxyController $pgosProxyController;
 
+    protected MerchantExperienceProxyController $mesProxyController;
+
     protected $config;
 
     protected bool $isGSTBvsSyncFlowSuccess = true;
@@ -181,6 +185,7 @@ class Service extends Base\Service
         $this->ba=$this->app['basicauth'];
 
         $this->pgosProxyController = new MerchantOnboardingProxyController();
+        $this->mesProxyController = new MerchantExperienceProxyController();
 
         $this->mutex = $this->app['api.mutex'];
 
@@ -770,6 +775,36 @@ class Service extends Base\Service
 
         $details = $service->getAdditionalDetailsFromASV($merchantId);
         $service->transitionToNextRekycStatus($merchantId, $details, $input['rekyc_status']);
+    }
+
+    /**
+     * Updates the merchant's self serve re-KYC status upon maker-checker workflow approval.
+     *
+     * @param array $input The input data containing the re-KYC status.
+     * @return bool
+     */
+    public function updateSelfServeReKYCStatus(array $input)
+    {
+        $updatedStatus = $input['rekyc_status'];
+
+        $merchantId = $this->merchant->getMerchantId();
+
+        $success = $this->mesProxyController->UpdateReKYCDetailSelfServeReKYCMerchant($merchantId, $updatedStatus);
+
+        if($success) {
+            $this->app['trace']->info(TraceCode::SELF_SERVE_REKYC_UPDATE_SUCCESS, [
+                'merchant_id' => $merchantId,
+                'status' =>$updatedStatus,
+                'success' => true
+            ]);
+        } else {
+            $this->app['trace']->info(TraceCode::SELF_SERVE_REKYC_UPDATE_FAILED, [
+                'merchant_id' => $merchantId,
+                'status' => $updatedStatus,
+                'success' => false
+            ]);
+        }
+        return $success;
     }
 
     /**
@@ -3237,7 +3272,8 @@ class Service extends Base\Service
             $mappingInput = [
                 'partner_id'     => $partnerId,
                 'source'         => PartnerConstants::REFERRAL,
-                'actual_product' => $actualReferralProduct ?? $referralProduct ?? Product::PRIMARY
+                'actual_product' => $actualReferralProduct ?? $referralProduct ?? Product::PRIMARY,
+                'referral_code'  => $input['referral_code']
             ];
 
             $this->applyPartnerSubMerchantMapping($subMerchant, $mappingInput, $referralProduct, $isSignUpFlow);
@@ -3365,7 +3401,12 @@ class Service extends Base\Service
         ];
 
         $merchantCore = new Merchant\Core;
-
+        $signUpSegmentProperties = [
+            'merchant_id' => $subMerchant->getId(),
+            'referral_code'  => $input['referral_code'],
+        ];
+        $this->app['segment-analytics']->pushTrackEvent($partner, $signUpSegmentProperties, SegmentEvent::SUBMERCHANT_SIGNUP);
+        $this->pushTotalSubmerchantSignUpCountToSegment($partner);
         $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
                                                  $partner, null,
                                                  $data);
@@ -3382,6 +3423,33 @@ class Service extends Base\Service
 
         $merchantCore->sendPartnerLeadInfoToSalesforce($subMerchant->getId(), $partner->getId(), $product);
     }
+
+
+    private function pushTotalSubmerchantSignUpCountToSegment($partner): void
+    {
+        try
+        {
+            $submerchantCount=$this->repo->merchant_access_map->getSubmerchantCount($partner->getId());
+            $segmentProperties=[
+                "total_submerchant_signed_up" => $submerchantCount
+            ];
+            $this->trace->info(TraceCode::SUBMERCHANT_SIGN_UP_COUNT,[
+                'partner_id' => $partner->getId(),
+                'submerchant_count' => $submerchantCount
+            ]);
+            $this->app['segment-analytics']->pushIdentifyEvent($partner,$segmentProperties);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->info(TraceCode::TOTAL_SUBMERCHANT_SIGNUP_EVENT_DISPATCH_FAILURE,[
+                'partnerId'=>$partner->getId()
+            ]);
+            $this->trace->traceException($exception,Logger::ERROR,TraceCode::TOTAL_SUBMERCHANT_SIGNUP_EVENT_DISPATCH_FAILURE,[
+                'partnerId'=>$partner->getId()
+            ]);
+        }
+    }
+
 
     /**
      * This function is used to get zapier data for activation
@@ -5500,12 +5568,14 @@ class Service extends Base\Service
         // due to following flow: onboarding_save (API) -> onboarding_save (PGOS) -> submit_merchant_internal (API),
         // it is possible that submit_merchant_internal throws an error due to mutex already acquired by onboarding_save
         // we are passing a boolean flow to skip mutex lock acquire.
-        if ($input[self::MUTEX_LOCK_ACQUIRED] === true)
+        if (isset($input[self::MUTEX_LOCK_ACQUIRED]) && $input[self::MUTEX_LOCK_ACQUIRED] === true)
         {
             $this->trace->info(TraceCode::MUTEX_ACQUIRE_SKIPPED_FOR_SUBMIT_MERCHANT_INTERNAL, [
                 'merchant_id'               => $merchantId,
                 'reason'                    => 'mutex acquired by onboarding_save',
             ]);
+
+            unset($input[self::MUTEX_LOCK_ACQUIRED]);
 
             return $this->handleSubmitMerchantInternal($merchantId, $input);
         }
@@ -5545,6 +5615,8 @@ class Service extends Base\Service
                 return  (new Merchant\Activate)->processActivatePosAndMarkKycVerifiedEvent($merchantId);
             case 'ACTIVATED_NOT_LIVE_FIX':
                 return $this->core->updateActivatedNotLiveMerchantsCron();
+            case 'POS_ACTIVATED_OR_KQS_NOT_LIVE_FIX':
+                return $this->core->updatePosActivatedOrKqsNotLiveMerchantsCron();
             case 'UPDATE_ACTIVATION_PROGRESS':
                 return $this->core->updateActivationProgressPGOSInternal($merchantId, $input);
             case 'UPDATE_ACTIVATION_MILESTONE':

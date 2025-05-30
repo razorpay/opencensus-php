@@ -78,7 +78,7 @@ class Validator extends Base\Validator
 
     protected static $vcppTokenPushRules = [
         'clientInformation'             => 'required',
-        'clientInformation.phoneNumber' => 'required|numeric|digits:10',
+        'clientInformation.phoneNumber' => 'required|string',
         'merchants'                     => 'required|array',
         'merchants.*.vPanEnrollmentId'  => 'required|string',
         'merchants.*.merchantId'        => 'required|string',
@@ -193,6 +193,7 @@ class Validator extends Base\Validator
     protected static $createOptimizerRecurringTokenNotesRules = [
         'mandate_id'       => 'required',
         'source'       => 'required',
+        'migrated_reference_id'       => 'sometimes',
     ];
 
 

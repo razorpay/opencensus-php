@@ -6,6 +6,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Mode;
 use RZP\Models\Base\PublicEntity;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity;
 use RZP\Constants\Metric;
 
 class RollbackEventListener
@@ -40,8 +41,7 @@ class RollbackEventListener
 
 
             if (($event->entity instanceof PublicEntity) === true
-                && in_array($event->entity?->getEntityName(), ["merchant", "merchant_detail"])
-                && $event->entity->getConnectionName() === Mode::LIVE) {
+                && in_array($event->entity?->getEntityName(), [Entity::MERCHANT, Entity::MERCHANT_DETAIL])) {
                 $event->entity->flushCache($event->entity->getEntityName() . '_' . $event->entity->getId());
             }
 

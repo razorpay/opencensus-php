@@ -34,7 +34,7 @@ class Service extends Base\Service
         $isLinkedAccount = $this->merchant->isLinkedAccount();
 
         $isOtpVerificationExperimentEnabled = empty($input[Entity::EMAIL]) === false ? $this->core()->isSplitzExperimentEnable($properties, 'enabled') : false;
-        
+
         if ($isLinkedAccount === false && ($this->auth->getProduct() === Product::BANKING || $isOtpVerificationExperimentEnabled))
         {
             (new Validator())->setStrictFalse()->validateInput(Validator::CREATE_INVITATION_VERIFY_OTP, $input);
@@ -170,7 +170,7 @@ class Service extends Base\Service
         // Fill default email/contact from user's session if available
         $input[Entity::EMAIL] = optional($user)->getEmail() ?? $input[Entity::EMAIL] ?? null;
         $input[Entity::CONTACT_MOBILE] = optional($user)->getContactMobile() ?? $input[Entity::CONTACT_MOBILE] ?? null;
-        
+
         // Validate including user's session email/mobile
         (new Entity)->getValidator()->setStrictFalse()->validateInput(Validator::ACCEPT_REJECT_INVITATION, $input);
 
@@ -179,12 +179,12 @@ class Service extends Base\Service
         {
             $invitation = $this->repo->invitation->findByIdAndEmailNullable($inviteId, $input[Entity::EMAIL]);
         }
-        
+
         // Find by contact mobile if invitation not found
         if (empty($invitation) === true and empty($input[Entity::CONTACT_MOBILE]) === false){
             $invitation = $this->repo->invitation->findByIdAndContactMobile($inviteId, $input[Entity::CONTACT_MOBILE]);
         }
-        
+
         // Throw no records found exception if invitation not found by both contact and email
         if (empty($invitation) === true)
         {

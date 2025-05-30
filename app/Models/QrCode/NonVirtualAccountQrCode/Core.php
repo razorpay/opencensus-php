@@ -86,6 +86,8 @@ class Core extends QrCode\Core
 
         $qrCode->source()->associate($order);
 
+        $qrCode->modifyCloseByIfApplicable();
+
         $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE_BUILD_QR_CODE], function () use ($terminal, $qrCode) {
             return $this->build($qrCode, $terminal);
         });
@@ -95,6 +97,53 @@ class Core extends QrCode\Core
 
         return $qrCode;
 
+    }
+
+    /**
+     * Evaluate the Splitz experiment for setting QR's CLOSE_BY to max of 2 hours post Qr creation
+     *
+     * @param $merchantId
+     * @return bool True if merchant_id present in splitz file, else False
+     */
+    public function evaluateSplitzExperimentForSettingQrCloseBy($merchantId): bool {
+        try {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app->config->get('app.merchant_with_qr_expiry_gt_2_hours'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+            $response   = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->app->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'merchant_id'   => $merchantId,
+                'response'     => $response
+            ]);
+
+
+            $qrVariant = false; // Default Value
+            $variables = $response['response']['variant']['variables'] ?? [];
+            foreach ($variables as $variable) {
+                $key = $variable['key'] ?? '';
+                $value = $variable['value'] ?? '';
+                if ($key === 'result' && $value === 'on') {
+                    $qrVariant = true;
+                    break; // Stop looping once the condition is met
+                }
+            }
+
+            return $qrVariant;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SET_QR_CLOSE_BY_SPLITZ_FAILURE
+            );
+        }
+
+        return true;
     }
 
     public function createTerminalForSingleStack(array $input)

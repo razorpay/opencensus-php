@@ -2380,6 +2380,52 @@ class Header
     const DEVICE_TO_QR_UNMAPPING_FROM_QR = "UnmapFromQR";
     const DEVICE_TO_QR_UNMAPPING_USER_ID = "UnmapFromUserID";
 
+    // constants for hdfc bank acquired terminal onboarding
+    const HDFC_TERMINAL_TID = "TID";
+    const HDFC_TERMINAL_MERCHANT = "Merchant";
+    const HDFC_TERMINAL_BRANCH = "Branch";
+    const HDFC_TERMINAL_ME_NAME = "ME NAME";
+    const HDFC_TERMINAL_DBA_NAME = "DBA NAME";
+    const HDFC_TERMINAL_OLD_MECODE = "Old MECODE";
+    const HDFC_TERMINAL_OLD_TID = "OLD TID";
+    const HDFC_TERMINAL_TID_TYPE = "TID Type (POS/PG)";
+    const HDFC_TERMINAL_PROMO_CODE = "PROMO CODE";
+    const HDFC_TERMINAL_ADDRESS = "Address";
+    const HDFC_TERMINAL_CITY = "City";
+    const HDFC_TERMINAL_PIN = "PIN";
+    const HDFC_TERMINAL_STATE_NAME = "STATE NAME";
+    const HDFC_TERMINAL_TOP_100_MERCHANTS = "Top 100 Merchants (Y / N)";
+    const HDFC_TERMINAL_PRIORITY_FOR_PLUTUS_EDC_INSTALLATION_OPS_RELEASE = "Priority for Plutus EDC installation/ops release";
+    const HDFC_TERMINAL_NEW_EMI_TID_TID_ = "New EMI TID TID ";
+    const HDFC_TERMINAL_NEW_ME_CODE = "New ME Code";
+    const HDFC_TERMINAL_DATE_OF_NEW_TID_SETUP = "Date of New TID setup";
+    const HDFC_TERMINAL_TENURE = "Tenure";
+    const HDFC_TERMINAL_MDR_ = "MDR ";
+    const HDFC_TERMINAL_MERCHANT_PAYBACK_PERCENTAGE = "Merchant Payback %";
+    const HDFC_TERMINAL_MERCHANT_PAYBACK_PERCENTAGE_ = "Merchant Payback % ";
+    const HDFC_TERMINAL_ROI = "ROI";
+    const HDFC_TERMINAL_ADVANCE_EMI_NEW = "Advance EMI New";
+    const HDFC_TERMINAL_PROC_FEE_NEW = "Proc Fee New";
+    const HDFC_TERMINAL_MCC = "MCC";
+    const HDFC_TERMINAL_LG_CODE = "LG CODE";
+    const HDFC_TERMINAL_LC_CLODE = "LC CLODE";
+    const HDFC_TERMINAL_INST_FEES = "INST FEES";
+    const HDFC_TERMINAL_PIN_LABS_SERIAL_NO = "PIN LABS SERIAL NO";
+    const HDFC_TERMINAL_INPUTER_NAME = "INPUTER NAME";
+    const HDFC_TERMINAL_BRAND_EMI_SUBVENTION_ENABLED = "Brand EMI subvention enabled? Y/N";
+    const HDFC_TERMINAL_BRAND_NAME = "Brand Name";
+    const HDFC_TERMINAL_EMAIL_ID = "email id";
+    const HDFC_TERMINAL_PROMO_CDOE = "PROMO CDOE";
+    const HDFC_TERMINAL_UPDATED_IN_FILE_ = "UPDATED IN FILE ";
+    const HDFC_TERMINAL_PARENT_MECODE = "PARENT MECODE";
+    const HDFC_TERMINAL_PARENT_TID = "PARENT TID";
+    const HDFC_TERMINAL_DEVICE_ID = "DEVICE ID";
+    const HDFC_TERMINAL_NEW_TID = "NEW TID";
+    const HDFC_TERMINAL_NEW_MID = "NEW MID";
+    const HDFC_TERMINAL_SUCCESS = "SUCCESS";
+    const HDFC_TERMINAL_ERROR_CODE = "Error Code";
+    const HDFC_TERMINAL_ERROR_DESCRIPTION = "Error Description";
+  
     // Headers for token continuity
     const TOKEN_CONTINUITY_JUSPAY_CUSTOMER_ID = "juspay_customer_id";
     const TOKEN_CONTINUITY_JUSPAY_MERCHANT_ID = "juspay_merchant_id";
@@ -2395,6 +2441,22 @@ class Header
     const TOKEN_CONTINUITY_JUSPAY_MERCHANT_REFERENCE_ID = "juspay_merchant_reference_id";
     const TOKEN_CONTINUITY_TERMINAL_ID = "terminal_id";
 
+     // SMS Pay headers
+
+    const HDFC_SMS_MERCHANT_NAME     = 'MerchantName';
+    const HDFC_SMS_DBA_NAME          = 'DBAName';
+    const HDFC_SMS_ID                = 'HDFCID';
+    const HDFC_SMS_MCC_CODE          = 'MCCCode';
+    const HDFC_SMS_PG_LID            = 'PG_LID';
+    const HDFC_SMS_SCHEME_CODE       = 'Scheme Code';
+    const HDFC_SMS_ENCRYPTION_KEY    = 'Encry.Key';
+    const HDFC_SMS_ENCRYPTION_IV     = 'Encry.IV';
+    const HDFC_SMS_LOGIN_ID          = 'Login ID';
+    const HDFC_SMS_PASSWORD          = 'Password';
+    const HDFC_SMS_STATUS            = 'Status';
+    const HDFC_SMS_ERROR_CODE        = 'Error Code';
+    const HDFC_SMS_ERROR_DESCRIPTION = 'Error Description';
+    const HDFC_SMS_RAZORPAY_MID      = 'Razorpay MID';
 
     // mandatory headers for wallet account batch
     const MANDATORY_HEADERS_FOR_WALLET_ACCOUNTS = [
@@ -7715,6 +7777,60 @@ class Header
             ],
         ],
 
+        Type::HDFC_BANK_ACQUIRED_TERMINAL_ONBOARDING => [
+            self::INPUT => [
+                self::HDFC_TERMINAL_TID,
+                self::HDFC_TERMINAL_MERCHANT,
+                self::HDFC_TERMINAL_BRANCH,
+                self::HDFC_TERMINAL_ME_NAME,
+                self::HDFC_TERMINAL_DBA_NAME,
+                self::HDFC_TERMINAL_OLD_MECODE,
+                self::HDFC_TERMINAL_OLD_TID,
+                self::HDFC_TERMINAL_TID_TYPE,
+                self::HDFC_TERMINAL_PROMO_CODE,
+                self::HDFC_TERMINAL_ADDRESS,
+                self::HDFC_TERMINAL_CITY,
+                self::HDFC_TERMINAL_PIN,
+                self::HDFC_TERMINAL_STATE_NAME,
+                self::HDFC_TERMINAL_TOP_100_MERCHANTS,
+                self::HDFC_TERMINAL_PRIORITY_FOR_PLUTUS_EDC_INSTALLATION_OPS_RELEASE,
+                self::HDFC_TERMINAL_NEW_EMI_TID_TID_,
+                self::HDFC_TERMINAL_NEW_ME_CODE,
+                self::HDFC_TERMINAL_DATE_OF_NEW_TID_SETUP,
+                self::HDFC_TERMINAL_TENURE,
+                self::HDFC_TERMINAL_MDR_,
+                self::HDFC_TERMINAL_MERCHANT_PAYBACK_PERCENTAGE,
+                self::HDFC_TERMINAL_MERCHANT_PAYBACK_PERCENTAGE_,
+                self::HDFC_TERMINAL_ROI,
+                self::HDFC_TERMINAL_ADVANCE_EMI_NEW,
+                self::HDFC_TERMINAL_PROC_FEE_NEW,
+                self::HDFC_TERMINAL_MCC,
+                self::HDFC_TERMINAL_LG_CODE,
+                self::HDFC_TERMINAL_LC_CLODE,
+                self::HDFC_TERMINAL_INST_FEES,
+                self::HDFC_TERMINAL_PIN_LABS_SERIAL_NO,
+                self::HDFC_TERMINAL_INPUTER_NAME,
+                self::HDFC_TERMINAL_BRAND_EMI_SUBVENTION_ENABLED,
+                self::HDFC_TERMINAL_BRAND_NAME,
+                self::HDFC_TERMINAL_EMAIL_ID,
+                self::HDFC_TERMINAL_PROMO_CDOE,
+                self::HDFC_TERMINAL_UPDATED_IN_FILE_,
+                self::HDFC_TERMINAL_PARENT_MECODE,
+                self::HDFC_TERMINAL_PARENT_TID,
+                self::HDFC_TERMINAL_DEVICE_ID
+            ],
+            self::OUTPUT => [
+                self::HDFC_TERMINAL_OLD_TID,
+                self::HDFC_TERMINAL_NEW_TID,
+                self::HDFC_TERMINAL_NEW_MID,
+                self::HDFC_TERMINAL_TENURE,
+                self::HDFC_TERMINAL_DEVICE_ID,
+                self::HDFC_TERMINAL_SUCCESS,
+                self::HDFC_TERMINAL_ERROR_CODE,
+                self::HDFC_TERMINAL_ERROR_DESCRIPTION,
+            ],
+        ],
+
         Type::UPDATE_ODS_MERCHANT_LIMITS => [
             self::INPUT => [
                 self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MERCHANT_ID,
@@ -7860,6 +7976,38 @@ class Header
             ],
             self::OUTPUT => [],
         ],
+
+        Type::HDFC_SMS_PAY_ONBOARDING => [
+            self::INPUT => [
+                self::HDFC_SMS_MERCHANT_NAME,
+                self::HDFC_SMS_DBA_NAME,
+                self::HDFC_SMS_ID,
+                self::HDFC_SMS_MCC_CODE,
+                self::HDFC_SMS_PG_LID,
+                self::HDFC_SMS_SCHEME_CODE,
+                self::HDFC_SMS_ENCRYPTION_KEY,
+                self::HDFC_SMS_ENCRYPTION_IV,
+                self::HDFC_SMS_LOGIN_ID,
+                self::HDFC_SMS_PASSWORD,
+            ],
+            self::OUTPUT => [
+                self::HDFC_SMS_MERCHANT_NAME,
+                self::HDFC_SMS_DBA_NAME,
+                self::HDFC_SMS_ID,
+                self::HDFC_SMS_MCC_CODE,
+                self::HDFC_SMS_PG_LID,
+                self::HDFC_SMS_SCHEME_CODE,
+                self::HDFC_SMS_ENCRYPTION_KEY,
+                self::HDFC_SMS_ENCRYPTION_IV,
+                self::HDFC_SMS_LOGIN_ID,
+                self::HDFC_SMS_PASSWORD,
+                self::HDFC_SMS_STATUS,
+                self::HDFC_SMS_ERROR_CODE,
+                self::HDFC_SMS_ERROR_DESCRIPTION,
+                self::HDFC_SMS_RAZORPAY_MID,
+            ],
+        ],
+        
     ];
 
     /**
@@ -7888,6 +8036,8 @@ class Header
         self::FIELD14,
         self::FIELD15
     ];
+
+    
 
     /**
      * Validates headers of batch input file.
