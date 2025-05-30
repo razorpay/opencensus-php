@@ -22,7 +22,7 @@ class Service
         ],
         self::FETCH_PROVIDER  => [
             self::PATH   => '/v1/provider/'
-        ],
+        ]
     ];
 
     public function __construct($app = null)

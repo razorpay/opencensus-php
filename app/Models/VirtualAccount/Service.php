@@ -320,9 +320,6 @@ class Service extends Base\Service
                     Entity::ORDER_ID        => $order->getPublicId(),
                     Entity::AMOUNT_EXPECTED => $order->getAmountDue(),
                     Entity::NOTES           => $this->getNotesForMerchantOfflineChallan($input, $orderNotes),
-                    Entity::NAME            => $input['name'],
-                    Entity::EMAIL           => $input['email'],
-                    Entity::CONTACT         => $input['contact'],
                 ];
 
                 if ((isset($input[Entity::RECEIVERS]) === true) and
@@ -1854,7 +1851,7 @@ class Service extends Base\Service
 
         $response = $this->checkOfflineChallanForBankRequest($input,$response,$offlineChallan);
 
-     //   $virtualAccount = $this->repo->virtual_account->fetchByOfflineId($offlineChallan['id']);*/
+     //   $virtualAccount = $this->repo->virtual_account->fetchByOfflineId($offlineChallan['id']);
 
         $virtualAccount = $this->repo->virtual_account->find($offlineChallan['virtual_account_id']);
 

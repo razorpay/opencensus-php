@@ -112,11 +112,6 @@ class Core extends Base\Core
             throw $e;
         }
 
-        if($input['optimizer_bank_transfer'] === true)
-        {
-            return $virtualAccount;
-        }
-
         $this->dispatchForRiskCheck($virtualAccount);
 
         (new Metric)->pushCreateSuccessMetrics($input);
