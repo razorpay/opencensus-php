@@ -100,84 +100,87 @@ class Service extends Base\Service
 
         (new Validator)->validateDefaultCloseBy($input);
         
-        try
+        if ($this->merchant->isFeatureEnabled(FeatureConstants::RAAS) === true)
         {
-            $splitzResponse = $this->app['splitzService']->evaluateRequest([
-                'id'            => $order->getId(),
-                'experiment_id' => $this->app['config']->get('app.optimizer_bank_transfer_enable'),
-                'request_data'  => json_encode(
-                    [
-                        'merchant_id' => $this->merchant->getId(),
-                    ]),
-            ]);
-    
-            $variant = $splitzResponse['response']['variant']['name'] ?? '';
-    
-            $this->trace->info(TraceCode::OPTIMIZER_BANK_TRANSFER_SPLITZ_RESPONSE, [
-                'merchant_id' => $this->merchant->getId(),
-                'response' => $splitzResponse,
-            ]);
-
-            // if variant is on, then sent request to pg-router and handle response
-            if ($variant === 'variant_on') {
-                $data = [
-                    'amount' => $input['amount_expected'] ?? null,
-                    'currency' => $input['currency'] ?? 'INR',
-                    'order_id' => $order ? $order->getId() : null,
-                    'method' => 'bank_transfer',
+            try
+            {
+                $splitzResponse = $this->app['splitzService']->evaluateRequest([
+                    'id'            => $order->getId(),
+                    'experiment_id' => $this->app['config']->get('app.optimizer_bank_transfer_enable'),
+                    'request_data'  => json_encode(
+                        [
+                            'merchant_id' => $this->merchant->getId(),
+                        ]),
+                ]);
+        
+                $variant = $splitzResponse['response']['variant']['name'] ?? '';
+        
+                $this->trace->info(TraceCode::OPTIMIZER_BANK_TRANSFER_SPLITZ_RESPONSE, [
                     'merchant_id' => $this->merchant->getId(),
-                    'description' => 'Virtual Account Payment',
-                    'email' => $input['email'],
-                    'contact' => $input['contact'],
-                    'recurring' => 1
-                ];
-                $paymentResponse = $this->app['pg_router']->validateAndCreatePayment($data, true);
-
-                $payment = $paymentResponse['data']['payment'];
-                $bankTransfer = $payment['bank_transfer'];
-
-                $this->trace->info(TraceCode::OPTIMIZER_BANK_TRANSFER_RESPONSE, [
-                    'payment_id' => $payment['id'],
-                    'bank_transfer' => $bankTransfer,
+                    'response' => $splitzResponse,
                 ]);
 
-                $virtualAccount = [
-                    'id' => $payment['id'],
-                    'name' => 'Razorpay',
-                    'entity' => 'virtual_account',
-                    'status' => 'active',
-                    'description' => null,
-                    'amount_expected' => $payment['amount'],
-                    'notes' => [],
-                    'amount_paid' => 0,
-                    'customer_id' => null,
-                    'receivers' => [
-                        [
-                            'id' => $payment['id'],
-                            'entity' => 'bank_account',
-                            'ifsc' => $bankTransfer['beneficiary_ifsc'],
-                            'bank_name' => $bankTransfer['beneficiary_bank_name'],
-                            'name' => $bankTransfer['beneficiary_name'],
-                            'notes' => [],
-                            'account_number' => $bankTransfer['beneficiary_account_number'],
-                        ],
-                    ],
-                    'close_by' => null,
-                    'closed_at' => null,
-                    'created_at' => time()
-                ];
+                // if variant is on, then sent request to pg-router and handle response
+                if ($variant === 'variant_on') {
+                    $data = [
+                        'amount' => $input['amount_expected'] ?? null,
+                        'currency' => $input['currency'] ?? 'INR',
+                        'order_id' => $order ? $order->getId() : null,
+                        'method' => 'bank_transfer',
+                        'merchant_id' => $this->merchant->getId(),
+                        'description' => 'Virtual Account Payment',
+                        'email' => $input['email'],
+                        'contact' => $input['contact'],
+                        'recurring' => 1
+                    ];
+                    $paymentResponse = $this->app['pg_router']->validateAndCreatePayment($data, true);
 
-                return $virtualAccount;
+                    $payment = $paymentResponse['data']['payment'];
+                    $bankTransfer = $payment['bank_transfer'];
+
+                    $this->trace->info(TraceCode::OPTIMIZER_BANK_TRANSFER_RESPONSE, [
+                        'payment_id' => $payment['id'],
+                        'bank_transfer' => $bankTransfer,
+                    ]);
+
+                    $virtualAccount = [
+                        'id' => $payment['id'],
+                        'name' => 'Razorpay',
+                        'entity' => 'virtual_account',
+                        'status' => 'active',
+                        'description' => null,
+                        'amount_expected' => $payment['amount'],
+                        'notes' => [],
+                        'amount_paid' => 0,
+                        'customer_id' => null,
+                        'receivers' => [
+                            [
+                                'id' => $payment['id'],
+                                'entity' => 'bank_account',
+                                'ifsc' => $bankTransfer['beneficiary_ifsc'],
+                                'bank_name' => $bankTransfer['beneficiary_bank_name'],
+                                'name' => $bankTransfer['beneficiary_name'],
+                                'notes' => [],
+                                'account_number' => $bankTransfer['beneficiary_account_number'],
+                            ],
+                        ],
+                        'close_by' => null,
+                        'closed_at' => null,
+                        'created_at' => time()
+                    ];
+
+                    return $virtualAccount;
+                }
             }
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->error(TraceCode::OPTIMIZER_BANK_TRANSFER_ERROR, [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-            
-            // Continue with regular flow if optimizer service fails
+            catch (\Throwable $e)
+            {
+                $this->trace->error(TraceCode::OPTIMIZER_BANK_TRANSFER_ERROR, [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+                
+                // Continue with regular flow if optimizer service fails
+            }
         }
 
         // Regular virtual account creation flow
