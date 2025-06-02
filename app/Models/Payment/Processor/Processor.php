@@ -12019,7 +12019,12 @@ class Processor
             $allowed = true;
         }
 
-        if (empty($apiBypassPaymentId) === false && $allowed === true)
+        $input = $this->app['request']->all();
+        $isRazorpayWallet = ($input[Payment\Entity::METHOD] === Payment\Method::WALLET &&
+            isset($input[Payment\Entity::WALLET]) &&
+            $input[Payment\Entity::WALLET] === Wallet::RAZORPAYWALLET);
+
+        if (empty($apiBypassPaymentId) === false && $allowed === true && !$isRazorpayWallet)
         {
             $payment->setId($apiBypassPaymentId);
             $this->trace->info(
