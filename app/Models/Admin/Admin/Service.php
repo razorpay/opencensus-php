@@ -1281,9 +1281,9 @@ class Service extends Base\Service
         $response = [];
 
         // Retrieve the target organization's name for success message
-        $toOrgName = $this->repo->org->findOrFailPublic($toOrgId);
+        $toOrg = $this->repo->org->findOrFailPublic($toOrgId);
 
-        $this->trace->info(TraceCode::ORG_FEATURE_REPLICATION, [$toOrgName]);
+        $this->trace->info(TraceCode::ORG_FEATURE_REPLICATION, [$toOrg->business_name]);
 
         switch ($replicationType) {
             case 'permission':
@@ -1329,18 +1329,15 @@ class Service extends Base\Service
 
             case 'feature':
                 // Retrieve features of the source organization
-                $org = $this->repo->org->find($fromOrgId);
-                $orgFeatures = $org->getEnabledFeatures();
+                $fromOrg = $this->repo->org->findOrFailPublic($fromOrgId);
+                $orgFeatures = $fromOrg->getEnabledFeatures();
 
                 // Retrieve existing feature names of the target organization
-                $toOrg = $this->repo->org->find($toOrgId);
                 $existingFeatureNames =$toOrg->getEnabledFeatures();
 
+                // Prepare data for batch insertion (only new features)
                 $insertFeaturesData = collect($orgFeatures)
                     ->diff($existingFeatureNames)
-                    ->map(function ($featureName) {
-                        return $featureName;
-                    })
                     ->values()
                     ->toArray();
 
@@ -1367,7 +1364,7 @@ class Service extends Base\Service
         // Set the success response
         $response = [
             'status'  => true,
-            'message' => "{$replicationType} replicated successfully to the {$toOrgName->business_name} org.",
+            'message' => "{$replicationType} replicated successfully to the {$toOrg->business_name} org.",
         ];
         return $response;
     }
