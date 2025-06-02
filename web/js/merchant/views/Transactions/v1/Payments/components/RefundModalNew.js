@@ -32,6 +32,7 @@ import {
 import { trackRefundError } from 'merchant/views/Transactions/v1/Payments/track';
 import { closeModal } from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { amountValidation as genericAmountValidation } from 'merchant/views/Transactions/v1/Payments/components/RefundModal.js';
 
 export const isPartialPayment = (props) => {
   const { payment, payable_amount } = props;
@@ -314,7 +315,7 @@ class RefundModal extends Component {
 
   save = (props) => {
     const partial = isPartialPayment(this.props);
-    const hasAmountErrors = amountValidation(this.props);
+    const hasAmountErrors = genericAmountValidation(this.props);
 
     if (hasAmountErrors) {
       return;
@@ -767,8 +768,7 @@ class RefundModal extends Component {
     const { handleSubmit, payment, transfers, user } = this.props;
     const { gateway_refund_support, payment_age_limit_for_gateway_refund, instant_refund_support } =
       payment;
-
-    const amountError = amountValidation(this.props);
+    const amountError = genericAmountValidation(this.props);
     const partial = isPartialPayment(this.props);
 
     const nonFraudDisputeCount =
