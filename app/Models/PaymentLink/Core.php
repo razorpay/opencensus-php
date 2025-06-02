@@ -1449,6 +1449,37 @@ class Core extends Base\Core
         return false;
     }
 
+    private function logTncAcceptance(array $input, Entity $paymentLink): void
+    {
+        try {
+            $tncLog = isset($input['notes']['terms__and__cond']) ? (bool) $input['notes']['terms__and__cond'] : false;
+
+            $this->trace->info(TraceCode::MERCHANT_TNC_GET_REQUEST, [
+                'tnc'        => $tncLog,
+                'payment_id' => $paymentLink->getId(),
+                'merchant_id'=> $paymentLink->getMerchantId(),
+                'input'      => $input,
+            ]);
+
+            if ($tncLog === true)
+            {
+                $priRefId = $input['notes'][PAYMENTLINK::PRI_REF_ID] ?? null;
+
+                if (!empty($priRefId))
+                {
+                    $this->logTncInOtherDetails($paymentLink->getId(), $priRefId);
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::TNC_LOG_UPDATE_FAILED, [
+                'message' => $e->getMessage(),
+                'input'   => $input,
+            ]);
+        }
+    }
+
 
     public function createOrder(Entity $paymentLink, array $input)
     {
@@ -1466,6 +1497,8 @@ class Core extends Base\Core
         {
             return $this->modifyAndValidateInputToCreateLineItems($input, $paymentLink);
         });
+
+        $this->logTncAcceptance($input, $paymentLink);
 
         $setting =  $paymentLink->getSettings()->toArray();
 
@@ -3821,11 +3854,11 @@ class Core extends Base\Core
     public function getGrievanceEntityDetails(string $id)
     {
         $id = Entity::stripDefaultSign($id);
-    
+
         try {
             $paymentPage = $this->repo->payment_link->findOrFailPublic($id);
             $merchant = $paymentPage->merchant;
-    
+
             return [
                 'entity' => 'payment_page',
                 'entity_id' => $paymentPage->getPublicId(),
@@ -3839,15 +3872,15 @@ class Core extends Base\Core
                 'error' => $e->getMessage(),
                 'id' => $id
             ]);
-    
+
             try {
                 $pageDetails = $this->fetchExternalNCAPaymentPageDetails($id);
-                
+
                 $this->trace->info(TraceCode::NOCODE_SERVICE_RESPONSE_RECIEVED, [
                     'id' => $id,
                     'response' => $pageDetails
                 ]);
-    
+
                 if (empty($pageDetails)) {
                     $this->trace->info(TraceCode::PAYMENT_PAGE_NOT_FOUND, [
                         'id' => $id,
@@ -3857,9 +3890,9 @@ class Core extends Base\Core
                         'Payment page does not exist.'
                     );
                 }
-    
+
                 $merchantDetails = $this->repo->merchant->findOrFail($pageDetails['data']['merchant_id']);
-    
+
                 return [
                     'entity' => 'payment_page',
                     'entity_id' => $pageDetails['data']['id'],
@@ -3873,25 +3906,25 @@ class Core extends Base\Core
                     'error' => $ex->getMessage(),
                     'id' => $id
                 ]);
-    
+
                 throw new BadRequestValidationFailureException(
                     'Payment page does not exist.'
                 );
             }
         }
-    }    
+    }
 
     public function fetchExternalNCAPaymentPageDetails(string $pageId)
     {
         $ncaService = new NoCodeAppsService($this->app);
-        
+
         $res = $ncaService->fetchPageDetails($pageId);
-        
+
         $this->trace->info(TraceCode::NOCODE_SERVICE_RESPONSE_RECIEVED, [$res]);
-        
+
         return $res;
     }
-    
+
 
     protected function eventPaymentPagePaid(Entity $paymentPage, Payment\Entity $payment)
     {
@@ -4912,4 +4945,39 @@ class Core extends Base\Core
         }
     }
 
+
+    private function logTncInOtherDetails(string $paymentLinkId, string $priRefId): void
+    {
+        try
+        {
+            $paymentPageRecord = $this->repo->payment_page_record->findByPaymentPageAndPrimaryRefIdOrFail($paymentLinkId, $priRefId);
+
+            $existingOtherDetails = $paymentPageRecord['other_details'] ?? '[]';
+
+            $detailsArray = json_decode($existingOtherDetails, true);
+            if (!is_array($detailsArray)) {
+                $detailsArray = [];
+            }
+
+            $detailsArray['tnc_log'] = true;
+
+            $updatedOtherDetails = json_encode($detailsArray);
+
+            $paymentPageRecord->edit([
+                \RZP\Models\PaymentLink\PaymentPageRecord\Entity::OTHER_DETAILS => $updatedOtherDetails,
+            ]);
+
+            $this->repo->payment_page_record->save($paymentPageRecord);
+
+            $this->trace->info(TraceCode::TNC_LOG_UPDATED, [
+                "success" => "true",
+            ]);
+        }
+        catch (\Exception $e) {
+            $this->trace->error(TraceCode::TNC_LOG_UPDATE_FAILED, [
+                'error_message' => $e->getMessage(),
+                'stack_trace'   => $e->getTraceAsString(),
+            ]);
+        }
+    }
 }

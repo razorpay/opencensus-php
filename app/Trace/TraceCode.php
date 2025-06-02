@@ -13288,6 +13288,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DCS_FEATURE_FLAGS_FETCHED = 'DCS_FEATURE_FLAGS_FETCHED';
     const DCS_FEATURE_FLAGS_FETCH_FAILED = 'DCS_FEATURE_FLAGS_FETCH_FAILED';
 
+    const TNC_LOG_UPDATED                                       = 'TNC_LOG_UPDATED';
+    const TNC_LOG_UPDATE_FAILED                                 = 'TNC_LOG_UPDATE_FAILED';
+    const INVALID_PRODUCT_CONFIG_JSON                           = 'INVALID_PRODUCT_CONFIG_JSON';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
