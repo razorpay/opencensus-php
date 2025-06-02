@@ -318,7 +318,6 @@ class Validator extends Base\Validator
     public function validateFeatureNames(array $featureNames)
     {
         $core = new Core();
-
         $allFeatureMap = $core->getFeatureValueMap();
         $allFeatures = array_keys($allFeatureMap);
 
