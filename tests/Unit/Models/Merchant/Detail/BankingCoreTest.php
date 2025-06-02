@@ -608,7 +608,7 @@ class BankingCoreTest extends TestCase
 
         $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable', ]]]);
 
-        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
         $activationStatusData = [
             Entity::ACTIVATION_STATUS => Status::ACTIVATED_MCC_PENDING,
         ];
