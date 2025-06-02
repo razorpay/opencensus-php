@@ -11,6 +11,7 @@ use RZP\Http\RequestHeader;
 use RZP\Models\Base\PublicCollection;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer;
+use RZP\Models\Reversal;
 use RZP\Models\Payment;
 use RZP\Exception\RuntimeException;
 
@@ -44,7 +45,7 @@ class Api extends Base
         return $this->sendRequest(Constant::DIRECT_TRANSFER_ENDPOINT, Requests::POST, $input);
     }
 
-        /**
+    /**
      * To patch a transfer by ID in Route microservice
      * @return array
      * @throws Exception\RuntimeException
@@ -53,8 +54,25 @@ class Api extends Base
     public function patchTransfer(string $transferId, array $input) : array
     {
         $response = $this->patchTransferByInternalRequest($transferId,  $input);
+
         return $response;
     }
+
+    protected function patchTransferByInternalRequest(string $transferId, array $input) : array
+    {
+        if ( (new Config())->shouldCreateNewPassportToken() ){
+            $this->addNewPassportToken();
+        }
+        else {
+            $this->addPassportToken();
+
+        }
+        $endpoint = sprintf(Constant::PATCH_TRANSFER_ROUTE_ENDPOINT, $transferId);
+        $response = $this->sendRequest($endpoint, Requests::PATCH,$input);
+
+        return $response;
+    }
+
     public function createPaymentTransfer(string $paymentId, array $input) : array
     {
         $routeName = $this->app['api.route']->getCurrentRouteName() ?? '';
@@ -80,6 +98,22 @@ class Api extends Base
         return $this->sendRequest($endpoint, Requests::POST, $input);
     }
 
+    public function createTransferReversal(string $paymentId, array $input) : array
+    {
+        if ((new Config())->shouldCreateNewPassportToken())
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $endpoint = sprintf(Constant::TRANSFER_REVERSAL_ENDPOINT, $paymentId);
+
+        return $this->sendRequest($endpoint, Requests::POST, $input);
+    }
+
     /**
      * To fetch a transfer by ID from Route microservice
      * @return array
@@ -93,21 +127,6 @@ class Api extends Base
         $transfer = $this->forceFillTransferFromResponse($response);
 
         return $this->loadRelatedEntity($transfer);
-    }
-
-    protected function patchTransferByInternalRequest(string $transferId, array $input) : array
-    {
-        if ( (new Config())->shouldCreateNewPassportToken() ){
-            $this->addNewPassportToken();
-        }
-        else {
-            $this->addPassportToken();
-
-        }
-        $endpoint = sprintf(Constant::PATCH_TRANSFER_ROUTE_ENDPOINT, $transferId);
-        $response = $this->sendRequest($endpoint, Requests::PATCH,$input);
-
-        return $response;
     }
 
     protected function fetchTransferByIdInternalRequest(string $transferId, string $merchantId = null) : array
@@ -193,6 +212,38 @@ class Api extends Base
     }
 
     /**
+     * To fetch a reversal by ID from Route microservice
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchReversalById(string $reversalId, string $merchantId = null) : Transfer\Entity
+    {
+        $response = $this->fetchReversalByIdInternalRequest($reversalId, $merchantId);
+
+        $transfer = $this->forceFillReversalFromResponse($response);
+
+        return $this->loadRelatedEntity($transfer);
+    }
+
+    protected function fetchReversalByIdInternalRequest(string $reversalId, string $merchantId = null) : array
+    {
+        $endpoint = sprintf(Constant::REVERSAL_FETCH_BY_ID_ENDPOINT, $reversalId);
+
+        if (empty($merchantId) === false)
+        {
+            $queryParams = http_build_query(['merchant_id' => $merchantId]);
+
+            $endpoint = $endpoint . '?' . $queryParams;
+        }
+
+        $response = $this->sendRequest($endpoint, Requests::GET);
+
+        return $response;
+    }
+
+
+    /**
      * To save the API schema transfer in Route microservice
      * @throws Exception\RuntimeException
      * @throws \Throwable
@@ -242,6 +293,24 @@ class Api extends Base
         }
         return null;
     }
+
+    private function forceFillReversalFromResponse($response)
+    {
+        if (empty($response) === false)
+        {
+            $reversal = (new Reversal\Entity());
+
+            $reversal->forceFill($response);
+
+            $reversal->setExternal(true);
+
+            $reversal->generate($response);
+
+            return $reversal;
+        }
+        return null;
+    }
+
 
     private function loadRelatedEntity($transfer)
     {

@@ -150,7 +150,8 @@ class UpiMindgateQRCodeTest extends TestCase
         $expiryTime = Carbon::now()->getTimestamp() + ($days * 24 * 60 * 60);
 
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
 
         $this->createQrCode(
@@ -185,7 +186,8 @@ class UpiMindgateQRCodeTest extends TestCase
         $expiryTime = Carbon::now()->getTimestamp() + ($days * 24 * 60 * 60);
 
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
+                                          'M25grFTOPZEGQS' => 'on',
+            $this->config->get('app.merchant_with_qr_expiry_gt_2_hours')=> 'on',
                                       ]);
 
         $this->createQrCode(
