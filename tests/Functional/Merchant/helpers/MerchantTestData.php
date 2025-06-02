@@ -15470,4 +15470,103 @@ return [
         ]
     ],
 
+    'testMerchantDetailsFetchSuccess' => [
+        'request' => [
+            'url' => '/merchant_list/org/orgid1/category/education',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                [
+                    'name'     => 'Merchant Name 1',
+                    'key_id'   => 'keyid1',
+                    'features' => ['marketplace'],
+                ],
+                [
+                    'name'     => 'Merchant Name 2',
+                    'key_id'   => 'keyid2',
+                    'features' => ['marketplace', 'hide_aggregator_details'],
+                ],
+            ],
+        ],
+    ],
+
+    'testEmptyMerchantList' => [
+        'request' => [
+            'url' => '/merchant_list/org/orgid999/category/fake',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [],
+        ],
+    ],
+
+    'testMerchantWithoutFeature' => [
+        'request' => [
+            'url' => '/merchant_list/org/orgid2/category/retail',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                [
+                    'name'     => 'Merchant Name 3',
+                    'key_id'   => 'keyid3',
+                    'features' => [],
+                ],
+            ],
+        ],
+    ],
+
+    'testMerchantCategoryMismatch' => [
+        'request' => [
+            'url' => '/merchant_list/org/orgid3/category/education',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                [
+                    'name'     => 'Merchant Name 4',
+                    'key_id'   => 'keyid4',
+                    'features' => [],
+                ],
+            ],
+        ],
+    ],
+
+    'testMerchantWithoutKey' => [
+        'request' => [
+            'url' => '/merchant_list/org/orgid4/category/education',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [],
+        ],
+    ],
+
+    'testMerchantDetailsFetchFailure' => [
+        'request' => [
+            'url' => '/merchant_list/org/invalidorgid/category/education',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'exception' => [
+                'class' => RZP\Exception\BadRequestException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+            ],
+            'status_code' => 400,
+        ],
+    ]
+
+
 ];
