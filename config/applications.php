@@ -1537,6 +1537,7 @@ return [
             'user'          => env('PAYMENT_METHODS_SERVICE_TEST_USER'),
         ],
         'read_experiment' => env('PAYMENT_METHODS_SERVICE_READ_EXPERIMENT'),
+        'write_experiment' => env('PAYMENT_METHODS_SERVICE_WRITE_EXPERIMENT'),
         'timeout'         => env('PAYMENT_METHODS_SERVICE_TIMEOUT', 100)
     ],
 

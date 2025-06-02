@@ -506,9 +506,15 @@ class Core extends Base\Core
             $subrInput[Entity::CURRENCY] = $input[Order\Entity::CURRENCY];
         }
 
+        $description = $input[Constants\Entity::Description];
+
         $validator = new Validator;
 
         $validator->validateInput('create_subscription_registration',$subrInput);
+
+        if($this->isValidationRequiredForThisMerchant($merchant)) {
+            $validator->validateDescription($description);
+        }
 
         if (isset($input[Entity::NOTES]) === true)
         {
@@ -589,7 +595,6 @@ class Core extends Base\Core
 
         return $subscriptionRegistration;
     }
-
     protected function handleBankMerger(array & $subrInput = null)
     {
         if ($subrInput !== null and array_key_exists(Constants\Entity::BANK_ACCOUNT, $subrInput) === true)
@@ -1713,4 +1718,39 @@ class Core extends Base\Core
             return false;
         }
     }
+    private function isValidationRequiredForThisMerchant($merchant): bool
+    {
+        try
+        {
+            $experimentId = $this->app['config']->get('app.enable_description_validation_for_merchant');
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $experimentId,
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties' => $properties,
+                'response' => $response,
+            ]);
+            $variant = $response['response']['variant']['name'] ?? '';
+            if ($variant === 'enable') {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::MERCHANT_VALIDATION_OF_DESCRIPTION_FIELD
+            );
+        }
+        return false;
+    }
+
+
 }

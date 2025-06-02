@@ -164,6 +164,7 @@ class Constants
     const AddressRequired                             = 'address_required';
     const MandatoryAvsCheck                           = 'mandatory_avs_check';
     const EnableB2BExport                             = 'enable_b2b_export';
+    const CbSkipB2BExportInvoice                      = 'skip_b2b_export_invoice';
     const IrctcReportEnabled                          = 'irctc_report_enabled';
     const QrImagePartnerName                          = 'show_partner_name_on_qr_image';
     const QrImageContent                              = 'get_qr_image_content';
@@ -461,6 +462,7 @@ class Constants
         self::AddressRequired                             => 'rzp/pg/merchant/cards/in_international/Features',
         self::MandatoryAvsCheck                           => 'rzp/pg/merchant/cards/in_international/Features',
         self::EnableB2BExport                             => 'rzp/pg/merchant/payments/in_international/BankToBankFeatures',
+        self::CbSkipB2BExportInvoice                      => 'rzp/pg/merchant/cross_border/india/MoneySaverExportFeatures',
         self::IrctcReportEnabled                          => "rzp/pg/merchant/report/Irctc",
         self::QrImagePartnerName                          => 'rzp/pg/merchant/upi/qr/QrCode',
         self::QrImageContent                              => 'rzp/pg/merchant/upi/qr/QrCode',

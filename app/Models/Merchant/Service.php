@@ -13825,7 +13825,9 @@ class Service extends Base\Service
         }
         */
 
-        $transformers = (new \RZP\Base\Transformer())->getTransformers($sqlBinLogData["table"]);
+        $merchantId = $sqlBinLogData['data']['merchant_id'] ?? $sqlBinLogData['data']['id'] ?? null;
+
+        $transformers = (new \RZP\Base\Transformer())->getTransformers($sqlBinLogData["table"], $merchantId);
 
         foreach ($transformers as $transformer)
         {

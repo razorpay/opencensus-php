@@ -2207,11 +2207,22 @@ class Processor
                     ($order->getProductId() !== null and
                         ($order->getProductType() === ProductType::PAYMENT_LINK or
                             $order->getProductType() === ProductType::PAYMENT_LINK_V2))) {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "temporary_block_PL",
-                        'merchant_id' => $merchant->getId(),
-                    ]);
-                    return false;
+
+                    // this experiment is for testing payments link fix in offers engine
+                    // NOTE -> for code to come here, $result should be 'on' i.e. mid should be in the above offers experiment also
+                    $isPaymentLinkOfferEnabled = (new Payment\Service())->getSplitzExpResponse($merchant->getId(), 'app.cps-pl-offers-ramp-exp');
+                    if ($isPaymentLinkOfferEnabled === 'enable') {
+                        $this->trace->info(TraceCode::ROUTING_CARD_PAYMENT_WITH_OFFER_TO_REARCH, [
+                            'reason' => "enabled_payment_link_offer_via_splitz",
+                            'merchant_id' => $merchant->getId(),
+                        ]);
+                    } else {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => "temporary_block_PL",
+                            'merchant_id' => $merchant->getId(),
+                        ]);
+                        return false;
+                    }
                 }
 
                 if ((empty($order) === false) and ($order->isDiscountApplicable() === true)) {
@@ -6074,7 +6085,7 @@ class Processor
     {
         $payment = $this->payment;
 
-
+        $merchant = $payment->merchant;
         $payload = $this->getPaymentPayloadForWebhook($payment,$eventName);
 
         if ($eventName === "order.paid")
@@ -6089,7 +6100,10 @@ class Processor
             $payload = null;
         }
 
-        return $payload;
+        // Add context and dispatch to stork
+        $this->setContextForEntityForWebhook(merchantId: $payment->getMerchantId(), entityType: "payment", entityId: $payment->getId(),eventName : $eventName);
+
+        return $this->buildStorkEventPayload(payment: $payment,payload: $payload, merchant:$merchant,eventName:$eventName);
     }
 
     protected function getOrderPayloadForWebhook($payment)
@@ -6136,12 +6150,12 @@ class Processor
 
         if (empty($paymentContext['offer']) === false)
         {
-            $payload[Constants\Entity::PAYMENT]['entity']['upi']['offer'] = $paymentContext['offer'];
+            $payload[E::PAYMENT]['entity']['upi']['offer'] = $paymentContext['offer'];
         }
 
         if (empty($paymentContext['emi']) === false)
         {
-            $payload[Constants\Entity::PAYMENT]['entity']['upi']['emi'] = $paymentContext['emi'];
+            $payload[E::PAYMENT]['entity']['upi']['emi'] = $paymentContext['emi'];
         }
 
         $method = $payment->method;
@@ -6157,11 +6171,8 @@ class Processor
 
             $payload[E::PAYMENT]['entity'][Payment\Entity::GIFT_CARDS] = $giftCards;
         }
+        return $payload;
 
-            // Add context and dispatch to stork
-            $this->setContextForEntityForWebhook(merchantId: $payment->getMerchantId(), entityType: "payment", entityId: $payment->getId(),eventName : $eventName);
-
-            return $this->buildStorkEventPayload(payment: $payment,payload: $payload, merchant:$merchant,eventName:$eventName);
         } catch (\Throwable $e) {
             $this->trace->error(
                 TraceCode::WEBHOOK_PAYMENT_PAYLOAD_ERROR,
@@ -8083,10 +8094,10 @@ class Processor
                     $customerId = $input[Payment\Entity::CUSTOMER_ID];
 
                     Customer\Entity::verifyIdAndStripSign($customerId);
-                    
+
                     $token = (new Customer\Token\Core)->getByTokenIdAndCustomerId($tokenId, $customerId);
 
-                    if ($this->isOptimizerMigratedToken($token)) 
+                    if ($this->isOptimizerMigratedToken($token))
                     {
                         $this->app['trace']->info(
                             TraceCode::MISC_TRACE_CODE,
@@ -8095,7 +8106,7 @@ class Processor
 
                         return;
                     }
-                    
+
                 } else {
 
                     $token = (new Customer\Token\Core)->getByTokenId($tokenId);
@@ -16409,23 +16420,23 @@ public function isLibrarySupportedForNbplusRearch($library): bool
     }
 
 
-    public function isOptimizerMigratedToken($token) 
+    public function isOptimizerMigratedToken($token)
     {
-        if ($token == null) 
+        if ($token == null)
         {
             return false;
         }
 
         $notes = $token->getNotes();
 
-        if (empty($notes) === true) 
+        if (empty($notes) === true)
         {
             return false;
         }
 
-        if (isset($notes["source"]) && 
-            isset($notes["mandate_id"]) && 
-            isset($notes["migrated_reference_id"])) 
+        if (isset($notes["source"]) &&
+            isset($notes["mandate_id"]) &&
+            isset($notes["migrated_reference_id"]))
         {
             return true;
         }

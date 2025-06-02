@@ -1453,6 +1453,13 @@ class Entity extends Base\PublicEntity
         // If we've already loaded features for the merchant object, return that
         if ($this->loadedFeatures !== null)
         {
+            app('trace')->info(
+                TraceCode::FEATURES_FETCH_FROM_CACHE,
+                [
+                    "features" => $this->loadedFeatures,
+                    "merchantID"=> $this->getId(),
+                ]
+            );
             return $this->loadedFeatures;
         }
 
@@ -1475,6 +1482,17 @@ class Entity extends Base\PublicEntity
         $dcsResponse = $dcs->getDcsEnabledFeatures(Feature\Constants::MERCHANT, $this->getId())
                            ->pluck(Feature\Entity::NAME)
                            ->toArray();
+
+        app('trace')->info(
+            TraceCode::FEATURES_FETCH_FROM_DATABASE_AND_DCS,
+            [
+                "features"      => $this->loadedFeatures,
+                "apiResponse"   =>$apiResponse,
+                "dcsResponse"   =>$dcsResponse,
+                "merchantID"    => $this->getId(),
+                "cacheTags"     =>$cacheTags,
+            ]
+        );
 
         $this->loadedFeatures = $this->mergeUniqueArrays($apiResponse, $dcsResponse);
 

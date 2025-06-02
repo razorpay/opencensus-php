@@ -1,0 +1,64 @@
+name: Determine Ticket Status
+
+on:
+  pull_request:
+    types: [labeled, unlabeled, opened, synchronize, reopened]
+
+jobs:
+  extract_ticket_ids:
+    uses: ./.github/workflows/extract_ticket_ids.yml
+
+  determine_final_status:
+    needs: [extract_ticket_ids]
+    runs-on: api-public
+    environment: X64
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Debug Info
+        run: |
+          echo "Jira ID: ${{ needs.extract_ticket_ids.outputs.jira_id }}"
+          echo "DevRev ID: ${{ needs.extract_ticket_ids.outputs.devrev_id }}"
+          echo "Hotfix Label: ${{ contains(github.head_ref, 'hotfix') }}"
+
+      - name: Set Final Status
+        id: final_status
+        env:
+          JIRA_ID: ${{ needs.extract_ticket_ids.outputs.jira_id }}
+          DEVREV_ID: ${{ needs.extract_ticket_ids.outputs.devrev_id }}
+          HOTFIX_LABEL: ${{ contains(github.head_ref, 'hotfix') }}
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          DEVREV_API_TOKEN: ${{ secrets.DEVREV_API_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bash ./.github/actions/determineTicketStatus.sh
+          echo "status=$?" >> $GITHUB_OUTPUT
+
+      - name: Create Check
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.issue.number;
+            const status = process.env.STATUS === '0' ? 'success' : 'failure';
+            const message = process.env.STATUS === '0' ? 'Ticket validation passed' : 'Ticket validation failed';
+            
+            await github.rest.checks.create({
+              owner,
+              repo,
+              name: 'Ticket Status Check',
+              head_sha: context.sha,
+              status: 'completed',
+              conclusion: status,
+              output: {
+                title: message,
+                summary: message
+              }
+            });
+        env:
+          STATUS: ${{ steps.final_status.outputs.status }} 
