@@ -3162,7 +3162,7 @@ class Service extends Base\Service
 
         if ($entity[Payment\Entity::EMI] != null && $entity[Payment\Entity::EMI]['issuer'] != null && $entity[Payment\Entity::EMI]['type'] != null)
         {
-            $processingFeePlan = (new ProcessingFeePlan())->getProcessingFeePlan($entity[Payment\Entity::EMI]['issuer'], $entity[Payment\Entity::EMI]['type'],$entity[Payment\Entity::EMI]['duration'],$payment->getAmount());
+            $processingFeePlan = (new ProcessingFeePlan())->getProcessingFeePlan($entity[Payment\Entity::EMI]['issuer'], $entity[Payment\Entity::EMI]['type'],$entity[Payment\Entity::EMI]['duration'],$payment->getAmount(),$paymentMerchantId);
             if (!empty($processingFeePlan))
             {
                 $percentageFee = 0;
