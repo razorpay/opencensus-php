@@ -74,7 +74,7 @@ class BusinessType
         self::GOVERNMENT =>14,
         self::JUDICAL_PERSON =>15,
         self::LOCAL_AUTHORITY =>16,
-        self::SECTION_8_COMPANY =>17
+        self::SECTION_8_COMPANY =>17,
     ];
 
     protected static $displayNameMap = [
