@@ -808,13 +808,19 @@ class Core extends Base\Core
         }
 
         try {
-            $lockedAcquired = $this->mutex->acquire($idemPotentKey,300);
-            $this->trace->info(TraceCode::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_IDEMPOTENT_LOCK_ACQUIRED, [
-                'locked_acquired'  => $lockedAcquired,
-            ]);
 
-            if ($lockedAcquired === false) {
-                throw new LogicException("Duplicate request", "BAD_REQUEST_BATCH_REQUEST_ALREADY_IN_PROGRESS");
+            $lockedAcquired = false;
+
+            if ($idemPotentKey !== null)
+            {
+                $lockedAcquired = $this->mutex->acquire($idemPotentKey, 300);
+                $this->trace->info(TraceCode::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_IDEMPOTENT_LOCK_ACQUIRED, [
+                    'locked_acquired' => $lockedAcquired,
+                ]);
+
+                if ($lockedAcquired === false) {
+                    throw new LogicException("Duplicate request", "BAD_REQUEST_BATCH_REQUEST_ALREADY_IN_PROGRESS");
+                }
             }
 
             if ($merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true) {
