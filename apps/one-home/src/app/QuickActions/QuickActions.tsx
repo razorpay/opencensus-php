@@ -41,12 +41,14 @@ const QuickActionsComponent: React.FC<{
         },
       });
     } else if (data) {
+      const items = data?.components?.map((component) => component.title) || [];
       trackOneHomeAnalytics({
         objectName: 'Ucs widget',
         actionName: 'Loaded',
         properties: {
           ...commonProperties,
           status: 'success',
+          items,
         },
       });
     }

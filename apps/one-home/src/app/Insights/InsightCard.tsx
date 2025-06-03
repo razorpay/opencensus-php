@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { paiseToRupees } from '@libs/shared-utils';
 import {
   Amount,
@@ -219,11 +219,38 @@ const InsightCardWithErrorBoundary = ({
   analytics,
   paymentLocked,
 }: InsightCardWithErrorBoundaryProp) => {
+  const { trackOneHomeAnalytics } = useOneHomeAnalytics();
+
   if (!componentData || componentData?.error) {
     throw componentData && componentData.error
       ? componentData.error
       : new Error('Error fetching data in Insight Card');
   }
+
+  useEffect(() => {
+    if (!componentData || componentData?.error) return;
+
+    const items = [];
+
+    // Add view details action if available (desktop)
+    if (!isMobile) {
+      items.push(staticContent.viewDetailsText);
+    }
+
+    // Add mobile-specific action if available
+    if (isMobile) {
+      items.push(staticContent.showDetailedBreakdownText);
+    }
+
+    trackOneHomeAnalytics({
+      objectName: 'Ucs Widget',
+      actionName: 'Loaded',
+      properties: {
+        ...analytics,
+        items,
+      },
+    });
+  }, [componentData, isMobile]);
 
   const insightsStaticData =
     insightCardsStaticData[cardType as InsightCardType | OtherInsightCardType];

@@ -158,19 +158,8 @@ const PaymentInsights = () => {
         ...analyticsProps,
         itemName: 'Oops! An error occured.',
       };
-    } else {
-      analyticsProps = {
-        ...analyticsProps,
-        dateRange: selectedFilter,
-        widgetId: staticContent.paymentInsightWidgetId,
-        nonInsightsCardPresent: 'No',
-      };
     }
-    trackOneHomeAnalytics({
-      objectName: 'Ucs Widget',
-      actionName: 'Loaded',
-      properties: { ...analyticsProps },
-    });
+    // Loaded Events will be part of individual cards
   };
 
   const navigate = useNavigate();

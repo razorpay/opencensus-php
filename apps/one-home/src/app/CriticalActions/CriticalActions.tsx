@@ -97,10 +97,12 @@ const CriticalActionsContent = ({
   }, [isLoading]);
 
   const trackOnLoad = () => {
+    const items = drawerCriticalActions.map((action) => action.title);
     const properties = {
       title: criticalSectionMessages.sectionTitle,
       widgetId: criticalSectionMessages.widgetId,
       criticalActionsCount: criticalActionDataLength,
+      items,
     };
     trackOneHomeAnalytics({
       objectName: 'Ucs Widget',

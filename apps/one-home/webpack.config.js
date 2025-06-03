@@ -12,8 +12,8 @@ module.exports = withDashboardCore({
   browserBundlerOptions: {
     moduleName: DASHBOARD_FEDERATED_MODULES.ONE_HOME,
     sentryConfig: {
-      dsn: ONE_HOME_SENTRY_PROJECT,
-      project: ONE_HOME_SENTRY_DSN,
+      dsn: ONE_HOME_SENTRY_DSN,
+      project: ONE_HOME_SENTRY_PROJECT,
     },
     moduleFederationConfig: {
       exposedDir: path.resolve('./src/exposed'),

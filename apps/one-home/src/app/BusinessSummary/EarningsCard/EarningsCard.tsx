@@ -57,6 +57,14 @@ const EarningsCard = React.forwardRef<BoxRefType, EarningsCardProps>(
     useEffect(() => {
       if (!isLoading && earningsDatum) {
         if (earningsDatum) {
+          // Extract titles of earnings items that are not enabled (showComponent is false)
+          const items =
+            earningsDatum.type === 'earnings' && earningsDatum.earnings
+              ? earningsDatum.earnings
+                  .filter((earning) => !earning.showComponent)
+                  .map((earning) => earning.title)
+              : [];
+
           trackOneHomeAnalytics({
             objectName: 'Ucs widget',
             actionName: 'Loaded',
@@ -66,6 +74,7 @@ const EarningsCard = React.forwardRef<BoxRefType, EarningsCardProps>(
               subWidgetId: `${messages.earningsCard.analytics.subwidgetId}_${data?.id}`,
               growthPagePresent: earningsDatum?.type === 'growth',
               businessSummaryState: 'ideal',
+              items,
             },
           });
         }

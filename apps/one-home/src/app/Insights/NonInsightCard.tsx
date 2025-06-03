@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Button, Card, Heading, Skeleton, Text } from '@razorpay/blade/components';
 import { useNavigate } from 'react-router-dom';
 import useOneHomeAnalytics from '../../hooks/useOneHomeAnalytics';
@@ -108,11 +108,25 @@ const NonInsightCardBody = ({
   cardType,
   analytics,
 }: NonInsightCardBodyProp) => {
+  const { trackOneHomeAnalytics } = useOneHomeAnalytics();
   if (!componentData || componentData?.error) {
     throw componentData && componentData.error
       ? componentData.error
       : new Error('Error fetching data in NonInsightCard');
   }
+
+  useEffect(() => {
+    if (!componentData || componentData?.error) return;
+
+    trackOneHomeAnalytics({
+      objectName: 'Ucs Widget',
+      actionName: 'Loaded',
+      properties: {
+        ...analytics,
+        items: [componentData?.actions?.map((action) => action.title)],
+      },
+    });
+  }, [componentData]);
 
   return (
     <Box display="flex" justifyContent="space-between" alignItems="flex-start" height="100%">

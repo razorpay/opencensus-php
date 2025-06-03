@@ -108,10 +108,10 @@ jobs:
         shell: bash
         continue-on-error: true
         run: |
-          SHARD=${{ matrix.shardsArray }} JEST_TARGET=browser node --expose-gc $(which pnpm) nx run ${{ matrix.targetProject }}:test:jest:ci --shard=${{ matrix.shardsArray }}/${{ env.shardsTotal }}
+          SHARD=${{ matrix.shardsArray }} JEST_TARGET=browser NODE_OPTIONS="--max-old-space-size=2048 --expose-gc" pnpm nx run ${{ matrix.targetProject }}:test:jest:ci --shard=${{ matrix.shardsArray }}/${{ env.shardsTotal }}
         env:
           DISABLE_REPORT_PORTAL_INTEGRATION: true
-          CI: 'true'
+          CI: "true"
 
       - name: Configure AWS Credentials For Dashboard Assets
         uses: aws-actions/configure-aws-credentials@v4
@@ -227,10 +227,10 @@ jobs:
         shell: bash
         continue-on-error: true
         run: |
-          MAX_WORKERS=2 node --expose-gc $(which pnpm) nx run-many -t test:jest:ci --parallel=4 --projects=${{ matrix.targetProjects }}
+          MAX_WORKERS=2 NODE_OPTIONS="--max-old-space-size=1536 --expose-gc" pnpm nx run-many -t test:jest:ci --parallel=4 --projects=${{ matrix.targetProjects }}
         env:
           DISABLE_REPORT_PORTAL_INTEGRATION: true
-          CI: 'true'
+          CI: "true"
 
       - name: Configure AWS Credentials For Dashboard Assets
         uses: aws-actions/configure-aws-credentials@v4

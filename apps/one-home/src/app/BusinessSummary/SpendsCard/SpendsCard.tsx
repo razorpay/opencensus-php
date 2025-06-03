@@ -57,6 +57,14 @@ const SpendsCard = React.forwardRef<BoxRefType, SpendsCardProps>(
     useEffect(() => {
       if (!isLoading && spendingsDatum) {
         if (spendingsDatum) {
+          // Extract titles of spending items that are not enabled (showComponent is false)
+          const items =
+            spendingsDatum.type === 'spendings' && spendingsDatum.spendings
+              ? spendingsDatum.spendings
+                  .filter((spending) => !spending.showComponent)
+                  .map((spending) => spending.title)
+              : [];
+
           trackOneHomeAnalytics({
             objectName: 'Ucs widget',
             actionName: 'Loaded',
@@ -66,6 +74,7 @@ const SpendsCard = React.forwardRef<BoxRefType, SpendsCardProps>(
               subWidgetId: `${messages.spendsCard.analytics.subwidgetId}_${data?.id}`,
               growthPagePresent: spendingsDatum.type === 'growth',
               businessSummaryState: 'ideal',
+              items,
             },
           });
         }

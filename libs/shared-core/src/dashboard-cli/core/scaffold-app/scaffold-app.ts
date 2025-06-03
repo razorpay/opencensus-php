@@ -12,10 +12,10 @@ import { getAvailablePort } from './utils/getAvailablePort';
 (async () => {
   try {
     console.log(`${chalk.bold.blue('[@libs/shared-core]')} 🚀  Welcome to the Dashboard CLI!\n`);
-    
+
     const answers = await getUserInput();
     const assignedPort = getAvailablePort();
-    
+
     const outputDir = path.resolve(DASHBOARD_ROOT, 'apps', answers.appName);
     const integratedAppName = answers.appName.split('-').join('_').toUpperCase();
 
@@ -39,7 +39,7 @@ import { getAvailablePort } from './utils/getAvailablePort';
       },
     };
 
-    // Note: Maintaining this config for easy reference, want to promote maintained template structure (.tpl) structure for future maintainability
+    // Note: Maintaining this config for easy reference, want to promote maintained template structure (.tpl) structure for future maintainability.
     const config = {
       appPort: assignedPort,
       appName: answers.appName,
@@ -71,7 +71,7 @@ import { getAvailablePort } from './utils/getAvailablePort';
         .join(','),
     };
 
-    console.log(`\n${chalk.bold.blue("[@libs/shared-core]")} ✨: Crafting New Microapp...\n`);
+    console.log(`\n${chalk.bold.blue('[@libs/shared-core]')} ✨: Crafting New Microapp...\n`);
 
     await appTemplateGenerator(
       path.resolve(
@@ -83,16 +83,22 @@ import { getAvailablePort } from './utils/getAvailablePort';
       config,
     );
 
-    console.log(`\n${chalk.bold.blue("[@libs/shared-core]")} ✨: Updating Core Configurations...\n`);
+    console.log(
+      `\n${chalk.bold.blue('[@libs/shared-core]')} ✨: Updating Core Configurations...\n`,
+    );
 
     await integrateNewMicroapp(config);
 
-    console.log(`\n${chalk.bold.blue("[@libs/shared-core]")} ✨: Installing Deps...\n`);
-    
-    await execCommand("pnpm install", { cwd: DASHBOARD_ROOT });
+    console.log(`\n${chalk.bold.blue('[@libs/shared-core]')} ✨: Installing Deps...\n`);
 
-    console.log(`\n${chalk.bold.blue("[@libs/shared-core]")} ✨: Port assigned for your microapp is ${assignedPort}.`);
-    console.log(`\n${chalk.bold.blue("[@libs/shared-core]")} ✨: Successfully Scaffolded New Microapp! Happy Coding! 🚀`);
+    await execCommand('pnpm install', { cwd: DASHBOARD_ROOT });
+
+    console.log(
+      `\n${chalk.bold.blue('[@libs/shared-core]')} ✨: Port assigned for your microapp is ${assignedPort}.`,
+    );
+    console.log(
+      `\n${chalk.bold.blue('[@libs/shared-core]')} ✨: Successfully Scaffolded New Microapp! Happy Coding! 🚀`,
+    );
   } catch (error) {
     console.error('[@libs/shared-core] 😅 Error Scaffolding New MicroApp', error);
     process.exit(1);
