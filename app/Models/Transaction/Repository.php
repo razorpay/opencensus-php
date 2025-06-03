@@ -322,6 +322,7 @@ class Repository extends Base\Repository
 
         $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source', $entityToRelationFetchMap);
 
+
         $this->trace->info(
             TraceCode::MERCHANT_REPORT_GENERATION,
             [
@@ -356,12 +357,24 @@ class Repository extends Base\Repository
 
         $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source', $entityToRelationFetchMap);
 
+        // Filter out transactions that are not settled by Razorpay
+//        $txns = $txns->filter(function($txn) {
+//            return ($txn !== null && $txn->source !== null && $txn->source->getSettledBy() === 'Razorpay');
+//        });
+
         $this->trace->info(
             TraceCode::MERCHANT_REPORT_GENERATION,
             [
                 'method'    => __METHOD__,
                 'time'      => time(),
             ]);
+
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, ["txns*******************" => $txns]);
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, ["txns*******************" => $txns->source]);
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, ["txns*******************" => $txns->source["settled_by"]]);
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, ["txns*******************" => $txns->source->getSettledBy()]);
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, ["txns*******************" => $txns->source["settled_by2"]]);
+
 
         return $txns;
     }
