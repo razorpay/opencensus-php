@@ -12,6 +12,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BALANCE_ANALYSIS                          = 'BALANCE_ANALYSIS';
     const FEATURE_FETCH_FROM_DCS                    = 'FEATURE_FETCH_FROM_DCS';
     const PS_CA_FEE_RECOVERY_FAILED                 = 'PS_CA_FEE_RECOVERY_FAILED';
+    const BVS_CONFIG_OVERRIDE                       = 'BVS_CONFIG_OVERRIDE';
+    const BVS_VALIDATION_DETAILS                    = 'BVS_VALIDATION_DETAILS';
+    const BVS_CONFIG_SELECTION                      = 'BVS_CONFIG_SELECTION';
     const PS_CA_PAYOUT_STATUS_FAILED                = 'PS_CA_PAYOUT_STATUS_FAILED';
     const SKIP_NOTIFY_ON_LATE_AUTH = 'SKIP_NOTIFY_ON_LATE_AUTH';
     const FAIL_CREATED_PAYMENT_UNDER_FEATURE_FLAG = 'FAIL_CREATED_PAYMENT_UNDER_FEATURE_FLAG';
@@ -12981,6 +12984,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const TOKENS_EXTERNAL_DELETE_FAILURE = 'TOKENS_EXTERNAL_DELETE_FAILURE';
     const TOKENS_DELETE_EXTERNAL = 'TOKENS_DELETE_EXTERNAL';
+    const TOKEN_EXTERNAL_FETCH_TOKEN_BY_IDS = 'TOKEN_EXTERNAL_FETCH_TOKEN_BY_IDS';
+
 
     const API_BIN_SERVICE_IIN_DATA_MISMATCH                     = 'API_BIN_SERVICE_IIN_DATA_MISMATCH';
     const API_BIN_SERVICE_TOKEN_IIN_DATA_MISMATCH               = 'API_BIN_SERVICE_TOKEN_IIN_DATA_MISMATCH';
@@ -13287,6 +13292,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const DCS_FEATURE_FLAGS_FETCHED = 'DCS_FEATURE_FLAGS_FETCHED';
     const DCS_FEATURE_FLAGS_FETCH_FAILED = 'DCS_FEATURE_FLAGS_FETCH_FAILED';
+
+    const TNC_LOG_UPDATED                                       = 'TNC_LOG_UPDATED';
+    const TNC_LOG_UPDATE_FAILED                                 = 'TNC_LOG_UPDATE_FAILED';
+    const INVALID_PRODUCT_CONFIG_JSON                           = 'INVALID_PRODUCT_CONFIG_JSON';
 
     const DCS_RESPONSE = 'DCS_RESPONSE';
     const DCS_FEATURES = 'DCS_FEATURES';

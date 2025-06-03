@@ -125,6 +125,19 @@ class Service extends Base\Service
         );
     }
 
+    /**
+     * Upload files by an agent
+     * 
+     * This function handles the process of uploading files by an agent, including:
+     * 1. Validating input
+     * 2. Uploading the file
+     * 3. Setting document attributes
+     * 4. Saving the merchant document
+     * 
+     * @param array $input Input parameters containing file and merchant details
+     * @return array Document metadata
+     * @throws Exception\ServerErrorException If any error occurs during the process
+     */
     public function uploadFilesByAgent(array $input)
     {
         $merchantId = $input['merchant_id'];
@@ -162,19 +175,43 @@ class Service extends Base\Service
             $document->merchant()->associate($merchant);
 
             $fileAttributes = (new Detail\Service())->storeActivationFile($document, $param);
-
-            $params = [$documentType => $fileAttributes[$documentType]];
-
+            
             $this->core->storeDocumentInPGOSIfExpiryApplicable($merchant, $fileAttributes[$documentType], $documentType, $document->getId());
-
-            $uploadedDocument = $this->core->storeInMerchantDocument($merchant, $merchant, $params, $document);
-
+            
+            $validateLock = false;
+            $entity = $merchant;
+            
+            $document->entity()->associate($entity);
+            
+            $document->setFileStoreId($fileAttributes[$documentType][DocumentConstants::FILE_ID]);
+            $document->setAttribute(Entity::DOCUMENT_TYPE, $documentType);
+            $document->setAttribute(Entity::SOURCE, $fileAttributes[$documentType][DocumentConstants::SOURCE]);
+            
+            $metadata = [
+                'file_name' => $fileAttributes[$documentType][DocumentConstants::ORIGINAL_FILE_NAME] ?? ''
+            ];
+            $document->setAttribute(Entity::METADATA, $metadata);
+            
+            $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, [
+                'document_id' => $document->getId(),
+                'document_type' => $documentType,
+                'file_store_id' => $document->getFileStoreId(),
+                'source' => $document->getAttribute(Entity::SOURCE),
+                'metadata' => $document->getAttribute(Entity::METADATA),
+            ]);
+            
+            $this->repo->saveOrFail($document);
+            $this->core->saveMerchantDocument($merchant, $documentType, $fileAttributes[$documentType], $entity, $validateLock, $document);
+            
+            $documentEntity = $this->repo->merchant_document->findDocumentById($document->getId());
+            
+            
             $documentMetaData = [
-                Entity::ID                 => $uploadedDocument[$documentType]->getId(),
-                Entity::FILE_STORE_ID      => $uploadedDocument[$documentType]->getFileStoreId(),
-                Entity::MERCHANT_ID        => $uploadedDocument[$documentType]->getMerchantId(),
-                Entity::UPLOAD_BY_ADMIN_ID => $uploadedDocument[$documentType]->getUploadByAdminId(),
-                Entity::CREATED_AT         => $uploadedDocument[$documentType]->getCreatedAt()
+                Entity::ID                 => $documentEntity->getId(),
+                Entity::FILE_STORE_ID      => $documentEntity->getFileStoreId(),
+                Entity::MERCHANT_ID        => $documentEntity->getMerchantId(),
+                Entity::UPLOAD_BY_ADMIN_ID => $documentEntity->getUploadByAdminId(),
+                Entity::CREATED_AT         => $documentEntity->getCreatedAt()
             ];
 
             return $documentMetaData;

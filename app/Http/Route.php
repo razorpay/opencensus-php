@@ -510,6 +510,7 @@ class Route
         'merchant_create_terminal_v3'              => ['post',     'merchants/{id}/terminals/v3',                    'MerchantController@postCreateTerminalV3'                           ],
         'merchant_create_terminal_internal'        => ['post',     'merchants/{id}/terminals/internal',              'MerchantController@postCreateTerminalWithId',                      ],
         'merchant_info_fetch'                      => ['get',      'internal/merchant_info_fetch/{mid}',             'MerchantController@fetchUserIdAndOrgIdFromMerchantId',             ],
+        'merchant_list_by_org_and_category'        => ['get',      'merchant_list/org/{orgid}/category/{category}',        'MerchantController@fetchMidAndNameFromOrgAndCategoryFromTiDB'                       ],
         'merchant_get_terminals'                   => ['get',      'merchants/{id}/terminals',                       'MerchantController@getTerminals'                                   ],
         'proxy_merchant_get_terminals'             => ['get',      'proxy/merchant/terminals',                       'MerchantController@proxyGetTerminals'                              ],
         'admin_merchant_get_terminals'             => ['post',     'admin/merchant/terminals',                       'TerminalController@proxyV2TerminalService'                        ],
@@ -12221,6 +12222,7 @@ class Route
     ];
 
     public static $direct = [
+        'merchant_list_by_org_and_category',
         'update_late_auth_config_bulk',
         'onboarding_payment_webhook',
         'payment_page_fetch_records',

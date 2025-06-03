@@ -125,6 +125,7 @@ class Limit
         Type::MANDATE_CONTINUITY                    => 1000000,
         Type::TOKEN_CONTINUITY                    => 1000000,
         Type::CUSTOMER_MIGRATION                    => 1000000,
+        Type::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL => 1000000,
     ];
 
     /**
