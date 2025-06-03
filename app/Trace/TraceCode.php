@@ -13297,8 +13297,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TNC_LOG_UPDATE_FAILED                                 = 'TNC_LOG_UPDATE_FAILED';
     const INVALID_PRODUCT_CONFIG_JSON                           = 'INVALID_PRODUCT_CONFIG_JSON';
 
-    const DCS_RESPONSE = 'DCS_RESPONSE';
-    const DCS_FEATURES = 'DCS_FEATURES';
     const ORG_FEATURE_REPLICATION = 'ORG_FEATURE_REPLICATION';
 
     protected static $messages = [
