@@ -2999,7 +2999,6 @@ class Service extends Base\Service
 
         if ($this->app['api.route']->getCurrentRouteName() === "payment_fetch_by_id"
             && ($internalApp === "none")
-            && (empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === false)
             && (empty($passport) === false)
             && $this->checkSplitzForPaymentFetchByIdParity() === true)
         {
