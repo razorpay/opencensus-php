@@ -759,8 +759,7 @@ class Core extends Base\Core
 
                 $this->repo->merchant_detail->saveOrFail($merchantDetails);
             }
-
-        }
+        
     }
 
     /**
