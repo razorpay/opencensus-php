@@ -1,286 +1,357 @@
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import {
+  fireEvent,
+  screen,
+  act,
+  within,
+  cleanup,
+} from 'apps/onboarding-experience/src/services/test/jest-utils';
 import renderWithWrappers from 'apps/onboarding-experience/src/services/test/renderWithWrappers';
-import userEvent from '@testing-library/user-event';
 import IntegrationGuide from '../IntegrationGuide';
+import { isMobileDevice } from '@libs/shared-utils';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
 import { PAYMENT_CHANNEL_OPTIONS } from '@OnboardingExperienceCommons/types/merchant';
 
-// Mock the MerchantContext hook
-jest.mock('@FTUX/context/MerchantContext');
+// Mock dependencies
+jest.mock('@libs/shared-utils', () => ({
+  isMobileDevice: jest.fn(),
+}));
 
-// Mock the window.open function
-const mockOpen = jest.fn();
-window.open = mockOpen;
+jest.mock('@FTUX/context/MerchantContext', () => ({
+  useMerchantContext: jest.fn(),
+}));
+
+jest.mock('@federated/apps/shell/commonStore', () => ({
+  useStore: jest.fn().mockImplementation((fn) => fn({ showNotification: jest.fn() })),
+}));
+
+// Mock SelectableOptionCard
+jest.mock('@OnboardingExperienceCommons/components/SelectableOptionCard', () => ({
+  __esModule: true,
+  default: jest
+    .fn()
+    .mockImplementation(({ title, customTitle, subTitle, cardImageUrl, handleClick }) => (
+      <div
+        data-testid="selectable-option-card"
+        onClick={handleClick}
+        data-subtitle={subTitle}
+        data-image-url={cardImageUrl}
+      >
+        {customTitle || <div data-testid="card-title">{title}</div>}
+        {subTitle && <div data-testid="card-subtitle">{subTitle}</div>}
+      </div>
+    )),
+}));
+
+// Mock AppIntegrationGuide to isolate the tests
+jest.mock('../AppIntegrationGuide', () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(({ hasAndroidIntent, hasIOSIntent }) => (
+    <div data-testid="app-integration-guide">
+      <span data-testid="has-android">{String(hasAndroidIntent)}</span>
+      <span data-testid="has-ios">{String(hasIOSIntent)}</span>
+    </div>
+  )),
+}));
+
+// Mock WebsitePluginModal
+jest.mock('@OnboardingExperienceCommons/components/WebsitePluginModal', () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(({ onDismiss, handleAddPlugin, supportedPlugins }) => (
+    <div role="dialog" data-testid="website-plugin-modal">
+      <button onClick={() => handleAddPlugin('Shopify')} data-testid="select-shopify">
+        Select Shopify
+      </button>
+      <button onClick={onDismiss} data-testid="dismiss-modal">
+        Close
+      </button>
+    </div>
+  )),
+}));
 
 describe('IntegrationGuide Component', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    // Default mock implementation
-    (useMerchantContext as jest.Mock).mockReturnValue({
-      merchantData: null,
-      onboardingData: null,
-      addMerchantWebsitePlugin: jest.fn(),
-      isAddingWebsitePlugin: false,
-    });
-  });
+  const mockAddMerchantWebsitePlugin = jest.fn();
 
-  test('renders website integration options when website URL is available', () => {
-    // Mock merchant data with a website URL
-    (useMerchantContext as jest.Mock).mockReturnValue({
-      merchantData: {
-        merchantById: {
-          hasApiKeyAccess: true,
-          business: {
-            paymentAcceptanceChannels: {
-              [PAYMENT_CHANNEL_OPTIONS.Websites]: {
-                urls: [{ value: 'https://example.com' }],
-              },
-            },
+  const defaultMerchantData = {
+    merchantById: {
+      hasApiKeyAccess: true,
+      business: {
+        paymentAcceptanceChannels: {
+          [PAYMENT_CHANNEL_OPTIONS.Websites]: {
+            urls: [{ value: 'https://example.com' }],
           },
         },
       },
-      onboardingData: {
-        merchantOnboardingData: {
-          supportedPlugins: [
-            {
-              name: 'Shopify',
-              icon: 'shopify-icon.svg',
-              integrationGuide: 'https://shopify-guide.com',
-            },
-            {
-              name: 'WooCommerce',
-              icon: 'woo-icon.svg',
-              integrationGuide: 'https://woo-guide.com',
-            },
-          ],
+    },
+  };
+
+  const defaultOnboardingData = {
+    merchantOnboardingData: {
+      supportedPlugins: [
+        {
+          name: 'Shopify',
+          icon: 'shopify-icon-url',
+          integrationGuide: 'https://shopify-guide.com',
         },
-      },
-      addMerchantWebsitePlugin: jest.fn(),
-      isAddingWebsitePlugin: false,
+        {
+          name: 'WooCommerce',
+          icon: 'woocommerce-icon-url',
+          integrationGuide: 'https://woocommerce-guide.com',
+        },
+      ],
+      selectedPlugins: [],
+    },
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (isMobileDevice as jest.Mock).mockReturnValue(false);
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: defaultMerchantData,
+      onboardingData: defaultOnboardingData,
+      addMerchantWebsitePlugin: mockAddMerchantWebsitePlugin,
+    });
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  test('renders website integration options when website channel is available', async () => {
+    await act(async () => {
+      renderWithWrappers(<IntegrationGuide />);
     });
 
-    renderWithWrappers(<IntegrationGuide />);
-
-    // Should show website integration options
     expect(screen.getByText('What did you use to build your website?')).toBeInTheDocument();
+
+    const cards = screen.getAllByTestId('selectable-option-card');
+    expect(cards).toHaveLength(2);
+
     expect(screen.getByText('Custom website')).toBeInTheDocument();
     expect(screen.getByText('Used a web builder')).toBeInTheDocument();
   });
 
-  test('renders website integration with selected plugin', async () => {
-    // Mock merchant data with a website URL and a selected plugin
+  test('shows selected plugin when plugin is already selected', async () => {
     (useMerchantContext as jest.Mock).mockReturnValue({
-      merchantData: {
-        merchantById: {
-          hasApiKeyAccess: true,
-          business: {
-            paymentAcceptanceChannels: {
-              [PAYMENT_CHANNEL_OPTIONS.Websites]: {
-                urls: [{ value: 'https://example.com' }],
-              },
-            },
-          },
-        },
-      },
+      merchantData: defaultMerchantData,
       onboardingData: {
         merchantOnboardingData: {
-          supportedPlugins: [
+          ...defaultOnboardingData.merchantOnboardingData,
+          selectedPlugins: [
             {
-              name: 'Shopify',
-              icon: 'shopify-icon.svg',
-              integrationGuide: 'https://shopify-guide.com',
+              website: 'https://example.com',
+              selectedPlugin: 'Shopify',
             },
           ],
-          selectedPlugins: [{ website: 'https://example.com', selectedPlugin: 'Shopify' }],
         },
       },
-      addMerchantWebsitePlugin: jest.fn(),
-      isAddingWebsitePlugin: false,
+      addMerchantWebsitePlugin: mockAddMerchantWebsitePlugin,
     });
 
-    renderWithWrappers(<IntegrationGuide />);
+    await act(async () => {
+      renderWithWrappers(<IntegrationGuide />);
+    });
 
-    // Should show the selected plugin with integration guide
-    expect(screen.getByText(/Build on Shopify/)).toBeInTheDocument();
-    expect(screen.getByText('- step-by-step guide to set up')).toBeInTheDocument();
-
-    // Should have an Edit link
+    expect(screen.getByText('You selected Shopify')).toBeInTheDocument();
     expect(screen.getByText('Edit')).toBeInTheDocument();
+    expect(screen.getByText('Here is a detailed set up guide')).toBeInTheDocument();
   });
 
-  test('renders Android integration option when Android channel is enabled', () => {
-    // Mock merchant data with Android channel enabled
+  test('shows Custom Website when empty plugin is selected', async () => {
     (useMerchantContext as jest.Mock).mockReturnValue({
-      merchantData: {
-        merchantById: {
-          hasApiKeyAccess: true,
-          business: {
-            paymentAcceptanceChannels: {
-              [PAYMENT_CHANNEL_OPTIONS.Websites]: {
-                urls: [{ value: 'https://example.com' }],
-              },
-              [PAYMENT_CHANNEL_OPTIONS.Android]: {
-                accept: true,
-              },
-            },
-          },
-        },
-      },
-      onboardingData: {
-        merchantOnboardingData: {},
-      },
-      addMerchantWebsitePlugin: jest.fn(),
-      isAddingWebsitePlugin: false,
-    });
-
-    renderWithWrappers(<IntegrationGuide />);
-
-    // Should show Android integration resource
-    expect(screen.getByText('Resources for Apps')).toBeInTheDocument();
-    expect(screen.getByText('Build API Integration on Android')).toBeInTheDocument();
-  });
-
-  test('renders iOS integration option when iOS channel is enabled', () => {
-    // Mock merchant data with iOS channel enabled
-    (useMerchantContext as jest.Mock).mockReturnValue({
-      merchantData: {
-        merchantById: {
-          hasApiKeyAccess: true,
-          business: {
-            paymentAcceptanceChannels: {
-              [PAYMENT_CHANNEL_OPTIONS.Websites]: {
-                urls: [{ value: 'https://example.com' }],
-              },
-              [PAYMENT_CHANNEL_OPTIONS.IOS]: {
-                accept: true,
-              },
-            },
-          },
-        },
-      },
-      onboardingData: {
-        merchantOnboardingData: {},
-      },
-      addMerchantWebsitePlugin: jest.fn(),
-      isAddingWebsitePlugin: false,
-    });
-
-    renderWithWrappers(<IntegrationGuide />);
-
-    // Should show iOS integration resource
-    expect(screen.getByText('Resources for Apps')).toBeInTheDocument();
-    expect(screen.getByText('Build API Integration on iOS')).toBeInTheDocument();
-  });
-
-  test('shows app integration options when website is not verified', () => {
-    (useMerchantContext as jest.Mock).mockReturnValue({
-      merchantData: {
-        merchantById: {
-          hasApiKeyAccess: false,
-          business: {
-            paymentAcceptanceChannels: {
-              [PAYMENT_CHANNEL_OPTIONS.Websites]: {
-                urls: [{ value: 'https://example.com' }],
-              },
-            },
-          },
-        },
-      },
+      merchantData: defaultMerchantData,
       onboardingData: {
         merchantOnboardingData: {
-          supportedPlugins: [],
-        },
-      },
-      addMerchantWebsitePlugin: jest.fn(),
-      isAddingWebsitePlugin: false,
-    });
-
-    renderWithWrappers(<IntegrationGuide />);
-
-    // Should show app integration options even without Android/iOS channels
-    expect(screen.getByText('Resources for Apps')).toBeInTheDocument();
-    expect(screen.getByText('Build API Integration on Android')).toBeInTheDocument();
-    expect(screen.getByText('Build API Integration on iOS')).toBeInTheDocument();
-  });
-
-  test('shows app integration options when API key access is not available', () => {
-    (useMerchantContext as jest.Mock).mockReturnValue({
-      merchantData: {
-        merchantById: {
-          hasApiKeyAccess: false,
-          business: {
-            paymentAcceptanceChannels: {
-              [PAYMENT_CHANNEL_OPTIONS.Websites]: {
-                urls: [{ value: 'https://example.com' }],
-              },
-            },
-          },
-        },
-      },
-      onboardingData: {
-        merchantOnboardingData: {
-          supportedPlugins: [],
-          selectedPlugins: [{ website: 'https://example.com', selectedPlugin: 'Custom Website' }],
-        },
-      },
-      addMerchantWebsitePlugin: jest.fn(),
-      isAddingWebsitePlugin: false,
-    });
-
-    renderWithWrappers(<IntegrationGuide />);
-
-    // With no API key access, will see both Android and iOS links
-    expect(screen.getByText('Resources for Apps')).toBeInTheDocument();
-    expect(screen.getByText('Build API Integration on Android')).toBeInTheDocument();
-    expect(screen.getByText('Build API Integration on iOS')).toBeInTheDocument();
-  });
-
-  test('resets selected plugin when clicking on Edit button', async () => {
-    const user = userEvent.setup();
-
-    // Mock merchant data with a website URL and a selected plugin
-    (useMerchantContext as jest.Mock).mockReturnValue({
-      merchantData: {
-        merchantById: {
-          hasApiKeyAccess: true,
-          business: {
-            paymentAcceptanceChannels: {
-              [PAYMENT_CHANNEL_OPTIONS.Websites]: {
-                urls: [{ value: 'https://example.com' }],
-              },
-            },
-          },
-        },
-      },
-      onboardingData: {
-        merchantOnboardingData: {
-          supportedPlugins: [
+          ...defaultOnboardingData.merchantOnboardingData,
+          selectedPlugins: [
             {
-              name: 'Shopify',
-              icon: 'shopify-icon.svg',
-              integrationGuide: 'https://shopify-guide.com',
+              website: 'https://example.com',
+              selectedPlugin: '',
             },
           ],
-          selectedPlugins: [{ website: 'https://example.com', selectedPlugin: 'Shopify' }],
         },
       },
-      addMerchantWebsitePlugin: jest.fn(),
-      isAddingWebsitePlugin: false,
+      addMerchantWebsitePlugin: mockAddMerchantWebsitePlugin,
     });
 
-    renderWithWrappers(<IntegrationGuide />);
-
-    // Verify selected plugin information is shown
-    expect(screen.getByText(/Build on Shopify/)).toBeInTheDocument();
-
-    // Click the Edit button
-    await user.click(screen.getByText('Edit'));
-
-    // The website integration options should be shown again
-    await waitFor(() => {
-      expect(screen.getByText('Custom website')).toBeInTheDocument();
-      expect(screen.getByText('Used a web builder')).toBeInTheDocument();
+    await act(async () => {
+      renderWithWrappers(<IntegrationGuide />);
     });
+
+    expect(screen.getByText('You selected Custom Website')).toBeInTheDocument();
+  });
+
+  test('calls addMerchantWebsitePlugin when custom website option is clicked', async () => {
+    await act(async () => {
+      renderWithWrappers(<IntegrationGuide />);
+    });
+
+    const cards = screen.getAllByTestId('selectable-option-card');
+    const customWebsiteCard = cards.find(
+      (card) => within(card).queryByText('Custom website') !== null,
+    );
+
+    // Add non-null assertion to tell TypeScript this element exists
+    expect(customWebsiteCard).not.toBeUndefined();
+
+    await act(async () => {
+      fireEvent.click(customWebsiteCard!);
+    });
+
+    expect(mockAddMerchantWebsitePlugin).toHaveBeenCalledWith({
+      websiteUrl: 'https://example.com',
+      pluginName: '',
+    });
+  });
+
+  test('opens WebsitePluginModal when web builder option is clicked', async () => {
+    await act(async () => {
+      renderWithWrappers(<IntegrationGuide />);
+    });
+
+    const cards = screen.getAllByTestId('selectable-option-card');
+    const webBuilderCard = cards.find(
+      (card) => within(card).queryByText('Used a web builder') !== null,
+    );
+
+    // Add non-null assertion to tell TypeScript this element exists
+    expect(webBuilderCard).not.toBeUndefined();
+
+    await act(async () => {
+      fireEvent.click(webBuilderCard!);
+    });
+
+    // Check if modal is displayed
+    expect(screen.getByTestId('website-plugin-modal')).toBeInTheDocument();
+  });
+
+  test('selects plugin from modal and calls addMerchantWebsitePlugin', async () => {
+    await act(async () => {
+      renderWithWrappers(<IntegrationGuide />);
+    });
+
+    const cards = screen.getAllByTestId('selectable-option-card');
+    const webBuilderCard = cards.find(
+      (card) => within(card).queryByText('Used a web builder') !== null,
+    );
+
+    // Add non-null assertion to tell TypeScript this element exists
+    expect(webBuilderCard).not.toBeUndefined();
+
+    await act(async () => {
+      fireEvent.click(webBuilderCard!);
+    });
+
+    const selectShopifyButton = screen.getByTestId('select-shopify');
+    await act(async () => {
+      fireEvent.click(selectShopifyButton);
+    });
+
+    expect(mockAddMerchantWebsitePlugin).toHaveBeenCalledWith({
+      websiteUrl: 'https://example.com',
+      pluginName: 'Shopify',
+    });
+  });
+
+  test('closes modal when dismiss button is clicked', async () => {
+    await act(async () => {
+      renderWithWrappers(<IntegrationGuide />);
+    });
+
+    const cards = screen.getAllByTestId('selectable-option-card');
+    const webBuilderCard = cards.find(
+      (card) => within(card).queryByText('Used a web builder') !== null,
+    );
+
+    // Add non-null assertion to tell TypeScript this element exists
+    expect(webBuilderCard).not.toBeUndefined();
+
+    await act(async () => {
+      fireEvent.click(webBuilderCard!);
+    });
+
+    expect(screen.getByTestId('website-plugin-modal')).toBeInTheDocument();
+
+    const dismissButton = screen.getByTestId('dismiss-modal');
+    await act(async () => {
+      fireEvent.click(dismissButton);
+    });
+
+    expect(screen.queryByTestId('website-plugin-modal')).not.toBeInTheDocument();
+  });
+
+  test('does not add plugin if API key access is not available', async () => {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
+        merchantById: {
+          hasApiKeyAccess: false,
+          business: {
+            paymentAcceptanceChannels: {
+              [PAYMENT_CHANNEL_OPTIONS.Websites]: {
+                urls: [{ value: 'https://example.com' }],
+              },
+            },
+          },
+        },
+      },
+      onboardingData: defaultOnboardingData,
+      addMerchantWebsitePlugin: mockAddMerchantWebsitePlugin,
+    });
+
+    await act(async () => {
+      renderWithWrappers(<IntegrationGuide />);
+    });
+
+    const cards = screen.getAllByTestId('selectable-option-card');
+    const customWebsiteCard = cards.find(
+      (card) => within(card).queryByText('Custom website') !== null,
+    );
+
+    // Add non-null assertion to tell TypeScript this element exists
+    expect(customWebsiteCard).not.toBeUndefined();
+
+    await act(async () => {
+      fireEvent.click(customWebsiteCard!);
+    });
+
+    expect(mockAddMerchantWebsitePlugin).not.toHaveBeenCalled();
+  });
+
+  test('handles error during addMerchantWebsitePlugin', async () => {
+    // Create notification mock
+    const showNotificationMock = jest.fn();
+
+    // Override the useStore implementation for this test only
+    const originalUseStore = require('@federated/apps/shell/commonStore').useStore;
+    (originalUseStore as jest.Mock).mockImplementation((fn) =>
+      fn({ showNotification: showNotificationMock }),
+    );
+
+    mockAddMerchantWebsitePlugin.mockRejectedValueOnce(new Error('API Error'));
+
+    await act(async () => {
+      renderWithWrappers(<IntegrationGuide />);
+    });
+
+    const cards = screen.getAllByTestId('selectable-option-card');
+    const customWebsiteCard = cards.find(
+      (card) => within(card).queryByText('Custom website') !== null,
+    );
+
+    // Add non-null assertion to tell TypeScript this element exists
+    expect(customWebsiteCard).not.toBeUndefined();
+
+    await act(async () => {
+      fireEvent.click(customWebsiteCard!);
+    });
+
+    // Verify notification was called with error message
+    expect(showNotificationMock).toHaveBeenCalledWith({
+      type: 'error',
+      message: 'An error occurred while selecting the plugin!',
+    });
+
+    // Verify selectedWebsitePlugin is set back to null on error
+    expect(screen.getByText('What did you use to build your website?')).toBeInTheDocument();
   });
 });

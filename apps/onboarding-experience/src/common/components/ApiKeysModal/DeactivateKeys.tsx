@@ -3,6 +3,7 @@ import { Button, Radio, RadioGroup, Box, Text } from '@razorpay/blade/components
 import { isMobileDevice } from '@libs/shared-utils';
 import { useModalComponents } from '@libs/shared-ui';
 import { ApiKeyDelay, DeactivateApiKeyProps } from '@OnboardingExperienceCommons/types/apiKeys';
+import { zIndicesMap } from '@OnboardingExperienceCommons/constants/config';
 
 /**
  * Confirmation screen for API key regeneration with deactivation options
@@ -21,7 +22,7 @@ const DeactivateKeys = ({
   const [keyRollDelay, setKeyRollDelay] = useState<ApiKeyDelay | undefined>(undefined);
 
   return (
-    <Modal isOpen onDismiss={onDismiss}>
+    <Modal isOpen onDismiss={onDismiss} snapPoints={[1, 1, 1]} zIndex={zIndicesMap.modal}>
       <ModalHeader
         title="Confirm and deactivate keys?"
         subtitle="Your current keys will be deactivated since you are generating new ones"
@@ -63,15 +64,18 @@ const DeactivateKeys = ({
           justifyContent="flex-end"
           testID="regenerate-api-key-modal-footer"
         >
-          <Button variant="tertiary" onClick={onDismiss} isDisabled={isLoading}>
-            Cancel
-          </Button>
+          {!isMobile && (
+            <Button variant="tertiary" onClick={onDismiss} isDisabled={isLoading}>
+              Cancel
+            </Button>
+          )}
           {/* Submit button is disabled until user explicitly chooses a deactivation option */}
           <Button
             variant="primary"
             onClick={() => keyRollDelay && handleRegenerateApiKeys(keyRollDelay)}
             isLoading={isLoading}
             isDisabled={keyRollDelay === undefined}
+            isFullWidth={isMobile}
           >
             Confirm
           </Button>

@@ -12,7 +12,7 @@ jest.mock('@libs/shared-utils', () => ({
 describe('SelectableOptionCard', () => {
   const mockHandleClick = jest.fn();
   const defaultProps = {
-    title: <div>Test Title</div>,
+    customTitle: <div>Test Title</div>,
     subTitle: 'Test Subtitle',
     cardImageUrl: 'test-image.png',
     handleClick: mockHandleClick,

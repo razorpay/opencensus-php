@@ -1,30 +1,103 @@
 import React from 'react';
-import { fireEvent, screen, waitFor } from '@testing-library/react';
-import renderWithWrappers from 'apps/onboarding-experience/src/services/test/renderWithWrappers';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import WebsitePluginModal, { TOP_THREE_PLUGINS } from '../WebsitePluginModal';
+import { isMobileDevice } from '@libs/shared-utils';
+import { act } from 'react-dom/test-utils';
+
+// Mock the dependencies
+jest.mock('@libs/shared-utils');
+jest.mock('@razorpay/blade/components', () => ({
+  Button: ({ children, isDisabled, isLoading, onClick, isFullWidth, ...props }: any) => (
+    <button
+      disabled={isDisabled}
+      onClick={onClick}
+      data-loading={isLoading}
+      data-fullwidth={isFullWidth}
+      {...props}
+    >
+      {children}
+    </button>
+  ),
+  Box: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  Text: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+  Card: ({ children, isSelected, onClick, testID, ...props }: any) => (
+    <div data-selected={isSelected} onClick={onClick} data-testid={testID} {...props}>
+      {children}
+    </div>
+  ),
+  CardBody: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  Dropdown: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  DropdownOverlay: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  AutoComplete: ({ placeholder, value, onChange, ...props }: any) => (
+    <input
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => onChange?.({ values: [e.target.value] })}
+      data-testid="plugin-search"
+      {...props}
+    />
+  ),
+  ActionList: ({ children, ...props }: any) => <ul {...props}>{children}</ul>,
+  ActionListItem: ({ title, value, ...props }: any) => (
+    <li data-value={value} onClick={() => props.onChange?.({ values: [value] })} {...props}>
+      {title}
+    </li>
+  ),
+  ActionListItemAsset: ({ src, alt, ...props }: any) => <img src={src} alt={alt} {...props} />,
+  SearchIcon: () => <span>🔍</span>,
+}));
+
+jest.mock('@libs/shared-ui', () => ({
+  useModalComponents: () => ({
+    Modal: ({ children, isOpen, onDismiss, ...props }: any) => (
+      <div data-testid="modal" data-open={isOpen} {...props}>
+        {children}
+      </div>
+    ),
+    ModalHeader: ({ title, subtitle, ...props }: any) => (
+      <div data-testid="modal-header" {...props}>
+        <h2>{title}</h2>
+        <p>{subtitle}</p>
+      </div>
+    ),
+    ModalBody: ({ children, ...props }: any) => (
+      <div data-testid="modal-body" {...props}>
+        {children}
+      </div>
+    ),
+    ModalFooter: ({ children, ...props }: any) => (
+      <div data-testid="modal-footer" {...props}>
+        {children}
+      </div>
+    ),
+  }),
+}));
 
 describe('WebsitePluginModal', () => {
   const mockOnDismiss = jest.fn();
   const mockHandleAddPlugin = jest.fn().mockResolvedValue(undefined);
-
   const mockSupportedPlugins = [
-    { name: 'WordPress', icon: 'wordpress.svg' },
-    { name: 'Magento', icon: 'magento.svg' },
-    { name: 'Shopify', icon: 'shopify.svg' },
+    { name: 'Shopify', icon: 'shopify-icon.svg' },
+    { name: 'WooCommerce', icon: 'woocommerce-icon.svg' },
+    { name: 'Wix', icon: 'wix-icon.svg' },
+    { name: 'Magento', icon: 'magento-icon.svg' },
+    { name: 'PrestaShop', icon: 'prestashop-icon.svg' },
   ];
-
-  const defaultProps = {
-    onDismiss: mockOnDismiss,
-    handleAddPlugin: mockHandleAddPlugin,
-    supportedPlugins: mockSupportedPlugins,
-  };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (isMobileDevice as jest.Mock).mockReturnValue(false);
+    console.error = jest.fn();
   });
 
   it('renders modal with correct title and subtitle', () => {
-    renderWithWrappers(<WebsitePluginModal {...defaultProps} />);
+    render(
+      <WebsitePluginModal
+        onDismiss={mockOnDismiss}
+        handleAddPlugin={mockHandleAddPlugin}
+        supportedPlugins={mockSupportedPlugins}
+      />,
+    );
 
     expect(screen.getByText('Select your website plugin')).toBeInTheDocument();
     expect(
@@ -34,79 +107,130 @@ describe('WebsitePluginModal', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders the top three plugins correctly', () => {
-    renderWithWrappers(<WebsitePluginModal {...defaultProps} />);
+  it('renders the top three plugin cards', () => {
+    render(
+      <WebsitePluginModal
+        onDismiss={mockOnDismiss}
+        handleAddPlugin={mockHandleAddPlugin}
+        supportedPlugins={mockSupportedPlugins}
+      />,
+    );
 
-    TOP_THREE_PLUGINS.forEach((plugin) => {
-      const img = screen.getByAltText(plugin.alt);
-      expect(img).toBeInTheDocument();
-      expect(img).toHaveAttribute('src', plugin.src);
+    // Check if all three top plugins are rendered
+    for (const plugin of TOP_THREE_PLUGINS) {
+      expect(screen.getByTestId(`plugin-card-${plugin.pluginName}`)).toBeInTheDocument();
+      expect(screen.getByAltText(plugin.alt)).toBeInTheDocument();
+    }
+  });
+
+  it('allows searching for plugins', async () => {
+    render(
+      <WebsitePluginModal
+        onDismiss={mockOnDismiss}
+        handleAddPlugin={mockHandleAddPlugin}
+        supportedPlugins={mockSupportedPlugins}
+      />,
+    );
+
+    // Find the search input
+    const searchInput = screen.getByTestId('plugin-search');
+
+    // Type a plugin name
+    await act(async () => {
+      fireEvent.change(searchInput, { target: { value: 'Magento' } });
     });
+
+    // Now the Select button should be enabled
+    const selectButton = screen.getByRole('button', { name: 'Select' });
+    expect(selectButton).not.toBeDisabled();
   });
 
-  it('renders the dropdown with supported plugins', () => {
-    renderWithWrappers(<WebsitePluginModal {...defaultProps} />);
+  it('calls handleAddPlugin with selected plugin when Select is clicked', async () => {
+    render(
+      <WebsitePluginModal
+        onDismiss={mockOnDismiss}
+        handleAddPlugin={mockHandleAddPlugin}
+        supportedPlugins={mockSupportedPlugins}
+      />,
+    );
 
-    const dropdownButton = screen.getByLabelText('Select other website plugins');
-    fireEvent.click(dropdownButton);
-
-    mockSupportedPlugins.forEach((plugin) => {
-      expect(screen.getByText(plugin.name)).toBeInTheDocument();
+    // Select a plugin
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('plugin-card-Shopify'));
     });
-  });
 
-  it('selects a plugin from the dropdown', () => {
-    renderWithWrappers(<WebsitePluginModal {...defaultProps} />);
+    // Click the Select button
+    const selectButton = screen.getByRole('button', { name: 'Select' });
+    await act(async () => {
+      fireEvent.click(selectButton);
+    });
 
-    // Open dropdown
-    const dropdownButton = screen.getByLabelText('Select other website plugins');
-    fireEvent.click(dropdownButton);
-
-    // Select WordPress
-    fireEvent.click(screen.getByText('WordPress'));
-
-    // Check if Done button is enabled after selection
-    const doneButton = screen.getByText('Done');
-    expect(doneButton).not.toBeDisabled();
-  });
-
-  it('calls handleAddPlugin with selected plugin when Done is clicked', async () => {
-    renderWithWrappers(<WebsitePluginModal {...defaultProps} />);
-
-    // Open dropdown
-    const dropdownButton = screen.getByLabelText('Select other website plugins');
-    fireEvent.click(dropdownButton);
-
-    // Select Shopify
-    fireEvent.click(screen.getByText('Shopify'));
-
-    // Click Done button
-    const doneButton = screen.getByText('Done');
-    fireEvent.click(doneButton);
-
-    // Verify handleAddPlugin was called with the correct plugin name
+    // Verify handleAddPlugin was called with the correct plugin
     await waitFor(() => {
       expect(mockHandleAddPlugin).toHaveBeenCalledWith('Shopify');
     });
+
+    // Verify onDismiss was called
+    expect(mockOnDismiss).toHaveBeenCalled();
   });
 
-  it('calls onDismiss after successful plugin addition', async () => {
-    renderWithWrappers(<WebsitePluginModal {...defaultProps} />);
+  it('handles error during plugin addition', async () => {
+    // Mock handleAddPlugin to reject
+    const mockError = new Error('Failed to add plugin');
+    const mockHandleAddPluginWithError = jest.fn().mockRejectedValue(mockError);
 
-    // Open dropdown
-    const dropdownButton = screen.getByLabelText('Select other website plugins');
-    fireEvent.click(dropdownButton);
+    render(
+      <WebsitePluginModal
+        onDismiss={mockOnDismiss}
+        handleAddPlugin={mockHandleAddPluginWithError}
+        supportedPlugins={mockSupportedPlugins}
+      />,
+    );
 
-    // Select Shopify
-    fireEvent.click(screen.getByText('Shopify'));
-
-    // Click Done button
-    const doneButton = screen.getByText('Done');
-    fireEvent.click(doneButton);
-
-    // Verify onDismiss was called after handleAddPlugin resolves
-    await waitFor(() => {
-      expect(mockOnDismiss).toHaveBeenCalled();
+    // Select a plugin
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('plugin-card-Shopify'));
     });
+
+    // Click the Select button
+    const selectButton = screen.getByRole('button', { name: 'Select' });
+    await act(async () => {
+      fireEvent.click(selectButton);
+    });
+
+    // Verify handleAddPlugin was called
+    await waitFor(() => {
+      expect(mockHandleAddPluginWithError).toHaveBeenCalledWith('Shopify');
+    });
+
+    // Verify error was logged
+    await waitFor(() => {
+      expect(console.error).toHaveBeenCalledWith('Failed to add plugin:', mockError);
+    });
+
+    // Verify modal was not dismissed on error
+    expect(mockOnDismiss).not.toHaveBeenCalled();
+  });
+
+  it('renders mobile version correctly', async () => {
+    // Mock mobile device
+    (isMobileDevice as jest.Mock).mockReturnValue(true);
+
+    render(
+      <WebsitePluginModal
+        onDismiss={mockOnDismiss}
+        handleAddPlugin={mockHandleAddPlugin}
+        supportedPlugins={mockSupportedPlugins}
+      />,
+    );
+
+    // Select a plugin
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('plugin-card-Shopify'));
+    });
+
+    // Verify that the button has fullWidth attribute in mobile mode
+    const selectButton = screen.getByRole('button', { name: 'Select' });
+    expect(selectButton).toHaveAttribute('data-fullwidth', 'true');
   });
 });

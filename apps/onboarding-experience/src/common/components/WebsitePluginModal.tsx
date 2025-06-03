@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
 import {
   Button,
-  Modal,
-  ModalBody,
-  ModalHeader,
-  ModalFooter,
   Box,
   Text,
   Card,
@@ -15,10 +11,14 @@ import {
   ActionListItem,
   ActionListItemAsset,
   CardBody,
+  SearchIcon,
 } from '@razorpay/blade/components';
-import ShopifyLogo from 'apps/onboarding-experience/src/assets/ShopifyLogo.svg';
-import WoocommerceLogo from 'apps/onboarding-experience/src/assets/WoocommerceLogo.svg';
-import WixLogo from 'apps/onboarding-experience/src/assets/WixLogo.svg';
+import ShopifyLogo from '@OnboardingExperienceAssets/ShopifyLogo.svg';
+import WoocommerceLogo from '@OnboardingExperienceAssets/WoocommerceLogo.svg';
+import WixLogo from '@OnboardingExperienceAssets/WixLogo.svg';
+import { useModalComponents } from '@libs/shared-ui';
+import { isMobileDevice } from '@libs/shared-utils';
+import { zIndicesMap } from '@OnboardingExperienceCommons/constants/config';
 
 export const TOP_THREE_PLUGINS = [
   {
@@ -93,6 +93,9 @@ const WebsitePluginModal = ({
   supportedPlugins?: { name: string; icon: string }[];
   handleAddPlugin: (newPlugin: string) => Promise<void>;
 }) => {
+  const isMobile = isMobileDevice();
+  const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
+
   const [selectedPlugin, setselectedPlugin] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -109,7 +112,12 @@ const WebsitePluginModal = ({
   };
 
   return (
-    <Modal isOpen={true} onDismiss={onDismiss}>
+    <Modal
+      snapPoints={[0.8, 0.8, 0.8]}
+      isOpen={true}
+      onDismiss={onDismiss}
+      zIndex={zIndicesMap.modal}
+    >
       <ModalHeader
         title="Select your website plugin"
         subtitle="Every plugin has a different way of integration so make sure you select the right one."
@@ -122,11 +130,20 @@ const WebsitePluginModal = ({
           gap="spacing.7"
           alignSelf="strech"
         >
-          <Box display="flex" flexDirection="column" alignItems="flex-start" gap="spacing.5">
-            <Text color="surface.text.gray.muted" size="small" weight="semibold">
-              Most popular website builders
+          <Box
+            display="flex"
+            width={{
+              base: '100%',
+              m: '360px',
+            }}
+            flexDirection="column"
+            alignItems="flex-start"
+            gap="spacing.5"
+          >
+            <Text color="surface.text.gray.subtle" size="small" weight="semibold">
+              Which plugin did you use for your website?
             </Text>
-            <Box display="flex" width="360px" alignItems="center" gap="spacing.2">
+            <Box display="flex" width="100%" alignItems="center" gap="spacing.2">
               {TOP_THREE_PLUGINS.map((plugin) => (
                 <SelectableHeroPlugin
                   key={plugin.pluginName}
@@ -143,13 +160,13 @@ const WebsitePluginModal = ({
           </Box>
           <Dropdown selectionType="single" _width="100%">
             <AutoComplete
-              label="Select other website plugins"
-              placeholder=""
+              icon={SearchIcon}
+              placeholder="Find other plugins"
               name="action"
               value={selectedPlugin}
               onChange={({ values }) => setselectedPlugin(values[0])}
             />
-            <DropdownOverlay>
+            <DropdownOverlay zIndex={zIndicesMap.dropdown}>
               <ActionList>
                 {supportedPlugins?.map((plugin) => (
                   <ActionListItem
@@ -167,11 +184,12 @@ const WebsitePluginModal = ({
       <ModalFooter>
         <Box display="flex" gap="spacing.3" justifyContent="flex-end">
           <Button
+            isFullWidth={isMobile}
             isDisabled={!selectedPlugin || isSubmitting}
             isLoading={isSubmitting}
             onClick={handleUpdatePlugin}
           >
-            Done
+            Select
           </Button>
         </Box>
       </ModalFooter>

@@ -6,7 +6,7 @@ import GenerateAPIKeys from './GenerateAPIKeys';
 
 const PaymentGateway = () => {
   return (
-    <Box display="flex" flexDirection="column" gap="spacing.6">
+    <Box display="flex" flexDirection="column" gap={{ base: 'spacing.5', m: 'spacing.7' }}>
       <InviteTeamMember />
       <IntegrationGuide />
       <Divider />

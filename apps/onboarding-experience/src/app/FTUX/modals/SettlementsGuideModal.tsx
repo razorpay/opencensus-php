@@ -1,10 +1,6 @@
 import React from 'react';
 import {
-  Modal,
   Text,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Button,
   Box,
   Table,
@@ -14,17 +10,24 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  Link,
-  ExternalLinkIcon,
 } from '@razorpay/blade/components';
 import { isMobileDevice } from '@libs/shared-utils';
-import { SETTLEMENTS_GUIDE_MODAL_DATA } from '@FTUX/constants/payments';
+import { useModalComponents } from '@libs/shared-ui';
+import { SETTLEMENTS_GUIDE_MODAL_DATA, SETTLEMENTS_GUIDE_URL } from '@FTUX/constants/payments';
+import { zIndicesMap } from '@OnboardingExperienceCommons/constants/config';
 
 const SettlementsGuideModal = ({ onDismiss }: { onDismiss: () => void }) => {
   const isMobile = isMobileDevice();
+  const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
 
   return (
-    <Modal size={isMobile ? 'small' : 'medium'} onDismiss={onDismiss} isOpen={true}>
+    <Modal
+      snapPoints={[0.8, 0.8, 0.8]}
+      size={isMobile ? 'small' : 'medium'}
+      onDismiss={onDismiss}
+      isOpen={true}
+      zIndex={zIndicesMap.modal}
+    >
       <ModalHeader title="Settlements Guide" />
       <ModalBody>
         <Box
@@ -71,8 +74,16 @@ const SettlementsGuideModal = ({ onDismiss }: { onDismiss: () => void }) => {
                   <TableHeader>
                     <TableHeaderRow>
                       <TableHeaderCell>Date</TableHeaderCell>
-                      <TableHeaderCell>Days since transaction</TableHeaderCell>
-                      <TableHeaderCell>Transaction status</TableHeaderCell>
+                      <TableHeaderCell>
+                        <Box padding="spacing.2" whiteSpace="normal">
+                          <Text weight="medium">Days since transaction</Text>
+                        </Box>
+                      </TableHeaderCell>
+                      <TableHeaderCell>
+                        <Box padding="spacing.2" whiteSpace="normal">
+                          <Text weight="medium">Transaction status</Text>
+                        </Box>
+                      </TableHeaderCell>
                     </TableHeaderRow>
                   </TableHeader>
                   <TableBody>
@@ -80,19 +91,23 @@ const SettlementsGuideModal = ({ onDismiss }: { onDismiss: () => void }) => {
                       <TableRow key={index} item={tableItem}>
                         <TableCell>{tableItem.date}</TableCell>
                         <TableCell>{tableItem.period}</TableCell>
-                        <TableCell>{tableItem.status}</TableCell>
+                        <TableCell>
+                          <Box padding="spacing.2" whiteSpace="normal">
+                            <Text>{tableItem.status}</Text>
+                          </Box>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </>
               )}
             </Table>
-            <Text size="xsmall" color="surface.text.gray.muted">
+            <Text size={isMobile ? 'xsmall' : 'small'} color="surface.text.gray.muted">
               <Text
                 as="span"
                 variant="body"
                 weight="semibold"
-                size="xsmall"
+                size={isMobile ? 'xsmall' : 'small'}
                 color="surface.text.gray.muted"
               >
                 Note:
@@ -100,16 +115,28 @@ const SettlementsGuideModal = ({ onDismiss }: { onDismiss: () => void }) => {
               Your final settlement amount will vary after adjusting for platform fees, taxes,
               refunds, credits, or any other charges.
             </Text>
-            <Link icon={ExternalLinkIcon} iconPosition="right">
-              View complete guide
-            </Link>
           </Box>
         </Box>
       </ModalBody>
       <ModalFooter>
-        <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
-          <Button onClick={onDismiss} isFullWidth>
-            Okay, got it
+        <Box
+          display="flex"
+          flexDirection={{ base: 'column-reverse', m: 'row' }}
+          gap={{ base: 'spacing.5', m: 'spacing.3' }}
+          justifyContent="flex-end"
+          width="100%"
+        >
+          <Button
+            onClick={onDismiss}
+            variant="tertiary"
+            isFullWidth={!!isMobile}
+            href={SETTLEMENTS_GUIDE_URL}
+            target="_blank"
+          >
+            View complete guide
+          </Button>
+          <Button onClick={onDismiss} isFullWidth={!!isMobile}>
+            Got it
           </Button>
         </Box>
       </ModalFooter>

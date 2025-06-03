@@ -57,7 +57,9 @@ const CollectPaymentsAccordion = ({
               title={item.title}
               titleSuffix={item.getTitleSuffix?.(expandedIndex === index)}
             />
-            <AccordionItemBody>{item.content}</AccordionItemBody>
+            <AccordionItemBody>
+              <Box paddingLeft={{ base: 'spacing.1', m: 'spacing.8' }}>{item.content}</Box>
+            </AccordionItemBody>
           </AccordionItem>
         ))
       ) : (

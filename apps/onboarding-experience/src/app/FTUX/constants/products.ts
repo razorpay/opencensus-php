@@ -1,5 +1,21 @@
-import CardBanner from 'apps/onboarding-experience/src/assets/CardBanner.svg';
-import { SparklesIcon } from '@razorpay/blade/components';
+import { ArrowUpRightIcon, SparklesIcon } from '@razorpay/blade/components';
+import SplitIncomingPaymentsIcon from '@OnboardingExperienceAssets/NoCodeProducts/SplitIncomingPaymentsIcon.svg';
+import StorefrontIcon from '@OnboardingExperienceAssets/NoCodeProducts/StorefrontIcon.svg';
+import InvoicesIcon from '@OnboardingExperienceAssets/NoCodeProducts/InvoicesIcon.svg';
+import CollectPaymentFromCustomerIcon from '@OnboardingExperienceAssets/NoCodeProducts/CollectPaymentFromCustomerIcon.svg';
+import PaymentLinksThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/PaymentLinksThumbnail.svg';
+import PaymentPagesThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/PaymentPagesThumbnail.svg';
+import InvoicesThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/InvoicesThumbnail.svg';
+import StorefrontThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/StorefrontThumbnail.svg';
+import PaymentButtonThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/PaymentButtonThumbnail.svg';
+import AffordabilityThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/AffordabilityThumbnail.svg';
+import QrCodesThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/QrCodesThumbnail.svg';
+import SubscriptionsThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/SubscriptionsThumbnail.svg';
+import SmartCollectThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/SmartCollectThumbnail.svg';
+import RouteThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/RouteThumbnail.svg';
+import CheckoutRewardsThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/CheckoutRewardsThumbnail.svg';
+import MagicCheckoutThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/MagicCheckoutThumbnail.svg';
+import OptimizerThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/OptimizerThumbnail.svg';
 
 export enum PRODUCT_TYPES {
   PAYMENT_LINKS = 'PAYMENT_LINKS',
@@ -19,154 +35,167 @@ export enum PRODUCT_TYPES {
 
 export const AVAILABLE_PRODUCTS_MAP = {
   [PRODUCT_TYPES.INVOICES]: {
-    asset: CardBanner,
+    image: InvoicesThumbnail,
     tagIcon: SparklesIcon,
     tagText: 'Set up in 2 mins',
     title: 'Invoices',
     description: 'Create GST based invoices instantly and notify your customer via sms or email.',
-    linkUrl: '/payments/invoices',
-    linkText: 'Use Now',
+    linkUrl: '/app/invoices',
+    linkText: 'Use now',
+    linkIcon: ArrowUpRightIcon,
   },
   [PRODUCT_TYPES.PAYMENT_BUTTON]: {
-    asset: CardBanner,
+    image: PaymentButtonThumbnail,
     tagIcon: SparklesIcon,
     tagText: 'Set up in 2 mins',
     title: 'Payment Button',
     description:
       'Create a Payment Button to collect payments on your website or blog with a simple one-line code.',
-    linkUrl: '/payments/payment-button',
-    linkText: 'Use Now',
+    linkUrl: '/app/paymentbuttons',
+    linkText: 'Use now',
+    linkIcon: ArrowUpRightIcon,
   },
   [PRODUCT_TYPES.AFFORDABILITY_WIDGET]: {
-    asset: CardBanner,
+    image: AffordabilityThumbnail,
     tagIcon: SparklesIcon,
     tagText: 'Set up in 2 mins',
     title: 'Affordability widget',
     description:
       'Highlight EMI, Pay Later, and Offers on product pages to drive early interest and more sales.',
-    linkUrl: '/payments/affordability-widget',
-    linkText: 'Use Now',
+    linkUrl: '/app/magic',
+    linkText: 'Use now',
+    linkIcon: ArrowUpRightIcon,
   },
   [PRODUCT_TYPES.QR_CODES]: {
-    asset: CardBanner,
+    image: QrCodesThumbnail,
     tagIcon: SparklesIcon,
     tagText: 'Set up in 2 mins',
     title: 'QR Codes',
     description:
       'Make as many QR codes as you need. Share or print them so customers can scan and pay.',
-    linkUrl: '/payments/qr-codes',
-    linkText: 'Use Now',
+    linkUrl: '/app/qr_codes',
+    linkText: 'Use now',
+    linkIcon: ArrowUpRightIcon,
   },
   [PRODUCT_TYPES.SUBSCRIPTIONS]: {
-    asset: CardBanner,
+    image: SubscriptionsThumbnail,
     tagIcon: SparklesIcon,
     tagText: 'Set up in 2 mins',
     title: 'Subscriptions',
     description:
       'Create subscription plans with your own pricing and billing cycles. Share links to start collecting recurring payments.',
-    linkUrl: '/payments/subscriptions',
-    linkText: 'Use Now',
+    linkUrl: '/app/subscriptions',
+    linkText: 'Use now',
+    linkIcon: ArrowUpRightIcon,
   },
   [PRODUCT_TYPES.SMART_COLLECT]: {
-    asset: CardBanner,
+    image: SmartCollectThumbnail,
     tagIcon: SparklesIcon,
     tagText: 'Set up in 2 mins',
     title: 'Smart Collect',
     description:
       'Track UPI, IMPS, NEFT, and RTGS payments in real-time. Get instant collections and let reconciliation happen automatically.',
-    linkUrl: '/payments/smart-collect',
-    linkText: 'Use Now',
+    linkUrl: '/app/smartcollect/virtualaccounts',
+    linkText: 'Use now',
+    linkIcon: ArrowUpRightIcon,
   },
   [PRODUCT_TYPES.ROUTE]: {
-    asset: CardBanner,
+    image: RouteThumbnail,
     tagIcon: SparklesIcon,
     tagText: 'Set up in 2 mins',
     title: 'Route',
     description:
       'Link vendor, seller, or service provider accounts to easily send payments from your transactions.',
-    linkUrl: '/payments/route',
-    linkText: 'Use Now',
+    linkUrl: '/app/route/payments',
+    linkText: 'Use now',
+    linkIcon: ArrowUpRightIcon,
   },
   [PRODUCT_TYPES.CHECKOUT_REWARDS]: {
-    asset: CardBanner,
+    image: CheckoutRewardsThumbnail,
     tagIcon: SparklesIcon,
     tagText: 'Set up in 2 mins',
     title: 'Checkout Rewards',
     description:
       'Boost sales with exciting rewards for every customer purchase. Drive more conversions and repeat orders.',
-    linkUrl: '/payments/checkout-rewards',
-    linkText: 'Use Now',
+    linkUrl: '/app/checkout-rewards',
+    linkText: 'Use now',
+    linkIcon: ArrowUpRightIcon,
   },
   [PRODUCT_TYPES.MAGIC_CHECKOUT]: {
-    asset: CardBanner,
+    image: MagicCheckoutThumbnail,
     tagIcon: SparklesIcon,
     tagText: 'Set up in 2 mins',
     title: 'Magic Checkout',
     description:
       'Drive more orders and reduce RTOs with a faster, smarter checkout experience your customers will love.',
-    linkUrl: '/payments/magic-checkout',
-    linkText: 'Use Now',
+    linkUrl: '/app/magic',
+    linkText: 'Use now',
+    linkIcon: ArrowUpRightIcon,
   },
   [PRODUCT_TYPES.OPTIMIZER]: {
-    asset: CardBanner,
+    image: OptimizerThumbnail,
     tagIcon: SparklesIcon,
     tagText: 'Set up in 2 mins',
     title: 'Optimizer',
     description:
       'Route transactions to multiple gateways with one switch on Optimizer. Boost success rates by over 10%.',
-    linkUrl: '/payments/optimizer',
-    linkText: 'Use Now',
-  },
-  [PRODUCT_TYPES.PAYMENT_PAGES]: {
-    asset: CardBanner,
-    tagIcon: SparklesIcon,
-    tagText: 'Set up in 2 mins',
-    title: 'Payment Pages',
-    description:
-      'Create a simple checkout page to accept payments online. No website or coding needed.',
-    linkUrl: '/payments/payment-pages',
-    linkText: 'Use Now',
+    linkUrl: '/app/optimizer',
+    linkText: 'Use now',
+    linkIcon: ArrowUpRightIcon,
   },
   [PRODUCT_TYPES.STOREFRONT]: {
-    asset: CardBanner,
+    image: StorefrontThumbnail,
     tagIcon: SparklesIcon,
     tagText: 'Set up in 2 mins',
     title: 'Storefront',
     description:
       'Display your products on your Razorpay Webstore, accept orders, and enhance listings with images and descriptions.',
-    linkUrl: '/payments/storefront',
-    linkText: 'Use Now',
+    linkUrl: '/app/paymentpages',
+    linkText: 'Use now',
+    linkIcon: ArrowUpRightIcon,
   },
-  [PRODUCT_TYPES.PAYMENT_LINKS]: {
-    asset: CardBanner,
+  [PRODUCT_TYPES.PAYMENT_PAGES]: {
+    image: PaymentPagesThumbnail,
     tagIcon: SparklesIcon,
     tagText: 'Set up in 2 mins',
-    title: 'Payment Link',
+    title: 'Payment Pages',
+    description:
+      'Create a simple checkout page to accept payments online. No website or coding needed.',
+    linkUrl: '/app/paymentpages',
+    linkText: 'Use now',
+    linkIcon: ArrowUpRightIcon,
+  },
+  [PRODUCT_TYPES.PAYMENT_LINKS]: {
+    image: PaymentLinksThumbnail,
+    tagIcon: SparklesIcon,
+    tagText: 'Set up in 2 mins',
+    title: 'Payment Links',
     description:
       'Generate a link you can share with customers to get paid instantly, without any setup.',
-    linkUrl: '/payments/payment-links',
-    linkText: 'Use Now',
+    linkUrl: '/app/paymentlinks',
+    linkText: 'Use now',
+    linkIcon: ArrowUpRightIcon,
   },
 };
 
 export const PRODUCT_CATEGORIES = [
   {
-    asset: CardBanner,
+    image: CollectPaymentFromCustomerIcon,
     description: 'I want to collect payments from customers directly',
     products: [PRODUCT_TYPES.PAYMENT_BUTTON],
   },
   {
-    asset: CardBanner,
+    image: StorefrontIcon,
     description: 'I want to create a store or landing page for my business and collect payments',
     products: [PRODUCT_TYPES.PAYMENT_PAGES, PRODUCT_TYPES.STOREFRONT],
   },
   {
-    asset: CardBanner,
+    image: InvoicesIcon,
     description: 'I want to issue invoices for my business.',
     products: [PRODUCT_TYPES.INVOICES],
   },
   {
-    asset: CardBanner,
+    image: SplitIncomingPaymentsIcon,
     description:
       'I want to split incoming payments into linked accounts for managing settlements and reconciliation.',
     products: [PRODUCT_TYPES.PAYMENT_LINKS],

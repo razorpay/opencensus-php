@@ -1,9 +1,10 @@
 import React from 'react';
-import { Button, Box, ArrowUpRightIcon } from '@razorpay/blade/components';
+import { Button, Box } from '@razorpay/blade/components';
 import { isMobileDevice } from '@libs/shared-utils';
 import { useModalComponents } from '@libs/shared-ui';
-import ImagePostCard from 'apps/onboarding-experience/src/common/components/ImagePostCard';
+import ImagePostCard from '@OnboardingExperienceCommons/components/ImagePostCard';
 import { AVAILABLE_PRODUCTS_MAP, PRODUCT_TYPES } from '@FTUX/constants/products';
+import { zIndicesMap } from '@OnboardingExperienceCommons/constants/config';
 
 interface ProductRecommendationsProps {
   productsList: PRODUCT_TYPES[];
@@ -22,7 +23,13 @@ const ProductRecommendations = ({
   const { Modal, ModalHeader, ModalFooter, ModalBody } = useModalComponents(isMobile);
 
   return (
-    <Modal isOpen={true} onDismiss={onDismiss} size="medium" snapPoints={[0.5, 0.7, 0.85]}>
+    <Modal
+      isOpen={true}
+      onDismiss={onDismiss}
+      size="medium"
+      snapPoints={[0.5, 0.7, 0.85]}
+      zIndex={zIndicesMap.modal}
+    >
       <ModalHeader
         title="Recommendation for you"
         subtitle="If this isn't a right fit, you can explore all other products"
@@ -35,14 +42,9 @@ const ProductRecommendations = ({
             return (
               <ImagePostCard
                 key={productDetails.title}
-                image={productDetails.asset}
-                tagIcon={productDetails.tagIcon}
-                tagText={productDetails.tagText}
-                title={productDetails.title}
-                description={productDetails.description}
-                linkUrl={productDetails.linkUrl}
-                linkIcon={ArrowUpRightIcon}
-                linkText={productDetails.linkText}
+                imageHeight="215px"
+                maxContentHeight="small"
+                {...productDetails}
               />
             );
           })}

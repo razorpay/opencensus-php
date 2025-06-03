@@ -1,20 +1,16 @@
-import React, { useState, useEffect, ReactElement } from 'react';
-import {
-  Button,
-  Divider,
-  Modal,
-  ModalBody,
-  ModalHeader,
-  ModalFooter,
-  Box,
-  Text,
-  TextInput,
-  Skeleton,
-  Link,
-} from '@razorpay/blade/components';
+import React, { useState, useEffect, ReactElement, useMemo } from 'react';
+import { Button, Divider, Box, Text, TextInput, Skeleton, Link } from '@razorpay/blade/components';
 import { useDebounce } from '@libs/shared-utils';
-import { removePaymentHandleSlugPrefix } from '@OnboardingExperienceCommons/utils/paymentHandle';
+import {
+  addPaymentHandleSlugPrefix,
+  removePaymentHandleSlugPrefix,
+} from '@OnboardingExperienceCommons/utils/paymentHandle';
 import { useStore } from '@federated/apps/shell/commonStore';
+import { isMobileDevice } from '@libs/shared-utils';
+import { useModalComponents } from '@libs/shared-ui';
+import { zIndicesMap } from '@OnboardingExperienceCommons/constants/config';
+
+const HANDLE_PREFIX = 'https://razorpay.me/@';
 
 const EditPaymentHandleModal = ({
   onDismiss,
@@ -25,26 +21,56 @@ const EditPaymentHandleModal = ({
 }: {
   onDismiss: () => void;
   getHandleSuggestions: () => Promise<string[]>;
-  getPaymentHandleAvailability: (handle: string) => Promise<boolean | null>;
+  getPaymentHandleAvailability: (
+    handle: string,
+  ) => Promise<{ message?: string; isAvailable?: boolean }>;
   handleUpdatePaymentHandle: (paymentHandle: string) => Promise<void>;
   currentPaymentHandle?: string;
 }): ReactElement => {
   const showNotification = useStore((state) => state.showNotification);
-  const [paymentHandle, setPaymentHandle] = useState(() =>
-    removePaymentHandleSlugPrefix(currentPaymentHandle),
+  const isMobile = isMobileDevice();
+  const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
+
+  const [paymentHandleUrl, setPaymentHandleUrl] = useState(
+    () => `${HANDLE_PREFIX}${removePaymentHandleSlugPrefix(currentPaymentHandle)}`,
   );
-  const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [availabilityStatus, setAvailabilityStatus] = useState<{
+    message?: string | undefined;
+    loading?: boolean;
+    isAvailable?: boolean | undefined;
+  }>({
+    message: undefined,
+    loading: false,
+    isAvailable: undefined,
+  });
+
+  // Extract actual handle value without prefix
+  const paymentHandleValue = useMemo(() => {
+    return paymentHandleUrl.replace(HANDLE_PREFIX, '');
+  }, [paymentHandleUrl]);
+
+  // Handle input change while preserving the prefix
+  const handleInputChange = (event: { value?: string }) => {
+    const value = event.value || '';
+
+    // Ensure the prefix is always there
+    if (!value.startsWith(HANDLE_PREFIX)) {
+      setPaymentHandleUrl(HANDLE_PREFIX);
+    } else {
+      setPaymentHandleUrl(value);
+    }
+  };
 
   const handleSave = async () => {
-    if (!paymentHandle || !isAvailable || isCheckingAvailability) return;
+    if (!paymentHandleValue || !availabilityStatus.isAvailable || availabilityStatus.loading)
+      return;
 
     setIsSubmitting(true);
     try {
-      await handleUpdatePaymentHandle(paymentHandle);
+      await handleUpdatePaymentHandle(paymentHandleValue);
       showNotification({ type: 'success', message: 'Payment handle updated successfully!' });
       onDismiss();
     } catch (error) {
@@ -63,18 +89,28 @@ const EditPaymentHandleModal = ({
   // Debounced function to check handle availability
   const checkHandleAvailability = useDebounce(async (handle: string) => {
     if (!handle) {
-      setIsAvailable(null);
-      setIsCheckingAvailability(false);
+      setAvailabilityStatus({
+        loading: false,
+      });
       return;
     }
 
     try {
       const availability = await getPaymentHandleAvailability(handle);
-      setIsAvailable(availability);
+      setAvailabilityStatus({
+        loading: false,
+        isAvailable: availability.isAvailable,
+        message: availability.message,
+      });
     } catch (error) {
-      setIsAvailable(null);
-    } finally {
-      setIsCheckingAvailability(false);
+      setAvailabilityStatus({
+        loading: false,
+        isAvailable: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Error occured while checking handle availability!',
+      });
     }
   }, 500);
 
@@ -97,12 +133,34 @@ const EditPaymentHandleModal = ({
 
   // Check handle availability when payment handle changes
   useEffect(() => {
-    setIsCheckingAvailability(true);
-    checkHandleAvailability(paymentHandle);
-  }, [paymentHandle]);
+    const handleWithSuffix = addPaymentHandleSlugPrefix(paymentHandleValue);
+
+    // Do not check availability for existing handle
+    if (currentPaymentHandle === handleWithSuffix) {
+      setAvailabilityStatus({
+        loading: false,
+      });
+      return;
+    }
+
+    // Mark suggestion as available directly if it is in the suggestions list
+    if (suggestions.includes(handleWithSuffix)) {
+      setAvailabilityStatus({
+        isAvailable: true,
+        message: `${handleWithSuffix} is available`,
+      });
+      return;
+    }
+
+    setAvailabilityStatus((status) => ({
+      ...status,
+      loading: true,
+    }));
+    checkHandleAvailability(paymentHandleValue);
+  }, [paymentHandleUrl, suggestions]);
 
   return (
-    <Modal isOpen={true} onDismiss={onDismiss}>
+    <Modal isOpen={true} onDismiss={onDismiss} snapPoints={[1, 1, 1]} zIndex={zIndicesMap.modal}>
       <ModalHeader
         title="Edit your Razorpay.me link"
         subtitle="Change your handle to whatever you like"
@@ -111,28 +169,23 @@ const EditPaymentHandleModal = ({
         <Box display="flex" flexDirection="column" gap="spacing.4" width="100%">
           <TextInput
             label="Your handle"
-            prefix="https://razorpay.me/@"
-            value={paymentHandle}
-            onChange={({ value }) => setPaymentHandle(value || '')}
+            value={paymentHandleUrl}
+            onChange={handleInputChange}
             helpText="We will let you know whats available"
-            successText="This handle is available!"
-            errorText={
-              paymentHandle.length < 3
-                ? 'Handle should have atleast 3 characters!'
-                : 'This handle is not available'
-            }
+            successText={availabilityStatus.message || 'This handle is available'}
+            errorText={availabilityStatus.message || 'This handle is not available'}
             validationState={
-              isAvailable === false || paymentHandle.length < 3
+              availabilityStatus.isAvailable === false
                 ? 'error'
-                : isAvailable
+                : availabilityStatus.isAvailable
                 ? 'success'
                 : 'none'
             }
-            isLoading={isCheckingAvailability}
+            isLoading={availabilityStatus.loading}
           />
 
           {isLoadingSuggestions ? (
-            <Skeleton height="34px" width="100%" />
+            <Skeleton height="45px" width="100%" />
           ) : (
             suggestions.length > 0 && (
               <Box display="flex" flexDirection="column" width="100%" gap="spacing.4">
@@ -143,7 +196,11 @@ const EditPaymentHandleModal = ({
                     <React.Fragment key={suggestion}>
                       <Link
                         variant="button"
-                        onClick={() => setPaymentHandle(removePaymentHandleSlugPrefix(suggestion))}
+                        onClick={() =>
+                          setPaymentHandleUrl(
+                            `${HANDLE_PREFIX}${removePaymentHandleSlugPrefix(suggestion)}`,
+                          )
+                        }
                       >
                         {suggestion}
                       </Link>
@@ -157,8 +214,8 @@ const EditPaymentHandleModal = ({
         </Box>
       </ModalBody>
       <ModalFooter>
-        <Box display="flex" gap="spacing.3" justifyContent="flex-end">
-          <Button variant="tertiary" onClick={onDismiss}>
+        <Box display="flex" flexDirection="row" gap="spacing.3" justifyContent="flex-end">
+          <Button variant="tertiary" onClick={onDismiss} isFullWidth={isMobile ? true : false}>
             Cancel
           </Button>
           <Button
@@ -166,8 +223,12 @@ const EditPaymentHandleModal = ({
             onClick={handleSave}
             isLoading={isSubmitting}
             isDisabled={
-              !paymentHandle || !isAvailable || isCheckingAvailability || paymentHandle.length < 3
+              !paymentHandleValue ||
+              !availabilityStatus.isAvailable ||
+              availabilityStatus.loading ||
+              paymentHandleValue.length < 3
             }
+            isFullWidth={isMobile ? true : false}
           >
             Save Changes
           </Button>

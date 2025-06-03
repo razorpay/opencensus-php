@@ -26,7 +26,7 @@ describe('Tests for AccordionSection component', () => {
 
     renderWithWrappers(<AccordionSection />);
     expect(screen.getByText('1/2 COMPLETED')).toBeInTheDocument();
-    expect(screen.getByText('Start collecting payments in 3 easy steps')).toBeInTheDocument();
+    expect(screen.getByText('Start collecting payments in 2 easy steps')).toBeInTheDocument();
   });
 
   test('Should handle empty accordionData gracefully', () => {

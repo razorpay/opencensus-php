@@ -15,6 +15,7 @@ const MERCHANT_FRAGMENT = gql`
     }
     createdAt
     activation {
+      bddVerificationStatus
       status
       isActivated
       isTransacted

@@ -21,7 +21,7 @@ const SelectableOptionCard = ({
   customTitle,
   subTitle,
   cardImageUrl,
-  handleClick = () => {},
+  handleClick,
   isDisabled = false,
   link,
   imageWidth = '50px',
@@ -55,14 +55,22 @@ const SelectableOptionCard = ({
         />
         <Box display="flex" flexDirection="column" alignItems="flex-start" gap="6px" flex="1 0 0">
           {title ? (
-            <Text color="surface.text.gray.subtle" weight="semibold">
+            <Text
+              color="surface.text.gray.normal"
+              weight="semibold"
+              size={isMobile ? 'small' : 'medium'}
+            >
               {title}
             </Text>
           ) : (
             customTitle
           )}
           {subTitle && (
-            <Text testID="card-subtitle" size="small" color="surface.text.gray.subtle">
+            <Text
+              testID="card-subtitle"
+              size={!title && !customTitle ? 'medium' : 'small'}
+              color="surface.text.gray.subtle"
+            >
               {subTitle}
             </Text>
           )}

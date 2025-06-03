@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import { Box, Heading, Text, Link } from '@razorpay/blade/components';
 import SettlementsGuideModal from '@FTUX/modals/SettlementsGuideModal';
 import PaymentHandleActions from './PaymentHandleActions';
-import PaymentHandleBannerImg from 'apps/onboarding-experience/src/assets/PaymentHandleBanner.svg';
-
+import { isMobileDevice } from '@libs/shared-utils';
+import paymentHandleBannerImg from '@OnboardingExperienceAssets/PaymentHandleBanner.svg';
+import paymentHandleBannerMobileImg from '@OnboardingExperienceAssets/PaymentHandleBannerMobile.svg';
 /**
  * PaymentHandle component displays information about payment handle functionality
  * and provides actions for the user to interact with the payment handle feature.
  */
 const PaymentHandle = () => {
   const [isSettlementsGuideModalOpen, setIsSettlementsGuideModalOpen] = useState(false);
+  const isMobile = isMobileDevice();
 
   return (
     <Box>
@@ -20,7 +22,11 @@ const PaymentHandle = () => {
         minHeight="80px"
         marginBottom="spacing.4"
       >
-        <img src={PaymentHandleBannerImg} alt="payment-handle" width="100%" />
+        <img
+          src={isMobile ? paymentHandleBannerMobileImg : paymentHandleBannerImg}
+          alt="payment-handle"
+          width="100%"
+        />
       </Box>
       {/* Section heading */}
       <Box
@@ -28,7 +34,7 @@ const PaymentHandle = () => {
         marginBottom={{ base: 'spacing.5', m: 'spacing.7' }}
       >
         <Heading weight="semibold" size="medium">
-          Accept payments with payment handle
+          Use your Payment Handle
         </Heading>
       </Box>
       {/* Main content container */}
@@ -59,17 +65,21 @@ const PaymentHandle = () => {
           gap="spacing.5"
           width="100%"
         >
-          <Text weight="medium">
+          <Text
+            size={isMobile ? 'small' : 'medium'}
+            weight="regular"
+            color="surface.text.gray.normal"
+          >
             Use this personalised link to accept payments instantly from your customers.
           </Text>
           {/* User actions related to payment handle - edit, copy and share */}
           <PaymentHandleActions />
           {/* Settlement information with modal trigger */}
-          <Text color="surface.text.gray.muted" size="small">
+          <Text color="surface.text.gray.muted" size={isMobile ? 'xsmall' : 'small'}>
             Your money will be credited to your account as per your{' '}
             <Link
               variant="button"
-              size="small"
+              size={isMobile ? 'xsmall' : 'small'}
               onClick={() => setIsSettlementsGuideModalOpen(true)}
             >
               settlement schedule
@@ -78,7 +88,7 @@ const PaymentHandle = () => {
         </Box>
         {/* Desktop-only payment handle image */}
         <Box display={{ base: 'none', l: 'block' }}>
-          <img src={PaymentHandleBannerImg} alt="payment-handle" width="280px" />
+          <img src={paymentHandleBannerImg} alt="payment-handle" width="280px" />
         </Box>
       </Box>
       {isSettlementsGuideModalOpen && (

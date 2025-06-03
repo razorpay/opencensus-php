@@ -1,4 +1,5 @@
-import React, { useMemo, useState, useEffect, Suspense, lazy } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { isMobileDevice } from '@libs/shared-utils';
 import { useStore } from '@federated/apps/shell/commonStore';
 import { Box, Link, Divider, Text, EditIcon, LayersIcon } from '@razorpay/blade/components';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
@@ -8,65 +9,26 @@ import SelectableOptionCard, {
   SelectableOptionCardProps,
 } from '@OnboardingExperienceCommons/components/SelectableOptionCard';
 import {
+  hasAcceptedAnyPaymentChannel,
   getSpecificPlatformType,
-  hasAddedWebsite,
 } from '@OnboardingExperienceCommons/utils/merchant';
-import IntegrationOptionIcon from 'apps/onboarding-experience/src/assets/IntegrationOption.svg';
-
-const WebsitePluginModal = lazy(
-  () => import('@OnboardingExperienceCommons/components/WebsitePluginModal'),
-);
-
-const AppIntegrationGuide = ({
-  hasAndroidIntegration,
-  hasIOSIntegration,
-  // In case of keyless activation or when website is not verified, we will also show app integration guides
-  isWebsiteVerified,
-}: {
-  hasAndroidIntegration?: boolean;
-  hasIOSIntegration?: boolean;
-  isWebsiteVerified?: boolean;
-}) => {
-  return (
-    <Box>
-      <Text color="surface.text.gray.subtle" weight="medium">
-        Resources for Apps
-      </Text>
-      <Box paddingTop="spacing.5">
-        <SelectableOptionCard
-          customTitle={
-            <Box display="flex" flexDirection="row">
-              <Text size="medium">Here is a detailed set up guide - </Text>
-              {hasAndroidIntegration || !isWebsiteVerified ? (
-                <Link size="medium" icon={LayersIcon} href={INTEGRATION_GUIDE['android']}>
-                  Build API Integration on Android
-                </Link>
-              ) : null}
-              {hasIOSIntegration || !isWebsiteVerified ? (
-                <Link size="medium" icon={LayersIcon} href={INTEGRATION_GUIDE['ios']}>
-                  Build API Integration on iOS
-                </Link>
-              ) : null}
-            </Box>
-          }
-          subTitle={'App integration'}
-          cardImageUrl={IntegrationOptionIcon}
-        />
-      </Box>
-    </Box>
-  );
-};
+import customWebsiteIntegrationIcon from '@OnboardingExperienceAssets/CustomWebsiteIntegrationIcon.svg';
+import websiteIntegratedIcon from '@OnboardingExperienceAssets/WebsiteIntegratedIcon.svg';
+import pluginWebsiteIntegrationIcon from '@OnboardingExperienceAssets/PluginWebsiteIntegrationIcon.svg';
+import WebsitePluginModal from '@OnboardingExperienceCommons/components/WebsitePluginModal';
+import AppIntegrationGuide from './AppIntegrationGuide';
 
 const IntegrationGuide = () => {
+  const isMobile = isMobileDevice();
   const showNotification = useStore((state) => state.showNotification);
   const { merchantData, onboardingData, addMerchantWebsitePlugin } = useMerchantContext();
   const [selectedWebsitePlugin, setSelectedWebsitePlugin] = useState<string | null>(null);
   const [websitePluginModalVisible, setWebsitePluginModalVisible] = useState(false);
 
-  // Check if the merchant has added a website and has API key access
-  const isWebsiteVerified =
-    Boolean(merchantData?.merchantById?.hasApiKeyAccess) &&
-    hasAddedWebsite(merchantData?.merchantById?.business?.paymentAcceptanceChannels);
+  const paymentChannels = merchantData?.merchantById?.business?.paymentAcceptanceChannels;
+
+  // Check if the merchant has added a website, has API key access and is activated
+  const hasApiKeyAccess = Boolean(merchantData?.merchantById?.hasApiKeyAccess);
 
   const websiteUrl =
     merchantData?.merchantById?.business?.paymentAcceptanceChannels?.[
@@ -74,16 +36,17 @@ const IntegrationGuide = () => {
     ]?.urls?.[0]?.value;
   const platformType = getSpecificPlatformType(websiteUrl);
 
-  const hasAndroidIntegration =
+  const hasAndroidIntent =
     platformType === 'android' ||
-    merchantData?.merchantById?.business?.paymentAcceptanceChannels?.[
-      PAYMENT_CHANNEL_OPTIONS.Android
-    ]?.accept;
+    hasAcceptedAnyPaymentChannel(paymentChannels, [PAYMENT_CHANNEL_OPTIONS.Android]);
 
-  const hasIOSIntegration =
+  const hasIOSIntent =
     platformType === 'ios' ||
-    merchantData?.merchantById?.business?.paymentAcceptanceChannels?.[PAYMENT_CHANNEL_OPTIONS.IOS]
-      ?.accept;
+    hasAcceptedAnyPaymentChannel(paymentChannels, [PAYMENT_CHANNEL_OPTIONS.IOS]);
+
+  const hasWebsiteIntent =
+    platformType === 'website' ||
+    hasAcceptedAnyPaymentChannel(paymentChannels, [PAYMENT_CHANNEL_OPTIONS.Websites]);
 
   const handleAddPlugin = async (newPlugin: string) => {
     // Find if there's a plugin used for this website
@@ -91,8 +54,12 @@ const IntegrationGuide = () => {
 
     try {
       setSelectedWebsitePlugin(newPlugin);
-      // Set the chosen plugin and mutate parallely
-      await addMerchantWebsitePlugin({ websiteUrl: websiteUrl || '', pluginName: newPlugin });
+
+      // Set the chosen plugin and mutate parallely in case the merchant is activated
+      // Else the user can toggle plugin integration guide on FE only
+      if (hasApiKeyAccess && !!websiteUrl) {
+        await addMerchantWebsitePlugin({ websiteUrl: websiteUrl || '', pluginName: newPlugin });
+      }
     } catch (error) {
       // Rollback to previous plugin in case of error
       setSelectedWebsitePlugin(previouslySelectedPlugin);
@@ -104,13 +71,13 @@ const IntegrationGuide = () => {
   };
 
   const websiteIntegrationOptions: SelectableOptionCardProps[] = useMemo(() => {
-    if (!websiteUrl || platformType !== 'website') {
+    if (!hasWebsiteIntent) {
       return [];
     }
 
     // If selected plugin is empty, it means the merchant has selected "None Of the Above"
     const websitePluginName =
-      selectedWebsitePlugin === '' || !isWebsiteVerified ? 'Custom Website' : selectedWebsitePlugin;
+      selectedWebsitePlugin === '' ? 'Custom Website' : selectedWebsitePlugin;
 
     if (websitePluginName) {
       const activePluginConfig = onboardingData?.merchantOnboardingData?.supportedPlugins?.find(
@@ -122,15 +89,24 @@ const IntegrationGuide = () => {
       return [
         {
           customTitle: (
-            <Box display="flex" flexDirection="row">
-              <Link href={integrationGuide} size="medium" icon={LayersIcon} target="_blank">
-                Build on {websitePluginName}
+            <Box display="flex" flexWrap="wrap" rowGap="spacing.1" columnGap="spacing.4">
+              <Text size={isMobile ? 'small' : 'medium'} weight="semibold">
+                Here is a detailed set up guide{' '}
+              </Text>
+              <Link
+                href={integrationGuide}
+                size={isMobile ? 'small' : 'medium'}
+                icon={LayersIcon}
+                target="_blank"
+              >
+                {selectedWebsitePlugin
+                  ? `Build on ${selectedWebsitePlugin}`
+                  : 'Build API Integration'}
               </Link>
-              <Text size="medium"> - step-by-step guide to set up</Text>
             </Box>
           ),
           subTitle: `${websitePluginName}`,
-          cardImageUrl: activePluginConfig?.icon || IntegrationOptionIcon,
+          cardImageUrl: activePluginConfig?.icon || websiteIntegratedIcon,
           handleClick: () => {
             window.open(integrationGuide, '_blank');
           },
@@ -142,20 +118,25 @@ const IntegrationGuide = () => {
     return [
       {
         title: 'Custom website',
-        subtitle: 'Built on my own',
-        image: IntegrationOptionIcon,
-        onClick: () => handleAddPlugin(''),
+        subTitle: 'Built on my own',
+        cardImageUrl: customWebsiteIntegrationIcon,
+        handleClick: () => handleAddPlugin(''),
       },
       {
         title: 'Used a web builder',
         subTitle: 'Like Shopify, WooCommerce, Wix.',
-        cardImageUrl: IntegrationOptionIcon,
+        cardImageUrl: pluginWebsiteIntegrationIcon,
         handleClick: () => setWebsitePluginModalVisible(true),
       },
     ];
-  }, [websiteUrl, platformType, selectedWebsitePlugin]);
+  }, [websiteUrl, platformType, selectedWebsitePlugin, isMobile]);
 
   useEffect(() => {
+    // In case of KLA, we will only show the plugin integration guide on Client side
+    if (!hasApiKeyAccess) {
+      return;
+    }
+
     // Find if there's a plugin used for this website
     const selectedPlugin = onboardingData?.merchantOnboardingData?.selectedPlugins?.find(
       (plugin) => plugin?.website === websiteUrl,
@@ -164,17 +145,21 @@ const IntegrationGuide = () => {
   }, [onboardingData?.merchantOnboardingData?.selectedPlugins]);
 
   return (
-    <Box display="flex" flexDirection="column" gap="spacing.6">
+    <Box display="flex" flexDirection="column" gap={{ base: 'spacing.5', m: 'spacing.7' }}>
       {websiteIntegrationOptions?.length > 0 && (
         <Box>
           <Box
             display="flex"
-            flexDirection={{ base: 'column', l: 'row' }}
-            alignItems={{ base: 'flex-start', l: 'center' }}
-            justifyContent={{ l: 'space-between' }}
+            alignItems="center"
+            justifyContent="space-between"
+            flexWrap="wrap"
             gap="spacing.4"
           >
-            <Text color="surface.text.gray.subtle" weight="medium">
+            <Text
+              color="surface.text.gray.subtle"
+              weight="medium"
+              size={isMobile ? 'small' : 'medium'}
+            >
               {typeof selectedWebsitePlugin === 'string'
                 ? `You selected ${selectedWebsitePlugin || 'Custom Website'}`
                 : 'What did you use to build your website?'}
@@ -185,6 +170,7 @@ const IntegrationGuide = () => {
                 icon={EditIcon}
                 variant="button"
                 onClick={() => setSelectedWebsitePlugin(null)}
+                size={isMobile ? 'small' : 'medium'}
               >
                 Edit
               </Link>
@@ -193,8 +179,8 @@ const IntegrationGuide = () => {
           <Box
             display="flex"
             flexDirection={{ base: 'column', l: 'row' }}
-            gap="40px"
-            paddingTop="spacing.5"
+            gap={{ base: 'spacing.5', m: 'spacing.7' }}
+            paddingTop={{ base: 'spacing.4', m: 'spacing.5' }}
           >
             {websiteIntegrationOptions.map((option) => (
               <SelectableOptionCard
@@ -210,27 +196,21 @@ const IntegrationGuide = () => {
         </Box>
       )}
 
-      {(hasAndroidIntegration || hasIOSIntegration || !isWebsiteVerified) && (
+      {(hasAndroidIntent || hasIOSIntent) && (
         <>
           {websiteIntegrationOptions?.length > 0 && <Divider />}
-          <AppIntegrationGuide
-            hasAndroidIntegration={hasAndroidIntegration}
-            hasIOSIntegration={hasIOSIntegration}
-            isWebsiteVerified={isWebsiteVerified}
-          />
+          <AppIntegrationGuide hasAndroidIntent={hasAndroidIntent} hasIOSIntent={hasIOSIntent} />
         </>
       )}
 
       {websitePluginModalVisible && (
-        <Suspense fallback={<Box>Loading...</Box>}>
-          <WebsitePluginModal
-            onDismiss={() => {
-              setWebsitePluginModalVisible(false);
-            }}
-            supportedPlugins={onboardingData?.merchantOnboardingData?.supportedPlugins}
-            handleAddPlugin={handleAddPlugin}
-          />
-        </Suspense>
+        <WebsitePluginModal
+          onDismiss={() => {
+            setWebsitePluginModalVisible(false);
+          }}
+          supportedPlugins={onboardingData?.merchantOnboardingData?.supportedPlugins}
+          handleAddPlugin={handleAddPlugin}
+        />
       )}
     </Box>
   );

@@ -57,7 +57,7 @@ const InviteTeamMember = () => {
         target="_blank"
         marginLeft={{ base: 'none', l: 'auto' }}
       >
-        Watch a video on how to set up
+        Watch a set up video
       </Link>
       {isLoading ? (
         <Box display="flex" alignItems="center" justifyContent="center" width="200px">

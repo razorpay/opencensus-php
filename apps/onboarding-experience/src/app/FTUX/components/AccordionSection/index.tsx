@@ -1,11 +1,11 @@
 import React from 'react';
 import { Box, Heading, Badge } from '@razorpay/blade/components';
 import useAccordionSectionData from '@FTUX/hooks/useAccordionSectionData';
-import CollectPaymentsBannerImg from 'apps/onboarding-experience/src/assets/CollectPaymentsBanner.svg';
+import collectPaymentsBannerImg from '@OnboardingExperienceAssets/CollectPaymentsBanner.svg';
 import CollectPaymentsAccordion from './CollectPaymentsAccordion';
 
 const AccordionSection = () => {
-  const { activeStep, accordionData } = useAccordionSectionData();
+  const { activeStep, accordionData, accordionHeaderImage } = useAccordionSectionData();
 
   return (
     <Box>
@@ -15,7 +15,10 @@ const AccordionSection = () => {
           base: 'column-reverse',
           l: 'row',
         }}
-        alignItems="center"
+        alignItems={{
+          base: 'flex-start',
+          m: 'center',
+        }}
         gap="spacing.4"
         marginBottom="spacing.5"
       >
@@ -30,7 +33,7 @@ const AccordionSection = () => {
           }}
         >
           <Heading weight="semibold" size="medium">
-            Start collecting payments in 3 easy steps
+            Start collecting payments in {accordionData.length || 0} easy steps
           </Heading>
           <Badge color="neutral" size="large">
             {activeStep || 0}/{accordionData.length || 0} COMPLETED
@@ -42,7 +45,7 @@ const AccordionSection = () => {
             l: '360px',
           }}
         >
-          <img src={CollectPaymentsBannerImg} alt="accordionHeader" width="100%" />
+          <img src={collectPaymentsBannerImg} alt="accordionHeader" width="100%" />
         </Box>
       </Box>
       <CollectPaymentsAccordion activeStep={activeStep} data={accordionData} />

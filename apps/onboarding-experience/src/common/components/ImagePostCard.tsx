@@ -2,20 +2,25 @@ import React from 'react';
 import { Box, Text, Link, Card, Badge, IconComponent } from '@razorpay/blade/components';
 import { isMobileDevice } from '@libs/shared-utils';
 
-interface ImagePostCardProps {
+export interface ImagePostCardProps {
   tagIcon: IconComponent;
   tagText: string;
   image: string;
+  imageFit?: string;
+  imageHeight?: string;
   title: string;
   description: string;
   linkIcon: IconComponent;
   linkText: string;
   handleClick?: () => void;
   linkUrl?: string;
+  maxContentHeight?: 'small' | 'large';
 }
 
 const ImagePostCard = ({
   image,
+  imageFit = 'cover',
+  imageHeight = '100%',
   tagIcon,
   tagText,
   title,
@@ -24,6 +29,7 @@ const ImagePostCard = ({
   linkIcon,
   linkText,
   handleClick,
+  maxContentHeight = 'large',
 }: ImagePostCardProps): JSX.Element => {
   const isMobile = isMobileDevice();
   return (
@@ -36,7 +42,11 @@ const ImagePostCard = ({
         flex="1 0 0"
         alignSelf="stretch"
       >
-        <img width="100%" src={image} alt={`${title}`} />
+        <img
+          src={image}
+          alt={`${title}`}
+          style={{ width: '100%', height: imageHeight, objectFit: imageFit }}
+        />
         <Box
           display="flex"
           flexDirection="column"
@@ -44,24 +54,31 @@ const ImagePostCard = ({
           gap="spacing.5"
           alignSelf="stretch"
         >
-          <Badge icon={tagIcon}>{tagText}</Badge>
+          <Badge icon={tagIcon} size="medium">
+            {tagText}
+          </Badge>
           <Box
             display="flex"
             flexDirection="column"
             alignItems="flex-start"
             gap="spacing.3"
             alignSelf="stretch"
-            minHeight="85px"
+            minHeight={{ base: 'fit-content', m: maxContentHeight === 'small' ? '85px' : '115px' }}
           >
             <Text
               weight="semibold"
               alignSelf="strech"
               color="surface.text.gray.normal"
-              size="medium"
+              size={isMobile ? 'medium' : 'large'}
             >
               {title}
             </Text>
-            <Text weight="regular" alignSelf="strech" color="surface.text.gray.normal" size="small">
+            <Text
+              size={isMobile ? 'small' : 'medium'}
+              weight="regular"
+              alignSelf="strech"
+              color="surface.text.gray.normal"
+            >
               {description}
             </Text>
           </Box>
@@ -72,12 +89,18 @@ const ImagePostCard = ({
               variant="anchor"
               href={linkUrl}
               target={'_blank'}
+              size={isMobile ? 'small' : 'medium'}
             >
               {linkText}
             </Link>
           )}
           {handleClick && (
-            <Link icon={linkIcon} iconPosition="right" onClick={handleClick}>
+            <Link
+              icon={linkIcon}
+              iconPosition="right"
+              onClick={handleClick}
+              size={isMobile ? 'small' : 'medium'}
+            >
               {linkText}
             </Link>
           )}

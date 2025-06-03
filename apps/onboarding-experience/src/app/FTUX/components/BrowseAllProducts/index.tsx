@@ -4,7 +4,7 @@ import ProductRecommender, {
   ActiveProductRecommenderScreen,
 } from '@FTUX/modals/ProductRecommender';
 import { isMobileDevice } from '@libs/shared-utils';
-import ChatHelp from 'apps/onboarding-experience/src/assets/ChatHelp.svg';
+import chatHelpIcon from '@OnboardingExperienceAssets/ChatHelp.svg';
 
 const BrowseAllProducts = () => {
   const isMobile = isMobileDevice();
@@ -17,8 +17,10 @@ const BrowseAllProducts = () => {
       gap="spacing.5"
     >
       <Box display="flex" flexDirection="row" alignItems="center" gap="spacing.5">
-        <img width="24px" src={ChatHelp} alt="Help" />
-        <Text>Can't find the right product for you? Choose from 10 other no code products</Text>
+        <img width="24px" src={chatHelpIcon} alt="Help" />
+        <Text size={isMobile ? 'small' : 'large'} weight="regular">
+          Can't find the right product for you? Choose from 10 other no code products
+        </Text>
       </Box>
       <Button
         variant="tertiary"

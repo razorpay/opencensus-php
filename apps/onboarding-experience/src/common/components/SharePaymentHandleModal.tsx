@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Button, TextInput, Box, Text, Divider } from '@razorpay/blade/components';
+import { Button, TextInput, Box, Text, Divider, CheckCircleIcon } from '@razorpay/blade/components';
 import { useModalComponents } from '@libs/shared-ui';
 import { isMobileDevice } from '@libs/shared-utils';
 import { useStore } from '@federated/apps/shell/commonStore';
+import { zIndicesMap } from '@OnboardingExperienceCommons/constants/config';
 
 const SharePaymentHandleModal = ({
   onDismiss,
@@ -30,9 +31,6 @@ const SharePaymentHandleModal = ({
       // On desktop, the button text changes to "Copied!" and the button is disabled for 2 seconds
       if (!isMobile) {
         setIsCopied(true);
-        setTimeout(() => {
-          setIsCopied(false);
-        }, 2000);
       }
     } catch (error) {
       showNotification({
@@ -44,7 +42,6 @@ const SharePaymentHandleModal = ({
       });
     } finally {
       setIsLoading(false);
-      if (isMobile) onDismiss();
     }
   };
 
@@ -57,18 +54,29 @@ const SharePaymentHandleModal = ({
       size="small"
       accessibilityLabel="Share Payment Handle"
       snapPoints={[0.7, 0.7, 0.7]}
+      zIndex={zIndicesMap.modal}
     >
       <ModalHeader title="Share Payment Handle" subtitle="Enter amount and share" />
       <ModalBody>
         <Box display="flex" flexDirection="column" gap="spacing.5" width="100%">
-          <TextInput
-            value={paymentUrl}
-            isDisabled
-            type="url"
-            label="Your handle"
-            labelPosition="top"
-            alignSelf="stretch"
-          />
+          <Box display="flex" flexDirection="column" gap="spacing.3">
+            <Text color="surface.text.gray.muted" size="small" weight="semibold">
+              Your handle
+            </Text>
+            <Box
+              paddingX="spacing.4"
+              paddingY="spacing.3"
+              borderColor="surface.border.gray.muted"
+              borderWidth="thick"
+              borderRadius="medium"
+              flex="1"
+              display="grid"
+            >
+              <Text color="surface.text.gray.normal" size="medium" truncateAfterLines={1}>
+                {paymentUrl}
+              </Text>
+            </Box>
+          </Box>
           <TextInput
             value={amount}
             onChange={({ value }) => setAmount(value || '')}
@@ -87,17 +95,19 @@ const SharePaymentHandleModal = ({
         </Box>
       </ModalBody>
       <ModalFooter>
-        <Button
-          isFullWidth
-          variant="primary"
-          color={isCopied && !isMobile ? 'positive' : 'primary'}
-          size="large"
-          onClick={handlePaymentShare}
-          isLoading={isLoading}
-          isDisabled={!paymentUrl}
-        >
-          {shareButtonText}
-        </Button>
+        <Box display="flex" gap="spacing.3" justifyContent="flex-end" width="100%">
+          <Button
+            variant="primary"
+            color={isCopied && !isMobile ? 'positive' : 'primary'}
+            icon={isCopied && !isMobile ? CheckCircleIcon : undefined}
+            onClick={handlePaymentShare}
+            isLoading={isLoading}
+            isDisabled={!paymentUrl}
+            isFullWidth={isMobile ? true : false}
+          >
+            {shareButtonText}
+          </Button>
+        </Box>
       </ModalFooter>
     </Modal>
   );

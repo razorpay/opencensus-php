@@ -1,12 +1,16 @@
 import { useStore } from '@federated/apps/shell/commonStore';
 import { HOMEPAGE_ELEMENTS } from '@FTUX/types/homepage';
 import { getLayoutByMerchantType } from '@FTUX/utils/homepage';
-import { PG_CHANNEL_OPTIONS, NO_CODE_CHANNEL_OPTIONS } from '@FTUX/constants/homepage';
 import {
-  areAnyOptionsAccepted,
+  NO_CODE_CHANNEL_OPTIONS,
+  PG_CHANNEL_OPTIONS,
+} from '@OnboardingExperienceCommons/constants/merchant';
+import {
+  hasAcceptedAnyPaymentChannel,
   hasAddedWebsite,
 } from '@OnboardingExperienceCommons/utils/merchant';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
+import { MerchantActivationStatusEnum } from '@OnboardingExperienceCommons/types/merchant';
 
 /**
  * Hook that determines which UI elements to show on the FTUX homepage
@@ -19,7 +23,6 @@ import { useMerchantContext } from '@FTUX/context/MerchantContext';
  * - Whether they have completed a transaction
  */
 const useHomepageState = (): HOMEPAGE_ELEMENTS[] => {
-  const activeUser = useStore((state) => state.session.user);
   const { merchantData, onboardingData } = useMerchantContext();
 
   // Return empty array if required data is not available yet
@@ -33,8 +36,8 @@ const useHomepageState = (): HOMEPAGE_ELEMENTS[] => {
   }
 
   // Determine merchant type based on payment acceptance channels
-  const isPgMerchant = areAnyOptionsAccepted(paymentChannels, PG_CHANNEL_OPTIONS);
-  const isNoCodeMerchant = areAnyOptionsAccepted(paymentChannels, NO_CODE_CHANNEL_OPTIONS);
+  const isPgMerchant = hasAcceptedAnyPaymentChannel(paymentChannels, PG_CHANNEL_OPTIONS);
+  const isNoCodeMerchant = hasAcceptedAnyPaymentChannel(paymentChannels, NO_CODE_CHANNEL_OPTIONS);
 
   // Check website verification status
   const websiteStatus =
@@ -50,8 +53,15 @@ const useHomepageState = (): HOMEPAGE_ELEMENTS[] => {
   });
 
   // If merchant has completed a transaction, add the transaction banner at the top
-  if (merchantData.merchantById.activation?.isTransacted) {
+  if (merchantData.merchantById?.activation?.isTransacted) {
     pageElements.unshift(HOMEPAGE_ELEMENTS.COMPLETED_TRANSACTION);
+  }
+
+  if (
+    merchantData.merchantById?.activation?.status &&
+    merchantData.merchantById.activation.status !== MerchantActivationStatusEnum.ACTIVATED
+  ) {
+    pageElements.unshift(HOMEPAGE_ELEMENTS.PREACTIVATION_BANNER);
   }
 
   return pageElements;

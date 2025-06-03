@@ -53,8 +53,8 @@ describe('NoCodeSection Component', () => {
 
     // Check all product tags using test IDs
     expect(screen.getByTestId('product-0-tag')).toHaveTextContent('Personalised to you');
-    expect(screen.getByTestId('product-1-tag')).toHaveTextContent('2 mins setup');
-    expect(screen.getByTestId('product-2-tag')).toHaveTextContent('2 mins setup');
+    expect(screen.getByTestId('product-1-tag')).toHaveTextContent('Set up in 2 mins');
+    expect(screen.getByTestId('product-2-tag')).toHaveTextContent('Set up in 2 mins');
 
     // Check all product titles
     expect(screen.getByTestId('product-0-title')).toHaveTextContent(
@@ -101,7 +101,7 @@ describe('NoCodeSection Component', () => {
     expect(screen.getByTestId('product-0-link')).toHaveTextContent('Find the right product');
 
     // Check second product data
-    expect(screen.getByTestId('product-1-tag')).toHaveTextContent('2 mins setup');
+    expect(screen.getByTestId('product-1-tag')).toHaveTextContent('Set up in 2 mins');
     expect(screen.getByTestId('product-1-title')).toHaveTextContent('Payment Pages');
     expect(screen.getByTestId('product-1-description')).toHaveTextContent(
       'Create a simple checkout page to accept payments online. No website or coding needed.',
@@ -109,7 +109,7 @@ describe('NoCodeSection Component', () => {
     expect(screen.getByTestId('product-1-link')).toHaveTextContent('Use now');
 
     // Check third product data
-    expect(screen.getByTestId('product-2-tag')).toHaveTextContent('2 mins setup');
+    expect(screen.getByTestId('product-2-tag')).toHaveTextContent('Set up in 2 mins');
     expect(screen.getByTestId('product-2-title')).toHaveTextContent('Payment Links');
     expect(screen.getByTestId('product-2-description')).toHaveTextContent(
       'Generate a link you can share with customers to get paid instantly, without any setup.',

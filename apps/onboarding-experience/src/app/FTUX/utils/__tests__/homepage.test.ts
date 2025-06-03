@@ -43,10 +43,10 @@ describe('getLayoutByMerchantType', () => {
     expect(result).toEqual(PG_PLUS_NO_CODE_PAGE_LAYOUT);
   });
 
-  test('returns combined layout when hasWebsite is true', () => {
+  test('returns combined layout when hasWebsite and isNoCodeMerchant is true', () => {
     const result = getLayoutByMerchantType({
       isPgMerchant: false,
-      isNoCodeMerchant: false,
+      isNoCodeMerchant: true,
       hasWebsite: true,
     });
 

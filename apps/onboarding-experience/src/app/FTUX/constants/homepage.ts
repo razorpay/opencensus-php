@@ -27,24 +27,6 @@ export const FTUX_REQUIRED_DATA_REQUEST = [
 ];
 
 /**
- * Payment channels that indicate a merchant is using the Payment Gateway (PG)
- */
-export const PG_CHANNEL_OPTIONS = [
-  PAYMENT_CHANNEL_OPTIONS.Websites,
-  PAYMENT_CHANNEL_OPTIONS.IOS,
-  PAYMENT_CHANNEL_OPTIONS.Android,
-];
-
-/**
- * Payment channels that indicate a merchant is using no-code payment solutions
- */
-export const NO_CODE_CHANNEL_OPTIONS = [
-  PAYMENT_CHANNEL_OPTIONS.SocialMedia,
-  PAYMENT_CHANNEL_OPTIONS.WhatsappSmsEmail,
-  PAYMENT_CHANNEL_OPTIONS.Others,
-];
-
-/**
  * Defines the order and types of UI elements shown to PG merchants
  */
 export const PG_PAGE_LAYOUT: HOMEPAGE_ELEMENTS[] = [
@@ -75,5 +57,4 @@ export const PG_PLUS_NO_CODE_PAGE_LAYOUT: HOMEPAGE_ELEMENTS[] = [
   HOMEPAGE_ELEMENTS.BROWSE_ALL,
   HOMEPAGE_ELEMENTS.WAYS_FOR_PAYMENT,
   HOMEPAGE_ELEMENTS.PAYMENT_HANDLE,
-  HOMEPAGE_ELEMENTS.WEBSITE_NUDGE,
 ];

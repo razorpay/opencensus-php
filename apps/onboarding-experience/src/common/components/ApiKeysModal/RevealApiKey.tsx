@@ -3,20 +3,21 @@ import {
   Button,
   Box,
   Text,
-  Popover,
   Link,
-  SettlementsIcon,
   CopyIcon,
   Alert,
   InfoIcon,
   Spinner,
   DownloadIcon,
   CheckCircleIcon,
+  SettlementsIcon,
+  Tooltip,
 } from '@razorpay/blade/components';
 import { useStore } from '@federated/apps/shell/commonStore';
 import { copyToClipboard, isMobileDevice } from '@libs/shared-utils';
 import { useModalComponents } from '@libs/shared-ui';
 import { RevealKeysModalProps } from '@OnboardingExperienceCommons/types/apiKeys';
+import { zIndicesMap } from '@OnboardingExperienceCommons/constants/config';
 
 /**
  * Enum representing possible download states
@@ -47,6 +48,7 @@ const RevealApiKey = ({
   const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
 
   const [downloadStatus, setDownloadStatus] = useState<DownloadState>(DownloadState.INITIAL);
+  const [copiedFields, setCopiedFields] = useState<Record<string, boolean>>({});
 
   // Dynamic label that reflects current environment context (Test/Live)
   const activeModeLabel = mode === 'test' ? 'Test' : 'Live';
@@ -54,8 +56,9 @@ const RevealApiKey = ({
   /**
    * Safely copies API credential to clipboard with visual feedback
    */
-  const handleCopy = (text: string) => {
+  const handleCopy = (key: string, text: string) => {
     copyToClipboard(text);
+    setCopiedFields({ ...copiedFields, [key]: true });
   };
 
   /**
@@ -92,7 +95,7 @@ const RevealApiKey = ({
   ];
 
   return (
-    <Modal isOpen onDismiss={onDismiss} snapPoints={[1, 1, 1]}>
+    <Modal isOpen onDismiss={onDismiss} snapPoints={[1, 1, 1]} zIndex={zIndicesMap.modal}>
       <ModalHeader title="Key ID & Secret" subtitle="Integration Details" />
       <ModalBody>
         <Box
@@ -112,6 +115,7 @@ const RevealApiKey = ({
               alignSelf="stretch"
               flex="1"
               testID={testId}
+              key={testId}
             >
               <Box minWidth="130px">
                 <Text color="surface.text.gray.subtle" size="medium" weight="semibold">
@@ -137,18 +141,18 @@ const RevealApiKey = ({
                   </Text>
                 </Box>
               )}
-              <Popover
-                title="Copied"
-                titleLeading={<SettlementsIcon />}
-                content={<Text textAlign="center">{value}</Text>}
+              <Tooltip
+                content={copiedFields[testId] ? 'Copied!' : 'Click to copy'}
+                zIndex={zIndicesMap.dropdown}
               >
                 <Link
                   size="large"
-                  icon={CopyIcon}
-                  onClick={() => handleCopy(value || '')}
+                  icon={copiedFields[testId] ? SettlementsIcon : CopyIcon}
+                  color={copiedFields[testId] ? 'positive' : 'primary'}
+                  onClick={() => handleCopy(testId, value || '')}
                   isDisabled={isFetching}
                 />
-              </Popover>
+              </Tooltip>
             </Box>
           ))}
           {/* Label about one-time visibility */}

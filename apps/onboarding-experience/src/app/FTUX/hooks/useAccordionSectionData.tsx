@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Badge, DotIcon } from '@razorpay/blade/components';
+import { Badge, DotIcon, Tooltip } from '@razorpay/blade/components';
 import { useStore } from '@federated/apps/shell/commonStore';
 import { AccordionDataType } from '@FTUX/types/homepage';
 import { getAccordionWebsiteTitle } from '@FTUX/utils/homepage';
@@ -8,8 +8,17 @@ import PaymentGateway from '@FTUX/components/AccordionSection/PaymentGateway';
 import AcceptTransactions from '@FTUX/components/AccordionSection/AcceptTransactions';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
 import { hasAddedWebsite } from '@OnboardingExperienceCommons/utils/merchant';
+import CollectPaymentsBannerImg from '@OnboardingExperienceAssets/CollectPaymentsBanner.svg';
+import CollectPaymentsBannerAppsImg from '@OnboardingExperienceAssets/CollectPaymentsBannerApps.svg';
+import { NO_CODE_CHANNEL_OPTIONS } from '@OnboardingExperienceCommons/constants/merchant';
+import { hasAcceptedAnyPaymentChannel } from '@OnboardingExperienceCommons/utils/merchant';
+import { PAYMENT_CHANNEL_OPTIONS } from '@OnboardingExperienceCommons/types/merchant';
 
-const useAccordionSectionData = (): { activeStep: number; accordionData: AccordionDataType[] } => {
+const useAccordionSectionData = (): {
+  activeStep: number;
+  accordionData: AccordionDataType[];
+  accordionHeaderImage: string;
+} => {
   const { mode } = useStore((state) => state.session);
   const { merchantData } = useMerchantContext();
   const merchant = merchantData?.merchantById;
@@ -59,10 +68,18 @@ const useAccordionSectionData = (): { activeStep: number; accordionData: Accordi
     (isExpanded: boolean): React.ReactNode => {
       if (!isExpanded) return null;
 
-      const isTestMode = mode === 'test';
-      return (
-        <Badge color={isTestMode ? 'notice' : 'positive'} size="medium" icon={DotIcon}>
-          You are in {isTestMode ? 'test' : 'live'} mode
+      return mode === 'test' ? (
+        <Tooltip
+          content="In test mode, you can test flows and features without real money before going live."
+          placement="bottom"
+        >
+          <Badge color="notice" size="medium" icon={DotIcon}>
+            You are in test mode
+          </Badge>
+        </Tooltip>
+      ) : (
+        <Badge color="positive" size="medium" icon={DotIcon}>
+          You are in live mode
         </Badge>
       );
     },
@@ -90,9 +107,28 @@ const useAccordionSectionData = (): { activeStep: number; accordionData: Accordi
   // Do not display add website section for non-activated merchants
   accordionData = isMerchantActivated ? accordionData : accordionData.slice(1);
 
+  // Determine merchant category based on their selected payment channels
+  const isNoCodeMerchant = hasAcceptedAnyPaymentChannel(paymentChannels, NO_CODE_CHANNEL_OPTIONS);
+  const isWebsiteMerchant = hasAcceptedAnyPaymentChannel(paymentChannels, [
+    PAYMENT_CHANNEL_OPTIONS.Websites,
+  ]);
+  const isAppMerchant = hasAcceptedAnyPaymentChannel(paymentChannels, [
+    PAYMENT_CHANNEL_OPTIONS.IOS,
+    PAYMENT_CHANNEL_OPTIONS.Android,
+  ]);
+
+  let accordionHeaderImage = CollectPaymentsBannerImg;
+
+  if (isAppMerchant) {
+    accordionHeaderImage = CollectPaymentsBannerAppsImg;
+  }
+  if (isWebsiteMerchant || isNoCodeMerchant) {
+    accordionHeaderImage = CollectPaymentsBannerImg;
+  }
   return {
     activeStep,
     accordionData,
+    accordionHeaderImage,
   };
 };
 

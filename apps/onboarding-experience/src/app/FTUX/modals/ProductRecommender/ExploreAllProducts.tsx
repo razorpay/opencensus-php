@@ -3,7 +3,8 @@ import { Button, Box } from '@razorpay/blade/components';
 import { isMobileDevice } from '@libs/shared-utils';
 import { useModalComponents } from '@libs/shared-ui';
 import { ALL_PRODUCTS } from '@FTUX/constants/products';
-import SelectableOptionCard from 'apps/onboarding-experience/src/common/components/SelectableOptionCard';
+import SelectableOptionCard from '@OnboardingExperienceCommons/components/SelectableOptionCard';
+import { zIndicesMap } from '@OnboardingExperienceCommons/constants/config';
 
 interface ExploreAllProductsProps {
   onDismiss: () => void;
@@ -15,7 +16,13 @@ const ExploreAllProducts = ({ onDismiss, handleMoveToCategories }: ExploreAllPro
   const { Modal, ModalHeader, ModalFooter, ModalBody } = useModalComponents(isMobile);
 
   return (
-    <Modal isOpen={true} onDismiss={onDismiss} size="large" snapPoints={[0.5, 0.7, 0.85]}>
+    <Modal
+      isOpen={true}
+      onDismiss={onDismiss}
+      size="large"
+      snapPoints={[0.5, 0.7, 0.85]}
+      zIndex={zIndicesMap.modal}
+    >
       <ModalHeader title="Explore all products" subtitle="Select the product best for your needs" />
       <ModalBody>
         <Box display="grid" gap="spacing.4" gridTemplateColumns={{ base: '1fr', l: '1fr 1fr' }}>
@@ -24,7 +31,7 @@ const ExploreAllProducts = ({ onDismiss, handleMoveToCategories }: ExploreAllPro
               key={product.title}
               title={product.title}
               subTitle={product.description}
-              cardImageUrl={product.asset}
+              cardImageUrl={product.image}
               handleClick={() => {
                 if (!product.linkUrl) return;
                 window.open(product.linkUrl, '_blank');

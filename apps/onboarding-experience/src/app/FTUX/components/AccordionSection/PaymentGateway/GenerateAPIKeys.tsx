@@ -13,10 +13,12 @@ import {
   API_KEYS_CSV_MIME_TYPE,
 } from 'apps/onboarding-experience/src/constants';
 import { ApiKeyDelay, ApiKeys } from '@OnboardingExperienceCommons/types/apiKeys';
+import { isMobileDevice } from '@libs/shared-utils';
 
 const GenerateAPIKeys = () => {
-  const { mode, user: activeUser } = useStore((state) => state.session);
+  const { mode } = useStore((state) => state.session);
   const showNotification = useStore((state) => state.showNotification);
+  const isMobile = isMobileDevice();
   const { merchantData, initiateTwoFaAuth, regenerateApiKey, generateApiKey } =
     useMerchantContext();
 
@@ -27,13 +29,26 @@ const GenerateAPIKeys = () => {
     secret: '',
   });
 
-  const areApiKeysGenerated = Boolean(merchantData?.merchantById?.apiKeys?.[0]?.id);
+  const activeMode = mode === 'test' ? 'Test' : 'Live';
+  // Determine if merchant already has API keys generated
+  const hasGeneratedApiKeys = Boolean(merchantData?.merchantById?.apiKeys?.[0]?.id);
   const isKeylessActivation = !Boolean(merchantData?.merchantById?.hasApiKeyAccess);
+  // Website verification is a prerequisite for API key generation
   const isWebsiteVerified = hasAddedWebsite(
     merchantData?.merchantById?.business?.paymentAcceptanceChannels,
   );
-  const activeMode = mode === 'test' ? 'Test' : 'Live';
 
+  /**
+   * API keys access is disabled if:
+   * 1. We're in live mode AND
+   * 2. Either the website is not verified OR keyless activation is enabled
+   *
+   * This prevents generation of live API keys without proper verification
+   * or when the merchant doesn't have API key access privileges.
+   */
+  const isApiKeysAccessDisabled = mode === 'live' && (!isWebsiteVerified || isKeylessActivation);
+
+  // Formats API keys into CSV and triggers browser download
   const handleDownloadApiKeys = (apiKeys: ApiKeys) => {
     return new Promise<void>((resolve) => {
       const csvData = [apiKeys.id, apiKeys.secret];
@@ -43,6 +58,7 @@ const GenerateAPIKeys = () => {
     });
   };
 
+  // Regenerates API keys with specified roll delay (time before old keys expire)
   const handleRegenerateApiKeys = async (keyRollDelay: ApiKeyDelay) => {
     try {
       const response = await regenerateApiKey({
@@ -60,6 +76,7 @@ const GenerateAPIKeys = () => {
     }
   };
 
+  // Generates new API keys and opens the reveal modal on success
   const handleGenerateApiKeys = async () => {
     try {
       const response = await generateApiKey();
@@ -87,8 +104,10 @@ const GenerateAPIKeys = () => {
     }
   };
 
+  // Opens modal after successful 2FA authentication
   const openModal = async (modalType: ApiKeysModalScreens) => {
     setIsLoading(true);
+    // 2FA is required for security before performing sensitive API key operations
     const twoFaSuccess = await initiateTwoFaAuth?.();
     if (!twoFaSuccess) {
       setIsLoading(false);
@@ -111,7 +130,7 @@ const GenerateAPIKeys = () => {
 
   return (
     <Box>
-      {isKeylessActivation || !isWebsiteVerified ? (
+      {isApiKeysAccessDisabled ? (
         <Tooltip
           content={
             isKeylessActivation
@@ -120,17 +139,18 @@ const GenerateAPIKeys = () => {
           }
           placement="top"
         >
-          <Button variant="primary" size="medium" isDisabled>
+          <Button variant="primary" size="medium" isDisabled isFullWidth={isMobile}>
             Reveal/Regenerate API Keys
           </Button>
         </Tooltip>
-      ) : areApiKeysGenerated ? (
+      ) : hasGeneratedApiKeys ? (
         <Button
           variant="secondary"
           size="medium"
           icon={RefreshIcon}
           isLoading={isLoading}
           onClick={() => openModal(ApiKeysModalScreens.REGEN)}
+          isFullWidth={isMobile}
         >
           Regenerate {activeMode} API Keys
         </Button>
@@ -141,6 +161,7 @@ const GenerateAPIKeys = () => {
           icon={EyeIcon}
           isLoading={isLoading}
           onClick={() => openModal(ApiKeysModalScreens.REVEAL)}
+          isFullWidth={isMobile}
         >
           Reveal {activeMode} API Keys
         </Button>

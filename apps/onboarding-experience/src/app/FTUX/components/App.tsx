@@ -24,6 +24,10 @@ const WaysToAcceptPayment = lazy(
 );
 const WelcomeHeader = lazy(() => import(/* webpackChunkName: 'WelcomeHeader' */ './WelcomeHeader'));
 
+const PreactivationBanner = lazy(
+  () => import(/* webpackChunkName: 'PreactivationBanner' */ './PreactivationBanner'),
+);
+
 const ELEMENTS_MAP: Record<HOMEPAGE_ELEMENTS, ReactNode> = {
   [HOMEPAGE_ELEMENTS.ACCORDION]: <AccordionSection />,
   [HOMEPAGE_ELEMENTS.NOCODE_NUDGE]: <NocodeSection />,
@@ -32,6 +36,7 @@ const ELEMENTS_MAP: Record<HOMEPAGE_ELEMENTS, ReactNode> = {
   [HOMEPAGE_ELEMENTS.WAYS_FOR_PAYMENT]: <WaysToAcceptPayment />,
   [HOMEPAGE_ELEMENTS.WEBSITE_NUDGE]: <AddWebsiteNudge />,
   [HOMEPAGE_ELEMENTS.COMPLETED_TRANSACTION]: <TransactionBanner />,
+  [HOMEPAGE_ELEMENTS.PREACTIVATION_BANNER]: <PreactivationBanner />,
 };
 
 /**
@@ -43,13 +48,18 @@ const App = () => {
   const homepageState = useHomepageState();
 
   return (
-    <Box paddingX="spacing.5" paddingY="spacing.1">
-      {homepageState.length < 1 ? (
+    <Box paddingX="spacing.5" paddingY="spacing.1" paddingBottom="spacing.11">
+      {homepageState.length === 0 ? (
         <PageLayoutLoader />
       ) : (
         <Suspense fallback={<PageLayoutLoader />}>
           <WelcomeHeader />
-          <Box paddingY="spacing.1" display="flex" flexDirection="column" gap="spacing.7">
+          <Box
+            paddingY="spacing.1"
+            display="flex"
+            flexDirection="column"
+            gap={{ base: 'spacing.7', m: 'spacing.9' }}
+          >
             {/* Dynamically render components based on the homepage state */}
             {homepageState.map((element: HOMEPAGE_ELEMENTS, idx: number) => (
               <Suspense key={idx} fallback={<PageLayoutLoader />}>

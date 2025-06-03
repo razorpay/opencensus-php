@@ -1,22 +1,13 @@
 import React from 'react';
-import { Box, Heading, Text, IconComponent } from '@razorpay/blade/components';
-import ImagePostCard from '@OnboardingExperienceCommons/components/ImagePostCard';
-
-interface Product {
-  tagIcon: IconComponent;
-  tagText: string;
-  title: string;
-  description: string;
-  linkIcon: IconComponent;
-  linkText: string;
-  handleClick: () => void;
-  image: string;
-}
+import { Box, Heading, Text } from '@razorpay/blade/components';
+import ImagePostCard, {
+  ImagePostCardProps,
+} from '@OnboardingExperienceCommons/components/ImagePostCard';
 
 interface PitchProductsProps {
   title: string;
   subtitle: string;
-  products: Product[];
+  products: ImagePostCardProps[];
 }
 
 const PitchProducts = ({ title, subtitle, products }: PitchProductsProps) => {
@@ -36,22 +27,13 @@ const PitchProducts = ({ title, subtitle, products }: PitchProductsProps) => {
           base: 'column',
           l: 'row',
         }}
-        gap="spacing.7"
+        gap={{ base: 'spacing.7', m: 'spacing.4' }}
         marginTop="spacing.7"
         justifyContent={{ base: 'none', l: 'space-between' }}
       >
-        {products.map((product: Product, index: number) => (
-          <Box maxWidth={{ base: 'auto', l: '280px' }} width="100%" key={index}>
-            <ImagePostCard
-              tagIcon={product.tagIcon}
-              tagText={product.tagText}
-              title={product.title}
-              description={product.description}
-              linkIcon={product.linkIcon}
-              linkText={product.linkText}
-              handleClick={product.handleClick}
-              image={product.image}
-            />
+        {products.map((product: ImagePostCardProps) => (
+          <Box key={product.title} maxWidth={{ base: 'auto', l: '295px' }} width="100%">
+            <ImagePostCard {...product} />
           </Box>
         ))}
       </Box>

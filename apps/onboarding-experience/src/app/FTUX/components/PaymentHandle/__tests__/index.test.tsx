@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent, act } from '@testing-library/react';
 import renderWithWrappers from 'apps/onboarding-experience/src/services/test/renderWithWrappers';
 import PaymentHandle from '../index';
 import SettlementsGuideModal from '@FTUX/modals/SettlementsGuideModal';
@@ -20,14 +20,18 @@ describe('PaymentHandle Component', () => {
     jest.clearAllMocks();
   });
 
-  it('renders the component with correct heading', () => {
-    renderWithWrappers(<PaymentHandle />);
+  it('renders the component with correct heading', async () => {
+    await act(async () => {
+      renderWithWrappers(<PaymentHandle />);
+    });
 
-    expect(screen.getByText('Accept payments with payment handle')).toBeInTheDocument();
+    expect(screen.getByText('Use your Payment Handle')).toBeInTheDocument();
   });
 
-  it('renders the description text correctly', () => {
-    renderWithWrappers(<PaymentHandle />);
+  it('renders the description text correctly', async () => {
+    await act(async () => {
+      renderWithWrappers(<PaymentHandle />);
+    });
 
     expect(
       screen.getByText(
@@ -36,25 +40,33 @@ describe('PaymentHandle Component', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders the PaymentHandleActions component', () => {
-    renderWithWrappers(<PaymentHandle />);
+  it('renders the PaymentHandleActions component', async () => {
+    await act(async () => {
+      renderWithWrappers(<PaymentHandle />);
+    });
 
     expect(screen.getByTestId('payment-handle-actions')).toBeInTheDocument();
   });
 
-  it('renders the settlement information text', () => {
-    renderWithWrappers(<PaymentHandle />);
+  it('renders the settlement information text', async () => {
+    await act(async () => {
+      renderWithWrappers(<PaymentHandle />);
+    });
 
     expect(screen.getByText(/Your money will be credited to your account/)).toBeInTheDocument();
     expect(screen.getByText('settlement schedule')).toBeInTheDocument();
   });
 
-  it('opens the SettlementsGuideModal when the link is clicked', () => {
-    renderWithWrappers(<PaymentHandle />);
+  it('opens the SettlementsGuideModal when the link is clicked', async () => {
+    await act(async () => {
+      renderWithWrappers(<PaymentHandle />);
+    });
 
     // Click the link to open modal
-    const link = screen.getByText('settlement schedule');
-    fireEvent.click(link);
+    await act(async () => {
+      const link = screen.getByText('settlement schedule');
+      fireEvent.click(link);
+    });
 
     // Check if modal is rendered
     expect(screen.getByTestId('settlements-guide-modal')).toBeInTheDocument();
@@ -66,34 +78,45 @@ describe('PaymentHandle Component', () => {
     );
   });
 
-  it('closes the SettlementsGuideModal when onDismiss is called', () => {
-    renderWithWrappers(<PaymentHandle />);
+  it('closes the SettlementsGuideModal when onDismiss is called', async () => {
+    let onDismissHandler;
+
+    await act(async () => {
+      renderWithWrappers(<PaymentHandle />);
+    });
 
     // Click the link to open modal
-    const link = screen.getByText('settlement schedule');
-    fireEvent.click(link);
+    await act(async () => {
+      const link = screen.getByText('settlement schedule');
+      fireEvent.click(link);
+    });
 
-    // Get the onDismiss function from the mock call
-    const onDismiss = (SettlementsGuideModal as jest.Mock).mock.calls[0][0].onDismiss;
+    // Store the onDismiss function from the mock call
+    onDismissHandler = (SettlementsGuideModal as jest.Mock).mock.calls[0][0].onDismiss;
 
-    // Call onDismiss to close the modal
-    onDismiss();
+    // Call onDismiss to close the modal within act
+    await act(async () => {
+      onDismissHandler();
+    });
 
-    // Re-render to check modal is gone
-    renderWithWrappers(<PaymentHandle />);
+    // Check that modal is no longer rendered
     expect(screen.queryByTestId('settlements-guide-modal')).not.toBeInTheDocument();
   });
 
-  it('renders mobile layout with image container on small screens', () => {
-    renderWithWrappers(<PaymentHandle />);
+  it('renders mobile layout with image container on small screens', async () => {
+    await act(async () => {
+      renderWithWrappers(<PaymentHandle />);
+    });
 
     // Mobile image container should be present (but hidden on large screens via CSS)
     const mobileImage = screen.getAllByAltText('payment-handle')[0];
     expect(mobileImage).toBeInTheDocument();
   });
 
-  it('renders desktop layout with image container on large screens', () => {
-    renderWithWrappers(<PaymentHandle />);
+  it('renders desktop layout with image container on large screens', async () => {
+    await act(async () => {
+      renderWithWrappers(<PaymentHandle />);
+    });
 
     // Desktop image container should be present (but hidden on small screens via CSS)
     const desktopImage = screen.getAllByAltText('payment-handle')[1];

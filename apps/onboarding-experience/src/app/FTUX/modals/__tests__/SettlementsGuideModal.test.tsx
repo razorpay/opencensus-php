@@ -1,5 +1,10 @@
 import React from 'react';
-import { screen, fireEvent } from 'apps/onboarding-experience/src/services/test/jest-utils';
+import {
+  screen,
+  fireEvent,
+  act,
+  cleanup,
+} from 'apps/onboarding-experience/src/services/test/jest-utils';
 import renderWithWrappers from 'apps/onboarding-experience/src/services/test/renderWithWrappers';
 import SettlementsGuideModal from '../SettlementsGuideModal';
 import { SETTLEMENTS_GUIDE_MODAL_DATA } from '@FTUX/constants/payments';
@@ -18,14 +23,24 @@ describe('SettlementsGuideModal Component', () => {
     (isMobileDevice as jest.Mock).mockReturnValue(false);
   });
 
-  test('renders the modal with correct title', () => {
-    renderWithWrappers(<SettlementsGuideModal onDismiss={mockOnDismiss} />);
+  // Clean up after each test to prevent memory leaks and act warnings
+  afterEach(() => {
+    cleanup();
+    jest.useRealTimers();
+  });
+
+  test('renders the modal with correct title', async () => {
+    await act(async () => {
+      renderWithWrappers(<SettlementsGuideModal onDismiss={mockOnDismiss} />);
+    });
 
     expect(screen.getByText('Settlements Guide')).toBeInTheDocument();
   });
 
-  test('renders the settlements description text', () => {
-    renderWithWrappers(<SettlementsGuideModal onDismiss={mockOnDismiss} />);
+  test('renders the settlements description text', async () => {
+    await act(async () => {
+      renderWithWrappers(<SettlementsGuideModal onDismiss={mockOnDismiss} />);
+    });
 
     expect(
       screen.getByText(
@@ -39,25 +54,33 @@ describe('SettlementsGuideModal Component', () => {
     ).toBeInTheDocument();
   });
 
-  test('calls onDismiss when the close button is clicked', () => {
-    renderWithWrappers(<SettlementsGuideModal onDismiss={mockOnDismiss} />);
+  test('calls onDismiss when the close button is clicked', async () => {
+    await act(async () => {
+      renderWithWrappers(<SettlementsGuideModal onDismiss={mockOnDismiss} />);
+    });
 
-    const closeButton = screen.getByText('Okay, got it');
-    fireEvent.click(closeButton);
+    await act(async () => {
+      const closeButton = screen.getByText('Got it');
+      fireEvent.click(closeButton);
+    });
 
     expect(mockOnDismiss).toHaveBeenCalledTimes(1);
   });
 
-  test('renders the guide link', () => {
-    renderWithWrappers(<SettlementsGuideModal onDismiss={mockOnDismiss} />);
+  test('renders the guide link', async () => {
+    await act(async () => {
+      renderWithWrappers(<SettlementsGuideModal onDismiss={mockOnDismiss} />);
+    });
 
     expect(screen.getByText('View complete guide')).toBeInTheDocument();
   });
 
-  test('renders with mobile layout when on mobile device', () => {
+  test('renders with mobile layout when on mobile device', async () => {
     (isMobileDevice as jest.Mock).mockReturnValue(true);
 
-    renderWithWrappers(<SettlementsGuideModal onDismiss={mockOnDismiss} />);
+    await act(async () => {
+      renderWithWrappers(<SettlementsGuideModal onDismiss={mockOnDismiss} />);
+    });
 
     // The test should still pass with mobile layout
     expect(screen.getByText('Settlements Guide')).toBeInTheDocument();

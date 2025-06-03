@@ -1,13 +1,35 @@
 import React from 'react';
-import { Box, Divider, Heading, Text, ArrowRightIcon } from '@razorpay/blade/components';
+import {
+  Box,
+  Divider,
+  Heading,
+  Text,
+  ArrowRightIcon,
+  Link,
+  AvatarGroup,
+  Avatar,
+} from '@razorpay/blade/components';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
+import { getMerchantHeaderData } from '@FTUX/utils/homepage';
+import { isMobileDevice } from '@libs/shared-utils';
 
 /**
  * Displays a personalized welcome message to the merchant at the top of the FTUX homepage.
  */
 const WelcomeHeader = () => {
+  const isMobile = isMobileDevice();
   const { merchantData } = useMerchantContext();
-  const merchantName = merchantData?.merchantById?.name?.registered;
+  const merchantName = merchantData?.merchantById?.name?.registered?.split(' ')[0] || '';
+  const { icons: headerIcons, text: merchantPlatforms } = getMerchantHeaderData(
+    merchantData?.merchantById?.business?.paymentAcceptanceChannels,
+  );
+
+  const handleScrollToWaysToCollect = () => {
+    const element = document.getElementById('ways-to-accept-payments');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <Box
@@ -16,29 +38,62 @@ const WelcomeHeader = () => {
       flexDirection="column"
       justifyContent="center"
       alignItems="center"
-      gap="spacing.7"
+      gap="spacing.6"
       alignSelf="stretch"
     >
-      <Heading size="large">Welcome, {merchantName}</Heading>
+      <Heading textAlign="center" size={isMobile ? 'large' : 'xlarge'}>
+        {isMobile ? `Welcome, ${merchantName}!` : `Hey ${merchantName}, welcome to Razorpay.`}
+      </Heading>
       <Box
         display="flex"
-        flexDirection={{
-          base: 'column',
-          m: 'row',
-        }}
+        flexDirection="column"
         alignItems="center"
-        gap={{
-          base: 'spacing.4',
-          m: 'spacing.2',
-        }}
+        gap={{ base: 'spacing.1', m: 'spacing.2' }}
       >
-        <Text color="surface.text.gray.subtle" textAlign="center">
-          You picked Website, so we’ll set it up first. You can always explore other products too{' '}
-          <Text color="surface.text.gray.subtle" as="span" textDecorationLine="underline">
-            here
+        <Box
+          display="flex"
+          flexDirection={{ base: 'column', m: 'row' }}
+          alignItems="center"
+          gap={{ base: 'spacing.4', m: 'spacing.0' }}
+        >
+          <AvatarGroup size="small">
+            {headerIcons.map((icon) => (
+              <Avatar color="primary" src={icon} marginRight="spacing.4" key={icon} />
+            ))}
+          </AvatarGroup>
+          <Text
+            color="surface.text.gray.subtle"
+            textAlign="center"
+            size={isMobile ? 'small' : 'large'}
+            weight="regular"
+          >
+            You picked {merchantPlatforms}, so we'll set it up first.
           </Text>
-        </Text>
-        <ArrowRightIcon />
+        </Box>
+        <Box
+          display="flex"
+          flexDirection={{ base: 'column', m: 'row' }}
+          alignItems="center"
+          gap={{ base: 'spacing.4', m: 'spacing.2' }}
+        >
+          <Text
+            color="surface.text.gray.subtle"
+            textAlign="center"
+            size={isMobile ? 'small' : 'large'}
+            weight="regular"
+          >
+            Explore other payment options anytime.
+          </Text>
+          <Link
+            color="neutral"
+            icon={ArrowRightIcon}
+            iconPosition="right"
+            onClick={handleScrollToWaysToCollect}
+            size={isMobile ? 'small' : 'large'}
+          >
+            View all
+          </Link>
+        </Box>
       </Box>
       <Divider width="100%" marginY="spacing.5" />
     </Box>

@@ -1,50 +1,21 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import renderWithWrappers from 'apps/onboarding-experience/src/services/test/renderWithWrappers';
 import SharePaymentHandleModal from '../SharePaymentHandleModal';
-import { useStore } from '@federated/apps/shell/commonStore';
+import { act } from 'react-dom/test-utils';
 import { isMobileDevice } from '@libs/shared-utils';
 
-// Mock the dependencies
-jest.mock('@federated/apps/shell/commonStore');
-jest.mock('@libs/shared-utils');
-jest.mock('@razorpay/blade/components', () => ({
-  Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
-  TextInput: ({ value, onChange, label, ...props }: any) => (
-    <input
-      {...props}
-      defaultValue={value}
-      onChange={(e) => onChange?.({ value: e.target.value })}
-      aria-label={label}
-      data-testid={props['data-testid']}
-    />
-  ),
-  Box: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-  Text: ({ children, ...props }: any) => <span {...props}>{children}</span>,
-  Divider: (props: any) => <hr {...props} />,
+// Mock only what's absolutely necessary
+jest.mock('@libs/shared-utils', () => ({
+  isMobileDevice: jest.fn().mockReturnValue(false),
 }));
-jest.mock('@libs/shared-ui', () => ({
-  useModalComponents: () => ({
-    Modal: ({ children, ...props }: any) => (
-      <div data-testid="modal" {...props}>
-        {children}
-      </div>
-    ),
-    ModalHeader: ({ children, ...props }: any) => (
-      <div data-testid="modal-header" {...props}>
-        {children}
-      </div>
-    ),
-    ModalBody: ({ children, ...props }: any) => (
-      <div data-testid="modal-body" {...props}>
-        {children}
-      </div>
-    ),
-    ModalFooter: ({ children, ...props }: any) => (
-      <div data-testid="modal-footer" {...props}>
-        {children}
-      </div>
-    ),
-  }),
+
+jest.mock('@federated/apps/shell/commonStore', () => ({
+  useStore: jest.fn().mockImplementation((selector) =>
+    selector({
+      showNotification: jest.fn(),
+    }),
+  ),
 }));
 
 describe('SharePaymentHandleModal', () => {
@@ -55,102 +26,132 @@ describe('SharePaymentHandleModal', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (useStore as unknown as jest.Mock).mockReturnValue(mockShowNotification);
+
+    // Mock useStore to return showNotification
+    require('@federated/apps/shell/commonStore').useStore.mockImplementation((selector: any) =>
+      selector({ showNotification: mockShowNotification }),
+    );
+
+    // Default to desktop view
     (isMobileDevice as jest.Mock).mockReturnValue(false);
+
+    // Use fake timers for setTimeout tests
+    jest.useFakeTimers();
   });
 
-  it('renders correctly with all props', () => {
-    render(
-      <SharePaymentHandleModal
-        onDismiss={mockOnDismiss}
-        paymentUrl={mockPaymentUrl}
-        onPaymentShare={mockOnPaymentShare}
-      />,
-    );
-
-    expect(screen.getByTestId('modal')).toBeInTheDocument();
-    expect(screen.getByTestId('modal-header')).toBeInTheDocument();
-    expect(screen.getByTestId('modal-body')).toBeInTheDocument();
-    expect(screen.getByTestId('modal-footer')).toBeInTheDocument();
-    expect(screen.getByLabelText('Your handle')).toHaveValue(mockPaymentUrl);
-    expect(screen.getByLabelText('Enter amount (optional)')).toBeInTheDocument();
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
-  it('handles amount input correctly', () => {
-    render(
-      <SharePaymentHandleModal
-        onDismiss={mockOnDismiss}
-        paymentUrl={mockPaymentUrl}
-        onPaymentShare={mockOnPaymentShare}
-      />,
-    );
-
-    const amountInput = screen.getByLabelText('Enter amount (optional)');
-    fireEvent.change(amountInput, { target: { value: '1000' } });
-    expect(amountInput).toHaveValue(1000);
-  });
-
-  it('shows success notification and copies link on successful share', async () => {
-    mockOnPaymentShare.mockResolvedValueOnce(true);
-
-    render(
-      <SharePaymentHandleModal
-        onDismiss={mockOnDismiss}
-        paymentUrl={mockPaymentUrl}
-        onPaymentShare={mockOnPaymentShare}
-      />,
-    );
-
-    const shareButton = screen.getByRole('button', { name: 'Copy Link' });
-    fireEvent.click(shareButton);
-
-    await waitFor(() => {
-      expect(mockOnPaymentShare).toHaveBeenCalledWith({ amount: '' });
-      expect(screen.getByText('Copied!')).toBeInTheDocument();
+  it('renders correctly with all props', async () => {
+    await act(async () => {
+      renderWithWrappers(
+        <SharePaymentHandleModal
+          onDismiss={mockOnDismiss}
+          paymentUrl={mockPaymentUrl}
+          onPaymentShare={mockOnPaymentShare}
+        />,
+      );
     });
 
-    // Wait for the copied state to reset
-    await waitFor(
-      () => {
-        expect(screen.getByText('Copy Link')).toBeInTheDocument();
-      },
-      { timeout: 2500 },
-    );
+    expect(screen.getByText('Share Payment Handle')).toBeInTheDocument();
+    expect(screen.getByText('Enter amount and share')).toBeInTheDocument();
+    expect(screen.getByText('Your handle')).toBeInTheDocument();
+    expect(screen.getByLabelText('Enter amount (optional)')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Copy Link/i })).toBeInTheDocument();
+  });
+
+  it('handles amount input correctly', async () => {
+    await act(async () => {
+      renderWithWrappers(
+        <SharePaymentHandleModal
+          onDismiss={mockOnDismiss}
+          paymentUrl={mockPaymentUrl}
+          onPaymentShare={mockOnPaymentShare}
+        />,
+      );
+    });
+
+    const amountInput = screen.getByLabelText('Enter amount (optional)');
+
+    await act(async () => {
+      fireEvent.change(amountInput, { target: { value: '1000' } });
+    });
+
+    expect(amountInput).toHaveValue('1000');
   });
 
   it('handles share with amount correctly', async () => {
     mockOnPaymentShare.mockResolvedValueOnce(true);
 
-    render(
-      <SharePaymentHandleModal
-        onDismiss={mockOnDismiss}
-        paymentUrl={mockPaymentUrl}
-        onPaymentShare={mockOnPaymentShare}
-      />,
-    );
+    await act(async () => {
+      renderWithWrappers(
+        <SharePaymentHandleModal
+          onDismiss={mockOnDismiss}
+          paymentUrl={mockPaymentUrl}
+          onPaymentShare={mockOnPaymentShare}
+        />,
+      );
+    });
 
     const amountInput = screen.getByLabelText('Enter amount (optional)');
-    fireEvent.change(amountInput, { target: { value: '1000' } });
 
-    const shareButton = screen.getByRole('button', { name: 'Copy Link' });
-    fireEvent.click(shareButton);
+    await act(async () => {
+      fireEvent.change(amountInput, { target: { value: '1000' } });
+    });
+
+    const shareButton = screen.getByRole('button', { name: /Copy Link/i });
+
+    await act(async () => {
+      fireEvent.click(shareButton);
+    });
 
     await waitFor(() => {
       expect(mockOnPaymentShare).toHaveBeenCalledWith({ amount: '1000' });
     });
   });
 
-  it('renders mobile version correctly', () => {
+  it('renders mobile version correctly', async () => {
     (isMobileDevice as jest.Mock).mockReturnValue(true);
 
-    render(
-      <SharePaymentHandleModal
-        onDismiss={mockOnDismiss}
-        paymentUrl={mockPaymentUrl}
-        onPaymentShare={mockOnPaymentShare}
-      />,
-    );
+    await act(async () => {
+      renderWithWrappers(
+        <SharePaymentHandleModal
+          onDismiss={mockOnDismiss}
+          paymentUrl={mockPaymentUrl}
+          onPaymentShare={mockOnPaymentShare}
+        />,
+      );
+    });
 
     expect(screen.getByRole('button', { name: 'Share Link' })).toBeInTheDocument();
+  });
+
+  it('shows error notification when share fails', async () => {
+    const errorMessage = 'Failed to share payment link';
+    mockOnPaymentShare.mockRejectedValueOnce(new Error(errorMessage));
+
+    await act(async () => {
+      renderWithWrappers(
+        <SharePaymentHandleModal
+          onDismiss={mockOnDismiss}
+          paymentUrl={mockPaymentUrl}
+          onPaymentShare={mockOnPaymentShare}
+        />,
+      );
+    });
+
+    const shareButton = screen.getByRole('button', { name: /Copy Link/i });
+
+    await act(async () => {
+      fireEvent.click(shareButton);
+    });
+
+    await waitFor(() => {
+      expect(mockShowNotification).toHaveBeenCalledWith({
+        type: 'error',
+        content: errorMessage,
+      });
+    });
   });
 });

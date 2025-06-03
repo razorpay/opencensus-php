@@ -4,6 +4,7 @@ import {
   screen,
   act,
   within,
+  cleanup,
 } from 'apps/onboarding-experience/src/services/test/jest-utils';
 import renderWithWrappers from 'apps/onboarding-experience/src/services/test/renderWithWrappers';
 import PaymentHandleActions from '../PaymentHandleActions';
@@ -52,57 +53,39 @@ describe('PaymentHandleActions Component', () => {
     });
   });
 
-  test('calls fetchPaymentHandle on mount', () => {
-    renderWithWrappers(<PaymentHandleActions />);
+  afterEach(() => {
+    cleanup();
+  });
+
+  test('calls fetchPaymentHandle on mount', async () => {
+    await act(async () => {
+      renderWithWrappers(<PaymentHandleActions />);
+    });
     expect(mockFetchPaymentHandle).toHaveBeenCalledTimes(1);
   });
 
-  test('renders payment handle slug', () => {
-    renderWithWrappers(<PaymentHandleActions />);
+  test('renders payment handle slug', async () => {
+    await act(async () => {
+      renderWithWrappers(<PaymentHandleActions />);
+    });
     expect(screen.getByText('rzp.io/i/test-payment-handle')).toBeInTheDocument();
   });
 
-  test('renders copy, edit and share buttons', () => {
-    const { container } = renderWithWrappers(<PaymentHandleActions />);
-
-    // Find the parent container for payment handle
-    const handleContainer = screen
-      .getByText('rzp.io/i/test-payment-handle')
-      .closest('[data-blade-component="box"]');
-    expect(handleContainer).not.toBeNull();
-
-    // Find the copy button within this container
-    const copyButton = within(handleContainer as HTMLElement).getByRole('link');
-    expect(copyButton).toBeInTheDocument();
-
-    // Find the buttons container
-    const buttonsContainer = container.querySelector(
-      '[data-blade-component="box"][class*="cVIyYz"]',
-    );
-    expect(buttonsContainer).not.toBeNull();
-
-    // Find edit button
-    const editButton = within(buttonsContainer as HTMLElement).getByRole('button');
-    expect(editButton).toBeInTheDocument();
-
-    // Find share button
-    const shareButton = within(buttonsContainer as HTMLElement).getByRole('link');
-    expect(shareButton).toBeInTheDocument();
-  });
-
-  test('shows loading spinner when data is loading', () => {
+  test('shows loading spinner when data is loading', async () => {
     (useMerchantPaymentHandle as jest.Mock).mockReturnValue({
       paymentHandleData: null,
       isPaymentHandleLoading: true,
       fetchPaymentHandle: mockFetchPaymentHandle,
     });
 
-    renderWithWrappers(<PaymentHandleActions />);
+    await act(async () => {
+      renderWithWrappers(<PaymentHandleActions />);
+    });
 
     expect(screen.getByLabelText('payment-url')).toBeInTheDocument();
   });
 
-  test('shows "No payment handle found" when no handle exists', () => {
+  test('shows "No payment handle found" when no handle exists', async () => {
     (useMerchantPaymentHandle as jest.Mock).mockReturnValue({
       paymentHandleData: {
         merchantPaymentHandle: {
@@ -113,15 +96,19 @@ describe('PaymentHandleActions Component', () => {
       fetchPaymentHandle: mockFetchPaymentHandle,
     });
 
-    renderWithWrappers(<PaymentHandleActions />);
+    await act(async () => {
+      renderWithWrappers(<PaymentHandleActions />);
+    });
 
     expect(screen.getByText('No payment handle found')).toBeInTheDocument();
   });
 
-  test('renders correctly in mobile view', () => {
+  test('renders correctly in mobile view', async () => {
     (isMobileDevice as jest.Mock).mockReturnValue(true);
 
-    renderWithWrappers(<PaymentHandleActions />);
+    await act(async () => {
+      renderWithWrappers(<PaymentHandleActions />);
+    });
 
     expect(screen.getByText('Edit')).toBeInTheDocument();
     expect(screen.getByText('Share')).toBeInTheDocument();

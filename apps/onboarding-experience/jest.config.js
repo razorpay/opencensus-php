@@ -10,6 +10,7 @@ module.exports = withDashboardCore({
       '^apps/onboarding-experience/(.*)$': '<rootDir>/$1',
       '^@FTUX/(.*)$': '<rootDir>/src/app/FTUX/$1',
       '^@OnboardingExperienceCommons/(.*)$': '<rootDir>/src/common/$1',
+      '^@OnboardingExperienceAssets/(.*)$': '<rootDir>/src/assets/$1',
     };
 
     config.coverageThreshold = {

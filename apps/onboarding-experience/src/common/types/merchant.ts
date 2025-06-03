@@ -47,7 +47,8 @@ export type MerchantActivationDataType = {
   };
   createdAt: string;
   activation?: {
-    status: string;
+    bddVerificationStatus: MerchantBddVerificationStatusEnum;
+    status: MerchantActivationStatusEnum;
     isActivated: boolean;
     isTransacted: boolean;
   };
@@ -61,3 +62,27 @@ export type MerchantActivationDataType = {
 export type MerchantResponseType = {
   merchantById?: MerchantActivationDataType;
 };
+
+/**
+ * Enum defining the possible statuses for merchant activation
+ */
+export enum MerchantActivationStatusEnum {
+  INSTANTLY_ACTIVATED = 'INSTANTLY_ACTIVATED',
+  UNDER_REVIEW = 'UNDER_REVIEW',
+  NEEDS_CLARIFICATION = 'NEEDS_CLARIFICATION',
+  ACTIVATED = 'ACTIVATED',
+  REJECTED = 'REJECTED',
+  ACTIVATED_MCC_PENDING = 'ACTIVATED_MCC_PENDING',
+  ACTIVATED_KYC_PENDING = 'ACTIVATED_KYC_PENDING',
+  KYC_QUALIFIED_UNACTIVATED = 'KYC_QUALIFIED_UNACTIVATED',
+  EDD_PENDING = 'EDD_PENDING',
+}
+/**
+ * Enum defining the possible statuses for BDD verification
+ */
+export enum MerchantBddVerificationStatusEnum {
+  VERIFIED = 'VERIFIED',
+  NEEDS_CLARIFICATION = 'NEEDS_CLARIFICATION',
+  REJECTED = 'REJECTED',
+  UNDER_REVIEW = 'UNDER_REVIEW',
+}

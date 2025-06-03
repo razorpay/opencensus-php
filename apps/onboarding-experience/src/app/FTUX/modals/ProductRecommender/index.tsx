@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Box } from '@razorpay/blade/components';
 import ProductCategories from './ProductCategories';
 import ProductRecommendations from './ProductRecommendations';
 import ExploreAllProducts from './ExploreAllProducts';
@@ -35,9 +34,13 @@ function ProductRecommender({
   const handleMoveToAllProducts = () => setCurrentView(ActiveProductRecommenderScreen.ALL_PRODUCTS);
 
   return (
-    <Box>
+    <>
       {currentView === ActiveProductRecommenderScreen.CATEGORIES && (
-        <ProductCategories onDismiss={onDismiss} makeSelection={handleCategorySelection} />
+        <ProductCategories
+          onDismiss={onDismiss}
+          makeSelection={handleCategorySelection}
+          onExploreAllProducts={handleMoveToAllProducts}
+        />
       )}
 
       {currentView === ActiveProductRecommenderScreen.RECOMMENDATIONS &&
@@ -53,7 +56,7 @@ function ProductRecommender({
       {currentView === ActiveProductRecommenderScreen.ALL_PRODUCTS && (
         <ExploreAllProducts onDismiss={onDismiss} handleMoveToCategories={handleMoveToCategories} />
       )}
-    </Box>
+    </>
   );
 }
 
