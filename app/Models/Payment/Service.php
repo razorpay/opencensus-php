@@ -2826,6 +2826,7 @@ class Service extends Base\Service
     {
         $id = Entity::stripSignWithoutValidation($id);
         $callbackPresent = false;
+        $authenticationEntityFetch = false;
 
         $showSettlementHoldStatus = false;
 
@@ -2924,6 +2925,7 @@ class Service extends Base\Service
           }
         if (isset($entity['card'])) {
             if (isset($authenticationData['cavv']) && $payment->card->network === Card\Network::$fullName[Card\Network::AMEX]){
+                $authenticationEntityFetch = true;
                 $authenticationData = (new Payment\Service)->getAuthenticationEntity3ds2($payment->getPublicId());
                 $entity['acquirer_data']['authentication_reference_number'] = $authenticationData['cavv'];
             }
@@ -2981,26 +2983,33 @@ class Service extends Base\Service
             $entity['transaction'] = null;
         }
 
+        $internalApp = $this->app['basicauth']->getInternalApp()?? "none";
+        $config  = $this->app['config']->get('applications.route');
+        $passport = $this->app['basicauth']->getPassportJwt($config['url']);
+
         $this->trace->count(Metric::PAYMENT_FETCH_BY_ID_DISTRIBUTION, [
-            'private'          => $this->app['basicauth']->isPrivateAuth(),
-            'app'              => $this->app['basicauth']->getInternalApp(),
-            'proxy'            => $this->app['basicauth']->isProxyAuth(),
-            'callbackPresent'  => $callbackPresent,
+            'private'                       => $this->app['basicauth']->isPrivateAuth(),
+            'app'                           => $this->app['basicauth']->getInternalApp(),
+            'proxy'                         => $this->app['basicauth']->isProxyAuth(),
+            'route'                         => $this->app['api.route']->getCurrentRouteName(),
+            "authentication_entity_fetch"   => $authenticationEntityFetch,
+            'callbackPresent'               => $callbackPresent,
+            'passport'                      => empty($passport)
         ]);
 
-        if ($this->checkSplitzForPaymentFetchByIdParity() === true)
+        if ($this->app['api.route']->getCurrentRouteName() === "payment_fetch_by_id"
+            && ($internalApp === "none")
+            && (empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === false)
+            && (empty($passport) === false)
+            && $this->checkSplitzForPaymentFetchByIdParity() === true)
         {
-            $config  = $this->app['config']->get('applications.route');
-            $passport = $this->app['basicauth']->getPassportJwt($config['url']);
-
             $input["payment_id"] = $id;
             $input["passport"] = $passport;
             $input["cps_route"] = $payment['cps_route'];
-            $input["callbackPresent"] = $callbackPresent;
+            $input["callback_present"] = $callbackPresent;
             $input["ip"] = $this->app['request']->getClientIp();
-            $input["isPrivate"] = $this->app['basicauth']->isPrivateAuth();
-            $input["isProxyAuth"] = $this->app['basicauth']->isProxyAuth();
-            $input["internalApp"] = $this->app['basicauth']->getInternalApp();
+            $input["task_id"] = $this->app['request']->getTaskId();
+            $input["authentication_entity_fetch"] = $authenticationEntityFetch;
 
             $this->pushPaymentFetchByIdForParity($entity, $input);
         }
