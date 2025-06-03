@@ -465,7 +465,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateDeleteTokensInput($input, $customerId)
+    public function validateDeleteTokensInput($input, $customerId, $externalCount = 0)
     {
         $app = App::getFacadeRoot();
 
@@ -474,6 +474,7 @@ class Validator extends Base\Validator
         (new static)->validateInput('delete_tokens', $input);
 
         $tokenCount = $this->repo->token->getCountOfExistingTokensByTokensAndCustomer($input['tokens'], $customerId);
+        $tokenCount += $externalCount;
 
         // check if tokens found in db are less than provided
         if ($tokenCount !== count($input['tokens']))
