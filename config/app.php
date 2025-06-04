@@ -538,6 +538,8 @@ return array(
 
     'cac_blacklist_exp_id' => env('CAC_BLACKLIST_EXP_ID'),
 
+    'filter_only_rzp_settlement' => env('FILTER_ONLY_RZP_SETTLEMENT'),
+
 
     'nocode' => [
         'cache' => [
