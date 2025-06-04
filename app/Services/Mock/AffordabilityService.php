@@ -13,4 +13,17 @@ class AffordabilityService extends BaseAffordabilityService
     {
         return true;
     }
+     public function addEmiPlan($emiPlanData)
+     {
+         return [
+
+         ];
+     }
+
+     public function deleteEmiPlan(string $emiPlanId)
+     {
+            return [
+
+            ];
+     }
 }
