@@ -381,7 +381,7 @@ class Core extends Base\Core
             });
 
             $eventData['status'] = State::APPROVED;
-            (new Merchant\Core())->assignSubmerchantDashboardAccessIfApplicable($partner, $this->repo->merchant->findOrFail($$input[Entity::ENTITY_ID]),  (new MerchantApplications\Core())->getDefaultAppTypeForPartner($partner), Role::OWNER);  
+            (new Merchant\Core())->assignSubmerchantDashboardAccessIfApplicable($partner, $this->repo->merchant->findOrFail($input[Entity::ENTITY_ID]),  (new MerchantApplications\Core())->getDefaultAppTypeForPartner($partner), Role::OWNER);  
             $this->app['diag']->trackOnboardingEvent(EventCode::PARTNER_KYC_ACCESS_APPROVE, null, null, $eventData);
             $this->sendKycRequestConfirmedRejectedCommunication($subMerchantKycAccess, true);
         }
@@ -532,7 +532,7 @@ class Core extends Base\Core
 
                 $kycAccessState->fillSelectAttributes($payload['partner_kyc_access_state'], Entity::$prtsFillable);
 
-                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($kycAccessState, $merchantAccessMap, $partner, $subMerchant) {
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($kycAccessState, $merchantAccessMap, $partner, $subMerchant, $payload) {
                     if($payload['partner_kyc_access_state']['state'] == State::APPROVED){
                     (new Merchant\Core())->assignSubmerchantDashboardAccessIfApplicable($partner, $subMerchant,  (new MerchantApplications\Core())->getDefaultAppTypeForPartner($partner), Role::OWNER);
                     }

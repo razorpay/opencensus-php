@@ -41,6 +41,17 @@ class Core extends Base\Core
         $this->elfin = $this->app['elfin'];
     }
 
+    private function isMkycAggregatorReferralEnabled(): bool
+    {
+        $merchantCore = new Merchant\Core();
+
+        $properties = [
+            'experiment_id' => app('config')->get('app.mkyc_aggregator_referral_toggle_experiment_id'),
+        ];
+
+        return $merchantCore->isSplitzExperimentEnable($properties, 'enable');
+    }
+
     /**
      * @return array[]
      */
@@ -48,7 +59,9 @@ class Core extends Base\Core
     {
         return [
             Product::PRIMARY => [
-                "url"    => $this->config['applications.dashboard.url'] . 'signup',
+                "url"    => $this->isMkycAggregatorReferralEnabled() ? 
+                           $this->config['applications.dashboard.usl_url'] . 'signup' :
+                           $this->config['applications.dashboard.url'] . 'signup',
                 "params" => [
                     "referral_code" => null,
                 ]
