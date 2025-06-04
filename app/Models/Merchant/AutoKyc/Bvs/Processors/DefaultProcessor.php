@@ -23,6 +23,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationBaseResponse;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationBaseResponseV2;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationDetailsResponse;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Document\Type;
 
 class DefaultProcessor implements Processor
 {
@@ -106,6 +107,18 @@ class DefaultProcessor implements Processor
 
         $this->input = $input;
 
+        $currentRoute = $this->app['api.route']->getCurrentRouteName();
+
+        if ($currentRoute === Constant::ROUTE_MERCHANT_DOCUMENT_ADMIN_UPLOAD)
+        {
+            $documentType = $input['artefact']['details']['document_type'] ?? '';
+            
+            if (Type::isAadhaarDocument($documentType) || 
+                $configName === Constant::CONFIG_COMMON_MANUAL_VERIFICATION)
+            {
+                $configName = Constant::CONFIG_AADHAAR;
+            }
+        }
 
         if(empty($configName)===false)
         {
@@ -285,6 +298,14 @@ class DefaultProcessor implements Processor
 
             $validation[Constant::RULES] = $this->getFetchDetailsRule();
         }
+        
+        $currentRoute = $this->app['api.route']->getCurrentRouteName();
+        $this->trace->info(TraceCode::BVS_VALIDATION_DETAILS, [
+            'route' => $currentRoute,
+            'config_name' => $this->configName,
+            'rules' => $validation[Constant::RULES],
+            'validation' => $validation
+        ]);
 
         return $validation;
     }

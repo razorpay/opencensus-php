@@ -43,6 +43,7 @@ class Entity extends Base\PublicEntity
 
     const PRODUCT_IMAGES = 'images';
     const SELLING_PRICE = 'selling_price';
+    const TNC_LOG = 'tnc_log';
 
     // Input keys
     const ITEM               = 'item';
@@ -184,6 +185,7 @@ class Entity extends Base\PublicEntity
        self::SUBSCRIPTION_DETAILS,
        self::PRODUCT_IMAGES,
        self::SELLING_PRICE,
+       self::TNC_LOG,
    ];
 
    public function toStoreProductArrayPublic(): array

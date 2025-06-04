@@ -65,8 +65,7 @@ trait InvalidatesAffordabilityCache
         }
 
 
-        return $this->affordabilityService->invalidateCache([], $merchant->getId(), $InvalidateTerminalCache, $InvalidateMerchantMethodsCache, $terminalMethod);
-    }
+        return $this->affordabilityService->invalidateCache([], false, $merchant->getId(), $InvalidateTerminalCache, $InvalidateMerchantMethodsCache, $terminalMethod);    }
 
     /**
      * Flush checkout-affordability-api cache for all merchants if changes are made at global level.
@@ -75,13 +74,7 @@ trait InvalidatesAffordabilityCache
      */
     public function invalidateAffordabilityCacheForAllMerchants(): bool
     {
-        $merchantIds = $this->getAllAffordabilityWidgetFeatureEnabledMerchantIds();
-
-        if (empty($merchantIds)) {
-            return true;
-        }
-
-        return $this->affordabilityService->invalidateCache($this->getKeys($merchantIds));
+        return $this->affordabilityService->invalidateCache([],true);
     }
 
     /**
