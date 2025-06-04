@@ -98,7 +98,7 @@ class Api extends Base
         return $this->sendRequest($endpoint, Requests::POST, $input);
     }
 
-    public function createTransferReversal(string $paymentId, array $input) : array
+    public function createTransferReversal(string $transferId, array $input) : array
     {
         if ((new Config())->shouldCreateNewPassportToken())
         {
@@ -109,7 +109,7 @@ class Api extends Base
             $this->addPassportToken();
         }
 
-        $endpoint = sprintf(Constant::TRANSFER_REVERSAL_ENDPOINT, $paymentId);
+        $endpoint = sprintf(Constant::TRANSFER_REVERSAL_ENDPOINT, $transferId);
 
         return $this->sendRequest($endpoint, Requests::POST, $input);
     }

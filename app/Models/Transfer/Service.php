@@ -203,7 +203,15 @@ class Service extends Base\Service
             Reversal\Entity::ENTITY_TYPE    => EntityConstant::TRANSFER
         ];
 
-        $reversals = $this->repo->reversal->fetch($options, $merchantId);
+
+        if ($this->isRouteTidbFetchExpEnabled($merchantId))
+        {
+            $reversals = $this->repo->reversal->fetch($options, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+        else
+        {
+            $reversals = $this->repo->reversal->fetch($options, $merchantId);
+        }
 
         return $reversals->toArrayPublic();
     }
@@ -385,7 +393,7 @@ class Service extends Base\Service
             if ($shouldSendToRouteService === true)
             {
                 // make request to micro service
-                $resp = App::getFacadeRoot()['route']->createTransferReversal($input);
+                $resp = App::getFacadeRoot()['route']->createTransferReversal($id, $input);
 
                 $this->trace->info(
                     TraceCode::TRANSFER_REVERSAL_RESPONSE_VIA_ROUTE_SERVICE,
