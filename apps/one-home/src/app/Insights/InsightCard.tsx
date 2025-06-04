@@ -227,44 +227,8 @@ const InsightCardWithErrorBoundary = ({
       : new Error('Error fetching data in Insight Card');
   }
 
-  useEffect(() => {
-    if (!componentData || componentData?.error) return;
-
-    const items = [];
-
-    // Add view details action if available (desktop)
-    if (!isMobile) {
-      items.push(staticContent.viewDetailsText);
-    }
-
-    // Add mobile-specific action if available
-    if (isMobile) {
-      items.push(staticContent.showDetailedBreakdownText);
-    }
-
-    trackOneHomeAnalytics({
-      objectName: 'Ucs Widget',
-      actionName: 'Loaded',
-      properties: {
-        ...analytics,
-        items,
-      },
-    });
-  }, [componentData, isMobile]);
-
   const insightsStaticData =
     insightCardsStaticData[cardType as InsightCardType | OtherInsightCardType];
-
-  if (paymentLocked) {
-    return (
-      <LockedCard
-        insightsStaticData={insightsStaticData}
-        isMobile={isMobile}
-        componentData={componentData}
-        analytics={analytics}
-      />
-    );
-  }
 
   let cardData;
   if (source === 'other_insights') {
@@ -281,6 +245,45 @@ const InsightCardWithErrorBoundary = ({
     dataSummary?.current_data == null ||
     dataSummary?.percentage_change == null ||
     dataSummary?.current_data === 0;
+
+  useEffect(() => {
+    if (!componentData || componentData?.error) return;
+
+    const items = [];
+
+    // Only add items if not in locked or empty state
+    if (!paymentLocked && !isEmptyDataSummary) {
+      // Add view details action if available (desktop)
+      if (!isMobile) {
+        items.push(staticContent.viewDetailsText);
+      }
+
+      // Add mobile-specific action if available
+      if (isMobile) {
+        items.push(staticContent.showDetailedBreakdownText);
+      }
+    }
+
+    trackOneHomeAnalytics({
+      objectName: 'Ucs Widget',
+      actionName: 'Loaded',
+      properties: {
+        ...analytics,
+        items,
+      },
+    });
+  }, [componentData, isMobile, paymentLocked, isEmptyDataSummary]);
+
+  if (paymentLocked) {
+    return (
+      <LockedCard
+        insightsStaticData={insightsStaticData}
+        isMobile={isMobile}
+        componentData={componentData}
+        analytics={analytics}
+      />
+    );
+  }
 
   if (isEmptyDataSummary) {
     return (
