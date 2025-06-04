@@ -15,6 +15,7 @@ use RZP\Constants\HyperTrace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\CapitalSubmerchantUtility;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 
 class Core extends Base\Core
 {
@@ -46,11 +47,25 @@ class Core extends Base\Core
     /**
      * @return array[]
      */
-    protected function getReferralConfig(): array
+    protected function getReferralConfig(?Merchant\Entity $merchant = null): array
     {
+        $baseUrl = $this->config['applications.dashboard.url'] . 'signup';
+        
+        // Only check for MKYC flow if merchant is provided
+        if ($merchant !== null && 
+            $this->isMKYCFlowEnabled(
+                $merchant->getId(),
+                $this->app['config']->get('app.mkyc_aggregator_experiment_id'),
+                'mkyc_aggregator_flow_enabled'
+            ) && 
+            $merchant->getPartnerType() == MerchantConstants::AGGREGATOR
+        ) {
+            $baseUrl = $this->config['applications.dashboard.usl_url'] . 'auth/?auth_intent=signup';
+        }
+
         return [
             Product::PRIMARY => [
-                "url"    => $this->config['applications.dashboard.url'] . 'signup',
+                "url" => $baseUrl,
                 "params" => [
                     "referral_code" => null,
                 ]
@@ -183,7 +198,7 @@ class Core extends Base\Core
     {
         $referrals = $this->repo->referrals->getReferralByMerchantId($merchant->getId());
 
-        $productConfig = $this->getReferralConfig();
+        $productConfig = $this->getReferralConfig($merchant);
 
         $productConfig = $this->addCapitalProductConfig($merchant, $productConfig);
 
