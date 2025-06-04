@@ -2413,6 +2413,38 @@ class Service extends Base\Service
         return $response['response']['variant']['name'] ?? '';
     }
 
+    public function getSplitzExpResponseForTokenFetchFromTokenService(string $merchantId, string $vault, string $experimentName)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get($experimentName),
+                'request_data'  => json_encode(['mids' => $merchantId, 'vault' => $vault]),
+            ];
+            $experimentId = $this->app['config']->get($experimentName);
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::TOKEN_FETCH_FROM_TOKEN_SERVICE_EXPERIMENT_SPLITZ_RESPONSE, [
+                'merchant_id'   => $merchantId,
+                'vault'         => $vault,
+                'experiment_id' => $experimentId,
+                'result'        => $response,
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'vault'         => $vault,
+                'experiment_id' => $this->app['config']->get($experimentName) ?? null
+            ]);
+        }
+
+        return $response['response']['variant']['name'] ?? '';
+    }
+
     public function getSplitzExperimentResponseForBankingMotoRearch(string $orgId, string $experimentName)
     {
         try
