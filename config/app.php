@@ -1329,6 +1329,8 @@ return array(
 
     'payout_properties_event_experiment_id' => env('PAYOUT_PROPERTIES_EVENT_EXPERIMENT_ID'),
 
+    'downtime_v2_experiment_id' => env('DOWNTIME_V2_EXPERIMENT_ID'),
+
     'my_save_card_splitz_experiment_id' => env('MY_SAVE_CARD_SPLITZ_EXPERIMENT_ID'),
 
     'partner_qr_code_feature_override_exp_id'=> env('PARTNER_QR_CODE_OVERRIDE_EXP_ID'),
