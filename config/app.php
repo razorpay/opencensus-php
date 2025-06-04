@@ -1449,10 +1449,6 @@ return array(
 
     'payouts_to_phone_number_splitz_experiment' => env('PAYOUTS_TO_PHONE_NUMBER_SPLITZ_EXPERIMENT_ID'),
 
-    'send_payment_link_emails_via_stork_issued' => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK_ISSUED'),
-
-    'send_payment_link_emails_via_stork_merchant_issued' => env('SEND_PAYMENT_LINK_EMAILS_VIA_STORK_MERCHANT_ISSUED'),
-
     'afa_splitz' => env('AFA_SPLITZ_EXP_ID'),
 
     'api_migration_v3' => env('API_MIGRATION_V3'),
