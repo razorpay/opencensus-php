@@ -96,6 +96,11 @@ class Service extends Base\Service
 
         $order = $this->getOrderIfGiven($input);
 
+        $email = $input['email'] ?? null;
+        $contact = $input['contact'] ?? null;
+        unset($input['email']);
+        unset($input['contact']);
+
         $this->modifyRequestFromOldFormat($input);
 
         (new Validator)->validateDefaultCloseBy($input);
@@ -129,9 +134,8 @@ class Service extends Base\Service
                         'method' => 'bank_transfer',
                         'merchant_id' => $this->merchant->getId(),
                         'description' => 'Virtual Account Payment',
-                        'email' => $input['email'],
-                        'contact' => $input['contact'],
-                        'recurring' => 1
+                        'email' => $email,
+                        'contact' => $contact,
                     ];
                     $paymentResponse = $this->app['pg_router']->validateAndCreatePayment($data, true);
 
