@@ -11967,7 +11967,7 @@ class Processor
         // In case of optimizer merchants, if api bypass payment header is passed, avoid regenating payment ID
         // ref: https://razorpay.slack.com/archives/CVBG8G5HP/p1713776445121129?thread_ts=1713333452.554889&cid=CVBG8G5HP
         if ($this->merchant->isFeatureEnabled(Feature::RAAS) === true) {
-            $this->setPaymentIdForOptimizer($payment);
+            $this->setPaymentIdForOptimizer($payment, $input);
         }
 
         if($transferPaymentId !== null ){
@@ -11998,7 +11998,7 @@ class Processor
 
     // In case of optimizer merchants, if api bypass payment header is passed, avoid regenating payment ID
     // ref: https://razorpay.slack.com/archives/CVBG8G5HP/p1713776445121129?thread_ts=1713333452.554889&cid=CVBG8G5HP
-    protected function setPaymentIdForOptimizer(Payment\Entity $payment )
+    protected function setPaymentIdForOptimizer(Payment\Entity $payment, array $input)
     {
         $apiBypassPaymentId = $this->app['request']->header(RequestHeader::X_API_BYPASS_PAYMENT_ID);
 
@@ -12019,7 +12019,6 @@ class Processor
             $allowed = true;
         }
 
-        $input = $this->app['request']->all();
         $isRazorpayWallet = ($input[Payment\Entity::METHOD] === Payment\Method::WALLET &&
             isset($input[Payment\Entity::WALLET]) &&
             $input[Payment\Entity::WALLET] === Wallet::RAZORPAYWALLET);
