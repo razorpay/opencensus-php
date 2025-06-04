@@ -21,6 +21,24 @@ class Constants {
 
     const ORG_NAME = 'org_name';
 
+    const ACTION = 'action';
+    const EXECUTED = 'EXECUTED';
+    const INVALIDATED = 'INVALIDATED';
+    const FAILED = 'FAILED';
+    const WORKFLOW_ACTION_ID = 'workflow_action_id';
+
+    const ATTRIBUTES = 'attributes';
+
+    const SETTLEMENT_WF_TAG = 'settlement_wf_tag';
+
+    const CLEAR_RISK_TAGS = 'clear_risk_tags';
+
+    const TRIGGER_COMMUNICATION = 'trigger_communication';
+
+    const WF_ACTION_ROUTE_NAME        = 'merchant_actions';
+
+    const WF_ACTION_ROUTE_CONTROLLER  = 'RZP\Http\Controllers\MerchantController@putAction';
+
     const ORG_DATA = [
         'MY' => [
             self::LOGO_URL => 'https://cdn.razorpay.com/static/assets/curlec/logo_invert.png',

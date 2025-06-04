@@ -7,6 +7,7 @@ use Config;
 use Carbon\Carbon;
 use phpseclib\Crypt\RSA;
 use phpseclib\Net\SFTP;
+use Razorpay\Trace\Logger;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
@@ -14,6 +15,12 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment;
 use RZP\Base\ConnectionType;
+use RZP\Models\RiskWorkflowAction\Core;
+use RZP\Models\Workflow\Action;
+use RZP\Models\Workflow\Action\Differ;
+use RZP\Models\Admin\Permission;
+use RZP\Models\Comment;
+use RZP\Models\Admin\Org;
 use RZP\Models\SalesforceConverge\Error;
 use RZP\Models\Schedule;
 use RZP\Exception;
@@ -2164,6 +2171,175 @@ class Service extends Base\Service
     public function updateFOH(array $input) : array
     {
         return app('settlements_api')->updateFOH($input);
+    }
+
+    public function createSettlementsWFAction(array $input) : array
+    {
+        return (new Settlement\Core)->createSetlWorkflowAction($input);
+    }
+
+    public function createAndExecuteSettlementsWFAction(array $input) : array
+    {
+        if(isset($input['migrate_bank_account']) === true)
+        {
+            $input['migrate_bank_account'] = ($input['migrate_bank_account'] === '1');
+        }
+
+        if(isset($input['migrate_merchant_config']) === true)
+        {
+            $input['migrate_merchant_config'] = ($input['migrate_merchant_config'] === '1');
+        }
+
+        (new Validator)->validateInput('settlements_service_migration', $input);
+
+        $merchantId = $input[Constants::MERCHANT_ID];
+
+        $setlWorkflowMaker = $this->getIndividualSetlWorkflowMaker();
+        try
+        {
+            $diff = (new Differ\Core)->get($input[Settlement\Constants::WORKFLOW_ACTION_ID]);
+
+            $diff['new'][Constants::MERCHANT_ID] = $merchantId;
+
+            $diff['new'][Settlement\Constants::WORKFLOW_ACTION_ID] = $input[Settlement\Constants::WORKFLOW_ACTION_ID];
+
+            $workflowActionId = (new Settlement\Core)->createSetlWorkflowAction($diff['new'], $setlWorkflowMaker)['id'];
+
+            $workflowActions = (new Action\Core)->fetchOpenActionOnEntityOperation(
+                $merchantId, 'merchant', Permission\Name::$actionMap[$diff['new'][Settlement\Constants::ACTION]]);
+
+            // note: sleep required because it can take upto 1 second for documents to become available for search in ES.
+            // this is acceptable since we are doing this in batch service.
+            sleep(1);
+
+            $input[Settlement\Constants::WORKFLOW_ACTION_ID] = $workflowActionId;
+
+            foreach ($workflowActions as $workflowAction)
+            {
+                (new Action\Core)->approveActionForcefully($workflowAction, $setlWorkflowMaker);
+
+                (new Action\Core)->executeAction($workflowAction, $setlWorkflowMaker, $setlWorkflowMaker->getSuperAdminRole());
+
+                $this->createBulkWorkflowDetailsComment($input[Settlement\Constants::WORKFLOW_ACTION_ID], $workflowAction, $setlWorkflowMaker);
+            }
+
+            $status = Settlement\Constants::EXECUTED;
+        }
+        catch (Exception\BadRequestValidationFailureException | Exception\BadRequestException $e)
+        {
+            $status = Settlement\Constants::INVALIDATED;
+
+            $input['failure_message'] = $e->getMessage();
+
+            if (isset($workflowAction) === true)
+            {
+                $this->closeWorkflowIfApplicable($workflowAction, $setlWorkflowMaker);
+            }
+
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::BULK_RISK_ACTION_CREATE_AND_EXECUTE_WORKFLOW_FAILED,
+                [
+                    'merchantId'            => $merchantId,
+                    'execution_status'       => $status,
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $status = Settlement\Constants::FAILED;
+
+            $input['failure_message'] = $e->getMessage();
+
+            if (isset($workflowAction) === true)
+            {
+                $this->closeWorkflowIfApplicable($workflowAction, $setlWorkflowMaker);
+            }
+
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::BULK_RISK_ACTION_CREATE_AND_EXECUTE_WORKFLOW_FAILED,
+                [
+                    'merchantId'            => $merchantId,
+                    'execution_status'       => $status,
+                ]);
+        }
+
+        $input['workflow_action_status'] = $status;
+
+        return $input;
+    }
+
+    protected function closeWorkflowIfApplicable($workflowAction, $setlWorkflowMaker)
+    {
+        try {
+            if (isset($workflowAction) === false)
+            {
+                return;
+            }
+            if ($workflowAction->isExecuted() === false)
+            {
+                (new Action\Core())->close($workflowAction, $setlWorkflowMaker, true);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::BULK_RISK_ACTION_CLOSE_WORKFLOW_FAILED,
+                [
+                    Settlement\Constants::WORKFLOW_ACTION_ID  => $workflowAction->getId(),
+                ]);
+        }
+    }
+
+    private function createBulkWorkflowDetailsComment($bulkActionId, $workflowAction, $setlWorkflowMaker)
+    {
+        $publicId = sprintf('%s_%s', Action\Entity::getSign(), $bulkActionId);
+
+        try
+        {
+            $actionEntity = (new Action\Service())->getActionDetails($publicId);
+
+            $makerDetails = sprintf('%s(%s)', $actionEntity['maker']['name'], $actionEntity['maker']['email']);
+
+            // using state changer as checkers array was found to be empty.
+            $checkerDetails = sprintf('%s(%s)', $actionEntity['state_changer']['name'], $actionEntity['state_changer']['email']);
+
+            $link = sprintf('https://admin-dashboard.razorpay.com/admin/requests/%s', $publicId);
+
+            $comment = sprintf(\RZP\Models\RiskWorkflowAction\Constants::BULK_WORKFLOW_DETAILS_TPL, $makerDetails, $checkerDetails, $link);
+
+            if (isset($comment) === true)
+            {
+                (new Comment\Core())->createForWorkflowAction([
+                    'comment'   => $comment,
+                ], $workflowAction, $setlWorkflowMaker);
+            }
+        }
+        catch (\Throwable $e) {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::BULK_RISK_ACTION_COMMENT_DETAILS_CREATION_FAILED,
+                [
+                    Settlement\Constants::WORKFLOW_ACTION_ID  => $publicId,
+                ]);
+        }
+    }
+
+    public function getIndividualSetlWorkflowMaker()
+    {
+        $makerOrgId = Org\Entity::RAZORPAY_ORG_ID;
+
+        // NOTE: maker_email (both maker and checker) should be superadmin
+        $makerEmail = env(\RZP\Models\RiskWorkflowAction\Constants::BULK_RISK_ACTION_INDIVIDUAL_WORKFLOW_MAKER_EMAIL);
+
+        $maker = $this->repo->admin->findByOrgIdAndEmail($makerOrgId, $makerEmail);
+
+        return $maker;
     }
 
     public function updateSchedule(array $input) : array

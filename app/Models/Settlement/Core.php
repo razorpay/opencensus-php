@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement;
 
 use Mail;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants\Country;
@@ -12,7 +13,15 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Merchant\Action;
+use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Merchant\Action as MerchantAction;
+use RZP\Models\Workflow\Action as WorkflowAction;
+use RZP\Models\Workflow\Action\MakerType;
+use RZP\Models\Workflow\Action\Differ;
+use RZP\Models\Admin\Permission;
+use RZP\Models\Merchant\Validator as MerchantValidator;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
@@ -1410,6 +1419,234 @@ class Core extends Base\Core
             return true;
         }
         return false;
+    }
+
+    public function createSetlWorkflowAction($input, $maker = null)
+    {
+        try {
+            $action = $input[SettlementConstants::ACTION];
+
+            $merchantId= $input[Constants::MERCHANT_ID];
+
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $merchantDetails = $merchant->merchantDetail;
+
+            $this->validateMerchantForAction($action, $merchant);
+
+            $attributes = $input[SettlementConstants::ATTRIBUTES];
+
+            $workflowTags = $input['workflow_tags'] ?? null;
+
+            $this->trace->info(TraceCode::CREATE_RISK_ACTION_REQUEST,
+                [
+                    'merchant_id'     => $merchantId,
+                    'risk_action'     => $action,
+                    'risk_attributes' => $attributes,
+                    'workflow_tags'   => $workflowTags
+                ]);
+
+            $tags = $this->getTags($attributes);
+
+            $riskAttributesParams = $this->getParamsForMerchantAction($action, $attributes);
+
+            $routePermission = Permission\Name::$actionMap[$action];
+
+            $input = [
+                SettlementConstants::ACTION          => $action,
+                'use_workflows'            => false,
+                SettlementConstants::ATTRIBUTES => $riskAttributesParams,
+            ];
+
+            $diffData = $this->getDiffData($merchantDetails, $action, $attributes);
+
+            // NOTE: given the use case can generate the diff payload directly,
+            // but for consistency reasons calling createDiff
+            // No need for redacting fields as no sensitive field is being used
+
+            $diff = (new Differ\Core)->createDiff([], $diffData);
+
+            $workflowAction = $this->app['workflow'];
+
+//            if (isset($maker) === true)
+//            {
+//                $workflowAction = $workflowAction
+//                    ->setMakerFromAuth(false)
+//                    ->setWorkflowMaker($maker);
+//            }
+
+            $routeName = SettlementConstants::WF_ACTION_ROUTE_NAME;
+
+            $workflowAction = $workflowAction
+                ->setPermission($routePermission)
+                ->setTags($tags)
+                ->setWorkflowMakerType(MakerType::ADMIN)
+                ->setRouteName($routeName)
+                ->setController(SettlementConstants::WF_ACTION_ROUTE_CONTROLLER)
+                ->setRouteParams(['id' => $merchantId])
+                ->setEntityAndId($merchant->getEntity(), $merchantId)
+                ->setInput($input)
+                ->setDiff($diff)
+                ->trigger();
+
+            $this->trace->info(TraceCode::CREATE_RISK_ACTION,
+                [
+                    'merchant_id'  => $merchantId,
+                    'wf_action_id' => $workflowAction['id'],
+                ]);
+
+            return $this->autoApproveWorkflow($input, $merchantId, $maker, $diff);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::BULK_RISK_ACTION_CREATE_MERCHANT_WORKFLOW_FAILED,
+                [
+                    'merchantId' => $merchantId
+                ]);
+
+            throw $e;
+        }
+    }
+
+    private  function autoApproveWorkflow($input, $merchantId, $maker, $diff)
+    {
+        $openWorkflowActions = (new WorkflowAction\Core)->fetchOpenActionOnEntityOperation(
+            $merchantId, 'merchant', Permission\Name::$actionMap[$diff['new'][SettlementConstants::ACTION]]);
+
+        // note: sleep required because it can take upto 1 second for documents to become available for search in ES.
+        sleep(1);
+
+        foreach ($openWorkflowActions as $action)
+        {
+            try
+            {
+                (new WorkflowAction\Core)->approveActionForcefully($action, $maker);
+                (new WorkflowAction\Core)->executeAction($action, $maker, $maker->getSuperAdminRole());
+            }
+            catch (Exception\BadRequestValidationFailureException|Exception\BadRequestException $e)
+            {
+                $status = SettlementConstants::INVALIDATED;
+                $this->handleWorkflowException($e, $merchantId, $status, $action, $maker);
+            }
+            catch (\Throwable $e)
+            {
+                $status = SettlementConstants::FAILED;
+                $this->handleWorkflowException($e, $merchantId, $status, $action, $maker);
+            }
+        }
+
+        $input['workflow_action_status'] = SettlementConstants::EXECUTED;
+
+        return $input;
+    }
+    private function handleWorkflowException($exception, $merchantId, $status, $workflowAction, $maker)
+    {
+        $this->trace->traceException(
+            $exception,
+            Logger::ERROR,
+            TraceCode::RISK_ACTION_CREATE_AND_EXECUTE_WORKFLOW_FAILED,
+            [
+                'merchantId'       => $merchantId,
+                'execution_status' => $status,
+            ]);
+        if (isset($workflowAction) === true)
+        {
+            $this->closeSettlementWorkflowIfApplicable($workflowAction, $maker);
+        }
+    }
+    private function closeSettlementWorkflowIfApplicable($workflowAction, $riskWorkflowMaker)
+    {
+        try {
+            if (isset($workflowAction) === false)
+            {
+                return;
+            }
+            if ($workflowAction->isExecuted() === false)
+            {
+                (new WorkflowAction\Core())->close($workflowAction, $riskWorkflowMaker, true);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::RISK_ACTION_CREATE_AND_EXECUTE_WORKFLOW_FAILED,
+                [
+                    'workflow_action_id'  => $workflowAction->getId(),
+                ]);
+        }
+    }
+
+    public function validateMerchantForAction($action, $merchant)
+    {
+        $validator =  new MerchantValidator($merchant);
+
+        switch ($action)
+        {
+            case MerchantAction::LIVE_DISABLE:
+                $validator->validateLiveDisable();
+                break;
+            case MerchantAction::LIVE_ENABLE:
+                $validator->validateLiveEnable();
+                break;
+        }
+    }
+
+    protected function getDiffData($merchantDetails, $action, $attributes)
+    {
+        $merchantId = $merchantDetails->getId();
+
+        $diffData = [
+            'id'                       => $merchantId,
+            SettlementConstants::ACTION          => $action,
+            SettlementConstants::ATTRIBUTES => $attributes,
+        ];
+
+        return $diffData;
+    }
+
+    protected function getTags($attributes)
+    {
+
+        $tag = [];
+
+        if (isset($attributes[SettlementConstants::SETTLEMENT_WF_TAG]) === true)
+        {
+            $tag[] = $attributes[SettlementConstants::SETTLEMENT_WF_TAG];
+        }
+
+        return $tag;
+    }
+
+    protected function getParamsForMerchantAction($action, $attributes)
+    {
+        if (in_array($action, Merchant\Constants::RISK_CONSTRUCTIVE_ACTION_LIST) === true)
+        {
+            return [
+                SettlementConstants::CLEAR_RISK_TAGS => $attributes[SettlementConstants::CLEAR_RISK_TAGS],
+            ];
+        }
+
+        if ($action == Action::ENABLE_INTERNATIONAL)
+        {
+            return [];
+        }
+
+        $params = [
+            SettlementConstants::TRIGGER_COMMUNICATION => $attributes[SettlementConstants::TRIGGER_COMMUNICATION],
+        ];
+
+        if (isset($attributes[SettlementConstants::SETTLEMENT_WF_TAG]) === true)
+        {
+            $params[SettlementConstants::SETTLEMENT_WF_TAG] = $attributes[SettlementConstants::SETTLEMENT_WF_TAG];
+        }
+
+        return $params;
+
     }
 
 }
