@@ -50,14 +50,14 @@ class Core extends Base\Core
     protected function getReferralConfig(?Merchant\Entity $merchant = null): array
     {
         $baseUrl = $this->config['applications.dashboard.url'] . 'signup';
-        
+
         // Only check for MKYC flow if merchant is provided
-        if ($merchant !== null && 
+        if ($merchant !== null &&
             $this->isMKYCFlowEnabled(
                 $merchant->getId(),
                 $this->app['config']->get('app.mkyc_aggregator_experiment_id'),
                 'mkyc_aggregator_flow_enabled'
-            ) && 
+            ) &&
             $merchant->getPartnerType() == MerchantConstants::AGGREGATOR
         ) {
             $baseUrl = $this->config['applications.dashboard.usl_url'] . 'auth/?auth_intent=signup';
@@ -254,14 +254,6 @@ class Core extends Base\Core
 
             $productConfig["params"]["referral_code"] = $refCode;
 
-            // Check if the mkyc aggregator experiment enabled and change the url accordingly
-            if ($this->isMKYCFlowEnabled(
-                $merchant->getId(),
-                $this->app['config']->get('app.mkyc_aggregator_experiment_id'),
-                'mkyc_aggregator_flow_enabled'
-            )) {
-                $productConfig["url"] = $this->config['applications.dashboard.usl_url'] . 'auth/?auth_intent=signup';
-            }
             $shortenUrl = $this->createShortenReferralUrl(
                 $productConfig["url"],
                 $productConfig["params"]
