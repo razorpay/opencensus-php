@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Document;
 
+use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
@@ -662,15 +663,37 @@ class Core extends Base\Core
 
     public function performOcrWithBvs(Entity $document, Merchant\Entity $merchant, Detail\Entity $merchantDetails)
     {
+        $currentRoute = $this->app['api.route']->getCurrentRouteName();
+        
         // If document type belong to the category of joint validation document,
         // we need to send both documents together in one request.
         // Currently, this is hidden behind experiment.
         if (Type::isPoaDocument($document->getDocumentType()) === true)
         {
-            $this->performPoaOcrWithBvs($document, $merchantDetails,$merchant);
+            
+            /**
+             * For merchant_document_admin_upload route and Aadhaar documents, force Aadhaar config.
+             * This is necessary because Aadhaar documents require special processing rules and validations
+             * that are defined in the Aadhaar config. By forcing this config, we ensure consistent
+             * validation behavior for all Aadhaar documents regardless of how they're uploaded.
+             * This helps maintain data integrity and compliance with identity verification requirements.
+             */
+            if ($currentRoute === Constant::ROUTE_MERCHANT_DOCUMENT_ADMIN_UPLOAD && 
+                Type::isAadhaarDocument($document->getDocumentType()))
+            {
+                $this->trace->info(TraceCode::BVS_CONFIG_OVERRIDE, [
+                    'route' => $currentRoute,
+                    'document_type' => $document->getDocumentType(),
+                    'merchant_id' => $merchant->getId(),
+                    'message' => 'Forcing Aadhaar config for Aadhaar document'
+                ]);
+            }
+            
+            $this->performPoaOcrWithBvs($document, $merchantDetails, $merchant);
         }
         else
         {
+            
             $factory = new requestDispatcher\Factory();
 
             $requestDispatcher = $factory->getBvsRequestDispatcherForDocument(
@@ -690,11 +713,21 @@ class Core extends Base\Core
      */
     public function performPoaOcrWithBvs(Entity $document, Detail\Entity $merchantDetails, Merchant\Entity $merchant)
     {
+        $currentRoute = $this->app['api.route']->getCurrentRouteName();
+        
 
         $artefactDetails = Constant::FIELD_ARTEFACT_DETAILS_MAP[$document->getDocumentType()] ?? [];
 
         $artefactType       = $artefactDetails[Constant::ARTEFACT_TYPE] ?? '';
         $artefactProofIndex = $artefactDetails[Constant::PROOF_INDEX] ?? '1';
+        
+        // For merchant_document_admin_upload route and Aadhaar documents, force Aadhaar config
+        if ($currentRoute === Constant::ROUTE_MERCHANT_DOCUMENT_ADMIN_UPLOAD && 
+            Type::isAadhaarDocument($document->getDocumentType()))
+        {
+            $artefactType = Constant::AADHAAR;
+            
+        }
 
         $payload = [
             Constant::ARTEFACT_TYPE   => $artefactType,
@@ -712,23 +745,22 @@ class Core extends Base\Core
             $merchantDetails->getId(),
             $payload);
 
-
         if (empty($bvsValidation) === false and $bvsValidation->getValidationStatus() == BvsValidationConstants::CAPTURED)
-        {
-
-            $document->setValidationId($bvsValidation->getValidationId());
-
-            $merchantDetails->setPoaVerificationStatus(null);
-
-            $exists = (new Stakeholder\Core)->checkIfStakeholderExists($merchantDetails);
-            if ($exists === true)
             {
-                $merchantDetails->stakeholder->setPoaStatus(null);
+                $document->setValidationId($bvsValidation->getValidationId());
+
+                $merchantDetails->setPoaVerificationStatus(null);
+
+                $exists = (new Stakeholder\Core)->checkIfStakeholderExists($merchantDetails);
+                if ($exists === true)
+                {
+                    $merchantDetails->stakeholder->setPoaStatus(null);
+                }
+
+                $this->repo->merchant_detail->saveOrFail($merchantDetails);
             }
 
-            $this->repo->merchant_detail->saveOrFail($merchantDetails);
         }
-
     }
 
     /**

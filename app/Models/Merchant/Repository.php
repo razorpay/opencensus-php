@@ -1193,6 +1193,55 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    public function fetchMidAndNameFromOrgAndCategoryFromTiDB($orgId, $category, string $mode = null)
+    {
+        /*
+        *
+            -- This query fetches merchant information along with key and feature details.
+            -- It joins the merchant, key, and feature tables on merchant ID.
+            -- It filters records by organization ID and only includes non-expired keys.
+            -- If a specific category is provided (and it's not 'other'), it filters merchants by that category.
+            -- Otherwise, it excludes merchants from 'education' and 'social' categories.
+        */
+        $connection = $this->getDataWarehouseConnection($this->getDataWarehouseConnection());
+
+        $query = $this->newQueryWithConnection($connection);
+
+        $merchantIdColumn         = $this->repo->merchant->dbColumn(MerchantEntity::ID);
+        $merchantNameColumn       = $this->repo->merchant->dbColumn(MerchantEntity::NAME);
+        $merchantKeyIdColumn      = $this->repo->key->dbColumn(MerchantEntity::ID);
+        $keyMerchantIdColumn      = $this->repo->key->dbColumn("merchant_id");
+        $keyExpiredAtColumn       = $this->repo->key->dbColumn("expired_at");
+        $featureEntityIdColumn    = $this->repo->feature->dbColumn("entity_id");
+        $featureNameColumn        = $this->repo->feature->dbColumn("name");
+        $merchantOrgIdColumn      = $this->repo->merchant->dbColumn(MerchantEntity::ORG_ID);
+        $merchantCategoryColumn   = $this->repo->merchant->dbColumn(MerchantEntity::CATEGORY2);
+
+        $queryAttr = [
+            $merchantNameColumn . ' as name',
+            $merchantKeyIdColumn . ' as key_id',
+            $featureNameColumn . ' as feature_name',
+        ];
+
+        $query
+            ->select($queryAttr)
+            ->join(Table::KEY, $merchantIdColumn, '=', $keyMerchantIdColumn)
+            ->join(Table::FEATURE, $merchantIdColumn, '=', $featureEntityIdColumn)
+            ->where($merchantOrgIdColumn, '=', $orgId)
+            ->whereNull($keyExpiredAtColumn);
+
+        if (!empty($category) && !in_array(strtolower($category), ['other']))
+        {
+            $query->where($merchantCategoryColumn, '=', $category);
+        }
+        else
+        {
+            $query->whereNotIn($merchantCategoryColumn, ['education', 'social']);
+        }
+
+        return $query->get();
+    }
+
     public function fetchReferredMerchants($merchantId)
     {
         $tag = Constants::PARTNER_REFERRAL_TAG_PREFIX.$merchantId;

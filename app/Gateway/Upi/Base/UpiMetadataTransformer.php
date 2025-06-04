@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
@@ -31,6 +32,10 @@ class UpiMetadataTransformer extends UpiTransformer
      * @var Metadata
      */
     protected $item;
+
+    protected array $errorCodesForOneTimeMandateDebitRetry = [
+        ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT
+    ];
 
     /**
      * @var A data block which can be sent to customer when intervention is needed
@@ -326,8 +331,7 @@ class UpiMetadataTransformer extends UpiTransformer
             }
 
             if ((($canRetry === true) and ($attempt >= 10)) or
-                (($canRetry === false) and ($attempt >= 3)) or
-                (($upiMandate['frequency'] === Frequency::ONETIME) and ($attempt >= 10)))
+                (($canRetry === false) and ($attempt >= 3)))
             {
                 return null;
             }
@@ -352,11 +356,12 @@ class UpiMetadataTransformer extends UpiTransformer
 
             if($upiMandate['frequency'] === Frequency::ONETIME)
             {
-                $interval = $this->getReattemptIntervalForOneTimeMandate($this->input[Entity::PAYMENT]['merchant_id']);
+                $internalErrorCode = $this->exception->getError()->getInternalErrorCode();
 
-                if($interval !== null)
-                {
-                    $remindAfter = $interval;
+                $shouldReattempt = in_array($internalErrorCode, $this->errorCodesForOneTimeMandateDebitRetry);
+
+                if ($shouldReattempt === false) {
+                    $remindAfter = null;
                 }
             }
 

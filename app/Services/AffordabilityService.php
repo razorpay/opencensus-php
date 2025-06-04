@@ -69,15 +69,18 @@ class AffordabilityService
      *
      * @return bool
      */
-    public function invalidateCache(array $keys, string $merchantId = null, bool $InvalidateTerminalCache = false, bool $InvalidateMerchantMethodsCache = false, string $terminalMethod = null): bool
+    public function invalidateCache(array $keys, bool $invalidateOffersCacheForAllMerchants = false, string $merchantId = null, bool $InvalidateTerminalCache = false, bool $InvalidateMerchantMethodsCache = false, string $terminalMethod = null): bool
     {
-        if (empty($keys) && $merchantId == null) {
+        if (empty($keys) && $merchantId == null && !$invalidateOffersCacheForAllMerchants) {
             return true;
         }
 
         $url = $this->baseUrl . self::INVALIDATE_CACHE_ENDPOINT;
 
-        if(!empty($keys))
+        if($invalidateOffersCacheForAllMerchants) {
+            $data = ['invalidate_offers_cache_for_all_merchants' => $invalidateOffersCacheForAllMerchants];
+        }
+        else if(!empty($keys))
         {
             $data = ['merchant_keys' => $keys];
         }

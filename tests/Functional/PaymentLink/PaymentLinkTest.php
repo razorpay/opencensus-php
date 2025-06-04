@@ -6959,4 +6959,154 @@ Secondary reference id should be unique, duplicate value for test123";
         $this->assertEquals(101, $response['payment']['fee']);
         $this->assertEquals(101, $response['payment']['fee_in_mcc']);
     }
+
+    public function testCreateOrderNormalPPTncLogSuccess()
+    {
+        $this->createPaymentLink(self::TEST_PL_ID);
+
+        $this->createPaymentPageItem(self::TEST_PPI_ID, self::TEST_PL_ID, []);
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['order']['amount']);
+
+        $paymentPageRecord = $this->getDbLastEntity('payment_page_record')->toArray();
+        $otherDetails = json_decode($paymentPageRecord['other_details'], true);
+
+        $this->assertArrayHasKey('tnc_log', $otherDetails);
+        $this->assertTrue($otherDetails['tnc_log']);
+
+    }
+
+    public function testCreateOrderNormalPPTncLogNoUpdate()
+    {
+        $this->createPaymentLink(self::TEST_PL_ID);
+
+        $this->createPaymentPageItem(self::TEST_PPI_ID, self::TEST_PL_ID, []);
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['order']['amount']);
+
+        $paymentPageRecord = $this->getDbLastEntity('payment_page_record')->toArray();
+        $otherDetails = json_decode($paymentPageRecord['other_details'], true);
+
+        $this->assertArrayNotHasKey('tnc_log', $otherDetails);
+    }
+
+    public function testCreateOrderBatchPPTngLogSuccess()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $res = $this->startTest();
+
+        $id = $res["id"];
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'item1' => 100,
+            'item2' => ''
+        ]);
+
+        $paymentPageRecord = $this->getDbLastEntity('payment_page_record')->toArray();
+
+        // verify item2 isn't getting stored
+        $this->assertEquals($paymentPageRecord['other_details'],'{"DOB": "test123", "item1": "100", "sec__ref__id_1": "test123"}');
+
+        $paymentPageItems = \DB::connection('test')->select("select * from payment_page_items");
+
+        $orderCreateRequest = [
+            'method' => 'POST',
+            'url' => '/payment_pages/' . $id . '/order',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => "ppi_". $paymentPageItems[0]->id,
+                        'amount' => 100
+                    ]
+                ],
+                'notes' => [
+                    'pri__ref__id' => '1231231234',
+                    'email' => 'test@test.com',
+                    'phone' => '1231231234',
+                    'DOB' => 'test123',
+                    'terms__and__cond' => true,
+                ]
+            ]
+        ];
+
+
+        $this->ba->directAuth();
+
+        $res = $this->makeRequestAndGetContent($orderCreateRequest);
+
+        $this->assertEquals($res['order']['amount'], 100);
+
+        $paymentPageRecord = $this->getDbLastEntity('payment_page_record')->toArray();
+        $otherDetails = json_decode($paymentPageRecord['other_details'], true);
+
+        $this->assertArrayHasKey('tnc_log', $otherDetails);
+        $this->assertTrue($otherDetails['tnc_log']);
+
+    }
+
+    public function testCreateOrderBatchPPTngLogNoUpdate()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $res = $this->startTest();
+
+        $id = $res["id"];
+
+        $res = $this->batchUploadRecord($id, 'batch_KoGILWQCoVkO2k', [
+            'Email' => 'test@test.com',
+            'Primary reference id' => 1231231234,
+            'Phone' => '1231231234',
+            'DOB' => 'test123',
+            'item1' => 100,
+            'item2' => ''
+        ]);
+
+        $paymentPageRecord = $this->getDbLastEntity('payment_page_record')->toArray();
+
+        // verify item2 isn't getting stored
+        $this->assertEquals($paymentPageRecord['other_details'],'{"DOB": "test123", "item1": "100", "sec__ref__id_1": "test123"}');
+
+        $paymentPageItems = \DB::connection('test')->select("select * from payment_page_items");
+
+        $orderCreateRequest = [
+            'method' => 'POST',
+            'url' => '/payment_pages/' . $id . '/order',
+            'content' => [
+                'line_items' => [
+                    [
+                        'payment_page_item_id' => "ppi_". $paymentPageItems[0]->id,
+                        'amount' => 100
+                    ]
+                ],
+                'notes' => [
+                    'pri__ref__id' => '1231231234',
+                    'email' => 'test@test.com',
+                    'phone' => '1231231234',
+                    'DOB' => 'test123',
+                ]
+            ]
+        ];
+
+
+        $this->ba->directAuth();
+
+        $res = $this->makeRequestAndGetContent($orderCreateRequest);
+
+        $this->assertEquals($res['order']['amount'], 100);
+
+        $paymentPageRecord = $this->getDbLastEntity('payment_page_record')->toArray();
+        $otherDetails = json_decode($paymentPageRecord['other_details'], true);
+
+        $this->assertArrayNotHasKey('tnc_log', $otherDetails);
+    }
+
 }
