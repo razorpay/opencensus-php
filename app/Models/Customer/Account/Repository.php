@@ -3,12 +3,17 @@
 namespace RZP\Models\Customer;
 
 use RZP\Base\BuilderEx;
+use RZP\Base\Common;
+use RZP\Base\ConnectionType;
+use RZP\Constants\Environment;
+use RZP\Constants\Es;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\DbQueryException;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Base;
 use RZP\Models\Base\Collection;
+use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Customer;
@@ -32,17 +37,21 @@ class Repository extends Base\Repository
     public function fetch(array $params, string $merchantId = null, string $connectionType = null): PublicCollection
     {
         // Check if query can be served by DB.
-        // It should not contain any params other than "count" and "skip"
-        $allowedKeys = ['count', 'skip', 'email', 'contact'];
+        // It should not contain any params other than the ones mentioned below
+        $allowedKeys = ['count', 'skip', 'email', 'contact', 'merchant_id'];
         $invalidKeys = array_diff(array_keys($params), $allowedKeys);
         if (!empty($invalidKeys))
             return parent::fetch($params, $merchantId, $connectionType);
 
+        $merchantId = $merchantId ?? $params['merchant_id'];
         $merchant = $this->repo->merchant->find($merchantId);
         $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled($merchant);
         $this->logMethodCall(__FUNCTION__, ['merchant_id' => $merchantId, 'should_read_via_cms' => $shouldReadViaCMS, 'params' => $params]);
         if ($shouldReadViaCMS)
         {
+            $useReplica =  (is_numeric($params['count']) && (int)$params['count'] > 10) ||
+                (is_numeric($params['skip']) && (int)$params['skip'] > 0);
+
             $response = $this->app['cms']->listCustomers(
                 [
                     'merchant_id' => $merchantId,
@@ -50,12 +59,112 @@ class Repository extends Base\Repository
                     'skip' => $params['skip'],
                     'contact' => $params['contact'],
                     'email' => $params['email']
-                ]
-            );
+                ], $useReplica);
             return (new Customer\Account\Transformations)->convertListResponseToPublicCollection($response);
         }
 
         return parent::fetch($params, $merchantId, $connectionType);
+    }
+
+    // Overrides runEsMatch defined in RepositoryFetch Trait
+    // The difference in this implementation is that this uses CDP Core microservice to fetch customers
+    // rather than API DB
+    protected function runEsFetch(
+        array $params,
+        string $merchantId = null,
+        array $expands,
+        string $connectionType = null): PublicCollection
+    {
+        $this->logMethodCall(__FUNCTION__, ['params' => $params]);
+        $startTimeMs = round(microtime(true) * 1000);
+        $response = $this->esRepo->buildQueryAndSearch($params, $merchantId);
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $queryDuration = $endTimeMs - $startTimeMs;
+
+        if($queryDuration > 100) {
+            $this->trace->info(TraceCode::ES_SEARCH_DURATION, [
+                'duration_ms' => $queryDuration,
+                'function'    => 'runESSearch',
+            ]);
+        }
+
+        // Extract results from ES response. If hit has _source get that else just the document id.
+        $result = array_map(
+            function ($res)
+            {
+                return $res[ES::_SOURCE] ?? [Common::ID => $res[ES::_ID]];
+            },
+            $response[ES::HITS][ES::HITS]);
+
+        if (count($result) === 0)
+        {
+            return new PublicCollection;
+        }
+
+        // If callee expects only es data (for auto-complete etc) then hydrate the result into model and return.
+        $esHitsOnly = boolval(($params[EsRepository::SEARCH_HITS]) ?? false);
+
+        if ($esHitsOnly)
+        {
+            return $this->hydrate($result);
+        }
+
+        // Else extract the matched ids and return collection by making a MySQL query on found ids.
+        $ids = array_column($result, 'id');
+        $query = $this->newQuery();
+
+        if ((is_null($connectionType) === false) and
+            ($this->app['env'] !== Environment::TESTING))
+        {
+            $connection = $this->getConnectionFromType($connectionType);
+
+            $query = $this->newQueryWithConnection($connection);
+        }
+
+        $query = $query->with($expands);
+
+        $this->addCommonQueryParamMerchantId($query, $merchantId);
+
+        $temp = $this->fetchByMerchantIdAndIds($merchantId, $ids);
+        $entities = (new Customer\Account\Transformations())->convertEntityListToPublicCollection($temp);
+
+        // If not all the ids from es are found in MySQL just log an error as this should not happen.
+        if (count($ids) !== $entities->count())
+        {
+            $this->trace->critical(TraceCode::ES_MYSQL_RESULTS_MISMATCH, ['ids' => $ids]);
+        }
+
+        //checking connection type twice as it's default value is null so in
+        // some cases null is passed in the place of string which throws error.
+
+        try
+        {
+            if(sizeof($expands) === 0 and ($connectionType === ConnectionType::DATA_WAREHOUSE_ADMIN
+                    or $connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT) and $this->checkWdaRouteForFetchPayment($expands, $connectionType) === true)
+            {
+                $wdaStartTimeMs = round(microtime(true) * 1000);
+
+                $wdaEntities =  $this->fetchEsEntitiesFromWDA($query, $ids, $connectionType, $merchantId);
+
+                $difference = $this->compareAndLogEntitiesInShadowMode($wdaEntities, $entities, $wdaStartTimeMs);
+
+                if($difference === false)
+                {
+                    return $wdaEntities;
+                }
+            }
+        }
+        catch ( \Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                'migration_error_with_es_params' => $ex->getMessage(),
+                'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
+        return $entities;
     }
 
     public function getEntitiesFromWda(WDAQueryBuilder $wdaQueryBuilder, $query)
@@ -738,6 +847,12 @@ class Repository extends Base\Repository
                 $allCustomers[] = $c;
             }
         }
+
+        // Sort according to list of IDs provided as input
+        $orderMap = array_flip($customerIds);
+        usort($allCustomers, function($a, $b) use ($orderMap) {
+            return ($orderMap[$a->getId()] ?? PHP_INT_MAX) <=> ($orderMap[$b->getId()] ?? PHP_INT_MAX);
+        });
 
         return $allCustomers;
     }

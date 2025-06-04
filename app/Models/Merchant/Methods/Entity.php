@@ -23,6 +23,7 @@ use RZP\Models\Emi\CreditEmiProvider;
 use RZP\Models\Emi\PaylaterProvider;
 use RZP\Models\Emi\CardlessEmiProvider;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Emi\InstalmentProvider;
 
 class Entity extends Base\PublicEntity
 {
@@ -104,6 +105,8 @@ class Entity extends Base\PublicEntity
     const OFFLINE_CREDIT = 'offline_credit';
     const PAYLATER_PROVIDERS = 'paylater_providers';
     const EMI_TYPES           = 'emi_types';
+    const INSTALMENT = 'instalment';
+    const INSTALMENT_PROVIDERS = 'instalment_providers';
 
     const METHODS           = 'methods';
 
@@ -268,7 +271,8 @@ class Entity extends Base\PublicEntity
         self::LINKAJA,
         self::DOKU,
         PaylaterProvider::KLARNA,
-        PaylaterProvider::ZIP
+        PaylaterProvider::ZIP,
+        self::INSTALMENT_PROVIDERS,
     ];
 
     protected $public = [
@@ -347,6 +351,8 @@ class Entity extends Base\PublicEntity
         self::DOKU,
         PaylaterProvider::KLARNA,
         PaylaterProvider::ZIP,
+        self::INSTALMENT,
+        self::INSTALMENT_PROVIDERS,
     ];
 
     protected $appends = [
@@ -385,6 +391,8 @@ class Entity extends Base\PublicEntity
         PaylaterProvider::KLARNA,
         PaylaterProvider::ZIP,
         self::IN_APP_CREDIT_LINE,
+        self::INSTALMENT,
+        self::INSTALMENT_PROVIDERS,
     ];
 
     protected static $shouldAcceptSubMethods = [
@@ -392,7 +400,8 @@ class Entity extends Base\PublicEntity
         self::DUITNOW_PAY,
         self::GIFT_CARDS,
         self::CARD,
-        self::PAYLATER
+        self::PAYLATER,
+        self::INSTALMENT,
     ];
 
 
@@ -540,12 +549,14 @@ class Entity extends Base\PublicEntity
         self::CREDIT_EMI => self::CREDIT_EMI_PROVIDERS,
         self::PAYLATER => self::PAYLATER_PROVIDERS,
         self::CARDLESS_EMI => self::CARDLESS_EMI_PROVIDERS,
+        self::INSTALMENT => self::INSTALMENT_PROVIDERS,   
     ];
 
     protected static $addon_affordability_methods = [
         self::CREDIT_EMI,
         self::PAYLATER,
         self::CARDLESS_EMI,
+        self::INSTALMENT,
     ];
 
     protected static $aff_offline_method_public_name_mapping = [
@@ -651,7 +662,10 @@ class Entity extends Base\PublicEntity
             PaylaterProvider::KLARNA,
             PaylaterProvider::ZIP,
         ],
-
+        
+        self::INSTALMENT => [
+            InstalmentProvider::VIS,
+        ],
         self::CARD => [
             self::SODEXO
         ],
@@ -778,6 +792,40 @@ class Entity extends Base\PublicEntity
     public function isFpxEnabled()
     {
         return $this->getAttribute(self::FPX);
+    }
+
+    public function isVisEnabled()
+    {
+       return $this->getAttribute(self::INSTALMENT_PROVIDERS)[InstalmentProvider::VIS];
+    }
+
+    public function isInstalmentEnabled(): bool
+    {
+        $addonMethods = $this->getAddonMethods();
+        return !empty($addonMethods[self::INSTALMENT]);
+    }
+
+    public function isVisSupported($issuer)
+    {
+        // List of enabled issuers
+        $enabledIssuers = [
+            // Provided by VIS
+            'HSBC AMANAH MALAYSIA BERHAD',
+            'HSBC BANK MALAYSIA BERHAD',
+            'STANDARD CHARTERED BANK MALAYSIA BERHAD',
+            'AMBANK (M) BERHAD',
+            'AMBANK ISLAMIC BERHAD'
+        ];
+        return in_array($issuer, $enabledIssuers, true);
+    }
+
+    public function getEnabledInstalmentProviders()
+    {
+        $addon_methods = $this->getAddonMethods();
+
+        $all_addon_methods = Entity::getAllAddonMethodsNames();
+
+        return InstalmentProvider::getEnabledProviders($all_addon_methods, $addon_methods);
     }
 
     public function isDuitNowPayEnabled(){
@@ -2133,6 +2181,11 @@ class Entity extends Base\PublicEntity
     protected function getPaylaterProvidersAttribute()
     {
         return $this->getEnabledPaylaterProviders();
+    }
+
+    protected function getInstalmentProvidersAttribute()
+    {
+        return $this->getEnabledInstalmentProviders();
     }
 
     protected function getAppsAttribute()

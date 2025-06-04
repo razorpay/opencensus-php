@@ -510,6 +510,7 @@ class Route
         'merchant_create_terminal_v3'              => ['post',     'merchants/{id}/terminals/v3',                    'MerchantController@postCreateTerminalV3'                           ],
         'merchant_create_terminal_internal'        => ['post',     'merchants/{id}/terminals/internal',              'MerchantController@postCreateTerminalWithId',                      ],
         'merchant_info_fetch'                      => ['get',      'internal/merchant_info_fetch/{mid}',             'MerchantController@fetchUserIdAndOrgIdFromMerchantId',             ],
+        'merchant_list_by_org_and_category'        => ['get',      'merchant_list/org/{orgid}/category/{category}',        'MerchantController@fetchMidAndNameFromOrgAndCategoryFromTiDB'                       ],
         'merchant_get_terminals'                   => ['get',      'merchants/{id}/terminals',                       'MerchantController@getTerminals'                                   ],
         'proxy_merchant_get_terminals'             => ['get',      'proxy/merchant/terminals',                       'MerchantController@proxyGetTerminals'                              ],
         'admin_merchant_get_terminals'             => ['post',     'admin/merchant/terminals',                       'TerminalController@proxyV2TerminalService'                        ],
@@ -2813,6 +2814,10 @@ class Route
         'user_fetch_by_verified_contact_internal'  => ['post',     'users_internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
         'user_internal_fetch_by_verified_contact'  => ['post',     'users/internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
         'user_edit_internal'                       => ['patch',    'users_internal/{id}',                            'UserController@editUserInternal'                                   ],
+        'fetch_user_details'                       => ['get',      'users/details',                                  'UserController@getUserDetailsWithRelations'                                   ],
+        'upsert_user_details'                      => ['post',     'users/details',                                  'UserController@upsertUserDetailsWithRelations'                                ],
+        'delete_user_details'                      => ['delete',     'users/details',                                  'UserController@deleteUserDetailsWithRelations'                                ],
+
 
         //b2b flow
         'create_international_virtual_accounts'             => ['post',     'international/virtual_accounts',                 'BankTransferController@createAccountForCurrencyCloud'          ],
@@ -5846,6 +5851,9 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'fetch_user_details',
+        'upsert_user_details',
+        'delete_user_details',
         'pricing_hard_delete_plan',
         'pricing_hard_refresh_plan',
         'pricing_create_plan_recon_job_sync',
@@ -12214,6 +12222,7 @@ class Route
     ];
 
     public static $direct = [
+        'merchant_list_by_org_and_category',
         'update_late_auth_config_bulk',
         'onboarding_payment_webhook',
         'payment_page_fetch_records',

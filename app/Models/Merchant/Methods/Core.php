@@ -44,6 +44,7 @@ use RZP\Models\Emi\CreditEmiProvider;
 use RZP\Models\Emi\DebitProvider;
 use RZP\Models\Emi\PaylaterProvider;
 use RZP\Models\Emi\CardlessEmiProvider;
+use RZP\Models\Emi\InstalmentProvider;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 
@@ -93,8 +94,6 @@ class Core extends Base\Core
             CreditEmiProvider::FDRL => '1',
             CreditEmiProvider::IDFB => '1',
             CreditEmiProvider::AUBL => '1'
-
-
         ]
     ];
 
@@ -142,6 +141,12 @@ class Core extends Base\Core
             PaylaterProvider::KLARNA => '0',
         ]
 
+    ];
+    const defaultInstalmentProvidersWhitelisted = [
+
+        Entity::INSTALMENT_PROVIDERS  => [
+            InstalmentProvider::VIS => '0',
+        ]
     ];
 
 
@@ -513,6 +518,7 @@ class Core extends Base\Core
             Payment\Method::FPX                 => [],
             Payment\Method::DUITNOW_PAY         => false,
             Payment\Method::GIFT_CARDS          => [],
+            Payment\Method::INSTALMENT         => [],
         ];
 
         $methods = $this->getMethods($merchant);
@@ -538,6 +544,7 @@ class Core extends Base\Core
         $data[Payment\Method::GIFT_CARDS] = $methods->isGiftCardsEnabled();
         $data[Entity::INTL_BANK_TRANSFER] = $this->getInternationalBankTransferMethods($methods);
         $data[Payment\Method::DUITNOW_PAY] = $methods->isDuitNowPayEnabled();
+        $data[Payment\Method::INSTALMENT] = $methods->getEnabledInstalmentProviders();
 
         if ($netbankingEnabled === true)
         {
@@ -1313,6 +1320,10 @@ class Core extends Base\Core
             if ($key === Entity::CARDLESS_EMI and $value === true)
             {
                 $methods->setMethods(self::defaultCardlessEmiProvidersWhitelisted);
+            }
+            if ($key === Entity::INSTALMENT and $value === true)
+            {
+                $methods->setMethods(self::defaultInstalmentProvidersWhitelisted);
             }
 
             switch (true)
