@@ -19,6 +19,7 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Admin;
 use  RZP\Models\BankAccount;
+use RZP\Http\RequestHeader;
 use RZP\Models\Workflow\Helper;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Base\PublicEntity;
@@ -1006,7 +1007,22 @@ class Core extends Base\Core
             // actual maker request payload.
             Request::replace($payload);
 
-            // Create controller object
+            $request = $this->app['request'];
+
+            $headers = $request->headers;
+
+            $tags = $action->getTagsAttribute();
+
+            $tags =  $tags->map(function ($tag)
+            {
+                return $tag->slug;
+            });
+
+            if( in_array('AES_CREATED', $tags->toArray(), true) )
+            {
+                $headers->set('is_aes',"1");
+            }
+
             $controller = App::make($controller);
 
             // Auth details have to be initialized before

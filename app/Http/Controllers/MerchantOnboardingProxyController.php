@@ -784,6 +784,13 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
             $headers['X-Route-Name'] = $routeKey;
 
+            $request = $this->app['request'];
+
+
+            if(!empty($request->headers) && !empty($request->headers->get('Is-Aes'))){
+                $headers['Admin-Login-Header'] = "aes_created";
+            }
+
             $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
                 'route'     => $route,
                 'twirpPath' => $twirpPath,
