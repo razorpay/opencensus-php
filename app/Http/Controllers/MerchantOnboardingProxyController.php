@@ -55,6 +55,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     // modular onboarding APIs
     const ONBOARDING_GET      = 'onboarding_get';
     const ONBOARDING_SAVE     = 'onboarding_save';
+    const ACTIVATE_MERCHANT     = 'activate_merchant';
     const ONBOARDING_CREATE_OR_FETCH = 'onboarding_create_or_fetch';
 
     const MERCHANT_ACTIVATION_FETCH_INTERNAL    = 'merchant_activation_fetch_internal';
@@ -225,6 +226,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::VERIFY_OTP,
         self::ONBOARDING_GET,
         self::ONBOARDING_SAVE,
+        self::ACTIVATE_MERCHANT,
         self::ONBOARDING_CREATE_OR_FETCH,
         self::GET_MERCHANT_ONBOARDING_DETAILS,
     ];
@@ -276,6 +278,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::ONBOARDING_GET                   => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/OnboardingGet',
         self::ONBOARDING_CREATE_OR_FETCH       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/OnboardingCreateOrFetch',
         self::ONBOARDING_SAVE                  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/OnboardingSave',
+        self::ACTIVATE_MERCHANT                => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/ActivateMerchant',
         self::MERCHANT_WEBSITE_POLICY_VERIFY           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantIndividualPolicyVerification',
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetL2DynamicConfigs',
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS    => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetPolicyComplianceDetails',
@@ -350,6 +353,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         // will throw context canceled error in case of timeout. This has to be reverted
         // once the latencies of the API is optimised.
         self::ONBOARDING_SAVE                           => 50,
+        self::ACTIVATE_MERCHANT                         => 15,
         self::ONBOARDING_GET                            => 15,
         self::MERCHANT_SIGN_UP                          => 20,
         self::SALES_ASSISTED_MERCHANT_SIGN_UP           => 20,
