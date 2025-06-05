@@ -2278,6 +2278,7 @@ class Service extends Base\Service
     private function handleUpdateActivationStatusInternal(string $merchantId, array $input): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $this->app['basicauth']->setMerchant($merchant);
 
         $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS_INTERNAL, [
             DetailConstants::INPUT => $input,

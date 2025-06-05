@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Repository as Repo;
+use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
 {
@@ -23,7 +24,7 @@ class Validator extends Base\Validator
         Entity::MIN_AMOUNT              => 'sometimes|integer|min:100',
         Entity::ISSUER_PLAN_ID          => 'sometimes',
         Entity::SUBVENTION              => 'sometimes|in:customer,merchant',
-        Entity::MERCHANT_PAYBACK        => 'required|integer',
+        Entity::MERCHANT_PAYBACK        => 'required|integer'
     );
 
     protected static $createValidators = array(

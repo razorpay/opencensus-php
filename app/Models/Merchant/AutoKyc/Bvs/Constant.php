@@ -205,10 +205,6 @@ class Constant
 
     const MCC_CATEGORISATION_WEBSITE      = 'mcc_categorisation_website';
     const MCC_CATEGORISATION_GSTIN        = 'mcc_categorisation_gstin';
-    
-    const ROUTE_MERCHANT_DOCUMENT_ADMIN_UPLOAD = 'merchant_document_admin_upload';
-    const CONFIG_AADHAAR = 'Aadhaar';
-    const CONFIG_COMMON_MANUAL_VERIFICATION = 'Common_manual_verification';
 
     const FIELD_ARTEFACT_DETAILS_MAP = [
         self::PARTNERSHIP_DEED            => [

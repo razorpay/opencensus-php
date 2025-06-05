@@ -1265,27 +1265,17 @@ class Core extends Base\Core
         try {
             if (preg_match('/^' . preg_quote(Constants\Entity::AMAZON_PAYOUT, '/') . '/', $name_upper)) {
                 // only applicable for amazon merchant
-                $skipInvoiceFeaturePresent = $this->merchant->isFeatureEnabled(Feature\Constants::CB_SKIP_B2B_EXPORT_INVOICE);
-                if (isset($skipInvoiceFeaturePresent) and !$skipInvoiceFeaturePresent) {
-                    (new Merchant\Service)->addFeatureFlag(
-                        [
-                            Feature\Constants::CB_SKIP_B2B_EXPORT_INVOICE
-                        ], true
-                    );
+                (new \RZP\Models\Merchant\Core)->addFeatureFlagForMerchant($this->merchant, Feature\Constants::CB_SKIP_B2B_EXPORT_INVOICE);
+                (new \RZP\Models\Merchant\Core)->addFeatureFlagForMerchant($this->merchant, Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B);
+                $addressPayload = $this->getAmazonBillingAddressByWallet($payment->getWallet());
+                $this->trace->info(TraceCode::RAW_ADDRESS_CREATE_REQUEST,[
+                    'Amazon Billing Address Payload' => $addressPayload,
+                ]);
+                if($addressPayload){
+                    (new Address\Core)->create($payment, $payment->getEntity(),$addressPayload);
                 }
-
-                $enableB2BSettlementFeaturePresent = $this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B);
-                if (isset($enableB2BSettlementFeaturePresent) and !$enableB2BSettlementFeaturePresent) {
-                    (new Merchant\Service)->addFeatureFlag(
-                        [
-                            Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B
-                        ], true
-                    );
-                }
-
-                (new Address\Core)->create($payment, $payment->getEntity(), $this->getAmazonBillingAddressByWallet($payment->getWallet()));
             }
-        } catch (\Exception $ex) {
+        } catch (\Throwable $ex) {
             $this->trace->traceException(
                 $ex,
                 null,
@@ -1393,9 +1383,13 @@ class Core extends Base\Core
                     Payment\Entity::CURRENCY => $payment->getCurrency(),
                 ];
 
+                $shouldSendSegmentEvent = $this->canSendMoneySaverPaymentSegmentEvent($merchantId, Payment\status::CAPTURED);
+
                 $paymentProcessor->capture($payment,$values);
 
-                $this->sendSegmentEventIfApplicable($merchantId, Payment\status::CAPTURED);
+                if ($shouldSendSegmentEvent === true) {
+                    $this->sendPaymentSegmentEvent($merchantId, Payment\status::CAPTURED, $payment);
+                }
             }
             else
             {
@@ -1412,87 +1406,84 @@ class Core extends Base\Core
             }
     }
 
-    public function sendSegmentEventIfApplicable($merchantID, $eventType)
+    public function sendPaymentSegmentEvent($merchantID, $paymentStatus, $payment)
     {
         $this->trace->info(TraceCode::MONEYSAVER_SEGMENT_EVENT_REQUEST, [
             'merchant_id' => $merchantID,
-            'event_type' => $eventType,
+            'event_type' => $paymentStatus,
+            "payment_id" => $payment->getId(),
         ]);
         try {
-            $properties = $this->getSegmentEventPayload($merchantID, $eventType);
-            if($this->shouldSkipSegmentEvent($properties)){
-                return;
+            $properties = [
+                "merchant_id" => $merchantID,
+                "merchant_type" => "cross_border_money_saver",
+                "payment_id" => $payment->getId(),
+                "payment_created_timestamp" => $payment->getCreatedAt(),
+                "payment_authorization_timestamp" => $payment->getAuthorizeTimestamp(),
+            ];
+
+            if ($paymentStatus === Payment\status::CAPTURED) {
+                $properties["payment_capture_timestamp"] = $payment->getCapturedAt();
             }
-            unset($properties['skip_segment']);
+
+            $properties["event"] = BankTransferConstants::FIRST_MONEYSAVER_PAYMENT . $paymentStatus;
 
             $merchant = $this->repo->merchant->findOrFail($merchantID);
             $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
                 $merchant, $properties, $properties['event']);
             $this->trace->info(TraceCode::MONEYSAVER_SEGMENT_EVENT_SUCCESS, [
                 'merchant_id' => $merchantID,
-                'event_type' => $eventType,
+                'event_type' => $paymentStatus,
                 'properties' => $properties,
             ]);
-        }catch (\Exception $ex) {
+        } catch (\Throwable $ex) {
             $this->trace->info(TraceCode::MONEYSAVER_SEGMENT_EVENT_FAILED, [
                 'error_message' => $ex->getMessage(),
                 'merchant_id' => $merchantID,
-                'event_type' => $eventType,
+                'event_type' => $paymentStatus,
             ]);
         }
     }
 
-    public function shouldSkipSegmentEvent($properties) : bool
+    public function canSendMoneySaverPaymentSegmentEvent($merchantID, $status): bool
     {
-        return (isset($properties['skip_segment']) && $properties['skip_segment'] === true);
-    }
 
-    public function getSegmentEventPayload($merchantID, $eventType)
-    {
-        $properties = [
-            "merchant_id" => $merchantID,
-            "merchant_type" => "cross_border_money_saver",
-            "skip_segment" => true
-        ];
-        switch ($eventType) {
-            case Payment\status::CAPTURED:
-            case Payment\status::AUTHORIZED:
-                $this->getPaymentEventPayload($merchantID, $eventType, $properties);
-                break;
-            case BankTransferConstants::MONEYSAVER_ACTIVATED:
-                $this->getMoneySaverActivatedEventPayload( $eventType, $properties);
-                break;
-        }
-        return $properties;
-    }
-
-    public function getPaymentEventPayload($merchantID, $eventType, &$properties): void
-    {
         if(!isset($this->app['rzp.mode'])){
             $this->app['rzp.mode'] = Mode::LIVE;
         }
-        $query_input = [
-            "methods" => [Method::INTL_BANK_TRANSFER],
-            "merchant_ids" => [$merchantID],
-            "limit" => 5,
-        ];
-        $payments = $this->repo->payment->getIntlBankTransferPayments( $query_input, $eventType, Gateway::CURRENCY_CLOUD);
-        if(!isset($payments) || count($payments) != 1) {
-            return;
-        }
-        $properties["payment_id"] = $payments[0]->getId();
-        $properties["payment_created_timestamp"] = $payments[0]->getCreatedAt();
-        $properties["payment_authorization_timestamp"] = $payments[0]->getAuthorizeTimestamp();
-        if($eventType === Payment\status::CAPTURED)$properties["payment_capture_timestamp"] = $payments[0]->getCapturedAt();
-        $properties["skip_segment"] = false;
-        $properties["event"] = BankTransferConstants::FIRST_MONEYSAVER_PAYMENT.$eventType;
-    }
 
-    public function getMoneySaverActivatedEventPayload($eventType, &$properties): void
-    {
-        $properties["moneysaver_activation_timestamp"] = time();
-        $properties["skip_segment"] = false;
-        $properties["event"] = $eventType;
+        try {
+            $queryInput = [
+                "methods" => [Method::INTL_BANK_TRANSFER],
+                "merchant_ids" => [$merchantID],
+            ];
+
+            $statuses = [Payment\status::CAPTURED];
+
+            // if status is authorized, we want to fetch both authorized and captured
+            if ($status === Payment\status::AUTHORIZED) {
+                $statuses = [Payment\status::AUTHORIZED, Payment\status::CAPTURED];
+            }
+
+            $paymentsCount = $this->repo->payment->fetchIntlBankTransferPaymentsCount($queryInput, $statuses, Gateway::CURRENCY_CLOUD);
+            
+            //Returning false if already payments exists, since we need to trigger segment for first auth and captured payment of a merchant.
+            if ($paymentsCount > 0) {
+                return false;
+            }
+
+            return true;
+        } catch (\Throwable $ex) {
+            $this->trace->error(
+                TraceCode::MONEYSAVER_SEGMENT_EVENT_FAILED,
+                [
+                    'error_message' => $ex->getMessage(),
+                    'merchant_id' => $merchantID,
+                    'event_type' => $status,
+                ]
+            );
+            return false;
+        }
     }
 
     protected function getIntlBankTransferModeFromResponse(array $response)
