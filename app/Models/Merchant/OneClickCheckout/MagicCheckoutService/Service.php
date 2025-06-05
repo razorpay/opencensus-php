@@ -25,6 +25,7 @@ class Service extends Base\Service
   const CHECK_SHOPIFY_COMPLETE_CHECKOUT_PATH = 'v1/checkouts/order_status';
   const TAX_DETAILS_AND_SHIPPING_OPTIONS_PATH = 'v1/internal/shipping/options';
   const GET_CUSTOMER_ADDRESS_PATH             = 'v1/magic/customer/address';
+  const MERCHANT_CONFIGS_WRITE_PATH           = 'v1/magic/merchants/configs';
   const SHOPIFY_PUBLIC_APP_POST_INSTALLATION_COD_WORKFLOW_PATH = 'v1/integrations/shopify/cod/workflow';
 
   public function __construct()
@@ -158,4 +159,10 @@ class Service extends Base\Service
         return $this->app['magic_checkout_service_client']->sendRequest(self::SHOPIFY_PUBLIC_APP_POST_INSTALLATION_COD_WORKFLOW_PATH, $input, Requests::POST);
     }
 
+    // updateMerchantConfigs is being used to dual write upserts to MCS. Once we verify this flow is working
+    // properly and start reading from MCS, we will directly hit MCS from merchant dashboard and bypass API.
+    public function updateMerchantConfigs(array $input)
+    {
+        return $this->app['magic_checkout_service_client']->sendRequest(self::MERCHANT_CONFIGS_WRITE_PATH, $input, Requests::POST);
+    }
 }
