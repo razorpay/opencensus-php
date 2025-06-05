@@ -356,6 +356,20 @@ class Repository extends Base\Repository
 
         $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source', $entityToRelationFetchMap);
 
+        if($this->filterOnlyRzpSettlement($merchantId) === true)
+        {
+            $txns = $txns->filter(function($txn) {
+                if($txn !== null && $txn->source !== null
+                    && method_exists($txn->source, 'getSettledBy') && $txn->source->getSettledBy() !== 'Razorpay'
+                    && method_exists($txn, 'getCredit') && $txn->getCredit() === 0
+                    && method_exists($txn, 'getDebit') && $txn->getDebit() === 0
+                ) {
+                    return false;
+                }
+                return true;
+            })->values();
+        }
+
         $this->trace->info(
             TraceCode::MERCHANT_REPORT_GENERATION,
             [
@@ -364,6 +378,16 @@ class Repository extends Base\Repository
             ]);
 
         return $txns;
+    }
+
+    public function filterOnlyRzpSettlement($merchantId): bool
+    {
+        $properties = [
+            'id' => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.filter_only_rzp_settlement'),
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
     }
 
     public function fetchEntitiesForBrokerReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap)

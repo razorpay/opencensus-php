@@ -1104,6 +1104,11 @@ class Base extends BaseModel\Core
     {
         $entries = $this->parseFileAndCleanEntries($this->inputFileLocalPath);
 
+        if ($input["type"] === Batch\Type::HDFC_ONBOARDING)
+        {
+            return $entries;
+        }
+
         $this->validateEntries($entries, $input);
 
         return $entries;
