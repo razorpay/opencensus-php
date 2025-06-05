@@ -40,8 +40,10 @@ export async function closeWelcomeModal(page) {
 }
 
 export async function clickMore(page) {
-  await page.locator('.main-content--connected-navigation').waitFor({ state: 'attached' });
-  await page.locator('.main-content--connected-navigation').waitFor({ state: 'visible' });
+  await page.locator('.main-content--one-dashboard').waitFor({
+    state: 'visible',
+    timeout: 30000,
+  });
   await page.locator('div[data-blade-component="top-nav-content"] button:has-text("More")').click();
 }
 

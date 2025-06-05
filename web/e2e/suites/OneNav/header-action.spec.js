@@ -7,8 +7,10 @@ test.describe.parallel('One nav header action @project=oneNav', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(routes.DASHBOARD);
-    await page.locator('.dashboard-home').waitFor({ state: 'attached' });
-    await page.locator('.dashboard-home').waitFor({ state: 'visible' });
+    await page.locator('.dashboard-home').waitFor({
+      state: 'visible',
+      timeout: 30000,
+    });
   });
 
   test('should navigate to account settings when clicking on avatar', async ({ page }) => {
@@ -68,8 +70,10 @@ test.describe.parallel('One nav header action - Mobile @project=oneNav', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(routes.DASHBOARD);
-    await page.locator('.dashboard-home').waitFor({ state: 'attached' });
-    await page.locator('.dashboard-home').waitFor({ state: 'visible' });
+    await page.locator('.dashboard-home').waitFor({
+      state: 'visible',
+      timeout: 30000,
+    });
   });
 
   test('should navigate to account settings when clicking on avatar', async ({ page }) => {

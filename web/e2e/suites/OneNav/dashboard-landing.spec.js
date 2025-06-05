@@ -17,7 +17,7 @@ test.describe.parallel('One nav dashboard landing page @project=oneNav', () => {
   });
 
   test(`should navigate to payments dashboard`, async ({ page }) => {
-    await page.locator(`button:text("Payments")`).click();
+    await page.locator(`button:has-text("Accept Payments")`).click();
 
     await tabOpenInSameTab({
       page,
@@ -104,8 +104,10 @@ test.describe.parallel('One nav scroll Verification @project=oneNav', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(routes.DASHBOARD);
-    await page.locator('.dashboard-home').waitFor({ state: 'attached' });
-    await page.locator('.dashboard-home').waitFor({ state: 'visible' });
+    await page.locator('.main-content--one-dashboard').waitFor({
+      state: 'visible',
+      timeout: 30000,
+    });
   });
 
   test('should scroll when side nav present', async ({ page }) => {
@@ -133,7 +135,8 @@ test.describe.parallel('One nav "Partner Onboarding Modal" @project=oneNav', () 
 
     await tabOpenInSameTab({
       page,
-      expectedUrl: routes.DASHBOARD,
+      expectedUrl:
+        'https://dashboard.dev.razorpay.in/app/dashboard?openModal=partners_onboarding_modal',
       expectedTextRegex: 'Welcome to your Partner Dashboard',
     });
   });

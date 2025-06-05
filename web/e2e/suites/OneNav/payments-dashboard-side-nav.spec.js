@@ -231,15 +231,16 @@ test.describe
     });
   });
 
-  test(`should navigate to Customer Trust`, async ({ page }) => {
-    await page.getByRole('link', { name: 'Customer Trust' }).click();
+  // TODO: Uncomment this test when customer trust is enabled for one nav
+  // test(`should navigate to Customer Trust`, async ({ page }) => {
+  //   await page.getByRole('link', { name: 'Customer Trust' }).click();
 
-    await tabOpenInSameTab({
-      page,
-      expectedUrl: '/app/customer-trust',
-      expectedTextRegex: 'Razorpay Buyer Protection',
-    });
-  });
+  //   await tabOpenInSameTab({
+  //     page,
+  //     expectedUrl: '/app/customer-trust',
+  //     expectedTextRegex: 'Razorpay Buyer Protection',
+  //   });
+  // });
 
   test(`should navigate to Optimizer`, async ({ page }) => {
     await page.getByRole('link', { name: 'Optimizer' }).click();

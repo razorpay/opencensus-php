@@ -2657,7 +2657,7 @@ class Content extends Component {
       <main
         className={
           Boolean(window.ONE_DASHBOARD)
-            ? ''
+            ? 'main-content--one-dashboard'
             : classList(
                 !fullPageView && (!isWebView || (isWebView && isJkOrg)) && 'main-content',
                 !fullPageView && !isWebView && this.props.showNewHomePage
