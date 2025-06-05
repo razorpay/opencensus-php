@@ -1215,6 +1215,10 @@ return array(
 
     'amount_transferred_rearch_exp_id' => env('AMOUNT_TRANSFERRED_REARCH_EXP_ID'),
 
+    'route_transfer_rearch_fetch_experiment_id' => env('TRANSFER_FETCH_REARCH_EXP_ID'),
+
+    'route_la_transfer_rearch_fetch_experiment_id' => env('LA_TRANSFER_FETCH_REARCH_EXP_ID'),
+
     'order_transfer_idempotency_exp_id' => env('ORDER_TRANSFER_IDEMPOTENCY_EXP_ID'),
 
     'enable_transfer_sync_processing_via_api_exp_id' => env('ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API_EXP_ID'),
