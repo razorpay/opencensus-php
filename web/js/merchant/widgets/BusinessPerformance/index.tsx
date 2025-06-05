@@ -18,7 +18,7 @@ export const BusinessPerformance = (props: BusinessPerformanceProps & CommonWidg
   const { date_time } = props.filters;
 
   function handleChange({ values }: { values: string }) {
-    retryHandler({ id: props.id, filter_selected: values, date_time });
+    retryHandler({ id: props.id, filter_selected: values[0], date_time });
   }
 
   const isLoading = props.isLoading || isRetrying;
