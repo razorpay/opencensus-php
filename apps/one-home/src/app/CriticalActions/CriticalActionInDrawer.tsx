@@ -19,20 +19,15 @@ const CriticalActionsInDrawer = ({ criticalActioncomponent }: CriticalActionInDr
             m: 'row',
           }}
           gap={{
-            base: 'spacing.3',
-            m: 'spacing.5',
+            base: 'spacing.1',
+            m: 'spacing.3',
           }}
           alignItems={{ base: 'flex-start', m: 'baseline' }}
         >
-          <Box width="spacing.5" height="spacing.5">
-            <AlertTriangleIcon color="feedback.icon.negative.intense" alignSelf="start" />
-          </Box>
-
-          <Box>
+            <AlertTriangleIcon color="feedback.icon.negative.intense" alignSelf="start" size="xlarge" />
             <Text size="large" weight="semibold" color="surface.text.gray.normal">
               {criticalActioncomponent.title}
             </Text>
-          </Box>
         </Box>
 
         <Box

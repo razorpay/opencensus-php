@@ -84,6 +84,7 @@ const EcosystemDowntimesContainer = (props): JSX.Element => {
             icon={ActivityIcon}
             onClick={handleToggleSlider}
             testID="ecosystem-health-check-icon"
+            ref={ecosystemHealthIcon}
           />
         </Tooltip>
       ) : (

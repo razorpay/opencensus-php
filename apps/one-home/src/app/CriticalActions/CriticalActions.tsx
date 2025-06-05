@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState,useMemo } from 'react';
 import { useStore } from '@apps/shell/src/client/store/commonStore';
 import { DASHBOARD_PRIORITY_RANKS, DASHBOARD_TEAMS } from '@libs/shared-types';
 import { ErrorBoundary } from '@libs/shared-ui';
@@ -192,12 +192,20 @@ const CriticalActionsContent = ({
   );
 };
 
+const MAX_CRITICAL_ACTIONS = Number.MAX_SAFE_INTEGER;
+const breakpointVisibilityMap = {
+  base: MAX_CRITICAL_ACTIONS,
+  m: 2,
+  l: 2,
+  xl: 3,
+};
+
 const CriticalActions: React.FC = () => {
   const { user } = useStore((state) => state['session']);
   const { criticalActionsData, isLoading, error } = useCriticalActions();
   const { trackOneHomeAnalytics } = useOneHomeAnalytics();
   const { theme } = useTheme();
-  const { matchedDeviceType } = useBreakpoint({
+  const { matchedDeviceType,matchedBreakpoint = "base" } = useBreakpoint({
     breakpoints: theme.breakpoints,
   });
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -211,7 +219,12 @@ const CriticalActions: React.FC = () => {
     criticalActionsData,
     isMobile,
   );
-  const isShowAllVisible = !isMobile && !error && drawerCriticalActions.length;
+  
+  const visibleCriticalActionsItems = breakpointVisibilityMap[matchedBreakpoint] ?? MAX_CRITICAL_ACTIONS;
+
+  const isShowAllVisible = useMemo(() => {
+    return !isMobile && !error && drawerCriticalActions.length > visibleCriticalActionsItems;
+  }, [isMobile, error, drawerCriticalActions.length, visibleCriticalActionsItems]);
 
   useEffect(() => {
     if (!criticalActionsList.length && !isLoading && !error) {

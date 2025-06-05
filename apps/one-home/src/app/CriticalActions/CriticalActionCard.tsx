@@ -104,20 +104,16 @@ const CriticalActionCard: React.FC<CriticalActionComponent> = ({
             m: 'row',
           }}
           gap={{
-            base: 'spacing.3',
-            m: 'spacing.5',
+            base: 'spacing.1',
+            m: 'spacing.3',
           }}
           alignItems={{ base: 'flex-start', m: 'baseline' }}
         >
-          <Box width="spacing.5" height="spacing.5">
-            <AlertTriangleIcon color="feedback.icon.negative.intense" alignSelf="start" />
-          </Box>
+            <AlertTriangleIcon color="feedback.icon.negative.intense" alignSelf="start" size="xlarge" />
 
-          <Box>
             <Text size="large" weight="semibold" color="surface.text.gray.normal">
               {title}
             </Text>
-          </Box>
         </Box>
 
         <Box

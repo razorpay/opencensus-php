@@ -477,6 +477,7 @@ class WhatsNewOld extends Component {
     const sliderContent = document.querySelector('.content-wrapper.whats-new-old');
     const sliderToggle = document.querySelector('.whats-new-slide-toggle');
     const whatsNewTooltip = document.querySelector('.whats-new__tooltip');
+    const whatsNewActive = document.querySelector('.whats-new--active');
     const announcementDetails = document.querySelector(
       '.panel.panel-default.SliderPanel.announcement-details__container',
     );
@@ -484,7 +485,8 @@ class WhatsNewOld extends Component {
       (sliderContent && sliderContent.contains(target)) ||
       (sliderToggle && sliderToggle.contains(target)) ||
       (whatsNewTooltip && whatsNewTooltip.contains(target)) ||
-      (announcementDetails && announcementDetails.contains(target))
+      (announcementDetails && announcementDetails.contains(target)) ||
+      (whatsNewActive && whatsNewActive.contains(target))
     ) {
       return;
     }

@@ -3,12 +3,7 @@ import React from 'react';
 
 const ConsentDisclaimer: React.FC = () => {
   return (
-    <Box
-      borderTopStyle="solid"
-      borderTopWidth="thin"
-      borderTopColor="surface.border.gray.normal"
-      borderRadius="none"
-    >
+    <Box>
       <Card backgroundColor="surface.background.gray.subtle">
         <Box>
           <Text
