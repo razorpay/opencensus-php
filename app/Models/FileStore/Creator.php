@@ -4,7 +4,6 @@ namespace RZP\Models\FileStore;
 
 use RZP\Exception;
 use RZP\Encryption;
-use RZP\Signature;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Core;
@@ -108,13 +107,6 @@ class Creator extends Base\Core
     protected $shouldEncrypt = false;
 
     /**
-     * Flag to signify if file has to be signed
-     *
-     * @var boolean Encrypt flag
-     */
-    protected $shouldSign = false;
-
-    /**
      * Flag to signify if file has to be base64 encoded
      *
      * @var boolean Encode flag
@@ -127,13 +119,6 @@ class Creator extends Base\Core
      * @var Encryption Handler
      */
     protected $encryptionHandler;
-
-    /**
-     * Signature Handler Instance
-     *
-     * @var Signature Handler
-     */
-    protected $signatureHandler;
 
     /**
      * Format in which file has to be Compress
@@ -163,12 +148,6 @@ class Creator extends Base\Core
      * @var null
      */
     protected $s3BucketConfigForExternalServices = null;
-
-    /**
-     * Files paths to be added to the ZIP file
-     * @var null
-     */
-    protected $unzippedFilePaths = [];
 
     /**
      * The sheet name used when creating an excel file.
@@ -333,23 +312,6 @@ class Creator extends Base\Core
         $this->shouldEncrypt = true;
 
         $this->encryptionHandler = new Encryption\Handler($type, $params);
-
-        return $this;
-    }
-
-
-    /** Signs contents of file
-     *
-     * @param string $type  type of Signature
-     * @param string $secret secret for Signing
-     *
-     * @return Creator object
-     */
-    public function sign(string $type, array $params)
-    {
-        $this->shouldSign = true;
-
-        $this->signatureHandler = new Signature\Handler($type, $params);
 
         return $this;
     }
@@ -834,8 +796,6 @@ class Creator extends Base\Core
 
         switch($extension)
         {
-            case Format::PGP:
-            case Format::SIG:
             case Format::TXT:
             case Format::IN:
             case Format::ENC:
@@ -852,6 +812,7 @@ class Creator extends Base\Core
             case Format::XLSX:
             case Format::CSV:
                 $this->writeToExcelFile();
+
                 break;
 
             default:
@@ -863,22 +824,14 @@ class Creator extends Base\Core
             $this->encryptFile();
         }
 
-        if ($this->shouldCompress === true) {
-            if (!empty($this->unzippedFilePaths)) {
-                $this->compressFiles();
-            } else {
-                $this->compressFile();
-            }
+        if ($this->shouldCompress === true)
+        {
+            $this->compressFile();
         }
 
         if ($this->shouldEncode === true)
         {
             $this->encodeFile();
-        }
-
-        if ($this->shouldSign === true)
-        {
-            $this->signFile();
         }
 
         $this->updateFilePermission();
@@ -891,13 +844,6 @@ class Creator extends Base\Core
         $this->encryptionHandler->encryptFile($fileToBeEncrypted);
     }
 
-    protected function signFile()
-    {
-        $fileToBeSigned = $this->getFullFilePath();
-
-        $this->signatureHandler->signFile($fileToBeSigned);
-    }
-
     protected function encodeFile()
     {
         $fileToBeEncoded = $this->getFullFilePath();
@@ -907,22 +853,6 @@ class Creator extends Base\Core
         $encodedData = base64_encode($data);
 
         file_put_contents($fileToBeEncoded, $encodedData);
-    }
-
-    /**
-     * Sets the file paths to be added to the ZIP file.
-     *
-     * @param array $filePaths Array of file paths to be zipped.
-     * @return Creator object
-     */
-    public function setUnzippedFilePaths(array $filePaths)
-    {
-        if (count($filePaths) > 0) {
-            $this->unzippedFilePaths = $filePaths;
-            return $this;
-        } else {
-            throw new \InvalidArgumentException('The provided file paths must be an array.');
-        }
     }
 
     /*
@@ -954,37 +884,6 @@ class Creator extends Base\Core
         $this->createUploadedFile($this->getFullFilePath(), $this->getFullFileName());
 
         $this->mime($this->localFile->getMimeType());
-    }
-
-    /*
-     * Compress multiple files and store them in the Compressed file Path
-     * Sample Command :
-     * `zip --junk-paths --move --password <password> '<compression_path>' '<source_path1>' '<source_path2>' ...`
-     */
-    protected function compressFiles()
-    {
-        $compressionCommand = $this->compressionCommand;
-
-        if (!empty($this->file->getPassword())) {
-            $compressionCommand .= " --password " . escapeshellarg($this->file->getPassword());
-        }
-
-        $command = escapeshellcmd($compressionCommand) . " " . escapeshellarg($this->getCompressedFileFullPath());
-
-        // Add each file path stored in $unzippedFilePaths to the command
-        foreach ($this->unzippedFilePaths as $filePath) {
-            $command .= " " . escapeshellarg($filePath);
-        }
-
-        exec($command);
-
-        $this->extension($this->compressionFormat);
-
-        $this->createUploadedFile($this->getFullFilePath(), $this->getFullFileName());
-
-        $this->mime($this->localFile->getMimeType());
-
-        return $this;
     }
 
     protected function createDirectory()

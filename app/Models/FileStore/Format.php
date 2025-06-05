@@ -30,7 +30,6 @@ class Format
     const IOB       = 'iob';
     const VAL       = 'val';
     const PGP       = 'pgp';
-    const SIG       = 'sig';
     const MOV       = 'mov';
     const WMV       = 'wmv';
     const M4V       = 'm4v';
@@ -73,7 +72,6 @@ class Format
         self::IOB,
         self::VAL,
         self::PGP,
-        self::SIG,
         self::M4V,
         self::MOV,
         self::RM,
@@ -130,7 +128,6 @@ class Format
         self::SEVEN_Z => ['application/x-7z-compressed'],
         self::GPG     => ['application/pgp', 'application/octet-stream', 'application/pgp-encrypted'],
         self::PGP     => ['application/pgp', 'application/octet-stream', 'application/pgp-encrypted'],
-        self::SIG     => ['application/x-pkcs12', 'application/octet-stream'],
         self::IOB     => ['text/plain'],
         self::VAL     => ['text/plain', 'application/octet-stream'],
 
@@ -155,9 +152,6 @@ class Format
         self::ENC,
         self::TXT,
         self::XLSX,
-        self::PGP,
-        self::SIG,
-        self::ZIP
     ];
 
     const VALID_VIDEO_EXTENSIONS = [
