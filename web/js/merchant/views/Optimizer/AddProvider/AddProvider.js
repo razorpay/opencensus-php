@@ -148,9 +148,7 @@ class AddProvider extends React.Component {
         const hasSeamlessOption =
           SEAMLESS_PROVIDERS?.includes(Gateway) &&
           Gateway_details?.hasOwnProperty(PROVIDER_KEYS.SEAMLESS_KEY);
-        const hasAccountTypeOption =
-          Gateway === RAZORPAY_GATEWAY_KEY &&
-          Gateway_details?.hasOwnProperty(PROVIDER_KEYS.GATEWAY_ACQUIRER);
+        const hasAccountTypeOption = Gateway_details?.hasOwnProperty(PROVIDER_KEYS.GATEWAY_ACQUIRER);
 
         const UPITPV = Gateway_details[UPI_FEATURES]?.tpv;
         const NBTPV = Gateway_details[NETBANKING_FEATURES]?.tpv;
@@ -366,9 +364,7 @@ class AddProvider extends React.Component {
           SEAMLESS_PROVIDERS?.includes(selectedProvider) &&
           providers?.[selectedProvider]?.hasOwnProperty(PROVIDER_KEYS.SEAMLESS_KEY);
         // check if account type required for gateway acquirer
-        const hasAccountTypeOption =
-          selectedProvider === RAZORPAY_GATEWAY_KEY &&
-          providers?.[selectedProvider]?.hasOwnProperty(PROVIDER_KEYS.GATEWAY_ACQUIRER);
+        const hasAccountTypeOption = providers?.[selectedProvider]?.hasOwnProperty(PROVIDER_KEYS.GATEWAY_ACQUIRER);
 
         if (nextStep === 2 && !(hasSeamlessOption || hasAccountTypeOption)) {
           nextStep += 1; // Skip step 2 if gateway doesn't support seamless integration or account type
@@ -416,9 +412,7 @@ class AddProvider extends React.Component {
     );
 
     // check if account type is selected for gateway acquirer
-    const isAccountTypeNotSelected =
-      selectedProviderWithAcquirer === RAZORPAY_GATEWAY_KEY &&
-      !provider?.Gateway_details?.['Gateway Acquirer'];
+    const isAccountTypeNotSelected = !provider?.Gateway_details?.['Gateway Acquirer'];
 
     // step3 validation
     const isProviderNameEmpty = (provider?.Provider_name || '').trim();
@@ -1133,9 +1127,7 @@ class AddProvider extends React.Component {
     } = this.state;
 
     const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
-    const hasAccountTypeOption =
-      selectedProviderWithAcquirer === RAZORPAY_GATEWAY_KEY &&
-      providers?.[selectedProviderWithAcquirer]?.hasOwnProperty(PROVIDER_KEYS.GATEWAY_ACQUIRER);
+    const hasAccountTypeOption = providers?.[selectedProviderWithAcquirer]?.hasOwnProperty(PROVIDER_KEYS.GATEWAY_ACQUIRER);
 
     const allAvailableMethods =
       providers?.[selectedProviderWithAcquirer]?.['Payment Methods']?.data_value;

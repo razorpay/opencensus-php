@@ -136,7 +136,7 @@ const IntegrationType = (props) => {
    * Render account type block (required for optimizer_razorpay gateway)
    */
   const RenderAccountBlock = memo(
-    ({ isBankingVasAccount, providers, selectedProvider, isFormEdit, gatewayDetails }) => {
+    ({ isBankingVasAccount, providers, selectedProvider, isFormEdit, gatewayDetails, showOnlyBank }) => {
       const gatewayAcquirer = gatewayDetails?.[PROVIDER_KEYS.GATEWAY_ACQUIRER];
       const bankList =
         providers?.[selectedProvider]?.[PROVIDER_KEYS.GATEWAY_ACQUIRER]?.data_value || [];
@@ -145,12 +145,13 @@ const IntegrationType = (props) => {
       };
       return (
         <Box display="flex" flexDirection="column" gap="spacing.5">
+          {showOnlyBank ? null : (
           <Box display="flex">
             <Box minWidth="180px">
               <Text>Account type</Text>
             </Box>
             <Box minWidth="280px">
-              {isFormEdit ? (
+              {(isFormEdit) ? (
                 <RadioGroup
                   name={PROVIDER_KEYS.GATEWAY_ACQUIRER}
                   defaultValue={
@@ -171,7 +172,8 @@ const IntegrationType = (props) => {
               )}
             </Box>
           </Box>
-          {isBankingVasAccount && (
+          )}
+          {(isBankingVasAccount || showOnlyBank) && (
             <Box display="flex" alignItems="center">
               <Box minWidth="180px">
                 <Text>Bank</Text>
@@ -205,13 +207,15 @@ const IntegrationType = (props) => {
   );
 
   // Account type selection for razorpay gateway
-  const isAccountType = selectedProvider === RAZORPAY_GATEWAY_KEY;
-
-  const header = `Select ${isAccountType ? 'account' : 'integration'} type`;
-  const subText = `Select the type of ${
-    isAccountType ? 'account' : 'integration'
-  } for the selected gateway`;
-  const editButtonText = `Edit ${isAccountType ? 'account type' : 'Integration'}`;
+  const isAccountType = providers[selectedProvider]?.hasOwnProperty(
+    PROVIDER_KEYS.GATEWAY_ACQUIRER
+  );
+  const showOnlyBank = isAccountType && selectedProvider !== RAZORPAY_GATEWAY_KEY;
+  const header = showOnlyBank ? 'Select Bank' : `Select ${isAccountType ? 'account' : 'integration'} type`;
+  const subText = showOnlyBank
+    ? 'Select bank for the selected gateway'
+    : `Select the type of ${isAccountType ? 'account' : 'integration'} for the selected gateway`;
+  const editButtonText = showOnlyBank ? 'Edit Bank' : `Edit ${isAccountType ? 'account type' : 'Integration'}`;
 
   return (
     <Box
@@ -253,6 +257,7 @@ const IntegrationType = (props) => {
           selectedProvider={selectedProvider}
           isFormEdit={isFormEdit}
           gatewayDetails={gatewayDetails}
+          showOnlyBank={showOnlyBank}
         />
       ) : (
         <RenderIntegrationBlock
