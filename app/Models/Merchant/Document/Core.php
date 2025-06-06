@@ -761,7 +761,7 @@ class Core extends Base\Core
             $payload);
 
 
-            if (empty($bvsValidation) === false)
+        if (empty($bvsValidation) === false)
         {
             if ($bvsValidation->getValidationStatus() == BvsValidationConstants::CAPTURED)
             {
