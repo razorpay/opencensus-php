@@ -165,7 +165,7 @@ class Service extends Base\Service
 
             $this->core->storeDocumentInPGOSIfExpiryApplicable($merchant, $fileAttributes[$documentType], $documentType, $document->getId());
 
-            $validateLock = false; // setting validateLock to false as it's an agent uploadAdd commentMore actions
+            $validateLock = false;
             $entity = $merchant;
 
             $document->entity()->associate($entity);
