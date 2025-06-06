@@ -377,6 +377,69 @@ class CardVault
 
     public function sendRequest($url, $method, $data = null)
     {
+
+
+        if ($url=="customers/tokens"){
+            // new namespaces(other than 'card') requires namespace to be explicitly mentioned in the requestdata
+            if ($this->namespace !== self::CARD)
+            {
+                $data[self::NAMESPACE]  =  $this->namespace;
+            }
+
+            $tokenizationUrl = $url;
+            $vaultAction = $url;
+
+            // temporary code to debug
+            if (($url === 'tokenize') or
+                ($url === 'detokenize'))
+            {
+                $trackId = Base\UniqueIdEntity::generateUniqueId();
+
+                $url = $url . '/track/' . $trackId;
+            }
+
+            $url = $this->baseUrl . $url;
+
+            if ($data === null)
+                $data = '';
+
+            $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
+
+            $headers[self::X_RZP_TESTCASE_ID] = $testCaseId;
+
+            $headers['Content-Type'] = 'application/json';
+
+            $headers['Accept'] = 'application/json';
+
+            $headers[self::X_RAZORPAY_TASKID] = $this->request->getTaskId();
+
+            $headers['X-Razorpay-Mode'] =  $this->app['rzp.mode'] ?? Mode::LIVE;
+
+            $options = [
+                'timeout' => $this->getTimeOut($url),
+                'auth' => [
+                    $this->key,
+                    $this->secret
+                ],
+                'hooks' => $this->getRequestHooks(),
+            ];
+
+
+
+            $request = [
+                'url' => "https://tokens-live-dark-int.razorpay.com/v1/customers/tokens/+919049538731",
+                'method' => $method,
+                'headers' => $headers,
+                'options' => $options,
+                'content' => $data
+            ];
+
+
+            $response = $this->sendCardVaultRequest($request);
+
+        }
+
+
         // new namespaces(other than 'card') requires namespace to be explicitly mentioned in the requestdata
         if ($this->namespace !== self::CARD)
         {
@@ -420,6 +483,8 @@ class CardVault
             ],
             'hooks' => $this->getRequestHooks(),
         ];
+
+
 
         $request = [
             'url' => $url,
@@ -539,6 +604,17 @@ class CardVault
     protected function sendCardVaultRequest($request)
     {
         $method = $request['method'];
+
+
+        if ( $request['url'] == "https://tokens-live-dark-int.razorpay.com/v1/customers/tokens/+919049538731"){
+
+            $response = Requests::$method(
+                $request['url'],
+                $request['headers'],
+                $request['options']);
+
+        }
+
 
         $retryCount = 0;
 
@@ -674,14 +750,16 @@ class CardVault
 
     public function migrateToTokenizedCard(array $input): array
     {
-        $response = $this->sendRequest(Card\Constants::TOKENS_MIGRATE, 'post', $input);
+
+
+        $response = $this->sendRequest("customers/tokens", 'get', $input);
 
         $this->trace->info(TraceCode::VAULT_MIGRATE_TOKEN);
 
         if ($response[self::SUCCESS] === false)
         {
             throw new Exception\RuntimeException(
-                'Network Token create request failed', ['data' => $response]);
+                'Network Token create request failed_', ['data' => $response]);
         }
 
         return $response;
