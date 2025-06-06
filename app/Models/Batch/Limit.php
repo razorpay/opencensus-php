@@ -117,6 +117,7 @@ class Limit
         Type::CREATE_WALLET_LOADS                   => 1000000,
         Type::CREATE_BULK_GIFT_CARDS                => 1000000,
         Type::UPDATE_GIFT_CARDS_EXPIRY              => 1000000,
+        Type::CANCEL_BULK_GIFT_CARDS                => 1000000,
         Type::ALT_ID_TERMINAL_ONBOARD               => 1000000,
         Type::BVS_BULK_KYC_VERIFICATION             => 50000,
         Type::UPDATE_ODS_MERCHANT_LIMITS            => 50000,
