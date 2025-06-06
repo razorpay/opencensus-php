@@ -2700,7 +2700,13 @@ class Processor
                                 }
                                 $tokenRearchExperimentName = 'app.saved_card_token_payments_rearch';
                                 $issuer_result = (new Payment\Service())->getSplitzExpResponse($merchant->getId(),$tokenRearchExperimentName);
-                                $cardInput = [];
+                                $cardInput = [
+                                    Card\Entity::NAME                   => Card\Entity::DUMMY_NAME,
+                                    Card\Entity::NUMBER                 => Card\Entity::DUMMY_CARD_NUMBER,
+                                    Card\Entity::CVV                    => $input['card']['cvv'] ?? Card\Entity::DUMMY_CVV,
+                                    Card\Entity::TOKENISED              => true,
+                                    Card\Entity::REWARD                 => $input['card']['reward']
+                                ];
                                 if($issuer_result=='on'){
                                     $cardInput+=[
                                         "cryptogram_source" => "cps",
@@ -2711,8 +2717,6 @@ class Processor
                                     ]);
                                 } else {
                                     $cardInput = [
-                                        Card\Entity::NAME                   => Card\Entity::DUMMY_NAME,
-                                        Card\Entity::NUMBER                 => Card\Entity::DUMMY_CARD_NUMBER,
                                         Card\Entity::COUNTRY                => $card->getCountry(),
                                         Card\Entity::ISSUER                 => $card->getIssuer(),
                                         Card\Entity::TYPE                   => $card->getType(),
@@ -2722,12 +2726,9 @@ class Processor
                                         Card\Entity::INTERNATIONAL          => $card->isInternational(),
                                         Card\Entity::EXPIRY_MONTH           => $card->getTokenExpiryMonth(),
                                         Card\Entity::EXPIRY_YEAR            => $card->getTokenExpiryYear(),
-                                        Card\Entity::CVV                    => $input['card']['cvv'] ?? Card\Entity::DUMMY_CVV,
                                         Card\Entity::VAULT_TOKEN            => $card->getVaultToken(),
                                         Card\Entity::TOKEN_IIN              => $card->getTokenIin(),
                                         Card\Entity::LAST4                  => $card->getLast4(),
-                                        Card\Entity::TOKENISED              => true,
-                                        Card\Entity::REWARD                 => $input['card']['reward']
                                     ];
 
                                     $this->trace->info(TraceCode::MISC_TRACE_CODE,[
