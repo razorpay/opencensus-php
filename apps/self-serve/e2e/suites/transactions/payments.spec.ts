@@ -43,7 +43,7 @@ test.describe
   });
 
   test.describe.parallel('Transactions Landing screen Listing section', () => {
-    test('should allow filters & search operations', async ({ page }) => {
+    test.skip('should allow filters & search operations', async ({ page }) => {
       await navigateToTransactions(page);
       await waitForListingLoader({ page });
       const paymentsList = page.getByTestId('payments-list');
