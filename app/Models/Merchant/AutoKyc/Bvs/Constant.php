@@ -202,6 +202,9 @@ class Constant
     const MCC_CATEGORISATION              = 'mcc_categorisation';
     const WEBSITE_POLICY                  = 'website_policy';
     const NEGATIVE_KEYWORDS               = 'negative_keywords';
+    const ROUTE_MERCHANT_DOCUMENT_ADMIN_UPLOAD = 'merchant_document_admin_upload';
+    const CONFIG_COMMON_MANUAL_VERIFICATION = 'Common_manual_verification';
+    const CONFIG_AADHAAR                  = 'Aadhaar';
 
     const MCC_CATEGORISATION_WEBSITE      = 'mcc_categorisation_website';
     const MCC_CATEGORISATION_GSTIN        = 'mcc_categorisation_gstin';

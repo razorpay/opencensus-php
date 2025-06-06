@@ -163,18 +163,48 @@ class Service extends Base\Service
 
             $fileAttributes = (new Detail\Service())->storeActivationFile($document, $param);
 
-            $params = [$documentType => $fileAttributes[$documentType]];
-
             $this->core->storeDocumentInPGOSIfExpiryApplicable($merchant, $fileAttributes[$documentType], $documentType, $document->getId());
 
-            $uploadedDocument = $this->core->storeInMerchantDocument($merchant, $merchant, $params, $document);
+            $validateLock = false; // setting validateLock to false as it's an agent uploadAdd commentMore actions
+            $entity = $merchant; // using merchant as the entity
+
+            // entity with the document
+            $document->entity()->associate($entity);
+
+            //set required fields on the document entity
+            $document->setFileStoreId($fileAttributes[$documentType][DocumentConstants::FILE_ID]);
+            $document->setAttribute(Entity::DOCUMENT_TYPE, $documentType);
+            $document->setAttribute(Entity::SOURCE, $fileAttributes[$documentType][DocumentConstants::SOURCE]);
+
+            // create metadata
+            $metadata = [
+                'file_name' => $fileAttributes[$documentType][DocumentConstants::ORIGINAL_FILE_NAME] ?? ''
+            ];
+            $document->setAttribute(Entity::METADATA, $metadata);
+
+            // Debug logging before save
+            $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, [
+                'document_id' => $document->getId(),
+                'document_type' => $documentType,
+                'file_store_id' => $document->getFileStoreId(),
+                'source' => $document->getAttribute(Entity::SOURCE),
+                'metadata' => $document->getAttribute(Entity::METADATA),
+            ]);
+
+            $this->repo->saveOrFail($document);
+
+            // Call saveMerchantDocument which will handle the rest of the document processing
+            $this->core->saveMerchantDocument($merchant, $documentType, $fileAttributes[$documentType], $entity, $validateLock, $document);
+
+            // Get the document directly from the database to ensure we have the latest data
+            $documentEntity = $this->repo->merchant_document->findDocumentById($document->getId());
 
             $documentMetaData = [
-                Entity::ID                 => $uploadedDocument[$documentType]->getId(),
-                Entity::FILE_STORE_ID      => $uploadedDocument[$documentType]->getFileStoreId(),
-                Entity::MERCHANT_ID        => $uploadedDocument[$documentType]->getMerchantId(),
-                Entity::UPLOAD_BY_ADMIN_ID => $uploadedDocument[$documentType]->getUploadByAdminId(),
-                Entity::CREATED_AT         => $uploadedDocument[$documentType]->getCreatedAt()
+                Entity::ID                 => $documentEntity->getId(),
+                Entity::FILE_STORE_ID      => $documentEntity->getFileStoreId(),
+                Entity::MERCHANT_ID        => $documentEntity->getMerchantId(),
+                Entity::UPLOAD_BY_ADMIN_ID => $documentEntity->getUploadByAdminId(),
+                Entity::CREATED_AT         => $documentEntity->getCreatedAt()
             ];
 
             return $documentMetaData;
@@ -184,8 +214,7 @@ class Service extends Base\Service
 
             $this->trace->error(TraceCode::DOCUMENT_SAVE_FAILED, [
                 'merchant_id'   => $merchantId,
-                'error_message' => $exception->getMessage(),
-                'route'         => $this->app['api.route']->getCurrentRouteName()
+                'error_message' => $exception->getMessage()
             ]);
 
             throw new Exception\ServerErrorException(

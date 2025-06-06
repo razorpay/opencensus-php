@@ -23,6 +23,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationBaseResponse;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationBaseResponseV2;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationDetailsResponse;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Document\Type;
 
 class DefaultProcessor implements Processor
 {
@@ -105,6 +106,30 @@ class DefaultProcessor implements Processor
         $this->trace = $this->app['trace'];
 
         $this->input = $input;
+        $currentRoute = $this->app['api.route']->getCurrentRouteName();
+
+        if ($currentRoute === Constant::ROUTE_MERCHANT_DOCUMENT_ADMIN_UPLOAD)
+        {
+            $documentType = $input['artefact']['details']['document_type'] ?? '';
+            $this->trace->info(TraceCode::BVS_CONFIG_SELECTION, [
+                'route' => $currentRoute,
+                'original_config' => $configName,
+                'document_type' => $documentType
+            ]);
+
+
+            // Check if this is an Aadhaar-related document
+            if (Type::isAadhaarDocument($documentType) || 
+                $configName === Constant::CONFIG_COMMON_MANUAL_VERIFICATION)
+            {
+                $configName = Constant::CONFIG_AADHAAR;
+                $this->trace->info(TraceCode::BVS_CONFIG_OVERRIDE, [
+                    'route' => $currentRoute,
+                    'document_type' => $documentType,
+                    'new_config' => $configName
+                ]);
+            }
+        }
 
 
         if(empty($configName)===false)
