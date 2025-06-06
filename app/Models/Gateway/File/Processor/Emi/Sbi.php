@@ -58,8 +58,8 @@ class Sbi extends Base
         24 => '1600',
     ];
 
-    const SKU_PREFIX_V1 = 'GG0004';
-    const SKU_PREFIX_V2 = 'GG0004';
+    const SKU_PREFIX_V1 = 'GG0001';
+    const SKU_PREFIX_V2 = 'GG0003';
     // redis key format: emi:sbi_emi_ref_no_<payment_id>
     const REDIS_KEY_FMT = 'emi:sbi_emi_ref_no_%s';
 
@@ -245,11 +245,6 @@ class Sbi extends Base
          */
         foreach ($data['items'] as $emiPayment)
         {
-
-            if($emiPayment->getId() !== 'Pxz8AbaVXrJyuJ')
-            {
-                continue;
-            }
                 try
                 {
                     if ($emiPayment->terminal->isOptimizer())
@@ -343,11 +338,11 @@ class Sbi extends Base
 
                     $skuPrefix = self::SKU_PREFIX_V1;
 
-//                    if ($this->isTerminalWhitelisted($terminal[Terminal\Entity::ID]) or
-//                        $this->isTerminalWithV2Sku($terminal))
-//                    {
-//                        $skuPrefix = self::SKU_PREFIX_V2;
-//                    }
+                    if ($this->isTerminalWhitelisted($terminal[Terminal\Entity::ID]) or
+                        $this->isTerminalWithV2Sku($terminal))
+                    {
+                        $skuPrefix = self::SKU_PREFIX_V2;
+                    }
 
                 $body[] =
                     'DD' .    // record type always DD

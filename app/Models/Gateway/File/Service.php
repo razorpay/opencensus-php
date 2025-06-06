@@ -104,9 +104,9 @@ class Service extends Base\Service
             return;
         }
 
-//        $input[Entity::BEGIN] = Carbon::yesterday(Timezone::IST)->getTimestamp();
-//
-//        $input[Entity::END] = Carbon::today(Timezone::IST)->getTimestamp() - 1;
+        $input[Entity::BEGIN] = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+        $input[Entity::END] = Carbon::today(Timezone::IST)->getTimestamp() - 1;
     }
 
     /**

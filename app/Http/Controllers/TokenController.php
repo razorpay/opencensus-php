@@ -81,14 +81,9 @@ class TokenController extends Controller
             $data = $this->service()->hdfcPushProvTokens($input);
             return ApiResponse::json($data);
         }
+        $data = $this->service()->tokensPush($input);
 
-
-
-        return $this->app['card.cardVault']->migrateToTokenizedCard($input);
-       // $data = $this->service()->tokensPush($input);
-        //
-
-       // return ApiResponse::json($data);
+        return ApiResponse::json($data);
     }
     public function rupaytokensPush()
     {
