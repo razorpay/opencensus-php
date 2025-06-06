@@ -61,7 +61,7 @@ class Factory
         }
         else
         {
-            // For merchant_document_admin_upload route, force Aadhaar config for Aadhaar documentsAdd commentMore actions
+            // For merchant_document_admin_upload route, force Aadhaar config for Aadhaar documents
             if ($currentRoute === Constant::ROUTE_MERCHANT_DOCUMENT_ADMIN_UPLOAD && 
                 isset($input['artefact']['details']['document_type']) && 
                 Type::isAadhaarDocument($input['artefact']['details']['document_type']))
