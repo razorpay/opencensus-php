@@ -13298,6 +13298,18 @@ class Processor
             return $response;
         }
 
+        // Do not capture late authorized payments when the payment is split payment because
+        // wallet payment status is unknown
+        if (($payment->isLateAuthorized() === true) and
+            ($payment->isSplitPayment() === true))
+        {
+            $response['should_auto_capture'] = false;
+
+            $response['reason'] = Constants::SPLIT_PAYMENT_LATE_AUTH_FALSE;
+
+            return $response;
+        }
+
         if ($captureConfig === true)
         {
             $response['should_auto_capture'] = true;
@@ -13629,13 +13641,6 @@ class Processor
         if ($payment->hasInvoiceOrProductTypeInvoice() === true)
         {
             return $this->shouldAutoCaptureLateAuthorizedInvoice($payment);
-        }
-
-        // Do not capture late authorized payments when the payment is split payment because
-        // wallet payment is already refunded on initial failed event. Hence, skip capture for this payment.
-        if ($payment->isSplitPayment() === true)
-        {
-            return false;
         }
 
         $merchant = $payment->merchant;
