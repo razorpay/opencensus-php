@@ -151,6 +151,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'new_22_digit_utr',
+        experimentId: {
+          beta: 'QRZ90Yzp7ayRJi',
+          production: 'QWfqU2Ezu6IOdD',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'settlements_soh_block',
         experimentId: {
           beta: 'PPV75LUJhQsV3F',

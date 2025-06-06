@@ -87,6 +87,11 @@ const getSettlementJourneyMeta = (journeyPoint): JSX.Element => {
           {journeyPoint.secondarySubtitle}
         </Text>
       )}
+      {journeyPoint.tertiarySubtitle && (
+        <Text size="small" color="surface.text.gray.subtle" weight="regular">
+          {journeyPoint.tertiarySubtitle}
+        </Text>
+      )}
       {journeyPoint.mutedInfo && (
         <Text
           color="surface.text.gray.muted"

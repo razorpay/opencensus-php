@@ -125,6 +125,12 @@ export const isAccountCodeEnabled = (splitz) => {
   return isExperimentEnabled(abExperiments.account_code);
 };
 
+export const isAdditionalUtrEnabled = (splitz) => {
+  const { abExperiments } = splitz || { abExperiments: { new_22_digit_utr: undefined } };
+  if (!abExperiments?.new_22_digit_utr) return false;
+  return isExperimentEnabled(abExperiments.new_22_digit_utr);
+};
+
 export const TIMELINE_EVENTS = {
   PAYMENT_CAPTURED: 'PAYMENT_CAPTURED',
   REFUND_PROCESSED: 'REFUND_PROCESSED',

@@ -3,6 +3,7 @@ import {
   getSettlementTimeFormat,
   isSettlementSOHBlockEnabled,
   isAccountCodeEnabled,
+  isAdditionalUtrEnabled,
 } from 'merchant/views/Settlements/components/utils';
 describe('Settlement Helper', () => {
   const stateSpy = jest.spyOn(store, 'getState');
@@ -40,6 +41,25 @@ describe('Settlement Helper', () => {
       };
 
       const result = isAccountCodeEnabled(splitz);
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('isAdditionalUtrEnabled', () => {
+    test('should return false if variant is not "on"', () => {
+      const splitz = {
+        abExperiments: { new_22_digit_utr: { variables: { result: 'off' } } },
+      };
+
+      const result = isAdditionalUtrEnabled(splitz);
+      expect(result).toBe(false);
+    });
+    test('should return true if variant is "on"', () => {
+      const splitz = {
+        abExperiments: { new_22_digit_utr: { variables: { result: 'on' } } },
+      };
+
+      const result = isAdditionalUtrEnabled(splitz);
       expect(result).toBe(true);
     });
   });

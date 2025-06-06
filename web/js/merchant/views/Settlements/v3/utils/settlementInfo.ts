@@ -18,6 +18,8 @@ import {
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { getHumanReadableTimestamp } from 'merchant/views/Transactions/v2/Payments/components/Timeline/utils';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import { useSplitzService } from '@libs/web-nexus/common/splitz';
+import { isAdditionalUtrEnabled } from 'merchant/views/Settlements/components/utils.js';
 
 const FailedBannerConfig = {
   FAILED: {
@@ -140,6 +142,8 @@ export const getTimelineJourneyDetailsRevamp = ({
 }: any): any[] => {
   const { created_at, status, amount, utr } = settlement;
   const now = moment();
+  const splitz = useSplitzService();
+  const isAdditionalUtrExpEnabled = isAdditionalUtrEnabled(splitz);
   const breachTime = moment.unix(created_at).add(7, 'hours');
   const shouldHideSettlementTime = isOrgFeatureExist('hide_settlement_time');
   const isVASMerchant = !(user.isOrgRZP || user.isOrgCurlec);
@@ -229,6 +233,10 @@ export const getTimelineJourneyDetailsRevamp = ({
         secondarySubtitle: shouldHaveSettled
           ? `UTR number: ${utr ?? '-'}`
           : 'To be deposited latest by 11:00 pm, today',
+        tertiarySubtitle:
+          isAdditionalUtrExpEnabled && settlement?.additional_utr
+            ? `Additional UTR number: ${settlement.additional_utr}`
+            : null,
         icon: shouldHaveSettled ? SettlementStatusIcons.DONE : SettlementStatusIcons.IN_PROGRESS,
       });
     }
