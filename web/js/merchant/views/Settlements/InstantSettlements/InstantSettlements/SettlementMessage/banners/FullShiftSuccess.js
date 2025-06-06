@@ -18,7 +18,7 @@ import Base, {
   Title,
 } from './Base';
 import { NEW_BANNERS } from './constants';
-
+import { getIsOdsMigrationEnabled } from 'merchant/views/Settlements/InstantSettlements/utils/common';
 const color = '#008659';
 
 const StyledContainer = styled(Container)`
@@ -39,7 +39,9 @@ const RupeeWrapper = styled(Rupee)`
 `;
 
 function FullShiftSuccess({ user, onDismiss }) {
+  const isOdsExpEnabled = getIsOdsMigrationEnabled(user);
   const { discountPercent, canViewDiscount } = useODSAutomaticPricingDiscount(
+    isOdsExpEnabled,
     user.merchant.currency || 'INR',
   );
 

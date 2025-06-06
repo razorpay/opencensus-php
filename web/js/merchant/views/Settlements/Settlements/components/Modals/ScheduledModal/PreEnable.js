@@ -26,6 +26,7 @@ import {
   DEFAULT_PRICE,
 } from './constants';
 import { enableAutomaticSettlements, setEnableEsPartialAutomaticDate } from './utils';
+import { getIsOdsMigrationEnabled } from '@dashboards/payments/views/Settlements/InstantSettlements/utils/common';
 
 const IndicatorWrapper = styled.div`
   width: 100%;
@@ -338,7 +339,10 @@ function PreEnable({
     newPrice,
     isLoading: isPricingLoading,
     canViewDiscount,
-  } = useODSAutomaticPricingDiscount(user.merchant.currency || 'INR');
+  } = useODSAutomaticPricingDiscount(
+    getIsOdsMigrationEnabled(user),
+    user.merchant.currency || 'INR',
+  );
   const { isManagedMerchantAccount } = useIsManagedMerchantAccount();
   const isOndemandSettlementEnabled = user.isOndemandSettlementEnabled;
   const isOndemandSettlementsRestricted = user.isOndemandSettlementsRestricted;

@@ -5,6 +5,7 @@ import { usePricingBreakup } from 'merchant/views/Settlements/InstantSettlements
  * Should use canViewDiscount before using any returned values except isLoading.
  * */
 const useODSAutomaticPricingDiscount = (
+  isOdsExpEnabled: boolean,
   currency: 'INR',
 ): {
   isLoading: boolean;
@@ -21,6 +22,7 @@ const useODSAutomaticPricingDiscount = (
     amount: 10000,
     enabled: true,
     currency,
+    isOdsExpEnabled,
   });
   const splitzOffer = useSplitzService().abExperiments?.capital_is_auto_offer;
   const isEligibleForDiscount = splitzOffer?.variables?.result === 'on';

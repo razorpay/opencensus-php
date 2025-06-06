@@ -24,6 +24,7 @@ import {
   getEnableEsPartialAutomaticDate,
   getNoOfDaysAfterEsPartialEnable,
 } from './utils';
+import { getIsOdsMigrationEnabled } from '@dashboards/payments/views/Settlements/InstantSettlements/utils/common';
 
 const ItemsContainer = styled.div`
   width: 100%;
@@ -75,7 +76,9 @@ const CURRENCY_PARTIAL_LIMIT = {
 };
 
 function PostEnable({ user, postModalType, closeModal }) {
+  const isOdsExpEnabled = getIsOdsMigrationEnabled(user);
   const { discountPercent, canViewDiscount } = useODSAutomaticPricingDiscount(
+    isOdsExpEnabled,
     user.merchant.currency || 'INR',
   );
   const isOndemandSettlementEnabled = user.isOndemandSettlementEnabled;

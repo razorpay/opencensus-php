@@ -27,6 +27,7 @@ import { showNotification as fnShowNotification } from 'merchant_common/reducers
 
 import BIG_UPSELLING_BG from 'assets/settlements/bigupselling-bg.svg';
 import SMALL_UPSELLING_BG from 'assets/settlements/upselling-bg.svg';
+import { getIsOdsMigrationEnabled } from '@dashboards/payments/views/Settlements/InstantSettlements/utils/common';
 
 const Container = styled.div`
   background-color: ${(props) => props.theme.colors.interactive.background.staticWhite.faded};
@@ -84,8 +85,9 @@ function Upselling({
   const [isLoading, setLoading] = useState(false);
   const screen = getScreenForTrackEvent(from);
   /** We expect the currentPrice to be already prefetched to avoid CLS in OnDemandV2   */
+  const isOdsExpEnabled = getIsOdsMigrationEnabled(user);
   const { discountPercent, currentPrice, newPrice, canViewDiscount } =
-    useODSAutomaticPricingDiscount(user.merchant.currency || 'INR');
+    useODSAutomaticPricingDiscount(isOdsExpEnabled, user.merchant.currency || 'INR');
 
   const { isManagedMerchantAccount } = useIsManagedMerchantAccount();
 

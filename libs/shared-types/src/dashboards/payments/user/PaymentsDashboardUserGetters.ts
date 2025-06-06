@@ -390,6 +390,7 @@ export interface PaymentsDashboardUserGetters {
   isPartnerAgentRole: boolean;
   isPartnerRole: boolean;
   isRouteCodeSupportEnabled: boolean;
+  isOdsMigrationEnabled: boolean;
   isRouteLinkedAccountCreationDisabled: boolean;
   isPLSwitchEnabled: boolean;
   isOnboardingV2Enabled: boolean;

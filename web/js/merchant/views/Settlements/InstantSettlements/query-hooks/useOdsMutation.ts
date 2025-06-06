@@ -17,6 +17,7 @@ import {
 } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandV2/helpers';
 import { settleLinkedAccountsBalance } from 'merchant/views/Settlements/Settlements/components/api';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { CREATE_ODS_ENDPOINT } from 'merchant/views/Settlements/InstantSettlements/utils/common';
 
 type Payload =
   | {
@@ -31,17 +32,18 @@ type Payload =
       settlement_payout_type?: SettlementTransactionType;
     };
 
-export const useOdsMutation = () => {
+export const useOdsMutation = (isOdsExpEnabled: Boolean) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (
       payload: Payload,
     ): Promise<{ type: typeof SETTLEMENT_TYPES.ROUTE } | { type: typeof SETTLEMENT_TYPES.ODS }> => {
       const isRouteOds = payload.type === SETTLEMENT_TYPES.ROUTE;
+      const url = isOdsExpEnabled ? CREATE_ODS_ENDPOINT.NEW : CREATE_ODS_ENDPOINT.OLD;
       return isRouteOds
         ? settleLinkedAccountsBalance(payload.merchantId, payload.amount)
         : merchantFetch({
-            url: 'settlement/ondemand/dashboard',
+            url,
             method: 'POST',
             data: {
               amount: payload.amount,

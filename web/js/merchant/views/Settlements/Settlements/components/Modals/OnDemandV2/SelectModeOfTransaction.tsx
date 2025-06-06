@@ -26,6 +26,7 @@ interface SelectModeOfTransactionProps {
   onSuccess: VoidFunction;
   onBack: VoidFunction;
   isSmartSettlementAvailable?: boolean;
+  isOdsExpEnabled: boolean;
 }
 
 const SelectModeOfTransaction = ({
@@ -34,10 +35,11 @@ const SelectModeOfTransaction = ({
   onBack,
   currency,
   isSmartSettlementAvailable,
+  isOdsExpEnabled,
 }: SelectModeOfTransactionProps) => {
   const [selectedSettlementTransactionType, setSelectedSettlementTransactionType] =
     useState<SettlementTransactionType>('');
-  const odsMutation = useOdsMutation();
+  const odsMutation = useOdsMutation(isOdsExpEnabled);
   const isLoading = odsMutation.isLoading || odsMutation.isPaused;
   const isIMPSDisabled = amount > MAX_IMPS_AMOUNT;
   const shouldSmartSettlementBeVisible = amount > MIN_SMART_SETTLEMENT_AMOUNT;

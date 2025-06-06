@@ -61,6 +61,8 @@ import {
 } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandV2/helpers';
 import { DASHBOARD_ZINDEX_MAP } from '@libs/shared-utils';
 import SelectModeOfTransaction from './SelectModeOfTransaction';
+import type { PaymentsDashboardUser } from '@libs/shared-types/payments';
+import { getIsOdsMigrationEnabled } from 'merchant/views/Settlements/InstantSettlements/utils/common';
 
 const GtmModalContent = lazy(
   () =>
@@ -147,19 +149,23 @@ const ConfirmScreen = ({
   isOpen: boolean;
   currency: 'INR';
   amount: number;
-  user: any;
+  user: PaymentsDashboardUser;
   type: SettlementTypes;
   onDismiss: VoidFunction;
   onSuccess: VoidFunction;
 }) => {
   const isRouteOds = type === SETTLEMENT_TYPES.ROUTE;
 
-  const odsMutation = useOdsMutation();
+  const isOdsExpEnabled = getIsOdsMigrationEnabled(user);
+
+  const odsMutation = useOdsMutation(isOdsExpEnabled);
   const isLoading = odsMutation.isLoading || odsMutation.isPaused;
 
   const onSubmit = () => {
     odsMutation.mutate(
-      isRouteOds ? { type, merchantId: user.merchant.id, amount } : { type, amount, currency },
+      isRouteOds
+        ? { type, merchantId: user.merchant?.id ?? '', amount }
+        : { type, amount, currency },
       {
         onSuccess: () => {
           onSuccess();
@@ -257,7 +263,7 @@ const WithdrawalScreen = ({
   user,
 }: {
   currency: 'INR';
-  user: any;
+  user: PaymentsDashboardUser;
   defaultAmount?: number;
   defaultType?: SettlementTypes;
   onNext: (data: { amount: number; type: SettlementTypes }) => void;
@@ -331,13 +337,16 @@ const WithdrawalScreen = ({
     return '';
   })();
 
+  const isOdsExpEnabled = user.isOdsMigrationEnabled;
+
   const pricingBreakupQuery = usePricingBreakup({
     amount: amountInPaise,
     currency,
     enabled: !errorMessage && !isLinkedAccountTabActive,
+    isOdsExpEnabled,
   });
   /** Prefetching data - useODSAutomaticPricingDiscount */
-  useODSAutomaticPricingDiscount(currency);
+  useODSAutomaticPricingDiscount(isOdsExpEnabled, currency || 'INR');
   const isPricingLoading = pricingBreakupQuery.isInitialLoading;
   const pricingPercent = (pricingBreakupQuery.data?.items[0].pricing_rule.percent_rate || 0) / 100;
   const pricingFee = pricingBreakupQuery.data?.items[0].amount || 0;
@@ -611,6 +620,7 @@ const WithdrawalScreen = ({
         onSuccess={onSuccess}
         onBack={onBack}
         isSmartSettlementAvailable={isSmartSettlementAvailable}
+        isOdsExpEnabled={user.isOdsMigrationEnabled}
       />
     );
   }

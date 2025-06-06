@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { fetch } from '@federated/apps/shell/rest-fetch';
+import { ODS_PRICING_ENDPOINT } from 'merchant/views/Settlements/InstantSettlements/utils/common';
 
 export type PricingBreakup = {
   items: [
@@ -26,20 +27,22 @@ export const usePricingBreakup = ({
   amount,
   currency,
   enabled,
+  isOdsExpEnabled,
 }: {
   amount: number;
   currency: 'INR';
   enabled?: boolean;
+  isOdsExpEnabled?: boolean;
 }) => {
   const payload = {
     amount,
     currency,
   };
 
+  const url = isOdsExpEnabled ? ODS_PRICING_ENDPOINT.NEW : ODS_PRICING_ENDPOINT.OLD;
   return useQuery({
     queryKey: getQueryKey(payload.amount),
-    queryFn: (): Promise<PricingBreakup> =>
-      fetch({ url: 'settlement/ondemand/fees/dashboard', params: payload }),
+    queryFn: (): Promise<PricingBreakup> => fetch({ url, params: payload }),
     staleTime: 3000,
     retry: 1,
     enabled,

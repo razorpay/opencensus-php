@@ -23,6 +23,7 @@ import Base, {
   Rupee,
   Title,
 } from './Base';
+import { getIsOdsMigrationEnabled } from 'merchant/views/Settlements/InstantSettlements/utils/common';
 
 const Wrapper = styled.div`
   background: rgba(21, 102, 241, 0.09);
@@ -37,7 +38,9 @@ const Wrapper = styled.div`
 `;
 
 function EnableAutomatic({ user, openModal }) {
+  const isOdsExpEnabled = getIsOdsMigrationEnabled(user);
   const { isLoading, discountPercent, canViewDiscount } = useODSAutomaticPricingDiscount(
+    isOdsExpEnabled,
     user.merchant.currency || 'INR',
   );
   const { isManagedMerchantAccount } = useIsManagedMerchantAccount();
