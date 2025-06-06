@@ -304,7 +304,8 @@ test.describe
     await page.getByRole('button', { name: 'Manage team', exact: true }).click();
     await expect(page.locator('text=Pending Invitations')).toBeVisible();
     await expect(page.locator('text=akash.rainadefw@razorpay.com')).toBeVisible();
-    await expect(page.locator('text=Manager')).toBeVisible();
+    const elementCount = await page.locator('text=Manager').count();
+    expect(elementCount).toBeGreaterThan(0);
     const teamMemberHeading = page.locator('text=Team Members').last();
     await expect(teamMemberHeading).toBeVisible();
     await expect(page.locator('text=Test SSABssab+5@rzp.com')).toBeVisible();

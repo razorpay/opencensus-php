@@ -112,7 +112,7 @@ const RTUXHomepage = (): JSX.Element => {
   if (isFetchingLayout || (isErrorLayout && isFetching)) {
     return isMobile ? <FullPageLoader /> : <FullPageLoaderCenterToMainContent />;
   }
-  // only retry for data, layout error is handled by default loader
+  // only retry for data, layout error is handled by default loader 
   if (isError)
     return (
       <Box margin="spacing.7">
