@@ -71,6 +71,7 @@ export const generateDashboardValues = async ({
     const dashboardHelmChartValues = {
       server,
       browser,
+      preserved_labels: ["curlec", "jkbank", "axis"], // Access at dashboard-{preserved_label}.dev.razorpay.in
     };
 
     console.log('[@libs/shared-core]', dashboardHelmChartValues);
