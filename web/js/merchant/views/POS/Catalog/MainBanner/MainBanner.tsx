@@ -39,8 +39,7 @@ const MainBanner = (): JSX.Element | null => {
 
   if (!productDescription || !productDescription.pricing) return null;
 
-  const productPricing = getPricingByProduct({ productDescription });
-  const { monthly, offer } = productPricing;
+  const { monthly, setupFee, offer } = getPricingByProduct({ productDescription });
 
   const handleNavigateToProduct = () => navigate(`/pos/catalog/${productDescription.code}`);
 
@@ -99,7 +98,11 @@ const MainBanner = (): JSX.Element | null => {
             >
               <MainBannerTextContent
                 product={productDescription}
-                productPricing={productPricing}
+                monthlyFee={monthly}
+                prevMonthlyFee={offer?.prevMonthly}
+                prevSetupFee={offer?.prevSetupFee}
+                nextMonthlyFee={offer?.nextMonthly}
+                setupFee={setupFee}
                 onLearnMoreClick={() => {
                   analyticsTrack({
                     objectName: 'Icon',

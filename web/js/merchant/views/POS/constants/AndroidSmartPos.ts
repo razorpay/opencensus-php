@@ -42,7 +42,7 @@ const ANDROID_SMART_POS: ProductDescription = {
       thumbnail: Thumbnail4,
     },
   ],
-  code: 'a99',
+  code: 'a910',
   name: 'android-smart-pos',
   productTitle: 'Android Smart POS',
   description:
