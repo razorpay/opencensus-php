@@ -35,8 +35,7 @@ export const generateRzpBEControllerScripts = (
     PL_CUSTOMIZED_FIELDS[currentMerchantId] || PL_DEFAULT_CUSTOMIZED_FIELDS;
   const isPlCustomerNameFieldEnabled = PL_ENABLE_CUSTOMER_NAME_FIELD[currentMerchantId] || null;
 
-  // TODO:
-  const sessionId = '';
+  const sessionId = req?.cookies?.['rzp_usr_session'] || '';
   const isBankingRequest = isBankingOriginRequest(req);
   return (
     <script
