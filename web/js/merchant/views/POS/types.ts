@@ -611,3 +611,15 @@ export type WorkflowConfig = {
   onboarding_type: string;
   merchant_type: string;
 };
+
+export type Prices = {
+  monthly: number;
+  setupFee: number;
+  lifetime: number;
+  offer: {
+    prevMonthly: number;
+    prevSetupFee: number;
+    prevLifetime: number;
+    nextMonthly: number;
+  } | null;
+};

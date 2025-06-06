@@ -950,7 +950,7 @@ export const MOCK_PRODUCT_OFFER_CONFIG = {
 };
 
 export const MOCK_PRODUCT_OFFERS = {
-  a910: {
+  a99: {
     offerText: 'Limited Time Offer till 31st May',
     pdpOfferText: 'Offer valid on orders placed before 31st May',
     partnerOfferText: 'Partner Exclusive Time Offer till 31st May',

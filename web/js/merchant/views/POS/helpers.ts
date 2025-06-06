@@ -58,6 +58,7 @@ import {
   PricingBreakupkeys,
   PricingTypes,
   DeviceMetaData,
+  Prices,
 } from './types';
 
 export const isValidFee = (value: number | null | undefined): boolean => {
@@ -919,18 +920,6 @@ export const validatePrecheckout = ({
   }
 
   return null;
-};
-
-type Prices = {
-  monthly: number;
-  setupFee: number;
-  lifetime: number;
-  offer: {
-    prevMonthly: number;
-    prevSetupFee: number;
-    prevLifetime: number;
-    nextMonthly: number;
-  } | null;
 };
 
 export const getPricingByProduct = ({

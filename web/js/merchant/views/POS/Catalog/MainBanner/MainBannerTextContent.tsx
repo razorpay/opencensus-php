@@ -16,9 +16,9 @@ import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
 import AddToCartButton from 'merchant/views/POS/Cart/AddToCartButton';
 import { PartnerExclusivePriceContainer } from 'merchant/views/POS/PartnerExclusiveContainer';
 import { PRODUCT_PLANS, ANDROID_SMART_POS } from 'merchant/views/POS/constants';
-import { isValidFee } from 'merchant/views/POS/helpers';
+import { getAvailablePricingPlans, isValidFee } from 'merchant/views/POS/helpers';
 import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
-import { ProductDescription } from 'merchant/views/POS/types';
+import { ProductDescription, Prices } from 'merchant/views/POS/types';
 
 import { MainBannerFeaturesContainer, MainBannerFooter } from './styles';
 
@@ -29,11 +29,7 @@ type FEATURE_ITEMS = {
 
 type MainBannerTextContentProps = {
   product: ProductDescription;
-  setupFee: number;
-  monthlyFee: number;
-  prevMonthlyFee?: number;
-  prevSetupFee?: number;
-  nextMonthlyFee?: number;
+  productPricing: Prices;
   onLearnMoreClick: () => void;
 };
 
@@ -58,20 +54,18 @@ const FEATURE_ITEMS: FEATURE_ITEMS = [
 
 const MainBannerTextContent = ({
   product,
-  setupFee,
-  monthlyFee,
-  prevMonthlyFee,
-  prevSetupFee,
-  nextMonthlyFee,
+  productPricing,
   onLearnMoreClick,
 }: MainBannerTextContentProps): JSX.Element => {
   const { isMobile } = useBladeBreakpoints();
+  const { monthly, setupFee, offer, lifetime } = productPricing;
+  const { prevMonthly, prevSetupFee, nextMonthly, prevLifetime } = offer || {};
+  const { hasMonthlyPlan } = getAvailablePricingPlans(product);
 
   const isValidOffer = useMemo(
     () =>
-      product.offer &&
-      [prevMonthlyFee, prevSetupFee, nextMonthlyFee].every((fee) => !!isValidFee(fee)),
-    [product, prevMonthlyFee, prevSetupFee, nextMonthlyFee],
+      product.offer && [prevMonthly, prevSetupFee, nextMonthly].every((fee) => !!isValidFee(fee)),
+    [product, prevMonthly, prevSetupFee, nextMonthly],
   );
 
   return (
@@ -140,7 +134,7 @@ const MainBannerTextContent = ({
                 weight="regular"
               >
                 <Amount
-                  value={nextMonthlyFee as number}
+                  value={hasMonthlyPlan ? (nextMonthly as number) : lifetime}
                   suffix="none"
                   isAffixSubtle={false}
                   testID="monthly-amount"
@@ -149,18 +143,20 @@ const MainBannerTextContent = ({
                   weight="semibold"
                 />
                 {'  '}
-                <Amount
-                  value={prevMonthlyFee as number}
-                  testID="prev-monthly"
-                  isAffixSubtle={false}
-                  suffix="none"
-                  marginRight="spacing.2"
-                  isStrikethrough={true}
-                  color="surface.text.gray.muted"
-                  size="large"
-                  weight="semibold"
-                />
-                /month after 3 months*
+                {(hasMonthlyPlan && prevMonthly) || (!hasMonthlyPlan && prevLifetime) ? (
+                  <Amount
+                    value={hasMonthlyPlan ? (prevMonthly as number) : (prevLifetime as number)}
+                    testID="prev-monthly"
+                    isAffixSubtle={false}
+                    suffix="none"
+                    marginRight="spacing.2"
+                    isStrikethrough={true}
+                    color="surface.text.gray.muted"
+                    size="large"
+                    weight="semibold"
+                  />
+                ) : null}
+                {hasMonthlyPlan ? '/month after 3 months*' : 'lifetime / one time price'}
               </Heading>
               <Heading
                 color="surface.text.gray.subtle"
@@ -200,7 +196,7 @@ const MainBannerTextContent = ({
               textAlign={isMobile ? 'center' : 'left'}
             >
               <Amount
-                value={monthlyFee}
+                value={hasMonthlyPlan ? monthly : lifetime}
                 suffix="none"
                 isAffixSubtle={false}
                 testID="monthly-amount"
@@ -208,12 +204,12 @@ const MainBannerTextContent = ({
                 size="medium"
                 weight="semibold"
               />{' '}
-              monthly subscription
+              {hasMonthlyPlan ? 'monthly subscription' : 'lifetime / one time price'}
             </Heading>
           )}
 
           <Box display={{ base: 'block', m: 'flex' }} alignItems="center" marginBottom="spacing.6">
-            {!product.offer && !prevSetupFee ? (
+            {!product.offer && !prevSetupFee && hasMonthlyPlan ? (
               <Text
                 color="surface.text.staticWhite.normal"
                 size={isMobile ? 'medium' : 'small'}
@@ -232,13 +228,15 @@ const MainBannerTextContent = ({
                 one time setup fee.
               </Text>
             ) : null}
-            <Text
-              size="small"
-              color="surface.text.gray.subtle"
-              textAlign={isMobile ? 'center' : 'left'}
-            >
-              *Lifetime Pricing also available.
-            </Text>
+            {hasMonthlyPlan ? (
+              <Text
+                size="small"
+                color="surface.text.gray.subtle"
+                textAlign={isMobile ? 'center' : 'left'}
+              >
+                *Lifetime Pricing also available.
+              </Text>
+            ) : null}
           </Box>
         </PartnerExclusivePriceContainer>
         <Box
@@ -249,7 +247,7 @@ const MainBannerTextContent = ({
         >
           <AddToCartButton
             productCode={ANDROID_SMART_POS.code}
-            plan={PRODUCT_PLANS.MONTHLY}
+            plan={hasMonthlyPlan ? PRODUCT_PLANS.MONTHLY : PRODUCT_PLANS.LIFETIME}
             openCartOnUpdate
             onCtaClick={() => {
               analytics.track_EXPERIMENTAL(SignUpEvents.websiteCtaClicked, {
