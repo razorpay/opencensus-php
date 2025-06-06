@@ -3,7 +3,7 @@ import { Box, BoxProps } from '@razorpay/blade/components';
 type ContainerProps = { children: React.ReactNode };
 
 export const FilterContainer = ({ children }: ContainerProps): JSX.Element => (
-  <Box display="flex" marginBottom="spacing.6" flexWrap="wrap">
+  <Box display="flex" marginBottom="spacing.6" flexWrap={{ base: 'wrap', xl: 'nowrap' }}>
     {children}
   </Box>
 );

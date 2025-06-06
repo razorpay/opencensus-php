@@ -28,18 +28,27 @@ const PublicLinksTab = ({
 
   // Formik hooks and Validation
   const { data: referralData, isLoading } = useReferralLinks({ showNotification });
+
+  const isAggregator = user?.isPartner?.(PARTNER_TYPE.AGGREGATOR);
+
+  // Referral links and KYC access
   const hasSelectedKycAccess = getHasSelectedKycAccess(productType);
   const referralUrl = referralData?.[productType]?.url;
   const easyAccessUrl = referralData?.[productType]?.easy_kyc_access_url;
+  const aggregatorReferralUrl = easyAccessUrl || referralUrl; // Prioritize easy access url if available for aggregator, else use referral url
+  const activeReferralUrl = isAggregator ? aggregatorReferralUrl : referralUrl;
+  const kycAssistedSelected = isAggregator ? true : null;
 
   let initialSelectedValue = hasSelectedKycAccess === null ? '' : 'yes';
   if (hasSelectedKycAccess === false) initialSelectedValue = 'no';
 
+  // Content visibility flags
+  const shouldShowClientAssistOptions = easyAccessUrl && !isAggregator;
   const shouldShowFtuxContent =
     hasSelectedKycAccess === null &&
     easyAccessUrl &&
     (productType === PRODUCT_TYPE.PG || productType === PRODUCT_TYPE.POS) &&
-    !user?.isPartner(PARTNER_TYPE.AGGREGATOR);
+    !isAggregator;
 
   if (isLoading)
     return (
@@ -78,7 +87,7 @@ const PublicLinksTab = ({
         marginTop="spacing.5"
         marginBottom="spacing.9"
       >
-        {easyAccessUrl ? (
+        {shouldShowClientAssistOptions ? (
           <ClientAssistOptions
             initialValue={initialSelectedValue}
             inviteFlow={inviteFlow}
@@ -96,11 +105,11 @@ const PublicLinksTab = ({
             backgroundColor="surface.background.gray.moderate"
           >
             <SocialShareGroup
-              isKycAssistedSelected={null}
+              isKycAssistedSelected={kycAssistedSelected}
               inviteFlow={inviteFlow}
               productType={productType}
               showDivider={false}
-              referralUrl={referralUrl}
+              referralUrl={activeReferralUrl}
             />
           </Box>
         )}

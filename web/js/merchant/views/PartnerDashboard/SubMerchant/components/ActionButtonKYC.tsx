@@ -41,7 +41,7 @@ const ActionButtonKYC = ({
   const { details: { activation_status } = {}, kyc_access } = submerchant;
   const isSubMerchantKYCAccess = user?.isFeatureEnabled('partner_sub_kyc_access');
 
-  const isAggregator = user?.isPartner(PARTNER_TYPE.AGGREGATOR);
+  const isAggregator = user?.isPartner?.(PARTNER_TYPE.AGGREGATOR);
 
   const submerchantId = submerchant?.id;
   const MAX_REJECTION_COUNT = isAggregator ? 10 : 3;
@@ -148,6 +148,7 @@ const ActionButtonKYC = ({
       'under_review',
       'kyc_qualified_unactivated',
       'rejected',
+      'edd_pending',
     ].includes(activation_status as string) &&
     !(
       productType === PRODUCT_TYPE.POS &&

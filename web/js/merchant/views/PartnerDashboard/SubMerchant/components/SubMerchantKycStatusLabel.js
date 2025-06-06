@@ -10,7 +10,7 @@ import {
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import React from "react";
+import React from 'react';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import { titleCase } from 'common/utils/rzp-utils';
 import ConditionalTooltip from 'merchant/containers/ConditionalTooltip';
@@ -23,6 +23,7 @@ const statusMap = {
   needs_clarification: 'notice',
   [NA_ACTIVATION_STATUS]: 'notice',
   under_review: 'information',
+  edd_pending: 'notice',
   kyc_qualified_unactivated: 'information',
   instantly_activated: 'information',
   activated_mcc_pending: 'positive',
@@ -33,7 +34,8 @@ const activationStatusToIcon = {
   rejected: AlertOctagonIcon,
   needs_clarification: AlertTriangleIcon,
   [NA_ACTIVATION_STATUS]: InfoIcon,
-  under_review: ClockIcon,
+  under_review: InfoIcon,
+  edd_pending: InfoIcon,
   kyc_qualified_unactivated: ClockIcon,
   instantly_activated: CheckIcon,
   activated_mcc_pending: CheckIcon,
@@ -96,6 +98,10 @@ const SubMerchantKycStatusLabel = ({
     description = ``;
   }
 
+  if (activation_status === 'edd_pending') {
+    description = 'Extra Due Diligence Pending, request merchant to complete video KYC';
+  }
+
   if (isSubMerchantKYCAccess) {
     description = ``;
   }
@@ -120,6 +126,9 @@ const SubMerchantKycStatusLabel = ({
   const getLabelText = () => {
     if (activation_status === 'activated_mcc_pending') {
       return 'Activated';
+    }
+    if (activation_status === 'edd_pending') {
+      return 'EDD Pending';
     }
     if ([undefined, null, '', NA_ACTIVATION_STATUS].includes(activation_status)) {
       return 'Pending Completion';
