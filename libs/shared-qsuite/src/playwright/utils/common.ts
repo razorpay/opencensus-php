@@ -15,13 +15,23 @@ interface WaitForSelectorParams extends PageParams {
 
 interface LoginByMobileParams extends PageParams {
   mobile: string;
+  multiAccountMerchantName?: string;
 }
 
 interface LoginByEmailParams extends PageParams {
   cred: {
     username: string;
     password: string;
+    multiAccountMerchantName?: string;
   };
+}
+
+interface LoginUslParams extends PageParams {
+  type: 'email' | 'mobile';
+  username?: string;
+  password?: string;
+  mobile?: string;
+  multiAccountMerchantName?: string;
 }
 
 interface SaveTestEnvironmentParams extends PageParams {
@@ -84,6 +94,79 @@ export const loginByEmail = async ({ page, cred }: LoginByEmailParams): Promise<
   await page.click('input[type="password"]');
   await page.fill('input[type="password"]', cred.password);
   await Promise.all([page.waitForNavigation(), page.click('text="Login"')]);
+};
+
+export const selectMerchant = async ({
+  page,
+  multiAccountMerchantName = '',
+}: {
+  page: Page;
+  multiAccountMerchantName?: string;
+}): Promise<void> => {
+  // Account selection is optional - only proceed if the screen appears
+  let isMultiAccountScreenVisible = false;
+  try {
+    // Check if account selection screen is visible with a timeout
+    await page.waitForSelector('text=Please select your preferred account', { timeout: 15000 });
+
+    // If we reach here, the account selection screen is visible
+    isMultiAccountScreenVisible = true;
+
+    await page.getByTestId(multiAccountMerchantName).click();
+    await page.getByRole('button', { name: 'Continue' }).click();
+  } catch (error) {
+    // Account selection screen didn't appear - user likely went directly to dashboard
+    // This is expected behavior for some users, so we don't need to throw an error
+  } finally {
+    if (!multiAccountMerchantName && isMultiAccountScreenVisible) {
+      throw new Error(
+        'Multi account screen is visible but no multi account merchant name provided',
+      );
+    }
+  }
+};
+
+export async function fillOTPUsl(page: Page): Promise<void> {
+  await page.getByRole('textbox', { name: 'undefined character 1' }).fill('0');
+  await page.getByRole('textbox', { name: 'character 2' }).fill('0');
+  await page.getByRole('textbox', { name: 'character 3' }).fill('0');
+  await page.getByRole('textbox', { name: 'character 4' }).fill('0');
+  await page.getByRole('textbox', { name: 'character 5' }).fill('0');
+  await page.getByRole('textbox', { name: 'character 6' }).fill('7');
+}
+
+export const loginUsl = async ({
+  page,
+  type,
+  username,
+  password,
+  mobile,
+  multiAccountMerchantName,
+}: LoginUslParams): Promise<void> => {
+  const heading = page.getByText('Get started with your email or phone number');
+  await expect(heading).toBeVisible();
+
+  const isMobile = type === 'mobile';
+
+  const loginId = isMobile ? mobile : username;
+  await page.getByRole('textbox').fill(loginId || '');
+  await page.getByTestId('unified-auth-continue').click();
+
+  if (isMobile) {
+    await expect(page.getByText('Enter the otp', { exact: false })).toBeVisible();
+    await fillOTPUsl(page);
+    await page.getByRole('button', { name: 'Verify' }).click();
+  } else {
+    await expect(
+      page.getByText(/Enter your password to login/i, {
+        exact: false,
+      }),
+    ).toBeVisible();
+    await page.getByRole('textbox', { name: 'Enter password' }).fill(password || '');
+    await page.getByRole('button', { name: 'Login' }).click();
+  }
+
+  await selectMerchant({ page, multiAccountMerchantName });
 };
 
 /** Utility functions */

@@ -2,8 +2,7 @@ import {
   hideSearchFTUXBannerByLocalStorage,
   hideCustomBannersFromState,
   hideCustomerGluGame,
-  loginByEmail,
-  loginByMobile,
+  loginUsl,
   showStreakRewardTileInAccountPage,
   saveTestEnvironment,
   saveTestModeCredentials,
@@ -15,37 +14,29 @@ import {
 } from '@libs/shared-qsuite/playwright';
 
 playwrightTest.beforeEach(async ({ context, page }) => {
-  await context.addCookies([
-    {
-      name: 'skip_usl_redirection',
-      value: 'true',
-      domain: '.razorpay.in',
-      path: '/',
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None',
-    },
-  ]);
   await hideSearchFTUXBannerByLocalStorage({ page });
   await setUserInteractedWithHomeConsent({ page });
   await page.goto(routes.SIGN_IN_PATH);
-  await expect(page).toHaveTitle(/Razorpay Dashboard/);
+  await expect(page).toHaveTitle(/Razorpay Accounts/);
 });
 playwrightTest.describe.parallel('Dashboard login flow @flow=auth @package=others', () => {
   const { emailCred, activatedNotIe, mobileCred, posCredentials } = getCredentials();
   // testing for multiple credentials using email login
-  for (const cred of emailCred) {
+  for (const cred of [...emailCred, ...activatedNotIe, ...posCredentials]) {
     playwrightTest(
       `should login with email in ${cred.type} mode: @priority=critical @duration=long`,
       async ({ page }) => {
         // applying login form with email and password
-        await loginByEmail({
+        await loginUsl({
           page,
-          cred,
+          type: 'email',
+          username: cred.username,
+          password: cred.password,
+          multiAccountMerchantName: cred.multiAccountMerchantName,
         });
-
-        // validating landing page url after login
-        await expect(page).toHaveURL(routes.DASHBOARD);
+        await expect(page).toHaveTitle(/Razorpay Dashboard/, {
+          timeout: 2 * 60 * 1000,
+        });
 
         // hiding custom banner popups by udating local storage
         await hideCustomBannersFromState({ page });
@@ -76,13 +67,16 @@ playwrightTest.describe.parallel('Dashboard login flow @flow=auth @package=other
       `should login with mobile in ${cred.type} mode: @priority=critical @duration=long`,
       async ({ page }) => {
         // applying login form with mobile and otp
-        await loginByMobile({
+        await loginUsl({
           page,
+          type: 'mobile',
           mobile: cred.mobile,
+          multiAccountMerchantName: cred.multiAccountMerchantName,
         });
 
-        // validating landing page url after login
-        await expect(page).toHaveURL(routes.DASHBOARD);
+        await expect(page).toHaveTitle(/Razorpay Dashboard/, {
+          timeout: 2 * 60 * 1000,
+        });
 
         // saving playwrightTest environment in browser context
         await saveTestEnvironment({ page });
@@ -93,72 +87,6 @@ playwrightTest.describe.parallel('Dashboard login flow @flow=auth @package=other
         });
 
         // @ts-ignore
-        if (cred.hasTestMode) {
-          await saveTestModeCredentials({ page, cred });
-        }
-      },
-    );
-  }
-
-  for (const cred of activatedNotIe) {
-    playwrightTest(
-      `should login with email in ${cred.type} mode: @priority=critical @duration=long`,
-      async ({ page }) => {
-        // applying login form with email and password
-        await loginByEmail({
-          page,
-          cred,
-        });
-
-        // validating landing page url after login
-        await expect(page).toHaveURL(routes.DASHBOARD);
-
-        // hiding custom banner popups by udating local storage
-        await hideCustomBannersFromState({ page });
-        // avoid loading customer glu Game script by updating local storage
-        await hideCustomerGluGame({ page });
-        // show streak reward tiles in account page for e2e based in localStorage instead of experiment evaluation
-        await showStreakRewardTileInAccountPage({ page });
-
-        // saving playwrightTest environment in browser context
-        await saveTestEnvironment({ page });
-
-        // storing login state in context to re-use at other logins
-        await page.context().storageState({
-          path: cred.storagePath,
-        });
-
-        if (cred.hasTestMode) {
-          await saveTestModeCredentials({ page, cred });
-        }
-      },
-    );
-  }
-
-  for (const cred of posCredentials) {
-    playwrightTest(
-      `should login with email in ${cred.type} mode: @priority=critical @duration=long`,
-      async ({ page }) => {
-        // applying login form with email and password
-        await loginByEmail({
-          page,
-          cred,
-        });
-
-        // validating landing page url after login
-        await expect(page).toHaveURL(routes.DASHBOARD);
-
-        // hiding custom banner popups by udating local storage
-        await hideCustomBannersFromState({ page });
-
-        // saving playwrightTest environment in browser context
-        await saveTestEnvironment({ page });
-
-        // storing login state in context to re-use at other logins
-        await page.context().storageState({
-          path: cred.storagePath,
-        });
-
         if (cred.hasTestMode) {
           await saveTestModeCredentials({ page, cred });
         }

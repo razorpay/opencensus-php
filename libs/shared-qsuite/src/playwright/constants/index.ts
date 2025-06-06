@@ -137,12 +137,14 @@ export const getEmailCredentials = () => {
       username: playwrightEnvs.RESELLER_PARTNER_AGENT_TEST_MODE_USERNAME,
       password: playwrightEnvs.RESELLER_PARTNER_AGENT_TEST_MODE_PASSWORD,
       storagePath: StorageStatePath.RESELLER_PARTNER_AGENT_TEST_LOGIN_STATE,
+      multiAccountMerchantName: 'POS PLAYWRIGHT RESELLER',
     },
     {
       type: 'aggregator-partner-desktop-test-mode-login.json',
       username: playwrightEnvs.AGGREGATOR_PARTNER_TEST_MODE_USERNAME,
       password: playwrightEnvs.AGGREGATOR_PARTNER_TEST_MODE_PASSWORD,
       storagePath: StorageStatePath.AGGREGATOR_PARTNER_TEST_LOGIN_STATE,
+      multiAccountMerchantName: 'Playwright Partner Aggregator',
     },
     {
       type: 'platform-partner-desktop-test-mode-login.json',
@@ -206,28 +208,31 @@ export const getPosCredentials = () => {
       password: playwrightEnvs.POS_ORDER_DETAILS_PASSWORD,
       storagePath: StorageStatePath.POS_ORDER_DETAILS_LOGIN_STATE,
       hasTestMode: true,
+      multiAccountMerchantName: 'POS DEVICE POSTORDER',
     },
     {
       type: 'pos-sales-agent.json',
       username: playwrightEnvs.POS_SALES_AGENT_USERNAME,
       password: playwrightEnvs.POS_SALES_AGENT_PASSWORD,
       storagePath: StorageStatePath.POS_SALES_AGENT,
+      multiAccountMerchantName: 'POS DEVICE POSTORDER',
     },
   ];
 };
 
 export const getMobileCredentials = () => {
+  const StorageStatePath = getStorageStatePath();
   return [
-    // {
-    //   type: 'wallet-merchant.json',
-    //   mobile: playwrightEnvs.WALLET_ENABLED_MERCHANT_MOBILE,
-    //   storagePath: StorageStatePath.WALLET_MERCHANT_LOGIN_STATE,
-    // },
-    // {
-    //   type: 'pos-kyc-status-nc.json',
-    //   mobile: playwrightEnvs.MOBILE_TEST_MODE_POS_KYC_STATUS_NC,
-    //   storagePath: StorageStatePath.POS_KYC_STATUS_NC,
-    // },
+    {
+      type: 'wallet-merchant.json',
+      mobile: playwrightEnvs.WALLET_ENABLED_MERCHANT_MOBILE,
+      storagePath: StorageStatePath.WALLET_MERCHANT_LOGIN_STATE,
+    },
+    {
+      type: 'pos-kyc-status-nc.json',
+      mobile: playwrightEnvs.MOBILE_TEST_MODE_POS_KYC_STATUS_NC,
+      storagePath: StorageStatePath.POS_KYC_STATUS_NC,
+    },
   ];
 };
 
