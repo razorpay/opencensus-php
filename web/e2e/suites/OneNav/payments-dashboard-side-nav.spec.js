@@ -15,6 +15,10 @@ test.describe.parallel('One nav payments dashboard side nav tabs @project=oneNav
 
   test.beforeEach(async ({ page }) => {
     await page.goto(routes.DASHBOARD);
+    await page.locator('.dashboard-home').waitFor({
+      state: 'visible',
+      timeout: 60000,
+    });
   });
 
   test(`should navigate to Transactions`, async ({ page }) => {

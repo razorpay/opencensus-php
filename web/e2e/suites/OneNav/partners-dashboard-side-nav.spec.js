@@ -8,6 +8,10 @@ test.describe.parallel('One nav partners dashboard side nav tabs @project=oneNav
 
   test.beforeEach(async ({ page }) => {
     await page.goto(routes.PARTNER_DASHBOARD);
+    await page.locator('.layout--connected-navigation').waitFor({
+      state: 'visible',
+      timeout: 60000,
+    });
   });
 
   test(`should navigate to affiliate accounts`, async ({ page }) => {

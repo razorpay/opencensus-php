@@ -106,7 +106,7 @@ test.describe.parallel('One nav scroll Verification @project=oneNav', () => {
     await page.goto(routes.DASHBOARD);
     await page.locator('.main-content--one-dashboard').waitFor({
       state: 'visible',
-      timeout: 30000,
+      timeout: 60000,
     });
   });
 

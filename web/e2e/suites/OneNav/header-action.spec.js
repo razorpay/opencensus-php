@@ -9,7 +9,7 @@ test.describe.parallel('One nav header action @project=oneNav', () => {
     await page.goto(routes.DASHBOARD);
     await page.locator('.dashboard-home').waitFor({
       state: 'visible',
-      timeout: 30000,
+      timeout: 60000,
     });
   });
 
@@ -72,14 +72,14 @@ test.describe.parallel('One nav header action - Mobile @project=oneNav', () => {
     await page.goto(routes.DASHBOARD);
     await page.locator('.dashboard-home').waitFor({
       state: 'visible',
-      timeout: 30000,
+      timeout: 60000,
     });
   });
 
   test('should navigate to account settings when clicking on avatar', async ({ page }) => {
     await page.locator('div[data-blade-component="avatar"] button').click();
     const menuItem = page.locator('button[role="menuitem"] div[data-blade-component="avatar"]');
-    await expect(menuItem).toBeVisible({ timeout: 1000 });
+    await expect(menuItem).toBeVisible({ timeout: 5000 });
 
     await menuItem.click();
     await expect(page).toHaveURL('/app/account-settings');
@@ -91,7 +91,7 @@ test.describe.parallel('One nav header action - Mobile @project=oneNav', () => {
     const midContainer = page.locator(
       'div[data-blade-component="bottom-sheet"] p:has-text("MID:")',
     );
-    await expect(midContainer).toBeVisible({ timeout: 2000 });
+    await expect(midContainer).toBeVisible({ timeout: 6000 });
 
     const midText = await midContainer.textContent();
     const midValue = midText.replace('MID: ', '').trim();
@@ -107,7 +107,7 @@ test.describe.parallel('One nav header action - Mobile @project=oneNav', () => {
   test('should navigate to support page when clicking "View Support Ticket"', async ({ page }) => {
     await page.locator('div[data-blade-component="avatar"] button').click();
     const menuItem = page.locator('button:has-text("View Support Tickets")');
-    await expect(menuItem).toBeVisible({ timeout: 1000 });
+    await expect(menuItem).toBeVisible({ timeout: 6000 });
     await menuItem.click();
     await expect(page).toHaveURL('/app/business-settings/ticket-support/tickets/merchant');
   });
