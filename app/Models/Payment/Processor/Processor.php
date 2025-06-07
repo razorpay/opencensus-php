@@ -2698,8 +2698,9 @@ class Processor
 
                                     return false;
                                 }
-                                $tokenRearchExperimentName = 'app.saved_card_token_payments_rearch';
-                                $issuer_result = (new Payment\Service())->getSplitzExpResponse($merchant->getId(),$tokenRearchExperimentName);
+//                                $tokenRearchExperimentName = 'app.saved_card_token_payments_rearch';
+//                                $issuer_result = (new Payment\Service())->getSplitzExpResponse($merchant->getId(),$tokenRearchExperimentName);
+                                $issuer_result = 'on';
                                 $cardInput = [
                                     Card\Entity::NAME                   => Card\Entity::DUMMY_NAME,
                                     Card\Entity::NUMBER                 => Card\Entity::DUMMY_CARD_NUMBER,
