@@ -101,9 +101,9 @@ describe('Smart Settlement Enabled Merchants', () => {
     renderApp();
     await waitForOdsModal();
     /** Withdraw screen */
-    expect(screen.getByText('Current balance')).toBeInTheDocument();
-    expect(screen.getByText('Maximum daily withdrawal limit')).toBeInTheDocument();
-    expect(screen.getByText('Remaining daily limit')).toBeInTheDocument();
+    expect(screen.getByText('Available balance')).toBeInTheDocument();
+    expect(screen.getByText('Daily Withdrawal limit')).toBeInTheDocument();
+    expect(screen.getByText('Remaining limit')).toBeInTheDocument();
     expect(screen.getByText('How much do you want to settle now?')).toBeInTheDocument();
     expect(screen.getByText(/120,000,000/i)).toBeInTheDocument(); // pg balance 120,000,000
     expect(screen.getByText(/110,000,000/i)).toBeInTheDocument(); // max limit

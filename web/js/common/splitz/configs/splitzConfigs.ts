@@ -182,7 +182,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
-
+      {
+        uniqueHashKey: 'balance_separation',
+        experimentId: {
+          beta: 'Pui517oDa1NLNN',
+          production: 'QAw8AM9yN5IS1c',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
       {
         uniqueHashKey: 'is_merchant_pos_for_ftx',
         experimentId: {

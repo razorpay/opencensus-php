@@ -11,6 +11,8 @@ export const ODS_PRICING_ENDPOINT = {
   OLD: 'settlement/ondemand/fees/dashboard',
 };
 
+export const SEPERATEDBALANCEURL = 'capital_es/service/balances?type=online_domestic';
+
 export const getHasMerchantLevelLimit = (
   odsAvailableLimit: ODSConfig['available_limit'],
 ): boolean => {

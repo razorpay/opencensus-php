@@ -24,6 +24,7 @@ import {
   ModalBody,
   IconButton,
   CloseIcon,
+  Alert,
 } from '@razorpay/blade/components';
 import { getCurrencySymbol } from '@razorpay/i18nify-js';
 import { connect } from 'react-redux';
@@ -35,6 +36,7 @@ import { useODSConfig } from 'merchant/views/Settlements/InstantSettlements/quer
 import { useODSRestrictedConfig } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSRestrictedConfig';
 import { useOdsMutation } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useOdsMutation';
 import { usePGBalance } from 'merchant/views/Settlements/InstantSettlements/query-hooks/usePGBalance';
+import { useSeperatedBalance } from '@dashboards/payments/views/Settlements/InstantSettlements/query-hooks/useSeperatedBalance';
 import { usePricingBreakup } from 'merchant/views/Settlements/InstantSettlements/query-hooks/usePricingBreakup';
 import {
   trackRender,
@@ -63,6 +65,11 @@ import { DASHBOARD_ZINDEX_MAP } from '@libs/shared-utils';
 import SelectModeOfTransaction from './SelectModeOfTransaction';
 import type { PaymentsDashboardUser } from '@libs/shared-types/payments';
 import { getIsOdsMigrationEnabled } from 'merchant/views/Settlements/InstantSettlements/utils/common';
+import {
+  isBalanceSeperationEnabled,
+  isCapitalLimitEnabled,
+  isSmartSettlementEnabled,
+} from '@dashboards/payments/views/Settlements/components/utils';
 
 const GtmModalContent = lazy(
   () =>
@@ -73,7 +80,8 @@ const GtmModalContent = lazy(
 );
 
 const TOOLTIP_CONTENT = {
-  PG_BALANCE: 'This is the live payment gateway balance that can be withdrawn instantly.',
+  PG_BALANCE:
+    'You can withdraw only a portion of your live balance. This is excluding your POS & cross-border payments.',
   MID_LIMIT: {
     LIMIT: 'This is the maximum amount that you can withdraw per day.',
     AVAILABLE:
@@ -290,6 +298,7 @@ const WithdrawalScreen = ({
   const isLinkedAccountTabActive = selectedTab === SETTLEMENT_TYPES.ROUTE;
 
   const pgBalanceQuery = usePGBalance();
+
   const odsConfigQuery = useODSConfig();
   const odsRestrictedConfigQuery = useODSRestrictedConfig({
     enabled: isODSRestricted,
@@ -306,7 +315,13 @@ const WithdrawalScreen = ({
     ? odsRestrictedConfigQuery.data?.settlable_amount
     : odsConfigQuery.data?.available_limit;
   const showDailyLimit = isODSRestricted || hasMIDLevelLimit;
+  const splitz = useSplitzService();
+  const isBalanceSeperationExpEnabled = isBalanceSeperationEnabled(splitz);
+  const seperatedBalance = useSeperatedBalance(isBalanceSeperationExpEnabled);
   const currentBalance = pgBalanceQuery.data?.balance || 0;
+  const derivedBalance = isBalanceSeperationExpEnabled
+    ? seperatedBalance?.data?.derived_balance || 0
+    : currentBalance;
   const linkedAccountBalance = Number(linkedAccountBalanceQuery.data?.balance) || 0;
   const isSmartSettlementAvailable =
     odsConfigQuery?.data?.smart_settlement_config?.smart_settlement === 'active';
@@ -325,8 +340,8 @@ const WithdrawalScreen = ({
       return `Minimum settlement amount should be ${formatAmount(MIN_AMOUNT, currency)}`;
     }
     // let BE handle cases where amount is zero. ideally settle now CTA should be disabled
-    if (currentBalance > 0 && amountInPaise > currentBalance) {
-      return `Maximum settlement amount is ${formatAmount(currentBalance, currency)}`;
+    if (derivedBalance > 0 && amountInPaise > derivedBalance) {
+      return `Maximum settlement amount is ${formatAmount(derivedBalance, currency)}`;
     }
     if ((dailyAvailableLimit || 0) > 0 && amountInPaise > (dailyAvailableLimit || 0)) {
       return `Maximum settlement amount is ${formatAmount(dailyAvailableLimit || 0, currency)}`;
@@ -357,12 +372,9 @@ const WithdrawalScreen = ({
   const [hasSeenGTMModal, setHasSeenGTMModal] = useState(() => {
     return midLimitGTMViewedStatus.isViewed();
   });
-  const {
-    abExperiments: { capital_is_gtm, capital_is_smart_settlement },
-  } = useSplitzService();
 
-  const isMIDLimitGTMExpActive = capital_is_gtm?.variables?.result === 'on';
-  const isSmartSettlementExpActive = capital_is_smart_settlement?.variables?.result === 'on';
+  const isMIDLimitGTMExpActive = isCapitalLimitEnabled(splitz);
+  const isSmartSettlementExpActive = isSmartSettlementEnabled(splitz);
   const shouldShowMIDGtm =
     !isODSRestricted && hasMIDLevelLimit && isMIDLimitGTMExpActive && !hasSeenGTMModal;
 
@@ -375,9 +387,10 @@ const WithdrawalScreen = ({
   const [shouldShowTransactionModeSelection, setShouldShowTransactionModeSelection] =
     useState(false);
   const [shouldShowConfirm, setShouldShowConfirm] = useState(false);
-  const shouldDisableConfirmCta = isLinkedAccountTabActive
-    ? linkedAccountBalanceQuery.isFetching
-    : pricingBreakupQuery.isError || isPricingLoading;
+  const shouldDisableConfirmCta =
+    (isLinkedAccountTabActive
+      ? linkedAccountBalanceQuery.isFetching
+      : pricingBreakupQuery.isError || isPricingLoading) || derivedBalance == 0;
 
   const settleNowPayload = isLinkedAccountTabActive
     ? {
@@ -394,8 +407,8 @@ const WithdrawalScreen = ({
         setAmount(
           convertToMajorUnit(
             isODSRestricted || hasMIDLevelLimit
-              ? Math.min(dailyAvailableLimit || 0, currentBalance, MAX_AMOUNT)
-              : Math.min(currentBalance, MAX_AMOUNT),
+              ? Math.min(dailyAvailableLimit || 0, derivedBalance, MAX_AMOUNT)
+              : Math.min(derivedBalance, MAX_AMOUNT),
             {
               currency,
               keepDecimal: false,
@@ -475,21 +488,37 @@ const WithdrawalScreen = ({
         {/* Limit-info */}
         <Box padding={MODAL_PADDING} backgroundColor={MODAL_HEADER_BG}>
           <KeyValuePair
-            title="Current balance"
+            title="Available balance"
             tooltip={{
               content: TOOLTIP_CONTENT.PG_BALANCE,
               type: 'pg',
             }}
-            value={currentBalance}
+            value={derivedBalance}
             currency={currency}
           />
+          {derivedBalance == 0 && (
+            <Alert
+              color="notice"
+              description="You don’t have enough balance to use On-Demand Settlement right now."
+              isDismissible={false}
+              marginTop={'spacing.3'}
+            />
+          )}
+          {derivedBalance < currentBalance && derivedBalance != 0 && (
+            <Alert
+              color="notice"
+              description="We are temporarily limiting the available balance due to exceptionally high usage. Please check back in sometime."
+              isDismissible={false}
+              marginTop={'spacing.3'}
+            />
+          )}
           {/* MID level limit or IS Restricted limit */}
           {showDailyLimit ? (
             !isODSRestricted ? (
               <>
                 <Divider variant="normal" width="40px" marginY="spacing.6" />
                 <KeyValuePair
-                  title="Maximum daily withdrawal limit"
+                  title="Daily Withdrawal limit"
                   tooltip={{
                     content: TOOLTIP_CONTENT.MID_LIMIT.LIMIT,
                     type: 'max',
@@ -499,7 +528,7 @@ const WithdrawalScreen = ({
                 />
                 <Box marginTop="spacing.3">
                   <KeyValuePair
-                    title="Remaining daily limit"
+                    title="Remaining limit"
                     tooltip={{
                       content: TOOLTIP_CONTENT.MID_LIMIT.AVAILABLE,
                       type: 'avail',

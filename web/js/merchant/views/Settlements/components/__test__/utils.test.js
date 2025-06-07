@@ -4,6 +4,9 @@ import {
   isSettlementSOHBlockEnabled,
   isAccountCodeEnabled,
   isAdditionalUtrEnabled,
+  isBalanceSeperationEnabled,
+  isCapitalLimitEnabled,
+  isSmartSettlementEnabled,
 } from 'merchant/views/Settlements/components/utils';
 describe('Settlement Helper', () => {
   const stateSpy = jest.spyOn(store, 'getState');
@@ -60,6 +63,63 @@ describe('Settlement Helper', () => {
       };
 
       const result = isAdditionalUtrEnabled(splitz);
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('isBalanceSeperationEnabled', () => {
+    test('should return false if variant is not "on"', () => {
+      const splitz = {
+        abExperiments: { balance_separation: { variables: { result: 'off' } } },
+      };
+
+      const result = isBalanceSeperationEnabled(splitz);
+      expect(result).toBe(false);
+    });
+    test('should return true if variant is "on"', () => {
+      const splitz = {
+        abExperiments: { balance_separation: { variables: { result: 'on' } } },
+      };
+
+      const result = isBalanceSeperationEnabled(splitz);
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('isCapitalLimitEnabled', () => {
+    test('should return false if variant is not "on"', () => {
+      const splitz = {
+        abExperiments: { capital_is_gtm: { variables: { result: 'off' } } },
+      };
+
+      const result = isCapitalLimitEnabled(splitz);
+      expect(result).toBe(false);
+    });
+    test('should return true if variant is "on"', () => {
+      const splitz = {
+        abExperiments: { capital_is_gtm: { variables: { result: 'on' } } },
+      };
+
+      const result = isCapitalLimitEnabled(splitz);
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('isSmartSettlementEnabled', () => {
+    test('should return false if variant is not "on"', () => {
+      const splitz = {
+        abExperiments: { capital_is_smart_settlement: { variables: { result: 'off' } } },
+      };
+
+      const result = isSmartSettlementEnabled(splitz);
+      expect(result).toBe(false);
+    });
+    test('should return true if variant is "on"', () => {
+      const splitz = {
+        abExperiments: { capital_is_smart_settlement: { variables: { result: 'on' } } },
+      };
+
+      const result = isSmartSettlementEnabled(splitz);
       expect(result).toBe(true);
     });
   });

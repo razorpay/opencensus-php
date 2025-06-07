@@ -97,9 +97,9 @@ describe('Capital/OnDemandV2', () => {
     renderApp();
     await waitForOdsModal();
     /** Withdraw screen */
-    expect(screen.getByText('Current balance')).toBeInTheDocument();
-    expect(screen.getByText('Maximum daily withdrawal limit')).toBeInTheDocument();
-    expect(screen.getByText('Remaining daily limit')).toBeInTheDocument();
+    expect(screen.getByText('Available balance')).toBeInTheDocument();
+    expect(screen.getByText('Daily Withdrawal limit')).toBeInTheDocument();
+    expect(screen.getByText('Remaining limit')).toBeInTheDocument();
     expect(screen.getByText('How much do you want to settle now?')).toBeInTheDocument();
     expect(screen.getByText(/12,000/i)).toBeInTheDocument(); // pg balance
     expect(screen.getByText(/39,800/i)).toBeInTheDocument(); // max limit
@@ -296,7 +296,7 @@ describe('Capital/OnDemandV2', () => {
       }),
     );
     // Withdraw screen
-    expect(screen.getByText('Current balance')).toBeInTheDocument();
+    expect(screen.getByText('Available balance')).toBeInTheDocument();
     // Reason screen
     await user.click(
       screen.getByRole('button', {
@@ -346,7 +346,7 @@ describe('Capital/OnDemandV2', () => {
     await waitForOdsModal();
     // Withdraw screen - tabs
     expect(screen.getByRole('tab', { name: /settle to your account/i })).toBeInTheDocument();
-    expect(screen.getByText('Current balance')).toBeInTheDocument();
+    expect(screen.getByText('Available balance')).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: /Settle to linked account/i }));
     // Route tab
     expect(screen.getByText('Amount pending to be settled')).toBeInTheDocument();

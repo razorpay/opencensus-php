@@ -131,6 +131,24 @@ export const isAdditionalUtrEnabled = (splitz) => {
   return isExperimentEnabled(abExperiments.new_22_digit_utr);
 };
 
+export const isBalanceSeperationEnabled = (splitz) => {
+  const { abExperiments } = splitz || { abExperiments: { balance_separation: undefined } };
+  if (!abExperiments?.balance_separation) return false;
+  return isExperimentEnabled(abExperiments.balance_separation);
+};
+
+export const isCapitalLimitEnabled = (splitz) => {
+  const { abExperiments } = splitz || { abExperiments: { capital_is_gtm: undefined } };
+  if (!abExperiments?.capital_is_gtm) return false;
+  return isExperimentEnabled(abExperiments.capital_is_gtm);
+};
+
+export const isSmartSettlementEnabled = (splitz) => {
+  const { abExperiments } = splitz || { abExperiments: { capital_is_smart_settlement: undefined } };
+  if (!abExperiments?.capital_is_smart_settlement) return false;
+  return isExperimentEnabled(abExperiments.capital_is_smart_settlement);
+};
+
 export const TIMELINE_EVENTS = {
   PAYMENT_CAPTURED: 'PAYMENT_CAPTURED',
   REFUND_PROCESSED: 'REFUND_PROCESSED',
