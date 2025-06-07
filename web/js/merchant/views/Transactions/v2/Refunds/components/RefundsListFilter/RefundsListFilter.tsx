@@ -80,6 +80,7 @@ const RefundsListFilter = ({
     defaultSearchByValue,
     defaultChannelValue: channel,
     defaultChannelOption,
+    defaultMethodOption,
     defaultMethodValue: method,
     defaultDeviceIdValue: deviceId,
     defaultStoreIdValue: storeId,
@@ -231,7 +232,7 @@ const RefundsListFilter = ({
     <Box marginBottom="spacing.5" display="flex" flexDirection="column">
       <StyledListFilter>
         <StyledSubListFilter className="scrollable-tab-header">
-          <StyledDateRangePicker>
+          <StyledDateRangePicker showDateRangePicker={shouldShowDateRangePicker}>
             <Dropdown
               onChange={onDurationChange}
               options={refundsDurationOptions}
@@ -305,7 +306,7 @@ const RefundsListFilter = ({
             )}
         </StyledSubListFilter>
         <StyledSearchByFilter>
-          <Box display="flex" columnGap="spacing.1" marginLeft="auto">
+          <Box display="flex" columnGap="spacing.3" marginLeft="auto">
             <Dropdown
               onChange={onSearchByOptionChange}
               options={searchByOptions}
@@ -322,42 +323,46 @@ const RefundsListFilter = ({
               placeholder="Search"
               onChange={onSearchByValueChange}
               onClearButtonClick={() => onSearchByValueChange({})}
+              marginLeft="spacing.1"
             />
             <Button accessibilityLabel="Search" icon={SearchIcon} size="medium" onClick={onSearch} />
           </Box>
         </StyledSearchByFilter>
       </StyledListFilter>
       {(method || deviceId || channel || storeId) ? (
-        <Box maxWidth="auto" display="flex" alignItems="center" flexDirection="row" marginTop="spacing.4" flexWrap={isMobile ? "wrap" : "nowrap"}>
+        <Box display="flex" flexWrap="wrap" gap="spacing.3" alignItems="center">
           {method ? (
-            <Box display="flex" alignItems="center" flexDirection="row">
-              <Text color="surface.text.gray.subtle">Payment Method:</Text>
-              <Tag marginLeft="spacing.3" size="medium" onDismiss={clearMethod}>
-                {method}
+            <Box display="flex" alignItems="center" flexDirection="row" flexShrink={0}>
+              <Text color="surface.text.gray.subtle" marginTop="3px">Payment Method:</Text>
+              <Tag marginLeft="spacing.3" size="medium" marginTop="spacing.2" onDismiss={clearMethod}>
+                {defaultMethodOption?.title || method}
               </Tag>
             </Box>
           ) : null}
-          {channel && (method || deviceId) ? (
-            <Divider marginRight="spacing.3" marginLeft="spacing.3" orientation="vertical" />
+          {channel && method ? (
+            <Divider marginTop="spacing.2" orientation="vertical" />
           ) : null}
           {channel && isStoreHierarchyEnabled ? (
             <Box display="flex" alignItems="center" flexDirection="row">
-              <Text color="surface.text.gray.subtle">Channel:</Text>
-              <Tag marginLeft="spacing.3" size="medium" onDismiss={() => handleSearch({ source_channel: '' })}>
+              <Text color="surface.text.gray.subtle" marginTop="3px">Channel:</Text>
+              <Tag marginLeft="spacing.3" size="medium" marginTop="spacing.2" onDismiss={() => handleSearch({ source_channel: '' })}>
                 {defaultChannelOption?.title || channel}
               </Tag>
             </Box>
           ) : null}
-          {deviceId && (method || channel) ? (
-            <Divider marginRight="spacing.3" marginLeft="spacing.3" orientation="vertical" />
+          {deviceId && (channel || method) ? (
+            <Divider marginTop="spacing.2" orientation="vertical" />
           ) : null}
           {deviceId ? (
             <Box display="flex" alignItems="center" flexDirection="row">
-              <Text color="surface.text.gray.subtle">DSN:</Text>
-              <Tag marginLeft="spacing.3" size="medium" onDismiss={clearDeviceId}>
+              <Text color="surface.text.gray.subtle" marginTop="3px">DSN:</Text>
+              <Tag marginLeft="spacing.3" size="medium" marginTop="spacing.2" onDismiss={clearDeviceId}>
                 {deviceId}
               </Tag>
             </Box>
+          ) : null}
+          {storeId.length > 0 && (deviceId || channel || method) ? (
+            <Divider marginTop="spacing.2" orientation="vertical" />
           ) : null}
           <StoreTags storeId={storeId} flatStores={flatStores} clearStoreId={clearStoreId} />
         </Box>

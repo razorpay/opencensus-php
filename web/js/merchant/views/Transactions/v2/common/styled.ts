@@ -106,11 +106,11 @@ export const StyledTable = styled.div(
 );
 
 export const StyledDateRangePicker = styled.div(
-  ({ theme }: { theme: Theme }) => `
+  ({ theme, showDateRangePicker }: { theme: Theme; showDateRangePicker: boolean }) => `
   display: flex;
   button:first-child {
-    border-top-right-radius: unset;
-    border-bottom-right-radius: unset;
+    border-top-right-radius: ${showDateRangePicker ? theme.spacing[0] : theme.spacing[2]}px;
+    border-bottom-right-radius: ${showDateRangePicker ? theme.spacing[0] : theme.spacing[2]}px;
     &:focus {
       box-shadow: none;
     }

@@ -48,6 +48,7 @@ export interface DefaultValuesAndOptions {
   defaultChannelValue?: string;
   defaultChannelOption: Option;
   defaultMethodValue?: string;
+  defaultMethodOption?: Option;
   defaultDeviceIdValue?: string;
   defaultStoreIdValue: string[];
 }

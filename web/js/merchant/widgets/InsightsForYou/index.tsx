@@ -126,7 +126,7 @@ export const InsightsForYou = (props: InsightsForYouWidgetProps & CommonWidgetPr
           alignItems="center"
           marginX={{ base: 'spacing.4', m: 'spacing.6' }}
         >
-          <Heading size="medium">{title}</Heading>
+          <Heading size="large">{title}</Heading>
           <Box display="flex" gap="12px" flexWrap="wrap" justifyContent="flex-end">
             {input &&
               !(isMobile && isOmniMerchant) &&

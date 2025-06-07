@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Text, Badge, Divider } from '@razorpay/blade/components';
+import { Box, Text, Badge, Divider, Tooltip } from '@razorpay/blade/components';
 import { ChannelIconMap, ChannelSourceMap, ValidFiltersWidgetTypes } from './utils';
 import { FiltersWidgetProps, ComponentDataType } from './types';
 
@@ -27,7 +27,7 @@ export const FiltersWidget: React.FC<FiltersWidgetProps> = ({
 
         return (
           <Box key={component.id} display="flex" alignItems="center" gap="4px">
-            <Text weight="medium" color="surface.text.gray.subtle">
+            <Text weight="medium" color="surface.text.gray.subtle" marginTop="3px">
               {title}
             </Text>
             {hasInputs && (
@@ -35,6 +35,7 @@ export const FiltersWidget: React.FC<FiltersWidgetProps> = ({
                 color="neutral"
                 size="large"
                 marginLeft="spacing.3"
+                marginTop="spacing.2"
                 icon={
                   ChannelIconMap[
                     (sourceChannel || inputs[0]?.default_value) as string
@@ -52,7 +53,12 @@ export const FiltersWidget: React.FC<FiltersWidgetProps> = ({
                 {(() => {
                   const MAX_BADGES = 4;
                   const visibleItems = storeId.slice(0, MAX_BADGES);
-                  const remainingCount = storeId.length - MAX_BADGES;
+                  const remainingStoresIds = storeId.slice(MAX_BADGES, storeId.length);
+
+                  const remainingStoresNames = component?.data?.merchant_store_hierarchy?.store_hierarchy
+                  .filter(store => remainingStoresIds.includes(store.store_id as string))
+                  .map(store => store.name)
+                  .join(', ');
 
                   return (
                     <>
@@ -64,19 +70,23 @@ export const FiltersWidget: React.FC<FiltersWidgetProps> = ({
                           color="neutral"
                           size="large"
                           marginLeft="spacing.3"
+                          marginTop="spacing.2"
                           >
                             {store?.name ?? item}
                           </Badge> 
                         )
                       })}
-                      {remainingCount > 0 && (
-                        <Badge
-                          color="neutral"
-                          size="large"
-                          marginLeft="spacing.3"
-                        >
-                          +{remainingCount} more
-                        </Badge>
+                      {remainingStoresIds.length > 0 && (
+                        <Tooltip content={remainingStoresNames ?? ''} placement="top">
+                          <Badge
+                            color="neutral"
+                            size="large"
+                            marginLeft="spacing.3"
+                            marginTop="spacing.2"
+                          >
+                            +{remainingStoresIds.length} more
+                          </Badge>
+                        </Tooltip>
                       )}
                     </>
                   );
@@ -88,6 +98,7 @@ export const FiltersWidget: React.FC<FiltersWidgetProps> = ({
                 orientation="vertical"
                 height="24px"
                 marginLeft="spacing.4"
+                marginTop="spacing.2"
               />
             )}
           </Box>

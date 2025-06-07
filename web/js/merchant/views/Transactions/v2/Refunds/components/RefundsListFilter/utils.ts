@@ -26,6 +26,8 @@ import {
   DefaultValuesAndOptions,
 } from './types';
 import { getDefaultDeviceIdValue, getDefaultStoreIdValue } from 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter/utils';
+import { paymentMethodSectionOptions } from 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter/constants';
+import { DefaultMethodAndOption } from 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter/types';
 
 const getDefaultStatusAndOption = (): DefaultStatusAndOption => {
   const { public_status } = qs.parse(location.search);
@@ -34,6 +36,15 @@ const getDefaultStatusAndOption = (): DefaultStatusAndOption => {
     options: statusSectionOptions,
   });
   return { defaultStatusValue: defaultValue, defaultStatusOption: defaultOption };
+};
+
+const getDefaultMethodAndOption = (): DefaultMethodAndOption => {
+  const { method } = qs.parse(location.search);
+  const { defaultValue, defaultOption } = getDefaultSingleSelectValueAndOption({
+    searchValue: method as string,
+    options: paymentMethodSectionOptions,
+  });
+  return { defaultMethodValue: defaultValue, defaultMethodOption: defaultOption };
 };
 
 export const _getDefaultDateAndOption = (): DefaultDateAndOption => {
@@ -61,9 +72,7 @@ export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
   });
   const { defaultChannelValue, defaultChannelOption } = getDefaultChannelAndOption();
 
-  // Get method from query params
-  const { method } = qs.parse(location.search);
-  const defaultMethodValue = method as string || '';
+  const { defaultMethodValue, defaultMethodOption } = getDefaultMethodAndOption();
   const defaultDeviceIdValue = getDefaultDeviceIdValue();
   const defaultStoreIdValue = getDefaultStoreIdValue();
 
@@ -77,6 +86,7 @@ export const getDefaultValuesAndOptions = (): DefaultValuesAndOptions => {
     defaultChannelValue,
     defaultChannelOption,
     defaultMethodValue,
+    defaultMethodOption,
     defaultDeviceIdValue,
     defaultStoreIdValue
   };

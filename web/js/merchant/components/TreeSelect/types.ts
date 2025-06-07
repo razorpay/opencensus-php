@@ -35,4 +35,6 @@ showTooltip?: boolean;
 tooltipText?: string;
 showDisabledText?: boolean;
 disabledText?: string;
+showFooterText?: boolean;
+footerText?: string;
 }

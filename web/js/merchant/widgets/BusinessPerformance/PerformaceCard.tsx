@@ -22,7 +22,7 @@ export const PerformanceCard = ({ item, variant, index, isMobile }: PerformanceC
             <Heading
               as="span"
               color={`feedback.text.${variant}.intense`}
-              size="large"
+              size="medium"
               weight="semibold"
             >
               #{index}
@@ -31,13 +31,13 @@ export const PerformanceCard = ({ item, variant, index, isMobile }: PerformanceC
               as="span"
               color="surface.text.gray.muted"
               marginLeft="spacing.7"
-              size="large"
+              size="medium"
               weight="semibold"
             >
               {item.label}
             </Heading>
           </Box>
-          <Heading as="span" color="surface.text.gray.subtle" size="large" weight="semibold">
+          <Heading as="span" color="surface.text.gray.subtle" size="medium" weight="semibold">
             {amount}
           </Heading>
         </Box>
@@ -55,14 +55,14 @@ export const PerformanceCard = ({ item, variant, index, isMobile }: PerformanceC
             as="span"
             color="surface.text.gray.muted"
             marginTop="spacing.5"
-            size="large"
+            size="small"
             weight="semibold"
           >
             {item.label}
           </Heading>
-          <Display as="span" color="surface.text.gray.subtle" size="small" weight="semibold">
+          <Heading as="span" color="surface.text.gray.subtle" size="2xlarge" weight="semibold">
             {amount}
-          </Display>
+          </Heading>
         </Box>
       )}
     </GradientBox>

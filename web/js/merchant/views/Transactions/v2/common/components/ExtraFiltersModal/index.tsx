@@ -11,8 +11,8 @@ import {
     ModalFooter,
     ModalHeader,
     SelectInput,
-    Text,
     TextInput,
+    FilterIcon
 } from '@razorpay/blade/components';
 import { TreeSelect } from 'merchant/components/TreeSelect';
 import { connect } from 'react-redux';
@@ -98,16 +98,13 @@ const ExtraFiltersModal = ({ handleSearch, closeModal }: ExtraFiltersModalProps)
     }, [filters, handleSearch, dismissModal]);
 
     return (
-        <Modal isOpen={isOpen} onDismiss={dismissModal} size="small">
-            <ModalHeader title="Filters" />
+        <Modal isOpen={isOpen} onDismiss={dismissModal} size="small" accessibilityLabel="All Filters">
+            <ModalHeader title="All Filters" leading={<FilterIcon />} />
             <ModalBody>
                 <Box width="100%" marginTop="spacing.0">
-                    <Text variant="body" size="medium" weight="semibold" color="surface.text.gray.normal">
-                        Payment Method
-                    </Text>
-                    <Dropdown marginTop="spacing.3" selectionType="single">
+                    <Dropdown selectionType="single">
                         <SelectInput
-                            label=""
+                            label="Payment Method"
                             name="payment_method"
                             placeholder="Select Payment Method"
                             defaultValue={filters.method}
@@ -124,12 +121,9 @@ const ExtraFiltersModal = ({ handleSearch, closeModal }: ExtraFiltersModalProps)
                 </Box>
 
                 <Box width="100%" marginTop="spacing.6">
-                    <Text variant="body" size="medium" weight="semibold" color="surface.text.gray.normal">
-                        Channel
-                    </Text>
                     <Dropdown marginTop="spacing.3" selectionType="single">
                         <SelectInput
-                            label=""
+                            label="Channel"
                             name="source_channel"
                             placeholder="Select Source Channel"
                             defaultValue={filters.channel}
@@ -148,13 +142,10 @@ const ExtraFiltersModal = ({ handleSearch, closeModal }: ExtraFiltersModalProps)
                 {isStoreHierarchyEnabled ? (
                     <Box>
                         <Box width="100%" marginTop="spacing.6">
-                            <Text variant="body" size="medium" weight="semibold" color="surface.text.gray.normal">
-                                Device Serial Number
-                            </Text>
                             <TextInput
                                 placeholder="Search"
                                 size="medium"
-                                label=""
+                                label="Device Serial Number"
                                 marginTop="spacing.3"
                                 value={filters.deviceId}
                                 onChange={({ value }) => handleFilterChange('deviceId', value)}
@@ -171,6 +162,12 @@ const ExtraFiltersModal = ({ handleSearch, closeModal }: ExtraFiltersModalProps)
                                 treeData={stores}
                                 label="Hierarchy Level"
                                 maxCount={storeIdCount > 10 ? 0 : 10}
+                                placeholder="Search"
+                                labelSize="small"
+                                labelColor="surface.text.gray.muted"
+                                showTooltip={true}
+                                tooltipText={"Choose a hierarchy level to view your data by, down to individual stores."}
+                                showFooterText={true}
                             />
                         </Box>
                     </Box>

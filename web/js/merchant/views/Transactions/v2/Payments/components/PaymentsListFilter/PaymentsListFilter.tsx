@@ -272,7 +272,7 @@ const PaymentsListFilter = ({
     <Box marginBottom="spacing.5" display="flex" flexDirection="column">
       <StyledListFilter data-testid="payments-filter">
         <StyledSubListFilter className="scrollable-tab-header">
-          <StyledDateRangePicker>
+          <StyledDateRangePicker showDateRangePicker={shouldShowDateRangePicker}>
             <Dropdown
               onChange={onDurationChange}
               options={paymentDurationOptions}
@@ -369,6 +369,7 @@ const PaymentsListFilter = ({
               placeholder="Search"
               onChange={onSearchByValueChange}
               onClearButtonClick={() => onSearchByValueChange({})}
+              marginLeft="spacing.1"
             />
             <Button
               accessibilityLabel="Search"
@@ -380,33 +381,39 @@ const PaymentsListFilter = ({
         </StyledSearchByFilter>
       </StyledListFilter>
       {isOmniChannelMerchant ? (
-        <Box maxWidth="auto" display="flex" alignItems="center" flexDirection="row" flexWrap={isMobile ? "wrap" : "nowrap"}>
+        <Box display="flex" flexWrap="wrap" gap="spacing.3" alignItems="center">
           {method ? (
-            <Box display="flex" alignItems="center" flexDirection="row">
-              <Text color="surface.text.gray.subtle">Payment Method:</Text>
-              <Tag marginLeft="spacing.3" size="medium" onDismiss={clearMethod}>
+            <Box display="flex" alignItems="center" flexDirection="row" flexShrink={0}>
+              <Text color="surface.text.gray.subtle" marginTop="3px">Payment Method:</Text>
+              <Tag marginLeft="spacing.3" size="medium" marginTop="spacing.2" onDismiss={clearMethod}>
                 {defaultMethodOption?.title || method}
               </Tag>
             </Box>
           ) : null}
           {channel && method ? (
-            <Divider marginRight="spacing.3" marginLeft="spacing.3" orientation="vertical" />
+            <Divider marginTop="spacing.2" orientation="vertical" />
           ) : null}
           {channel ? (
-            <Box display="flex" alignItems="center" flexDirection="row">
-              <Text color="surface.text.gray.subtle">Channel:</Text>
-              <Tag marginLeft="spacing.3" size="medium" onDismiss={clearChannel}>
+            <Box display="flex" alignItems="center" flexDirection="row" flexShrink={0}>
+              <Text color="surface.text.gray.subtle" marginTop="3px">Channel:</Text>
+              <Tag marginLeft="spacing.3" size="medium" marginTop="spacing.2" onDismiss={clearChannel}>
                 {defaultChannelOption?.title || channel}
               </Tag>
             </Box>
           ) : null}
+          {defaultDeviceIdValue && (channel || method) ? (
+            <Divider marginTop="spacing.2" orientation="vertical" />
+          ) : null}
           {defaultDeviceIdValue ? (
-            <Box marginLeft="spacing.3" display="flex" alignItems="center" flexDirection="row">
-              <Text color="surface.text.gray.subtle">DSN:</Text>
-              <Tag marginLeft="spacing.3" size="medium" onDismiss={clearDeviceId}>
+            <Box display="flex" alignItems="center" flexDirection="row" flexShrink={0}>
+              <Text color="surface.text.gray.subtle" marginTop="3px">DSN:</Text>
+              <Tag marginLeft="spacing.3" size="medium" marginTop="spacing.2" onDismiss={clearDeviceId}>
                 {defaultDeviceIdValue}
               </Tag>
             </Box>
+          ) : null}
+          {defaultStoreIdValue.length > 0 && (defaultDeviceIdValue || channel || method) ? (
+            <Divider marginTop="spacing.2" orientation="vertical" />
           ) : null}
           <StoreTags storeId={defaultStoreIdValue} flatStores={flatStores} clearStoreId={clearStoreId} />
         </Box>

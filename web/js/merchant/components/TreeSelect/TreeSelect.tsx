@@ -29,7 +29,9 @@ const TreeSelect: React.FC<TreeSelectProps> = ({
   showTooltip = false,
   tooltipText = "Choose a hierarchy level to view your data",
   showDisabledText = false,
-  disabledText = "This feature is currently disabled"
+  disabledText = "This feature is currently disabled",
+  showFooterText = false,
+  footerText = "Click on the search bar to view your stores."
 }) => {
   return (
     <Box width="100%">
@@ -78,6 +80,11 @@ const TreeSelect: React.FC<TreeSelectProps> = ({
       {disabled && showDisabledText ? (
       <Text variant="caption" size="small" color="surface.text.gray.muted" marginTop="spacing.2">
         {disabledText}
+      </Text>
+      ) : null}
+      {!disabled && showFooterText ? (
+      <Text variant="caption" size="small" color="surface.text.gray.muted" marginTop="spacing.2">
+        {footerText}
       </Text>
       ) : null}
     </Box>

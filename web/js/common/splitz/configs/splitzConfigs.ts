@@ -1637,22 +1637,6 @@ export const splitzConfig: SplitzInitConfig = {
             ],
           },
         },
-        {
-          uniqueHashKey: 'omni_homepage_enabled',
-          experimentId: {
-            beta: 'QRcUAztWw6MDWd',
-            production: 'QRcWcVft0HooqA',
-          },
-          defaultVariant: {
-            name: 'variables',
-            variables: [
-              {
-                key: 'result',
-                value: 'off',
-              },
-            ],
-          },
-        },
       ],
     },
     {
@@ -2955,6 +2939,27 @@ export const splitzConfig: SplitzInitConfig = {
             variables: [
               {
                 key: 'turned',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      routesToMatch: ['/dashboard', '/payments', '/refunds'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'omni_homepage_enabled',
+          experimentId: {
+            beta: 'QRcUAztWw6MDWd',
+            production: 'QRcWcVft0HooqA',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
                 value: 'off',
               },
             ],

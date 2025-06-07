@@ -99,10 +99,12 @@ const AllFiltersModal: React.FC<AllFiltersModalProps> = ({
                       setStoreId(selectedValues as string[]);
                     }}
                     disabled={sourceChannel === 'online'}
+                    placeholder="Search"
                     showTooltip={true}
                     tooltipText={"Choose a hierarchy level to view your data by, down to individual stores."}
                     showDisabledText={true}
                     disabledText={"This feature is currently only available for In Person sources."}
+                    showFooterText={true}
                   />
                 </Box>
               )}

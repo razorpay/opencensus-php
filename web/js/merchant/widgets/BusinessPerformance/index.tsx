@@ -56,7 +56,7 @@ export const BusinessPerformance = (props: BusinessPerformanceProps & CommonWidg
                   gridTemplateColumns={
                     isMobile ? undefined : 'repeat(auto-fit, minmax(210px, 1fr));'
                   }
-                  marginTop="spacing.5"
+                  marginTop={component.variant !== "positive" ? 'spacing.7' : 'spacing.5'}
                 >
                   {component.data.cards.map((item, index) => (
                     <PerformanceCard
