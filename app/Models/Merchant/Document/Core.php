@@ -686,16 +686,6 @@ class Core extends Base\Core
              * validation behavior for all Aadhaar documents regardless of how they're uploaded.
              * This helps maintain data integrity and compliance with identity verification requirements.
              */
-            if ($currentRoute === Constant::ROUTE_MERCHANT_DOCUMENT_ADMIN_UPLOAD && 
-                Type::isAadhaarDocument($document->getDocumentType()))
-            {
-                $this->trace->info(TraceCode::BVS_CONFIG_OVERRIDE, [
-                    'route' => $currentRoute,
-                    'document_type' => $document->getDocumentType(),
-                    'merchant_id' => $merchant->getId(),
-                    'message' => 'Forcing Aadhaar config for Aadhaar document'
-                ]);
-            }
 
             $this->performPoaOcrWithBvs($document, $merchantDetails, $merchant);
         }
@@ -761,19 +751,17 @@ class Core extends Base\Core
             $payload);
 
 
-        if (empty($bvsValidation) === false)
+        if (empty($bvsValidation) === false and $bvsValidation->getValidationStatus() == BvsValidationConstants::CAPTURED)
         {
-            if ($bvsValidation->getValidationStatus() == BvsValidationConstants::CAPTURED)
+
+            $document->setValidationId($bvsValidation->getValidationId());
+
+            $merchantDetails->setPoaVerificationStatus(null);
+
+            $exists = (new Stakeholder\Core)->checkIfStakeholderExists($merchantDetails);
+            if ($exists === true)
             {
-                $document->setValidationId($bvsValidation->getValidationId());
-
-                $merchantDetails->setPoaVerificationStatus(null);
-
-                $exists = (new Stakeholder\Core)->checkIfStakeholderExists($merchantDetails);
-                if ($exists === true)
-                {
-                    $merchantDetails->stakeholder->setPoaStatus(null);
-                }
+                $merchantDetails->stakeholder->setPoaStatus(null);
             }
 
             $this->repo->merchant_detail->saveOrFail($merchantDetails);
