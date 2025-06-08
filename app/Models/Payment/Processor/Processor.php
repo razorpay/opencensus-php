@@ -2698,9 +2698,10 @@ class Processor
 
                                     return false;
                                 }
-//                                $tokenRearchExperimentName = 'app.saved_card_token_payments_rearch';
-//                                $issuer_result = (new Payment\Service())->getSplitzExpResponse($merchant->getId(),$tokenRearchExperimentName);
-                                $issuer_result = 'on';
+
+                                // Using Splitz Experiment to control ramp
+                                $tokenRearchExperimentName = 'app.saved_card_token_payments_rearch';
+                                $issuer_result = (new Payment\Service())->getSplitzExpResponse($merchant->getId(),$tokenRearchExperimentName);
                                 $cardInput = [
                                     Card\Entity::NAME                   => Card\Entity::DUMMY_NAME,
                                     Card\Entity::NUMBER                 => Card\Entity::DUMMY_CARD_NUMBER,
@@ -2708,7 +2709,12 @@ class Processor
                                     Card\Entity::TOKENISED              => true,
                                     Card\Entity::REWARD                 => $input['card']['reward']
                                 ];
-                                if($issuer_result=='on'){
+
+                                // Allowing CPS Cryptogram source on Domestic Payments and where Merchant is not RAAS enabled
+                                if($issuer_result=='on'
+                                    && $this->merchant->isFeatureEnabled(FeatureConstants::RAAS) === false
+                                    && $this->merchant->getCountry() == "IN"
+                                ){
                                     $cardInput+=[
                                         "cryptogram_source" => "cps",
                                     ];
