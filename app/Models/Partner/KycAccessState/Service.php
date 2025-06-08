@@ -63,9 +63,6 @@ class Service extends Base\Service
             return $prtsResult['response'];
         }
         $subMerchantKycAccess = $this->core->confirmRequestForSubMerchantKyc($input, $partner);
-        $subMerchant = (new MerchantRepo())->getMerchant($input[Entity::ENTITY_ID]);
-        $merchantCore = new Merchant\Core();
-        $merchantCore->assignSubmerchantDashboardAccessIfApplicable($partner, $subMerchant,  (new MerchantApplications\Core())->getDefaultAppTypeForPartner($partner), Role::OWNER);  
         $this->checkParity($prtsResult, $subMerchantKycAccess->toArrayPublic());
         return $subMerchantKycAccess->toArrayPublic();
     }

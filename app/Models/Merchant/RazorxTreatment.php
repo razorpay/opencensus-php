@@ -1057,6 +1057,10 @@ final class RazorxTreatment
     const BANK_DATA_VIA_NPCI_API = 'bank_data_via_npci_api';
     const Axis_VA_MIGRATION = 'axis_va_migration';
 
+    // Experiment Variant for Bene Bank Downtime Webhook Notification
+    const DOWNTIME_V2_WEBHOOK_ENABLED = 'v2_webhook_enabled';
+    const DOWNTIME_V2_EXPERIMENT = 'downtime_v2_experiment';
+
     const COLLECTX_RBL_MERCHANTS_VA_CLOSE_BLOCK = "collectx_rbl_merchants_va_close_block";
 
     const COLLECTIONS_RBL_MERCHANTS_VA_ADD_TPV_BLOCK = "collections_rbl_merchants_va_add_tpv_block";
