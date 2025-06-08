@@ -37,14 +37,6 @@ class Factory
         $configName = $input[Constant::CONFIG_NAME]??null;
         $currentRoute = $app['api.route']->getCurrentRouteName();
 
-        // Log the processor selection
-        $trace->info(TraceCode::BVS_CONFIG_SELECTION, [
-            'route' => $currentRoute,
-            'config_name' => $configName,
-            'ocr_service_name' => $ocrServiceName,
-            'artefact_type' => $input[Constant::ARTEFACT_TYPE] ?? null
-        ]);
-
         if ($mock === true)
         {
             $processor = new DefaultProcessorMock($input, $configName, $merchant);

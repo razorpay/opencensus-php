@@ -111,19 +111,12 @@ class DefaultProcessor implements Processor
         if ($currentRoute === Constant::ROUTE_MERCHANT_DOCUMENT_ADMIN_UPLOAD)
         {
             $documentType = $input['artefact']['details']['document_type'] ?? '';
-            $this->trace->info(TraceCode::BVS_CONFIG_SELECTION, [
-                'route' => $currentRoute,
-                'original_config' => $configName,
-                'document_type' => $documentType
-            ]);
-
-
-            // Check if this is an Aadhaar-related document
+            
             if (Type::isAadhaarDocument($documentType) || 
                 $configName === Constant::CONFIG_COMMON_MANUAL_VERIFICATION)
             {
                 $configName = Constant::CONFIG_AADHAAR;
-                $this->trace->info(TraceCode::BVS_CONFIG_OVERRIDE, [
+                $this->trace->info(TraceCode::BVS_CONFIG_SELECTION, [
                     'route' => $currentRoute,
                     'document_type' => $documentType,
                     'new_config' => $configName

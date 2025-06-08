@@ -574,16 +574,6 @@ class Core extends Base\Core
         Entity $document,
         Merchant\Entity $merchant)
     {
-        $app = App::getFacadeRoot();
-        $currentRoute = $app['api.route']->getCurrentRouteName();
-
-        $this->trace->info(TraceCode::BVS_CONFIG_SELECTION, [
-            'route' => $currentRoute,
-            'document_type' => $document->getDocumentType(),
-            'merchant_id' => $merchant->getId(),
-            'function' => 'PerformOcrIfApplicable'
-        ]);
-
         if ($this->shouldPerfomOcrOnDocumentUpload($document, $merchant, $merchantDetails) === false)
         {
             return;
