@@ -31,13 +31,15 @@ class Constants {
 
     const SETTLEMENT_WF_TAG = 'settlement_wf_tag';
 
-    const CLEAR_RISK_TAGS = 'clear_risk_tags';
+    const SETTLEMENTS_WORKFLOW_ADMIN_ID = 'SETTLEMENTS_WORKFLOW_ADMIN_ID';
 
-    const TRIGGER_COMMUNICATION = 'trigger_communication';
+    const LIVE_DISABLE_ACTION_ROUTE_NAME        = 'merchant_live_disable';
 
-    const WF_ACTION_ROUTE_NAME        = 'merchant_actions';
+    const LIVE_ENABLE_ACTION_ROUTE_NAME        = 'merchant_live_enable';
 
-    const WF_ACTION_ROUTE_CONTROLLER  = 'RZP\Http\Controllers\MerchantController@putAction';
+    const LIVE_DISABLE_ROUTE_CONTROLLER  = 'RZP\Http\Controllers\MerchantController@postLiveDisable';
+
+    const LIVE_ENABLE_ROUTE_CONTROLLER  = 'RZP\Http\Controllers\MerchantController@postLiveEnable';
 
     const ORG_DATA = [
         'MY' => [

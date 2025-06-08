@@ -1421,7 +1421,7 @@ class Core extends Base\Core
         return false;
     }
 
-    public function createSetlWorkflowAction($input, $maker = null)
+    public function createSetlWorkflowAction($input)
     {
         try {
             $action = $input[SettlementConstants::ACTION];
@@ -1436,27 +1436,16 @@ class Core extends Base\Core
 
             $attributes = $input[SettlementConstants::ATTRIBUTES];
 
-            $workflowTags = $input['workflow_tags'] ?? null;
-
-            $this->trace->info(TraceCode::CREATE_RISK_ACTION_REQUEST,
+            $this->trace->info(TraceCode::CREATE_SETTLEMENT_WF_ACTION_REQUEST,
                 [
-                    'merchant_id'     => $merchantId,
-                    'risk_action'     => $action,
-                    'risk_attributes' => $attributes,
-                    'workflow_tags'   => $workflowTags
+                    'merchant_id'  => $merchantId,
+                    'action'       => $action,
+                    'attributes'   => $attributes,
                 ]);
 
             $tags = $this->getTags($attributes);
 
-            $riskAttributesParams = $this->getParamsForMerchantAction($action, $attributes);
-
             $routePermission = Permission\Name::$actionMap[$action];
-
-            $input = [
-                SettlementConstants::ACTION          => $action,
-                'use_workflows'            => false,
-                SettlementConstants::ATTRIBUTES => $riskAttributesParams,
-            ];
 
             $diffData = $this->getDiffData($merchantDetails, $action, $attributes);
 
@@ -1466,43 +1455,41 @@ class Core extends Base\Core
 
             $diff = (new Differ\Core)->createDiff([], $diffData);
 
-            $workflowAction = $this->app['workflow'];
+            $makerAdminId = env(SettlementConstants::SETTLEMENTS_WORKFLOW_ADMIN_ID);
 
-//            if (isset($maker) === true)
-//            {
-//                $workflowAction = $workflowAction
-//                    ->setMakerFromAuth(false)
-//                    ->setWorkflowMaker($maker);
-//            }
+            $admin = $this->repo->admin->getAdminFromId($makerAdminId);
 
-            $routeName = SettlementConstants::WF_ACTION_ROUTE_NAME;
+            $workflowAction = $this->app['workflow']
+                ->setWorkflowMaker($admin)
+                ->setWorkflowMakerType(MakerType::ADMIN);
+
+            [$routeName, $controller] = $this->routeAndControllerForAction($action);
 
             $workflowAction = $workflowAction
                 ->setPermission($routePermission)
                 ->setTags($tags)
                 ->setWorkflowMakerType(MakerType::ADMIN)
                 ->setRouteName($routeName)
-                ->setController(SettlementConstants::WF_ACTION_ROUTE_CONTROLLER)
+                ->setController($controller)
                 ->setRouteParams(['id' => $merchantId])
                 ->setEntityAndId($merchant->getEntity(), $merchantId)
-                ->setInput($input)
                 ->setDiff($diff)
                 ->trigger();
 
-            $this->trace->info(TraceCode::CREATE_RISK_ACTION,
+            $this->trace->info(TraceCode::SETTLEMENT_WF_ACTION_CREATED,
                 [
                     'merchant_id'  => $merchantId,
                     'wf_action_id' => $workflowAction['id'],
                 ]);
 
-            return $this->autoApproveWorkflow($input, $merchantId, $maker, $diff);
+            return $this->autoApproveWorkflow($input, $merchantId, $admin, $diff);
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,
                 Logger::ERROR,
-                TraceCode::BULK_RISK_ACTION_CREATE_MERCHANT_WORKFLOW_FAILED,
+                TraceCode::CREATE_SETTLEMENT_WF_ACTION_FAILED,
                 [
                     'merchantId' => $merchantId
                 ]);
@@ -1547,7 +1534,7 @@ class Core extends Base\Core
         $this->trace->traceException(
             $exception,
             Logger::ERROR,
-            TraceCode::RISK_ACTION_CREATE_AND_EXECUTE_WORKFLOW_FAILED,
+            TraceCode::SETTLEMENT_WF_EXECUTION_FAILED,
             [
                 'merchantId'       => $merchantId,
                 'execution_status' => $status,
@@ -1557,7 +1544,7 @@ class Core extends Base\Core
             $this->closeSettlementWorkflowIfApplicable($workflowAction, $maker);
         }
     }
-    private function closeSettlementWorkflowIfApplicable($workflowAction, $riskWorkflowMaker)
+    private function closeSettlementWorkflowIfApplicable($workflowAction, $WorkflowMaker)
     {
         try {
             if (isset($workflowAction) === false)
@@ -1566,7 +1553,7 @@ class Core extends Base\Core
             }
             if ($workflowAction->isExecuted() === false)
             {
-                (new WorkflowAction\Core())->close($workflowAction, $riskWorkflowMaker, true);
+                (new WorkflowAction\Core())->close($workflowAction, $WorkflowMaker, true);
             }
         }
         catch (\Throwable $e)
@@ -1574,7 +1561,7 @@ class Core extends Base\Core
             $this->trace->traceException(
                 $e,
                 Logger::ERROR,
-                TraceCode::RISK_ACTION_CREATE_AND_EXECUTE_WORKFLOW_FAILED,
+                TraceCode::SETTLEMENT_WF_EXECUTION_CLOSURE_FAILED,
                 [
                     'workflow_action_id'  => $workflowAction->getId(),
                 ]);
@@ -1593,6 +1580,23 @@ class Core extends Base\Core
             case MerchantAction::LIVE_ENABLE:
                 $validator->validateLiveEnable();
                 break;
+        }
+    }
+
+    public function routeAndControllerForAction($action)
+    {
+        switch ($action)
+        {
+            case MerchantAction::LIVE_DISABLE:
+                return [
+                    SettlementConstants::LIVE_DISABLE_ACTION_ROUTE_NAME,
+                    SettlementConstants::LIVE_DISABLE_ROUTE_CONTROLLER
+                ];
+            case MerchantAction::LIVE_ENABLE:
+                return [
+                    SettlementConstants::LIVE_ENABLE_ACTION_ROUTE_NAME,
+                    SettlementConstants::LIVE_ENABLE_ROUTE_CONTROLLER
+                ];
         }
     }
 
@@ -1620,33 +1624,6 @@ class Core extends Base\Core
         }
 
         return $tag;
-    }
-
-    protected function getParamsForMerchantAction($action, $attributes)
-    {
-        if (in_array($action, Merchant\Constants::RISK_CONSTRUCTIVE_ACTION_LIST) === true)
-        {
-            return [
-                SettlementConstants::CLEAR_RISK_TAGS => $attributes[SettlementConstants::CLEAR_RISK_TAGS],
-            ];
-        }
-
-        if ($action == Action::ENABLE_INTERNATIONAL)
-        {
-            return [];
-        }
-
-        $params = [
-            SettlementConstants::TRIGGER_COMMUNICATION => $attributes[SettlementConstants::TRIGGER_COMMUNICATION],
-        ];
-
-        if (isset($attributes[SettlementConstants::SETTLEMENT_WF_TAG]) === true)
-        {
-            $params[SettlementConstants::SETTLEMENT_WF_TAG] = $attributes[SettlementConstants::SETTLEMENT_WF_TAG];
-        }
-
-        return $params;
-
     }
 
 }

@@ -1211,8 +1211,7 @@ class Route
         'setl_transaction_timeline'                => ['get',      'settlements/transaction/timeline',               'SettlementController@getTransactionTimeline'                       ],
         'setl_reason_code_mapping_internal'        => ['get',      'internal/settlements/on_hold/{reason_codes?}',   'SettlementController@fetchHoldReasonCodeMappingsInternal'          ],
         'setl_reason_code_mapping_admin'           => ['get',      'admin/settlements/on_hold/{reason_codes?}',      'SettlementController@fetchHoldReasonCodeMappingsAdmin'             ],
-        'setl_create_exec_workflow_action'         => ['post',     'settlements/wf-actions/execute',                 'SettlementController@createAndExecuteSettlementsWFAction'       ],
-        'setl_create_workflow_action'              => ['post',     'settlements/wf-actions/create',                 'SettlementController@createSettlementsWFAction'       ],
+        'setl_create_workflow_action'              => ['post',     'settlements/wf-actions/create',                  'SettlementController@createSettlementsWFAction'                    ],
 
 
 
