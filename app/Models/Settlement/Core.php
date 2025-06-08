@@ -13,8 +13,6 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Models\Currency\Currency;
-use RZP\Models\Merchant\Action;
-use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Merchant\Action as MerchantAction;
 use RZP\Models\Workflow\Action as WorkflowAction;

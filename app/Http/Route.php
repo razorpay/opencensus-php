@@ -6456,7 +6456,6 @@ class Route
         'feature_get_all_internal',
         'create_settlement_entry',
         'get_global_config',
-        'setl_create_exec_workflow_action',
         'setl_create_workflow_action',
         'update_admin_through_batch',
         'merchant_create_terminal_internal',
@@ -18190,7 +18189,6 @@ class Route
             'payout_fetch_by_id_internal',
             'setl_adj_add',
             'merchant_fetch_internal_users',
-            'setl_create_exec_workflow_action',
             'setl_create_workflow_action'
         ],
 
