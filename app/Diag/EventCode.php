@@ -1221,6 +1221,21 @@ class EventCode
         'name'    => 'duplicate_payout_prevention.found_duplicate'
     ];
 
+    const PAYOUTS_TO_PHONE_NUMBER_EVENT_VPA_NOT_FOUND = [
+        'group'   => 'payouts_to_phone_number_failure',
+        'name'    => 'payouts_to_phone_number_failure.vpa_not_found'
+    ];
+
+    const PAYOUTS_TO_PHONE_NUMBER_EVENT_NAME_MATCHING_BELOW_THRESHOLD = [
+        'group'   => 'payouts_to_phone_number_failure',
+        'name'    => 'payouts_to_phone_number_failure.name_matching_below_threshold'
+    ];
+
+    const PAYOUTS_TO_PHONE_NUMBER_EVENT_MOBILE_NUMBER_FORMAT_INVALID = [
+        'group'   => 'payouts_to_phone_number_failure',
+        'name'    => 'payouts_to_phone_number_failure.mobile_number_format_invalid'
+    ];
+
     const PAYOUT_FETCH_REQUESTS = [
         'group'   => 'external_payouts',
         'name'    => 'external_payouts.fetch.request'

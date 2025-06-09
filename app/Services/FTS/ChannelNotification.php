@@ -7,6 +7,7 @@ use Razorpay\IFSC\IFSC;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Constants\Entity as E;
@@ -313,6 +314,19 @@ class ChannelNotification
 
         foreach ($notificationConfigs as $config)
         {
+            $merchantId = $config->getMerchantId();
+
+            if ($this->isSplitzEnableForBeneBankDowntimeNotification($merchantId) === true) {
+
+                $this->trace->info(
+                    TraceCode::DOWNTIME_V2_WEBHOOK_ENABLED_BENE_BANK_WEBHOOK_BLOCKED,
+                    [
+                        'merchant_id' => $merchantId,
+                    ]);
+
+                continue;
+            }
+
             $this->sendEmail($processedResult, $config->getNotificationEmails());
 
             $this->processSms($processedResult, $config->getNotificationMobileNumbers());
@@ -439,5 +453,19 @@ class ChannelNotification
                 ]
             );
         }
+    }
+
+    public function isSplitzEnableForBeneBankDowntimeNotification($merchantId): bool
+    {
+        $experimentName = Merchant\RazorxTreatment::DOWNTIME_V2_EXPERIMENT;
+        $experimentIdConfigKey = 'app.' . $experimentName . '_id';
+
+        $requestPayload = [
+            "id" => $merchantId,
+            "experiment_name" => $this->app['config']->get($experimentIdConfigKey),
+            'request_data' => json_encode(['id' => $merchantId])
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::DOWNTIME_V2_WEBHOOK_ENABLED);
     }
 }
