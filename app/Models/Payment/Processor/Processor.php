@@ -2688,6 +2688,9 @@ class Processor
                                 return false;
                             }
 
+                            $tokenRearchExperimentName = 'app.saved_card_token_payments_rearch';
+                            $tokenRearchResult = (new Payment\Service())->getSplitzExpResponseForTokenFetchFromTokenService($merchant->getId(), $card->getVault(), $tokenRearchExperimentName);
+
                             if ($card->getVault() === Card\Vault::PROVIDERS || $card->getVault() === Card\Vault::AXIS)
                             {
                                 if($this->mode!==MODE::LIVE && !app()->isEnvironmentProduction()){
@@ -2699,9 +2702,10 @@ class Processor
                                     return false;
                                 }
 
-                                // Using Splitz Experiment to control ramp
-                                $tokenRearchExperimentName = 'app.saved_card_token_payments_rearch';
-                                $issuer_result = (new Payment\Service())->getSplitzExpResponse($merchant->getId(),$tokenRearchExperimentName);
+                                if($this->inputCurrencyNotINR($input)){
+                                    return false;
+                                }
+
                                 $cardInput = [
                                     Card\Entity::NAME                   => Card\Entity::DUMMY_NAME,
                                     Card\Entity::NUMBER                 => Card\Entity::DUMMY_CARD_NUMBER,
@@ -2711,19 +2715,18 @@ class Processor
                                 ];
 
                                 // Allowing CPS Cryptogram source on Domestic Payments and where Merchant is not RAAS enabled
-                                if($issuer_result=='on'
+                                if($tokenRearchResult=='on'
                                     && $this->merchant->isFeatureEnabled(FeatureConstants::RAAS) === false
                                     && $this->merchant->getCountry() == "IN"
                                 ){
-                                    $cardInput+=[
+                                    $cardInput += [
                                         "cryptogram_source" => "cps",
                                     ];
                                     $this->trace->info(TraceCode::MISC_TRACE_CODE,[
                                         'message'=>'Issuer Result is on',
-                                        'cardInput'=> $cardInput
                                     ]);
                                 } else {
-                                    $cardInput = [
+                                    $cardInput += [
                                         Card\Entity::COUNTRY                => $card->getCountry(),
                                         Card\Entity::ISSUER                 => $card->getIssuer(),
                                         Card\Entity::TYPE                   => $card->getType(),
@@ -2740,18 +2743,14 @@ class Processor
 
                                     $this->trace->info(TraceCode::MISC_TRACE_CODE,[
                                         'message'=>'Issuer Result is off',
-                                        'cardInput'=> $cardInput
                                     ]);
-                                }
-                                $networkToken = (new TokenCore())->fetchToken($token, false);
-                                if($this->inputCurrencyNotINR($input)){
-                                    return false;
                                 }
                                 $input[Payment\Entity::CARD] = $cardInput;
                                 $input[Payment\Entity::API_VAULT] = $card->getVault();   // We are passing API_VALUT key to CPS to send it to router so that it can provide us terminals acc.
                                 // explicitly adding token_id in token since for global customer we add token instead of token_id
                                 $input[Payment\Entity::TOKEN] = $token->getId();
 
+                                $networkToken = (new TokenCore())->fetchToken($token, false);
                                 //Iterating over fetched token array to extract trid and token reference number for hdfc_issuer payments
                                 foreach ($networkToken as $index => $element) {
                                     if (isset($element['provider_name']) && $element['provider_name'] == 'hdfc') {
