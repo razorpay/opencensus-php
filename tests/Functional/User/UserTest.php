@@ -1429,7 +1429,7 @@ class UserTest extends TestCase
 
             $this->assertEquals($mailSubject, $mail->subject);
 
-            $this->assertEquals('x.support@razorpay.com', $mail->from[0]['address']);
+            $this->assertEquals('support@razorpay.com', $mail->from[0]['address']);
 
             return true;
         });
