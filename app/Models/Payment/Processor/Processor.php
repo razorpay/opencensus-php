@@ -2812,9 +2812,6 @@ class Processor
                                     $card->setTrivia('3');
                                 }
 
-                                $tokenRearchExperimentName = 'app.saved_card_token_payments_rearch';
-                                $tokenRearchResult = (new Payment\Service())->getSplitzExpResponseForTokenFetchFromTokenService($merchant->getId(), $card->getVault(), $tokenRearchExperimentName);
-
                                 if ($tokenRearchResult == 'enable'
                                     && (app()->isEnvironmentProduction() || $this->isDarkRequest())
                                     && $this->inputCurrencyNotINR($input) === false
