@@ -2429,9 +2429,25 @@ class Processor
                     return false;
                 }
 
-                if (!$this->evaluateSplitzExperimentForIntlCardRecurringRearch($merchant) && $this->inputCurrencyNotINR($input)) {
+                // First extract IIN information for international check
+                $card_number = str_replace(" ", "", $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
+                $iinId = substr($card_number, 0, 8);
+                $iin = $this->repo->iin->find($iinId);
+
+                // Always block domestic non-INR traffic
+                if ($this->inputCurrencyNotINR($input) && IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry()) === false) {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "international_currency",
+                        "reason" => "domestic_non_inr_currency_blocked",
+                        "merchant_id" => $merchant->getId(),
+                        "flow" => "card_recurring",
+                    ]);
+                    return false;
+                }
+
+                // For international traffic with non-INR currency, check Splitz experiment
+                if (!$this->evaluateSplitzExperimentForIntlCardRecurringRearch($merchant) && $this->inputCurrencyNotINR($input) && IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry()) === true) {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "international_currency_without_splitz_enabled",
                         'merchant_id' => $merchant->getId(),
                         'flow' => 'card_recurring',
                     ]);
@@ -2472,7 +2488,7 @@ class Processor
 
                         return false;
                     }
-                    if ($card->isInternational() === true && !$this->evaluateSplitzExperimentForIntlCardRecurringRearch($merchant)) {
+                    if ($card->isInternational() === true && !$this->evaluateSplitzExperimentForIntlCardRecurringRearch($merchant, $card)) {
                         $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                             'reason' => "international_card",
                             'merchant_id' => $merchant->getId(),
@@ -2562,7 +2578,7 @@ class Processor
                         $card_number = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
                         $iinId = substr($card_number, 0, 8);
                         $iin = $this->repo->iin->find($iinId);
-                        if ($iin->getCountry() !== 'IN' && !$this->evaluateSplitzExperimentForIntlCardRecurringRearch($merchant))
+                        if ($iin->getCountry() !== 'IN' && !$this->evaluateSplitzExperimentForIntlCardRecurringRearch($merchant, $card))
                         {
                             $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                                 'reason' => "international_card_initial",
