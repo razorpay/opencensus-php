@@ -28,6 +28,10 @@ export const ROUTES = {
     MAGICX_V1: '/magic/settings/magicx-store-settings',
     MAGICX_V2: '/magic/settings/magicx-store-settings',
   },
+  SSO_CONFIG: {
+    MAGICX_V1: '/magic/settings/sso',
+    MAGICX_V2: '/magic/settings/sso',
+  },
 };
 
 export const DOCS_LINKS = {

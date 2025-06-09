@@ -10,6 +10,7 @@ import {
   CashIcon,
   SparklesIcon,
   MagicCheckoutIcon,
+  LogInIcon,
 } from '@razorpay/blade/components';
 
 import { OnboardedMerchantTabHeader } from 'merchant/views/MagicCheckout/Settings/containers/MagicXControlCenter/styled';
@@ -169,6 +170,53 @@ export const OnboardedMerchantTab = () => {
               icon={EditInlineIcon}
               iconPosition="left"
               onClick={() => navigateToPath(ROUTES.CHECKOUT_CONFIG[MAGICX_VERSION])}
+            >
+              Configure
+            </Link>
+            <Link
+              icon={ExternalLinkIcon}
+              iconPosition="left"
+              href={DOCS_LINKS.CHECKOUT}
+              target="_blank"
+            >
+              User Manual
+            </Link>
+          </Box>
+        </Box>
+        <Box
+          paddingRight="spacing.3"
+          width="100%"
+          maxWidth="600px"
+          borderColor="surface.border.gray.muted"
+          borderRadius="medium"
+          display="flex"
+          justifyContent="space-between"
+        >
+          <Box
+            paddingX="spacing.7"
+            paddingY="spacing.4"
+            display="flex"
+            alignItems="center"
+            gap="spacing.6"
+          >
+            <LogInIcon size="2xlarge" color="surface.icon.onSea.onSubtle" />
+            <Heading color="surface.text.gray.subtle" weight="semibold" size="medium">
+              Customer Login with Razorpay
+            </Heading>
+          </Box>
+          <Box
+            backgroundColor="surface.background.gray.moderate"
+            paddingX="spacing.7"
+            paddingY="spacing.4"
+            marginY="spacing.3"
+            display="flex"
+            alignItems="center"
+            gap="spacing.7"
+          >
+            <Link
+              icon={EditInlineIcon}
+              iconPosition="left"
+              onClick={() => navigateToPath(ROUTES.SSO_CONFIG[MAGICX_VERSION])}
             >
               Configure
             </Link>

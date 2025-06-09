@@ -5,6 +5,7 @@ import C360ControlCenter from 'merchant/views/MagicCheckout/Settings/containers/
 import { formatRoutesByPlatform } from 'merchant/views/MagicCheckout/utils/formatGenericRoutes';
 
 import { PlatformSpecificRoutes, RouteItem } from 'merchant/views/MagicCheckout/types';
+import SupportAndFeedback from 'merchant/views/MagicCheckout/MagicDashboard/SupportAndFeedback';
 
 const GENERIC_ROUTES: RouteItem[] = [
   {
@@ -26,6 +27,12 @@ const GENERIC_ROUTES: RouteItem[] = [
     path: '/magic/dashboard/whats-new',
     Component: WhatsNew,
     onRCOD: true,
+  },
+  {
+    label: 'Support & Feedback',
+    path: '/magic/dashboard/support-feedback',
+    Component: SupportAndFeedback,
+    onRCODOnly: true
   },
 ];
 
