@@ -467,11 +467,11 @@ class Service extends Base\Service
 
     // Checks if plan replication is needed based on rampPhase and CC call response
     // calls the replicatePlanAndAssign method for replication
-    public function replicatePlanIfRequiredForBulkUpdate($plan, $merchant, $generatedPlanAndRuleId, $ccPlanReplicated, $rampPhase): array
+    public function replicatePlanIfRequiredForBulkUpdate($plan, $merchant, $generatedPlanAndRuleId, $ccPlanReplicated, $bulkRampPhase): array
     {
         // replicates the pricing plan if more than one merchants are using it.
         // make this decision based on CC-Response if Reverse-Shadow phase
-        if ($rampPhase == CCRouter::REVERSE_SHADOW){
+        if ($bulkRampPhase == CCRouter::REVERSE_SHADOW){
             $shouldReplicatePlan = $ccPlanReplicated ?? true;
         }else{
             $planId = $plan->getId();
@@ -480,21 +480,21 @@ class Service extends Base\Service
 
         if ($shouldReplicatePlan)
         {
-            $plan = $this->replicatePlanAndAssignLegacy($merchant, $plan, $generatedPlanAndRuleId, $rampPhase);
+            $plan = $this->replicatePlanAndAssignLegacy($merchant, $plan, $generatedPlanAndRuleId);
             return [true, $plan];
         }else{
             return [false, $plan];
         }
     }
 
-    public function postAddBulkPricingRulesLegacy($input, $orgId = null, $rampPhase = '')
+    public function postAddBulkPricingRulesLegacy($input, $orgId = null, $bulkRampPhase = '')
     {
         $this->trace->info(
             TraceCode::BATCH_ADD_PRICING_RULE_REQUEST,
             [
                 'request body' => $input,
                 'org id'        => $orgId,
-                'rampPhase' => $rampPhase,
+                'bulkRampPhase' => $bulkRampPhase,
             ]);
 
         $pricingRulesCollection = new PublicCollection;
@@ -515,10 +515,10 @@ class Service extends Base\Service
                 $mutex = App::getFacadeRoot()['api.mutex'];
                 $mutexKey = sprintf(self::MERCHANT_PRICING_UPDATE_MUTEX, $item[Entity::MERCHANT_ID]);
                 $pricingRulesCollection = $mutex->acquireAndRelease($mutexKey, function () use ($idempotencyKey, $shouldUpdate, $item, $pricingRulesCollection, $orgId,
-                    $generatedPlanAndRuleId, $rampPhase, &$apiPlanReplicated, &$processedMerchants)
+                    $generatedPlanAndRuleId, $bulkRampPhase, &$apiPlanReplicated, &$processedMerchants)
                 {
                 $result = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($item, $idempotencyKey, $shouldUpdate, $orgId,
-                    $generatedPlanAndRuleId, $rampPhase, &$apiPlanReplicated, &$processedMerchants)
+                    $generatedPlanAndRuleId, $bulkRampPhase, &$apiPlanReplicated, &$processedMerchants)
                 {
                     $merchant = $this->repo->merchant->findByPublicId($item[Entity::MERCHANT_ID]);
                     $merchantID = $item[Entity::MERCHANT_ID];
@@ -550,7 +550,7 @@ class Service extends Base\Service
                     // In reverse-shadow phase, primary call to CC will already override the merchant's pricing plan
                     // just redo the update in API DB similar to CC DB based on initial plan_id of the merchant IF this is the first time merchant is coming.
                     // If the plan was already replicated, don't fetch initial_plan_id. Go instead with the live merchant's plan_id
-                    if ($rampPhase == CCRouter::REVERSE_SHADOW && !in_array($merchantID, $processedMerchants) && !empty($initialPricingPlanId)){
+                    if ($bulkRampPhase == CCRouter::REVERSE_SHADOW && !in_array($merchantID, $processedMerchants) && !empty($initialPricingPlanId)){
                         $planId = $initialPricingPlanId;
                     }else{
                         $planId = $merchant->getPricingPlanId();
@@ -604,7 +604,7 @@ class Service extends Base\Service
 
                     if ($existingRule === null)
                     {
-                        [$apiPlanReplicated, $plan] = $this->replicatePlanIfRequiredForBulkUpdate($plan, $merchant, $generatedPlanAndRuleId, $ccPlanReplicated, $rampPhase);
+                        [$apiPlanReplicated, $plan] = $this->replicatePlanIfRequiredForBulkUpdate($plan, $merchant, $generatedPlanAndRuleId, $ccPlanReplicated, $bulkRampPhase);
                         if ($apiPlanReplicated){
                             $processedMerchants[] = $merchantID;
                         }
@@ -646,7 +646,7 @@ class Service extends Base\Service
                         // so that plans aren't replicated unnecessarily
                         if(empty(array_diff_assoc($rule, $existingRule->toArray())) === false)
                         {
-                            [$apiPlanReplicated, $plan] = $this->replicatePlanIfRequiredForBulkUpdate($plan, $merchant, $generatedPlanAndRuleId, $ccPlanReplicated, $rampPhase);
+                            [$apiPlanReplicated, $plan] = $this->replicatePlanIfRequiredForBulkUpdate($plan, $merchant, $generatedPlanAndRuleId, $ccPlanReplicated, $bulkRampPhase);
                             if ($apiPlanReplicated){
                                 $processedMerchants[] = $merchantID;
                             }
@@ -961,27 +961,21 @@ class Service extends Base\Service
 
         $ccRequest = $input;
 
-        $legacyCallable = function ($rampPhase, $_) use ($merchant, $plan, $generatedPlanAndRuleId, $input) {
-            return $this->replicatePlanAndAssignLegacy($merchant, $plan, $generatedPlanAndRuleId, $rampPhase, $input);
+        $legacyCallable = function () use ($merchant, $plan, $generatedPlanAndRuleId, $input) {
+            return $this->replicatePlanAndAssignLegacy($merchant, $plan, $generatedPlanAndRuleId);
         };
 
         return $this->ccRouter->route($fqcn, $ccRequest, $legacyCallable);
     }
 
-    public function replicatePlanAndAssignLegacy($merchant, $plan, $generatedPlanAndRuleId, $rampPhase = '', $input = null)
+    public function replicatePlanAndAssignLegacy($merchant, $plan, $generatedPlanAndRuleId)
     {
-        // Get merchants existing plan ID, consider initial id sent in case of reverse_shadow
-        $planId = $merchant->getPricingPlanId();
-        if ($rampPhase == CCRouter::REVERSE_SHADOW && $input != null){
-            $planId = $input['plan_id'];
-        }
-
         // Get intended pricing plans org id
         $ruleOrgId = $plan->getOrgId();
 
         $this->trace->info(TraceCode::BATCH_PRICING_PLAN_REPLICATE_REQUEST,
                             [
-                                Entity::PLAN_ID => $planId
+                                Entity::PLAN_ID => $plan->getId()
                             ]);
 
         // make an array copy out of plan into array rules
@@ -1044,9 +1038,15 @@ class Service extends Base\Service
         // Create new plan with copied rules
         $newplan = (new Pricing\Core)->create([Entity::PLAN_NAME => $planName, Entity::RULES => $rules], $ruleOrgId);
 
-        // Assign plan to merchant, only when pricing decomp ramp phase is not enable or reverse_shadow
-        // as same action will be taken by Charge-collections service
-        if ($rampPhase != CCRouter::ENABLE && $rampPhase != CCRouter::REVERSE_SHADOW ){
+        // Check splitz experiment for the new pricing plan
+        $ccRouter = new CCRouter(true);
+        $rampPhase = $ccRouter->shouldRouteRequestToChargeCollections(
+            'RZP\\Models\\Pricing\\Service\\replicatePlanAndAssign',
+            $newplan->getId()
+        );
+
+        // Only assign plan if not in ENABLE or REVERSE_SHADOW phase
+        if ($rampPhase != CCRouter::ENABLE && $rampPhase != CCRouter::REVERSE_SHADOW) {
             (new Merchant\Service)->assignPricingPlan($merchant->getId(),
                 [Merchant\Entity::PRICING_PLAN_ID => $newplan->getId()]);
         }

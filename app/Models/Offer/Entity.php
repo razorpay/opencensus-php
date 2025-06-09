@@ -655,6 +655,11 @@ class Entity extends Base\PublicEntity
         $this->mergeCustomAttribute(self::UPI, [\RZP\Models\Upi\Turbo\Constants::PAYER_ACCOUNT_TYPE => $PayerAccountType]);
     }
 
+    public function setPayerAccountIssuer(array $PayerAccountIssuer)
+    {
+        $this->mergeCustomAttribute(self::UPI, [Constants::PAYER_ACCOUNT_ISSUER => $PayerAccountIssuer]);
+    }
+
     // Method to merge custom attributes
     protected function mergeCustomAttribute($key, array $values)
     {
