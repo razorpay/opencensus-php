@@ -32,6 +32,7 @@ import {
   paiseToRupees,
 } from 'common/utils/rzp-utils';
 import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
+import { setCommonAttributesForClarity } from 'common/utils/clarity';
 import {
   isPgMerchant,
   setRecommendedProduct,
@@ -780,6 +781,7 @@ class App extends Component {
       }
       this.fetchSupportedCurrencies();
       this.loadThirdPartyLibraries(user);
+      setCommonAttributesForClarity(user);
     }
 
     // Schedule the API fetch to run when the browser is idle (or immediately if using fallback)
