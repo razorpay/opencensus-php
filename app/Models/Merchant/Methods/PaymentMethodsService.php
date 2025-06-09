@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\App;
 use RZP\Constants\Mode;
 use Request;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\IntegrationException;
 use RZP\Http\Request\Requests;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -60,7 +61,7 @@ class PaymentMethodsService
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::EXTERNAL_REPO_REQUEST_FAILURE);
 
-            $this->trace->count(Metric::PAYMENT_METHOD_SERVICE_CALL_FAILED_METRIC, ['path' => $path]);
+            $this->trace->count(Metric::PAYMENT_METHOD_SERVICE_CALL_FAILED_METRIC);
 
             throw new Exception\IntegrationException(
                 'Network error communicating with Payment Methods Service: ' . $e->getMessage(),
@@ -81,7 +82,7 @@ class PaymentMethodsService
 
             $this->trace->error(TraceCode::PAYMENT_METHODS_SERVICE_CALL_FAILED, $errorContext);
 
-            $this->trace->count(Metric::PAYMENT_METHOD_SERVICE_CALL_FAILED_METRIC, ['path' => $path]);
+            $this->trace->count(Metric::PAYMENT_METHOD_SERVICE_CALL_FAILED_METRIC);
 
 
             throw new Exception\IntegrationException(
@@ -141,7 +142,9 @@ class PaymentMethodsService
             'path'        => $path,
         ]);
 
+        $requestStartAt = millitime();
         $response = $this->ProxyToMethodsService([], 'GET', $path);
+        $this->trace->histogram(Metric::PAYMENT_METHODS_SERVICE_FETCH_LATENCY, millitime() - $requestStartAt);
 
         // Decode the JSON response
         $decodedData = json_decode($response->body, true);
@@ -154,7 +157,7 @@ class PaymentMethodsService
                 'error'       => json_last_error_msg(),
                 'response_body' => $response->body, // Log raw response on error
             ]);
-            $this->trace->count(Metric::PAYMENT_METHOD_SERVICE_CALL_FAILED_METRIC, ['path' => $path]);
+            $this->trace->count(Metric::PAYMENT_METHOD_SERVICE_CALL_FAILED_METRIC);
             throw new Exception\RuntimeException('Failed to decode JSON response from Payment Methods Service: ' . json_last_error_msg());
         }
 
@@ -167,7 +170,7 @@ class PaymentMethodsService
             'fetched_data' => $fetchedEntity->toArrayAdmin(),
         ]);
 
-        $this->trace->count(Metric::PAYMENT_METHOD_SERVICE_CALL_SUCCESS_METRIC, ['path' => $path]);
+        $this->trace->count(Metric::PAYMENT_METHOD_SERVICE_CALL_SUCCESS_METRIC);
 
         return $fetchedEntity;
     }
@@ -307,6 +310,74 @@ class PaymentMethodsService
     public function getTimeout(){
         $timeout = 'applications.payment_methods_service.timeout';
         return $this->app['config']->get($timeout);
+    }
+
+    /**
+     * @throws \Throwable
+     * @throws IntegrationException
+     */
+    public function saveMethods(MethodsEntity $entity, array $options = [])
+    {
+        try
+        {
+            $this->trace->info(TraceCode::PAYMENT_METHODS_SERVICE_SAVE_ATTEMPT, [
+                'merchant_id' => $entity->getMerchantId(),
+                'entity_id'   => $entity->getId(),
+            ]);
+            $this->trace->count(Metric::PAYMENT_METHOD_SERVICE_UPDATE_ATTEMPT);
+
+            $path = '/v1/merchant/methods';
+            $this->trace->info(TraceCode::DEBUG_LOGGING, [
+                'request' => json_encode($entity),
+            ]);
+            $this->ProxyToMethodsService(json_encode($entity), 'POST', $path, $options);
+
+            $this->trace->info(TraceCode::PAYMENT_METHODS_SERVICE_SAVE_SUCCESS, [
+                'merchant_id' => $entity->getMerchantId(),
+                'entity_id'   => $entity->getId(),
+            ]);
+            $this->trace->count(Metric::PAYMENT_METHOD_SERVICE_UPDATE_SUCCESS);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_METHODS_SERVICE_UPDATE_CALL_FAILED, [
+                'merchant_id' => $entity->getMerchantId(),
+                'entity_id'   => $entity->getId(),
+            ]);
+            $this->trace->count(Metric::PAYMENT_METHOD_SERVICE_UPDATE_FAILURE);
+            throw $e;
+        }
+    }
+    public function isMethodServiceWriteEnabled(): bool
+    {
+        $experiment = 'applications.payment_methods_service.write_experiment';
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get($experiment),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            if ($variant === 'variant_on')
+            {
+                $this->trace->info(TraceCode::SPLITZ_EXPERIMENT_RESULT, [
+                    'variant' => $variant,
+                ]);
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR);
+        }
+        $this->trace->info(TraceCode::SPLITZ_EXPERIMENT_RESULT, [
+            'variant' => $variant,
+        ]);
+        return false;
     }
 
 }

@@ -1586,6 +1586,21 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function updateSelfServeReKYCStatus()
+    {
+        // This controller would be called in case of approval on maker checker workflow for update in rekyc status
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::SELF_SERVE_REKYC_UPDATE, [
+            '$input' => $input,
+        ]);
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updateSelfServeReKYCStatus($input);
+
+        return ApiResponse::json($response);
+    }
+
+
     public function postMerchantBddVerificationStatusUpdate()
     {
         // This controller would be called in case of approval on maker checker workflow for update in bdd verification status
@@ -4652,6 +4667,13 @@ class MerchantController extends Controller
     public function fetchUserIdAndOrgIdFromMerchantId($merchantId)
     {
         $response = $this->service(E::MERCHANT)->fetchUserIdAndOrgIdFromMerchantId($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchMidAndNameFromOrgAndCategoryFromTiDB($orgId, $category)
+    {
+        $response = $this->service(E::MERCHANT)->fetchMidAndNameFromOrgAndCategoryFromTiDB($orgId, $category);
 
         return ApiResponse::json($response);
     }

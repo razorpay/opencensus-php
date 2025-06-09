@@ -3266,7 +3266,7 @@ class Core extends Base\Core
 
         $transfer->setMessage(PublicErrorDescription::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED);
 
-        $transfer->saveOrFail();
+        $this->repo->transfer->saveOrFail($transfer);
 
         $this->trace->info(
             TraceCode::TRANSFER_FAILED_AS_SOURCE_PAYMENT_IS_REFUNDED,

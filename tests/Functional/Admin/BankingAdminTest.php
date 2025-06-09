@@ -61,7 +61,7 @@ class BankingAdminTest extends TestCase
         $this->ba->adminAuth('test', $this->adfsAuthToken, $this->idamOrg->getPublicId());
     }
 
-    private function createIdamAdmins(string $orgId, int $noOfAdmins)
+    private function createIdamAdmins(string $orgId, int $noOfAdmins, $expiredAt = null)
     {
         return $this->fixtures->times($noOfAdmins)->create('admin', [
             Admin\Entity::ORG_ID                => $orgId,
@@ -69,6 +69,7 @@ class BankingAdminTest extends TestCase
             Admin\Entity::NAME                  => 'Test User',
             Admin\Entity::USERNAME              => 'testadmin',
             Admin\Entity::LAST_LOGIN_AT         => null,
+            Admin\Entity::EXPIRED_AT            => $expiredAt,
             Admin\Entity::DISABLED              => false,
             Admin\Entity::ALLOW_ALL_MERCHANTS   => false,
         ]);
@@ -413,6 +414,308 @@ class BankingAdminTest extends TestCase
         $this->assertTrue($admin[Admin\Entity::DISABLED]);
         $this->assertNull($adminsMeta[AdminsMeta\Entity::USER_DISABLED_AT]);
         $this->assertNull($adminsMeta[AdminsMeta\Entity::USER_DISABLED_AT]);
+    }
+
+    public function testInactiveIdamSamlLogin()
+    {
+        $dormancy = 15;
+
+        $this->mockDcsFetchConfiguration($dormancy);
+
+        $expireAt = $this->timestampWithOffset(1);
+
+        $admin = $this->createIdamAdmins($this->idamOrg->getId(), 1, $expireAt);
+
+        $updateData = [
+            Admin\Entity::DISABLED      => true,
+        ];
+
+        $this->fixtures->edit(Entity::ADMIN, $admin->getId(), $updateData);
+
+        $role = $this->fixtures->create('role', ['org_id' => $this->idamOrg->getId()]);
+
+        $admin->roles()->attach($role);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+
+        $response = $this->disableOrgAdminByDormancy($admin[Admin\Entity::ID]);
+
+        $this->assertEquals($response['success'] , 0);
+
+        $this->assertEquals($response['failure'] , 0);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $admin = $admin->toArray();
+        $adminsMeta = $adminsMeta->toArray();
+
+        $testData['request']['content']['email'] = $admin['email'];
+        $testData['request']['content']['ad_id'] = $adminsMeta['unique_identifier'];
+        $testData['request']['content']['username'] = $admin['username'];
+        $testData['request']['content']['userrole'] = array($role->id);
+        $testData['request']['content']['expiry_date'] = $admin['expired_at'];
+        $testData['request']['headers']['x-org-id'] = "org_" . $this->idamOrg->getId();
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $admin = $this->getDbEntityById(Entity::ADMIN, $admin[Admin\Entity::ID]);
+
+        $adminsMeta = $this->getDbEntityById(Entity::ADMINS_META, $adminsMeta[Admin\Entity::ID]);
+
+        $this->assertTrue($admin[Admin\Entity::DISABLED]);
+
+        $this->assertNull($adminsMeta[AdminsMeta\Entity::USER_DISABLED_AT]);
+
+        $this->assertNull($adminsMeta[AdminsMeta\Entity::DISABLED_REASON]);
+
+        $this->startTest($testData);
+    }
+
+    public function testInactiveIdamSamlLoginDueToDormancy()
+    {
+        $dormancy = 5;
+
+        $this->mockDcsFetchConfiguration($dormancy);
+
+        $expireAt = $this->timestampWithOffset(1);
+
+        $admin = $this->createIdamAdmins($this->idamOrg->getId(), 1, $expireAt);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+
+        $timestamp = $this->timestampWithOffset(-$dormancy) - 100;
+
+        $updateData = [
+            Admin\Entity::LAST_LOGIN_AT => $timestamp,
+            Admin\Entity::CREATED_AT    => $timestamp - 30,
+            Admin\Entity::UPDATED_AT    => $timestamp - 20,
+        ];
+
+        $this->fixtures->edit(Entity::ADMIN, $admin->getId(), $updateData);
+
+        $role = $this->fixtures->create('role', ['org_id' => $this->idamOrg->getId()]);
+
+        $admin->roles()->attach($role);
+
+        $response = $this->disableOrgAdminByDormancy($admin[Admin\Entity::ID]);
+
+        $this->assertEquals($response['success'] , 1);
+
+        $this->assertEquals($response['failure'] , 0);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $admin = $admin->toArray();
+        $adminsMeta = $adminsMeta->toArray();
+
+        $testData['request']['content']['email'] = $admin['email'];
+        $testData['request']['content']['ad_id'] = $adminsMeta['unique_identifier'];
+        $testData['request']['content']['username'] = $admin['username'];
+        $testData['request']['content']['userrole'] = array($role->id);
+        $testData['request']['content']['expiry_date'] = $admin['expired_at'];
+        $testData['request']['headers']['x-org-id'] = "org_" . $this->idamOrg->getId();
+
+        $admin = $this->getDbEntityById(Entity::ADMIN, $admin[Admin\Entity::ID]);
+
+        $adminsMeta = $this->getDbEntityById(Entity::ADMINS_META, $adminsMeta[Admin\Entity::ID]);
+
+        $disabledReason = $adminsMeta->getDisabledReason();
+
+        $this->assertTrue($admin[Admin\Entity::DISABLED]);
+
+        $this->assertNotNull($adminsMeta[AdminsMeta\Entity::USER_DISABLED_AT]);
+
+        $this->assertNotNull($adminsMeta[AdminsMeta\Entity::DISABLED_REASON]);
+
+        $this->assertEquals(AdminsMeta\Constant::IDAM_DORMANCY, $disabledReason);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testDisablesDormantAdminsWithNoLoginSinceCreation()
+    {
+        $dormancy = 15;
+
+        $this->mockDcsFetchConfiguration($dormancy);
+
+        $expireAt = $this->timestampWithOffset(1);
+
+        $admin = $this->createIdamAdmins($this->idamOrg->getId(), 1, $expireAt);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+
+        $timestamp = $this->timestampWithOffset(-$dormancy) - 100;
+
+        $updateData = [
+            Admin\Entity::CREATED_AT    => $timestamp - 30,
+            Admin\Entity::UPDATED_AT    => $timestamp - 20,
+        ];
+
+        $this->fixtures->edit(Entity::ADMIN, $admin->getId(), $updateData);
+
+        $role = $this->fixtures->create('role', ['org_id' => $this->idamOrg->getId()]);
+
+        $admin->roles()->attach($role);
+
+        $response = $this->disableOrgAdminByDormancy($admin[Admin\Entity::ID]);
+
+        $this->assertEquals($response['success'] , 1);
+
+        $this->assertEquals($response['failure'] , 0);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $admin = $admin->toArray();
+        $adminsMeta = $adminsMeta->toArray();
+
+        $testData['request']['content']['email'] = $admin['email'];
+        $testData['request']['content']['ad_id'] = $adminsMeta['unique_identifier'];
+        $testData['request']['content']['username'] = $admin['username'];
+        $testData['request']['content']['userrole'] = array($role->id);
+        $testData['request']['content']['expiry_date'] = $admin['expired_at'];
+        $testData['request']['headers']['x-org-id'] = "org_" . $this->idamOrg->getId();
+
+        $admin = $this->getDbEntityById(Entity::ADMIN, $admin[Admin\Entity::ID]);
+
+        $adminsMeta = $this->getDbEntityById(Entity::ADMINS_META, $adminsMeta[Admin\Entity::ID]);
+
+        $disabledReason = $adminsMeta->getDisabledReason();
+
+        $this->assertTrue($admin[Admin\Entity::DISABLED]);
+
+        $this->assertNotNull($adminsMeta[AdminsMeta\Entity::USER_DISABLED_AT]);
+
+        $this->assertNotNull($adminsMeta[AdminsMeta\Entity::DISABLED_REASON]);
+
+        $this->assertEquals(AdminsMeta\Constant::IDAM_DORMANCY, $disabledReason);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testActiveAdminsWithNoLoginSinceCreation()
+    {
+        $dormancy = 15;
+
+        $this->mockDcsFetchConfiguration($dormancy);
+
+        $expireAt = $this->timestampWithOffset(1);
+
+        $admin = $this->createIdamAdmins($this->idamOrg->getId(), 1, $expireAt);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+
+        $currentTimestamp = Carbon::now()->getTimestamp();
+
+        $updateData = [
+            Admin\Entity::CREATED_AT    => $currentTimestamp - 30,
+            Admin\Entity::UPDATED_AT    => $currentTimestamp - 20,
+        ];
+
+        $this->fixtures->edit(Entity::ADMIN, $admin->getId(), $updateData);
+
+        $role = $this->fixtures->create('role', ['org_id' => $this->idamOrg->getId()]);
+
+        $admin->roles()->attach($role);
+
+        $response = $this->disableOrgAdminByDormancy($admin[Admin\Entity::ID]);
+
+        $this->assertEquals($response['success'] , 0);
+
+        $this->assertEquals($response['failure'] , 0);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $admin = $admin->toArray();
+        $adminsMeta = $adminsMeta->toArray();
+
+        $testData['request']['content']['email'] = $admin['email'];
+        $testData['request']['content']['ad_id'] = $adminsMeta['unique_identifier'];
+        $testData['request']['content']['username'] = $admin['username'];
+        $testData['request']['content']['userrole'] = array($role->id);
+        $testData['request']['content']['expiry_date'] = $admin['expired_at'];
+        $testData['request']['headers']['x-org-id'] = "org_" . $this->idamOrg->getId();
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+
+        $admin = $this->getDbEntityById(Entity::ADMIN, $admin[Admin\Entity::ID]);
+
+        $adminsMeta = $this->getDbEntityById(Entity::ADMINS_META, $adminsMeta[Admin\Entity::ID]);
+
+        $disabledReason = $adminsMeta->getDisabledReason();
+
+        $this->assertFalse($admin[Admin\Entity::DISABLED]);
+
+        $this->assertNull($adminsMeta[AdminsMeta\Entity::USER_DISABLED_AT]);
+
+        $this->assertNull($disabledReason);
+    }
+
+    public function testActiveIdamSamlLoginDueToDormancy()
+    {
+        $dormancy = 15;
+
+        $this->mockDcsFetchConfiguration($dormancy);
+
+        $expireAt = $this->timestampWithOffset(1);
+
+        $admin = $this->createIdamAdmins($this->idamOrg->getId(), 1, $expireAt);
+
+        $adminsMeta = $this->createAdminsMeta($admin->getId());
+
+        $currentTimestamp = Carbon::now()->getTimestamp();
+
+        $updateData = [
+            Admin\Entity::LAST_LOGIN_AT => $currentTimestamp,
+            Admin\Entity::CREATED_AT    => $currentTimestamp - 30,
+            Admin\Entity::UPDATED_AT    => $currentTimestamp - 20,
+        ];
+
+        $this->fixtures->edit(Entity::ADMIN, $admin->getId(), $updateData);
+
+        $role = $this->fixtures->create('role', ['org_id' => $this->idamOrg->getId()]);
+
+        $admin->roles()->attach($role);
+
+        $response = $this->disableOrgAdminByDormancy($admin[Admin\Entity::ID]);
+
+        $this->assertEquals($response['success'] , 0);
+
+        $this->assertEquals($response['failure'] , 0);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $admin = $admin->toArray();
+        $adminsMeta = $adminsMeta->toArray();
+
+        $testData['request']['content']['email'] = $admin['email'];
+        $testData['request']['content']['ad_id'] = $adminsMeta['unique_identifier'];
+        $testData['request']['content']['username'] = $admin['username'];
+        $testData['request']['content']['userrole'] = array($role->id);
+        $testData['request']['content']['expiry_date'] = $admin['expired_at'];
+        $testData['request']['headers']['x-org-id'] = "org_" . $this->idamOrg->getId();
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+
+        $admin = $this->getDbEntityById(Entity::ADMIN, $admin[Admin\Entity::ID]);
+
+        $adminsMeta = $this->getDbEntityById(Entity::ADMINS_META, $adminsMeta[Admin\Entity::ID]);
+
+        $disabledReason = $adminsMeta->getDisabledReason();
+
+        $this->assertFalse($admin[Admin\Entity::DISABLED]);
+
+        $this->assertNull($adminsMeta[AdminsMeta\Entity::USER_DISABLED_AT]);
+
+        $this->assertNull($disabledReason);
+
     }
 
     public function mockDcsFetchConfiguration($dormancy): void

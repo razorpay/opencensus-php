@@ -339,14 +339,14 @@ class CCRouter
                         'mode' => $this->mode,
                     ]);
 
-                $this->monitorChargeCollectionsRequestNotRouted($routeName,$fqcn, self::TRANSFORMATION_NOT_FOUND);
+                $this->monitorChargeCollectionsRequestNotRouted($routeName,$fqcn, self::TRANSFORMATION_NOT_FOUND, $rampPhase);
                 return null;
             }
 
             return $response;
         }catch (\Throwable $e){
             $this->trace->traceException($e, Trace::WARNING, TraceCode::CC_ROUTER_EXCEPTION);
-            $this->monitorChargeCollectionsRequestNotRouted($routeName, $fqcn ,self::EXCEPTION);
+            $this->monitorChargeCollectionsRequestNotRouted($routeName, $fqcn ,self::EXCEPTION, $rampPhase);
 
             if ($rampPhase == self::REVERSE_SHADOW || $rampPhase == self::ENABLE){
                 throw $e;
@@ -356,16 +356,17 @@ class CCRouter
         }
     }
 
-    private function monitorChargeCollectionsRequestNotRouted($routeName, $functionName, $reason): void
+    private function monitorChargeCollectionsRequestNotRouted($routeName, $functionName, $reason, $ramp_phase): void
     {
         $this->trace->count(Metric::CC_REQUEST_NOT_ROUTED, [
             'route' => $routeName,
             'function' => $functionName,
             'reason' => $reason,
+            'ramp_phase' => $ramp_phase
         ]);
     }
 
-    private function shouldRouteRequestToChargeCollections($functionName, $planID): string {
+    public function shouldRouteRequestToChargeCollections($functionName, $planID): string {
 
         $routeName = null;
 
@@ -377,7 +378,7 @@ class CCRouter
 
             if($this->isRouteApplicableForDecomp($routeName) === false &&
                 $this->isFunctionApplicableForDecomp($functionName) === false) {
-                $this->monitorChargeCollectionsRequestNotRouted($routeName,$functionName,self::ROUTE_OR_FUNCTION_NOT_ONBOARDED);
+                $this->monitorChargeCollectionsRequestNotRouted($routeName,$functionName,self::ROUTE_OR_FUNCTION_NOT_ONBOARDED, 'pre_ramp');
                 return self::DISABLE;
             }
 
@@ -389,14 +390,14 @@ class CCRouter
 
             $result = $this->checkSplitzExperiment($planID, $experimentID);
             if($result[self::VALID] === false) {
-                $this->monitorChargeCollectionsRequestNotRouted($routeName,$functionName,self::SPLITZ_RESPONSE_ERROR);
+                $this->monitorChargeCollectionsRequestNotRouted($routeName,$functionName,self::SPLITZ_RESPONSE_ERROR, 'pre_ramp');
                 return self::DISABLE;
             }
 
             return $result[self::VARIANT];
         }catch (\Throwable $e){
             $this->trace->traceException($e, Trace::WARNING, TraceCode::CC_ROUTER_EXCEPTION);
-            $this->monitorChargeCollectionsRequestNotRouted($routeName, $functionName, self::EXCEPTION);
+            $this->monitorChargeCollectionsRequestNotRouted($routeName, $functionName, self::EXCEPTION, 'pre_ramp');
             return self::DISABLE;
         }
     }
@@ -750,6 +751,7 @@ class CCRouter
                 $entityClass = PricingEntity::class;
                 $entityClass::unguard();
                 $pricingEntity = new PricingEntity($response['rule']);
+                $pricingEntity->exists = true;
             } catch (\Throwable $e) {
                 throw new \Exception('Could not map charge collections response to entity');
             } finally {
@@ -770,7 +772,9 @@ class CCRouter
             foreach($response['rules'] as $rule) {
                 try {
                     $entityClass::unguard();
-                    $pricingEntities[] = new PricingEntity($rule);
+                    $pricingEntity = new PricingEntity($rule);
+                    $pricingEntity->exists = true;
+                    $pricingEntities[] = $pricingEntity;
                 } catch (\Throwable $e) {
                     throw new \Exception('Could not map charge collections response to entity');
                 } finally {

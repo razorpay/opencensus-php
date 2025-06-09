@@ -50,8 +50,9 @@ use RZP\Constants\Entity as ConstantsEntity;
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes, NotesTrait, AsvGetAttribute, ExternalOwner, CmsGetAttribute;
-
-    use AsvLoad;
+    use AsvLoad {
+        load as asvLoad;
+    }
 
     // This is used in the RZP\Models\Merchant\Acs\Traits\AsvLoad trait
     // to identify which relations are ASV relations
@@ -534,6 +535,25 @@ class Entity extends Base\PublicEntity
         self::TOKEN_EXPIRY_YEAR,
         self::TOKEN_REQUESTOR_ID,
     ];
+
+    public function load($relations)
+    {
+        if (in_array('customer', $relations))
+        {
+            $shouldReadViaCms = (new Customer\Account\SplitzExperimentEvaluator())->isLazyReadOverrideToCmsEnabled($this->entity);
+            if ($shouldReadViaCms)
+            {
+                parent::unsetRelation('customer');
+                // load relation again
+                $this->customer;
+
+                // remove customer relation from array as it's been already loaded
+                $relations = array_diff($relations, ['customer']);
+            }
+        }
+
+        return $this->asvLoad($relations);
+    }
 
     public function customer()
     {

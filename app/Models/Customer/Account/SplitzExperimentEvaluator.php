@@ -48,6 +48,18 @@ class SplitzExperimentEvaluator extends Base\Core
         return $this->isExperimentEnabled($properties);
     }
 
+    public function isQueryLogEnabled(): bool {
+        $properties = [
+            'id'            => 'unknown',
+            'experiment_id' => $this->app['config']->get('app.cms_query_log_enable_experiment_id'),
+            'request_data'  => json_encode([
+                'route_name'  => $this->app['request.ctx']->getRoute() ?? ($this->app['worker.ctx']->getJobName() ?? 'unknown')
+                ])
+        ];
+
+        return $this->isExperimentEnabled($properties);
+    }
+
     protected function isOverrideToCmsEnabled($experimentId, $merchant): bool
     {
         $properties = [

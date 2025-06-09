@@ -72,11 +72,16 @@ class Repository extends Base\Repository
             $instruments = $entity[Entity::INSTRUMENTS];
             unset($entity[Entity::INSTRUMENTS]);
         }
-
+        if (empty($entity[Entity::RULES]) === false)
+        {
+            $rules = $entity[Entity::RULES];
+            unset($entity[Entity::RULES]);
+        }
         parent::saveOrFail($entity, $options);
 
         $entity['upi'] = $upi;
         $entity[Entity::INSTRUMENTS] = $instruments;
+        $entity[Entity::RULES] = $rules;
     }
 
     /**

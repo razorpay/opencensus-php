@@ -17,6 +17,10 @@ class Constants
 
     const HOUSE_ACCOUNT_TRANSFER_REASON = "Sub Account Transfer to House";
 
+    const MONEYSAVER_ACTIVATED   = "MoneySaver Activated";
+
+    const FIRST_MONEYSAVER_PAYMENT = "First MoneySaver Payment ";
+
     const CURRENCY_CLOUD_PAYOUT_MAPPING_WITH_OUR_STATUS = [
         "new"                   => 'in_progress',
         "ready_to_send"         => 'in_progress',

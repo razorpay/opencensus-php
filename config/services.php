@@ -133,6 +133,14 @@ return [
         'password'      => env('PGOS_SERVICE_PASSWORD')
     ],
 
+    'merchant-experience-service' => [
+        'url'               => env('MERCHANT_EXPERIENCE_SERVICE_HOST'),
+        'user'              => env('MERCHANT_EXPERIENCE_SERVICE_USER'),
+        'admin_user'        => env('MERCHANT_EXPERIENCE_SERVICE_ADMIN_USER'),
+        'password'          => env('MERCHANT_EXPERIENCE_SERVICE_PASSWORD'),
+        'admin_password'    => env('MERCHANT_EXPERIENCE_SERVICE_ADMIN_PASSWORD')
+    ],
+
     'workflow_guard' => [
         'mock'          => env('WORKFLOW_GUARD_SERVICE_MOCK', true),
         'url'           => env('WORKFLOW_GUARD_SERVICE_HOST'),

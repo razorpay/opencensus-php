@@ -701,7 +701,7 @@ class Service extends Base\Service
             $fundAccount = $this->repo->fund_account->findByPublicId($input[Entity::FUND_ACCOUNT_ID]);
 
             $vpaHandle = $fundAccount->account->getHandle();
-            
+
             $input[Entity::NOTES]['VPA_HANDLE'] = $vpaHandle;
         }
 
@@ -942,7 +942,8 @@ class Service extends Base\Service
                $this->auth->isCapitalCollectionsApp() or
                $this->auth->isFTSApp() or
                $this->auth->isXperienceApp() or
-               $this->auth->isCrossBorderImportApp();
+               $this->auth->isCrossBorderImportApp() or
+               $this->auth->isCapitalEarlySettlementApp();
     }
 
     public function isSettlementsApp(): bool
@@ -1003,7 +1004,8 @@ class Service extends Base\Service
             ($this->auth->isCapitalCollectionsApp() === false) and
             ($this->auth->isFTSApp() === false) and
             ($this->auth->isXperienceApp() === false) and
-            ($this->auth->isCrossBorderImportApp() === false)
+            ($this->auth->isCrossBorderImportApp() === false) and
+            ($this->auth->isCapitalEarlySettlementApp() === false)
         );
     }
 

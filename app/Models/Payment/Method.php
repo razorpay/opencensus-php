@@ -28,6 +28,7 @@ class Method
     const RAZORPAY_ACCOUNT      = 'razorpay_account';
     const VCPP                  = 'vcpp';
     const GIFT_CARDS            = 'gift_cards';
+    const INSTALMENT           = 'instalment';
 
     protected static $methods = [
         self::CARD                  => 'Card',
@@ -50,6 +51,7 @@ class Method
         self::RAZORPAY_ACCOUNT      => 'Razorpay Account',
         self::DUITNOW_PAY           => 'DuitNow Pay',
         self::GIFT_CARDS            => 'Gift Card',
+        self::INSTALMENT           => 'Instalment',
     ];
 
     protected static $nonEsAutomaticMethods = [

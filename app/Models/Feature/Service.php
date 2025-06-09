@@ -432,7 +432,7 @@ class Service extends Base\Service
                 $creditBalances[BalanceCore::REFUND] = 0;
             }
 
-            $result[Constants::ACCOUNTS_CREATED_RESPONSE] = (new BalanceCore)->createPGLedgerAccount(
+            list($result[Constants::BALANCE_ID], $result[Constants::ACCOUNTS_CREATED_RESPONSE]) = (new BalanceCore)->createPGLedgerAccount(
                 $merchant,
                 $this->mode,
                 $primaryBalanceAmount,

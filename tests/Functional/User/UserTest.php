@@ -4057,6 +4057,7 @@ class UserTest extends TestCase
 
         $content = [
             'contact_mobile'        => '9012345678',
+            'fingerprint'           => 'randomfingerprint',
         ];
 
         $testData['request']['content'] = $content;
@@ -4073,6 +4074,7 @@ class UserTest extends TestCase
 
         $content = [
             'contact_mobile'        => '9012347678',
+            'fingerprint'           => 'randomfingerprint',
         ];
 
         $testData['request']['content'] = $content;
@@ -4091,6 +4093,7 @@ class UserTest extends TestCase
 
         $content = [
             'email'        => 'hello123@gmail.com',
+            'fingerprint'  => 'randomfingerprint',
         ];
 
         $testData['request']['content'] = $content;

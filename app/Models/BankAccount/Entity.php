@@ -3,6 +3,8 @@
 namespace RZP\Models\BankAccount;
 
 use App;
+use RZP\Models\Customer\Account\SplitzExperimentEvaluator;
+use RZP\Models\Customer\ImplicitJoinHelper;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use Razorpay\IFSC\IFSC;
@@ -332,6 +334,10 @@ class Entity extends Base\PublicEntity
         if ($this->getType() === E::MERCHANT)
         {
             return $this->getMerchantAttribute();
+        }
+        if ($this->getType() === E::CUSTOMER && (new SplitzExperimentEvaluator())->isLazyReadOverrideToCmsEnabled($this->entity))
+        {
+            return (new ImplicitJoinHelper())->getCustomerAttributeByCustomerId($this, 'source', 'getEntityId');
         }
 
         return parent::getRelationValue('source');

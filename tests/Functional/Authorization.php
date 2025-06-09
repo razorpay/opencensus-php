@@ -837,6 +837,15 @@ class Authorization
         $this->appAuth('rzp_'.$mode, $pwd);
     }
 
+    public function idfcAuth($mode = 'test')
+    {
+        $idfcConfig = \Config::get('applications.idfc');
+
+        $pwd = $idfcConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
     public function hdfcEcmsAuth($mode = 'test')
     {
         $hdfcEcmsConfig = \Config::get('applications.hdfc_ecms');

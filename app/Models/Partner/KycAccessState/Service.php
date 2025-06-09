@@ -10,6 +10,9 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Repository as MerchantRepo;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Merchant;
+use RZP\Models\User\Role;
 
 use RZP\Models\Merchant\MerchantApplications as MerchantApplications;
 class Service extends Base\Service

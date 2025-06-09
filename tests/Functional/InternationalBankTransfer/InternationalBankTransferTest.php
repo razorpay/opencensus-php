@@ -9,6 +9,9 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\User\Role;
+use RZP\Models\Payment\Status;
+use RZP\Services\Segment\SegmentAnalyticsClient;
+use RZP\Models\BankTransfer\Constants as BankTransferConstants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Payment\B2bUploadInvoice;
 use RZP\Exception\BadRequestException;
@@ -489,6 +492,106 @@ class InternationalBankTransferTest extends TestCase
         }
 
         $this->assertCount(1,$pricing_rule);
+    }
+
+    public function testCreateAccountForCurrencyCloudForSegmentEvent()
+    {
+        $merchant = $this->fixtures->merchant->create(["id"=>'10000merchant1']);
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $merchant['id']]);
+
+        $merchantDetail = $this->fixtures->merchant_detail->create(['merchant_id' => $merchant['id']]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->pricing->createPricingPlanWithoutMethods("dummyId",["intl_bank_transfer"]);
+
+        $this->ba->adminAuth();
+
+        $this->merchantAssignPricingPlan('dummyId', $merchantDetail['merchant_id']);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['accept_b2b_tnc'] = true;
+        $request['content']['va_currency'] = "USD";
+        $request['content']['enable_all_currencies'] = true;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->sendRequest($request);
+        }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
+            [
+                'purpose_code' => PurposeCodeList::P1004,
+                'category' => '5813',
+            ]);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->sendRequest($request);
+        }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
+            [
+                'category' => '8211',
+            ]);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->sendRequest($request);
+        }, BadRequestException::class, 'IEC Code is required for your category of business.');
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', $merchantDetail->getId(), ["iec_code"=>"ABCDE12345"]);
+
+        $this->sendRequest($request);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['accept_b2b_tnc'] = 1;
+        $request['content']['va_currency'] = "USD";
+        $request['content']['enable_all_currencies'] = 1;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+            ->method('pushIdentifyAndTrackEvent')
+            ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                $this->assertNotNull($merchant);
+                $this->assertNotNull($properties);
+                $this->assertNotNull($properties["moneysaver_activation_timestamp"]);
+                $this->assertNotNull($properties["merchant_id"]);
+                $this->assertTrue(in_array($eventName, [BankTransferConstants::MONEYSAVER_ACTIVATED], true));
+            }));
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertCount(4,$content['accounts']);
+
+        $this->ba->adminAuth();
+        $pricing_plan = $this->fetchMerchantPricingPlan($merchantDetail['merchant_id']);
+
+        $pricing_rule = [];
+        foreach ($pricing_plan['rules'] as $rule) {
+            if($rule['payment_method'] === 'intl_bank_transfer') {
+                $pricing_rule[] = $rule;
+            }
+        }
+
+        $this->assertCount(4,$pricing_rule);
     }
 
 //    public function testCreateAccountForCurrencyCloudPricingPlanMultipleMerchant()
@@ -976,6 +1079,73 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals('IF-20230609-GFOTB9',$paymentEntity['reference1']);
 
         $this->testSendNotificationForB2B($paymentEntity);
+    }
+
+    public function testCashManagerTransactionNotificationForCurrencyCloudForSEPASegmentEvent()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        // Test to increase txn limit for B2B intl_bank_transfer payments
+        // Higher limit is now Rs 8.2L base amount
+        // https://razorpay.slack.com/archives/C024U3B04LD/p1681131023230559
+        $this->mockMozartResponseForCurrencyCloud(820, 'EUR');
+
+        $this->ba->directAuth();
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+            ->method('pushIdentifyAndTrackEvent')
+            ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                $this->assertNotNull($merchant);
+                $this->assertNotNull($properties);
+                $this->assertNotNull($properties["merchant_id"]);
+                $this->assertNotNull($properties["payment_id"]);
+                $this->assertNotNull($properties["payment_created_timestamp"]);
+                $this->assertNotNull($properties["payment_authorization_timestamp"]);
+                $this->assertTrue(in_array($eventName, [BankTransferConstants::FIRST_MONEYSAVER_PAYMENT.Status::AUTHORIZED], true));
+            }));
+
+        // first payment request
+        $firstPaymentEntity = $this->authorizeAndFetchPaymentForSegmentEvent('IF-20230609-GFOTB9');
+        // second payment request
+        $secondPaymentEntity = $this->authorizeAndFetchPaymentForSegmentEvent('IF-20230609-GFOTB7');
+
+        $this->assertNotEquals($firstPaymentEntity['id'], $secondPaymentEntity['id'], 'Two different payments have to be created');
+    }
+
+    protected function authorizeAndFetchPaymentForSegmentEvent($referenceId){
+        $request = $this->testData['testCashManagerTransactionNotificationForCurrencyCloudForSEPASegmentEvent']['request'];
+        $request['content']['related_entity_short_reference'] = $referenceId;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $paymentEntity = $this->getLastPayment('payment', 'true');
+        $this->assertEquals('authorized',$paymentEntity['status']);
+        $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
+        $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
+        $this->assertEquals('sepa',$paymentEntity['wallet']);
+        $this->assertEquals(803600,$paymentEntity['base_amount']);
+        $this->assertEquals(82000,$paymentEntity['amount']);
+        $this->assertEquals($referenceId,$paymentEntity['reference1']);
+
+        $this->testSendNotificationForB2B($paymentEntity);
+
+        return $paymentEntity;
     }
 
     public function testCashManagerTransactionNotificationForCurrencyCloudWithHeaderInInput()
@@ -1473,6 +1643,46 @@ class InternationalBankTransferTest extends TestCase
         $this->assertNull($updatedPaymentEntity['reference16']);
     }
 
+    public function testCaptureCronForB2BAmazonPayments()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->merchant->addFeatures('skip_b2b_export_invoice',$merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        $firstRequest = $this->testData['testCashManagerTransactionNotificationForCurrencyCloud']['request'];
+        $firstResponse = $this->sendRequest($firstRequest);
+
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->fixtures->edit('payment',$paymentEntity['id'],[
+            'reference2' => ''
+        ]);
+
+        $this->fixtures->merchant->addFeatures('enable_settlement_for_b2b',$merchantDetail['merchant_id']);
+
+        $this->collectAddress($paymentEntity, $merchantUser['id']);
+
+        $this->ba->cronAuth();
+        $secondRequest = $this->testData[__FUNCTION__]['request'];
+        $secondResponse = $this->sendRequest($secondRequest);
+
+        $updatedPaymentEntity = $this->getLastPayment(true);
+
+        $this->assertNotNull($updatedPaymentEntity['reference16']);
+    }
+
+
     public function testSettlementCronForB2BPayments()
     {
         $this->ba->cronAuth();
@@ -1678,6 +1888,10 @@ class InternationalBankTransferTest extends TestCase
 
                         if ($amount === 3199) {
                             $senderAddress = "David Jenkins;, Brighton exceeds expected city length way longer than usual, East Sussex, 560068;GB;1111111111;;00000000";
+                        }
+
+                        if ($amount === 2133) {
+                            $senderAddress = "AMAZON. Jenkins; 31 High Street, Brighton, East Sussex, 560068;GB;1111111111;;00000000";
                         }
                         return [
                             'data' => [
