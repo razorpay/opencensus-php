@@ -262,7 +262,6 @@ return [
                 'error' => [
                     'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   =>  'business_type should not be null.',
-                    'source'        =>  'business',
                     'reason'        =>  'input_validation_failed'
                 ],
             ],
@@ -291,7 +290,6 @@ return [
                 'error' => [
                     'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   =>  'Invalid business_website : https://razorpay.com',
-                    'source'        =>  'business',
                     'reason'        =>  'input_validation_failed'
                 ],
             ],
@@ -320,7 +318,6 @@ return [
                 'error' => [
                     'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   =>  'The business_website is not a valid URL.',
-                    'source'        =>  'business',
                     'reason'        =>  'input_validation_failed'
                 ],
             ],
@@ -390,7 +387,6 @@ return [
                 'error' => [
                     'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   =>  'The CIN is invalid for public_limited',
-                    'source'        =>  'business',
                     'reason'        =>  'input_validation_failed'
                 ],
             ],
@@ -428,7 +424,6 @@ return [
                 'error' => [
                     'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   =>  'The CIN is invalid for private_limited',
-                    'source'        =>  'business',
                     'reason'        =>  'input_validation_failed'
                 ],
             ],
@@ -620,7 +615,6 @@ return [
                 'error' => [
                     'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   =>  'The pan in GSTIN is not as same as Authorised Signatory PAN for proprietorship',
-                    'source'        =>  'business',
                     'reason'        =>  'input_validation_failed'
                 ],
             ],
@@ -3038,7 +3032,6 @@ return [
                 'error' => [
                     'code' => 'BAD_REQUEST_ERROR',
                     'description' => 'BAD_REQUEST_INVALID_MIQ_SHARING_DATE',
-                    'source' => 'business',
                     'step' =>  'payment_initiation',
                     'reason'=> 'input_validation_failed',
                     'metadata'=> []
@@ -3445,6 +3438,85 @@ return [
                 'role'               => null,
                 'contact_email'     => null,
             ],
+        ],
+    ],
+
+    'testUpdateMerchantDetailsForNewUser' => [
+        'request' => [
+            'content' => [
+                "contact_mobile" => "1111222233",
+                "contact_name" => "Rohan kumar",
+                "transaction_volume" => 2,
+                "department"    => "7",
+                "business_type" => "1"
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_type'     => "1",
+                'transaction_volume'=> "2",
+                'department'        => "7",
+                'contact_name'      => "Rohan kumar",
+                'business_name'     => "Rohan kumar",
+                'contact_mobile'    => "+911111222233",
+                'contact_email'     => "banking-pod2969@razorpay.com"
+            ],
+        ],
+    ],
+
+    'testUpdateUserDetailsWithNonUniqueContactNo' => [
+        'request' => [
+            'content' => [
+                "contact_mobile" => "912233776658",
+                "contact_name" => "Rohan kumar",
+                "transaction_volume" => 2,
+                "department"    => "7",
+                "business_type" => "1"
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The contact mobile has already been taken.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateUserDetailsForExistingUser' => [
+        'request' => [
+            'content' => [
+                "contact_mobile" => "912233116654",
+                "contact_name" => "Rohan kumar",
+                "transaction_volume" => 2,
+                "department"    => "7",
+                "business_type" => "1"
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'New mobile no cannot be updated against existing user',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

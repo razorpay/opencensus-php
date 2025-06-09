@@ -1924,7 +1924,7 @@ class Core extends Base\Core
 
             $fav->setFTSTransferId($mapping[Entity::FTS_TRANSFER_ID]);
 
-            $this->updateWithDetailsBeforeFtaRecon($fav, $mapping);
+//            $this->updateWithDetailsBeforeFtaRecon($fav, $mapping);
 
             $this->updateStatusAfterFtaRecon($fav, $mapping);
     }

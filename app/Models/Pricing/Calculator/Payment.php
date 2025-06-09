@@ -1176,6 +1176,8 @@ class Payment extends Base
                         }catch (Exception\LogicException $e) {
                             if ($e->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT) {
                                 $this->logPricingFailureDetails($pricing);
+
+                                $this->trace->count(Metrics::PRICING_ERROR_NO_RULE_FOUND_ON_FALLBACK_PRICING);
                             }
                             throw $e;
                         }

@@ -33,6 +33,7 @@ class Metric
     const ACS_SYNC_EVENT_PUBLISHED              = 'acs_sync_event_published';
     const ACS_SYNC_ALERT_EVENT_PUBLISH_FAILED   = 'acs_sync_alert_event_publish_failed';
     const ACS_SYNC_ALERT_UNKNOWN_TRIGGER        = 'acs_sync_alert_unknown_trigger';
+    const GET_DCC_INFO_COUNT                    = 'get_dcc_info_count';
     const ASV_SYNC_ACCOUNT_DEVIATION_TOTAL      = 'asv_sync_account_deviation_total';
     const ASV_ROLLBACK_EVENT_PUBLISHED          = 'asv_rollback_event_published';
     const ASV_ROLLBACK_EVENT_PUBLISH_FAILED     = 'asv_rollback_event_publish_failed';
@@ -319,6 +320,8 @@ class Metric
 
     const PGOS_DUAL_WRITE_CONSUMER_ERROR                        = 'pgos_dual_write_consumer_error';
 
+    const LEDGER_PG_ACCOUNT_CREATION_FAILED                     = 'ledger_pg_account_creation_failed';
+
     const SETTLEMENT_ONDEMAND_GLOBAL_LIMIT_BREACHED             = 'settlement_ondemand_global_limit_breached';
 
     const SETTLEMENT_ONDEMAND_INVALID_CAPPING_SCALE_FACTOR      = 'settlement_ondemand_invalid_capping_scale_factor';
@@ -372,5 +375,7 @@ class Metric
     const SUBSCRIPTIONS_PAYMENT_NOTIFY_FAILURE = 'subscriptions_payment_notify_failure';
 
     const TOKEN_CONFIRM_REJECT_NOTIFY_ERROR = 'token_confirm_reject_notify_error';
+    const MERCHANT_REKYC_STATUS_OBSERVER_CREATE_FAILED = 'merchant_rekyc_status_observer_create_failed';
+    const MERCHANT_REKYC_OBSERVER_METRO_PUBLISH = 'merchant_rekyc_observer_publish';
 
 }

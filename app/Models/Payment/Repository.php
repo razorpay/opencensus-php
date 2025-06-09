@@ -2836,6 +2836,20 @@ EOT;
                     ->get();
     }
 
+    public function fetchCurrentDayPaymentsCountByOrderID($orderId){
+        // Get current day's start and end timestamps in IST
+        $startOfDay = Carbon::now(Timezone::IST)->startOfDay()->timestamp;
+        $endOfDay = Carbon::now(Timezone::IST)->endOfDay()->timestamp;
+
+        // First get all payments for the order
+        $paymentCount = $this->newQuery()
+            ->where(Payment\Entity::ORDER_ID, '=', $orderId)
+            ->whereBetween(Payment\Entity::CREATED_AT, [$startOfDay, $endOfDay])
+            ->count();
+
+        return $paymentCount;
+    }
+
     protected function addQueryParamBank($query, $params)
     {
         if (Payment\Processor\Netbanking::isSupportedBank($params['bank']) === false)
@@ -5423,6 +5437,17 @@ GROUP BY
             ->get();
     }
 
+    public function getPaymentsWithOutInvoice($gateway, $status, $limit){
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::GATEWAY, $gateway)
+            ->status($status)
+            ->whereNull(Entity::REFERENCE2)
+            ->whereNull(Entity::REFERENCE16)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
     public function getPaymentsDuplicateReferenceId($gateway, $merchantId, $referenceId, $statuses, $from, $to)
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
@@ -5489,20 +5514,25 @@ GROUP BY
     {
         $limit = isset($input['limit']) ? $input['limit'] : 100;
 
-        $from = $input['from'] ?? Carbon::now(Timezone::IST)->subHours(24)->getTimestamp();
-        $to = $input['to'] ?? Carbon::now(Timezone::IST)->getTimestamp();
-
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->where(Entity::INTERNATIONAL, 1)
-            ->where(Entity::METHOD, Method::BANK_TRANSFER)
             ->where(Entity::GATEWAY, $gateway)
             ->where(Entity::STATUS, $status)
-            ->whereBetween(Entity::CREATED_AT, [$from, $to])
             ->orderBy(Entity::CREATED_AT, 'desc')
             ->limit($limit);
 
         if (isset($input['merchant_ids']) && sizeof($input['merchant_ids']) > 0) {
             $query = $query->whereIn(Entity::MERCHANT_ID, $input['merchant_ids']);
+        }
+
+        if (isset($input['methods']) && sizeof($input['methods']) > 0) {
+            $query = $query->whereIn(Entity::METHOD, $input['methods']);
+        }
+
+        if(isset($input['timestamp_filter'])){
+            $from = $input['from'] ?? Carbon::now(Timezone::IST)->subHours(24)->getTimestamp();
+            $to = $input['to'] ?? Carbon::now(Timezone::IST)->getTimestamp();
+            $query = $query->whereBetween(Entity::CREATED_AT, [$from, $to]);
         }
 
         return $query->get();
@@ -5514,6 +5544,23 @@ GROUP BY
     // and `method` = nach
     // limit 5
 
+    public function fetchIntlBankTransferPaymentsCount($input, $statuses, $gateway)
+    {
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::INTERNATIONAL, 1)
+            ->where(Entity::GATEWAY, $gateway)
+            ->whereIn(Entity::STATUS, $statuses);
+
+        if (isset($input['merchant_ids']) && sizeof($input['merchant_ids']) > 0) {
+            $query = $query->whereIn(Entity::MERCHANT_ID, $input['merchant_ids']);
+        }
+
+        if (isset($input['methods']) && sizeof($input['methods']) > 0) {
+            $query = $query->whereIn(Entity::METHOD, $input['methods']);
+        }
+
+        return $query->count();
+    }
     public function getPaymentCountByToken($tokenId)
     {
         $connectionType = $this->getSplitzStatusAndReturnConnectionForHarvesterMigration(true);
@@ -5676,6 +5723,7 @@ GROUP BY
             ->addSelect($insuranceRepo->dbColumn(Insurance\Entity::STATUS) . ' as insurance_status')
             ->addSelect($insuranceRepo->dbColumn(Insurance\Entity::CLAIM_STATUS) . ' as insurance_claim_status')
             ->addSelect($insuranceRepo->dbColumn(Insurance\Entity::CLAIM_HISTORY) . ' as insurance_claim_history')
+            ->addSelect($insuranceRepo->dbColumn(Insurance\Entity::INSURANCE_PROVIDER) . ' as insurance_provider')
             ->leftJoin(
                 $insuranceTable,
                 function ($join)

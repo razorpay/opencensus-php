@@ -8,7 +8,13 @@ use RZP\Services\Partnerships;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Repository as MerchantRepo;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Merchant;
+use RZP\Models\User\Role;
 
+use RZP\Models\Merchant\MerchantApplications as MerchantApplications;
 class Service extends Base\Service
 {
     use Partnerships\PartnershipServiceTrait;
@@ -30,29 +36,38 @@ class Service extends Base\Service
             'partner_id' => $partner->getId()
         ]);
         $prtsResult = $this->proxyToPartnershipServiceForPKYC($prtsInput, $partner->getId());
-
-        if (empty($prtsResult['response']) === false) {
+        if ($this->isExpModeReverseShadow($prtsResult['variant']) || $this->isExpModeCutOff($prtsResult['variant'])) {
             return $prtsResult['response'];
         }
+        $merchantApplicationCore = new MerchantApplications\Core();
+        $appType = $merchantApplicationCore->getDefaultAppTypeForPartner($partner);
 
 
         (new Entity)->getValidator()->validateInput('create', $input);
 
-        (new Validator)->validateMerchantReferredByPartner($partner->getId(), $input[Entity::ENTITY_ID]);
+        (new Validator)->validateMerchantReferredByPartner($partner->getId(), $input[Entity::ENTITY_ID], $appType);
 
         $subMerchantKycAccess = $this->core->createOrGetRequestForSubMerchantKyc($partner, $input);
-
-        return $subMerchantKycAccess->toArrayPublic();
+        $apiResponse = $subMerchantKycAccess->toArrayPublic();
+        $this->checkParity($prtsResult['response'], $apiResponse);
+        return $apiResponse;
     }
 
     public function confirmRequestForSubMerchantKyc($input)
     {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
         (new Entity)->getValidator()->validateInput('token', $input);
-
-        $subMerchantKycAccess = $this->core->confirmRequestForSubMerchantKyc($input);
-
+        $partner = (new MerchantRepo())->getMerchant($input[Entity::PARTNER_ID]);
+        $prtsResult = $this->proxyToPartnershipServiceForPKYC($input, $partner->getId());
+        if ($this->isExpModeReverseShadow($prtsResult['variant']) || $this->isExpModeCutOff($prtsResult['variant'])) {
+            return $prtsResult['response'];
+        }
+        $subMerchantKycAccess = $this->core->confirmRequestForSubMerchantKyc($input, $partner);
+        $this->checkParity($prtsResult, $subMerchantKycAccess->toArrayPublic());
         return $subMerchantKycAccess->toArrayPublic();
     }
+
+
 
     public function revokeKycAccess($input)
     {
@@ -84,7 +99,8 @@ class Service extends Base\Service
             TraceCode::PRTS_KYC_ACCESS_STATE_UPSERT_REQUEST,
             [
                 'input' => $input,
-            ]);
+            ]
+        );
 
         return $this->core()->upsertFromPRTS($input);
     }
@@ -104,11 +120,11 @@ class Service extends Base\Service
     {
         $partner = $this->merchant;
 
-        if ($partner === null)
-        {
+        if ($partner === null) {
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_PARTNER_CONTEXT_NOT_SET,
-                Entity::PARTNER_TYPE);
+                Entity::PARTNER_TYPE
+            );
         }
 
         return $partner;

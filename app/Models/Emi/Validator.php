@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Repository as Repo;
+use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
 {
@@ -17,13 +18,13 @@ class Validator extends Base\Validator
         Entity::NETWORK                 => 'required_without_all:bank,cobranding_partner|max:5|in:AMEX,BAJAJ',
         Entity::COBRANDING_PARTNER      => 'required_without_all:bank,network|in:onecard',
         Entity::TYPE                    => 'sometimes|in:credit,debit',
-        Entity::DURATION                => 'required|integer|in:2,3,6,9,12,18,24,30,36,48',
+        Entity::DURATION                => 'required|integer|in:2,3,4,6,9,12,18,24,30,36,48',
         Entity::RATE                    => 'required|integer|min:0',
         Entity::METHODS                 => 'sometimes|in:card,wallet,netbanking',
         Entity::MIN_AMOUNT              => 'sometimes|integer|min:100',
         Entity::ISSUER_PLAN_ID          => 'sometimes',
         Entity::SUBVENTION              => 'sometimes|in:customer,merchant',
-        Entity::MERCHANT_PAYBACK        => 'required|integer',
+        Entity::MERCHANT_PAYBACK        => 'required|integer'
     );
 
     protected static $createValidators = array(
@@ -37,7 +38,7 @@ class Validator extends Base\Validator
     // 30 months duration is only valid for HDFC debit
     protected function validateDuration($input)
     {
-        if (isset($input[Entity::DURATION]) && $input[Entity::DURATION] == 2)
+        if (isset($input[Entity::DURATION]) && ($input[Entity::DURATION] == 2 || $input[Entity::DURATION] == 4))
         {
             if (isset($input[Entity::NETWORK]) === true && $input[Entity::NETWORK] === 'BAJAJ')
             {

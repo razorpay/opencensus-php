@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\File\Processor\Refund;
 use App;
 use Mail;
+use Illuminate\Support\Facades\Config;
 use Razorpay\Trace\Logger as Trace;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -46,9 +47,9 @@ class AublEmi extends Base
 
     protected function generatePassword()
     {
-        return null;
+        $publicKey = Config::get('applications.emi.aubl_cc_emi_file_password');
+        return $publicKey;
     }
-
     private function getAuthCode($payment)
     {
         $authCode = $payment['reference2'];
@@ -80,7 +81,7 @@ class AublEmi extends Base
 
     protected function formattedDateFromTimestamp($timestamp)
     {
-        return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('M d, Y');
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('M d,Y');
     }
 
     protected function pushEmiFileToBeam(string $jobName)
@@ -141,7 +142,7 @@ class AublEmi extends Base
 
         $body = 'Emi File Uploaded <br />';
         $body = $body . 'File Name : ' . $fullFileName . '<br />';
-        $body = $body . 'Password : ' . $this->emiFilePassword . '<br />';
+        $body = $body . 'Password : ' . $this->generatePassword() . '<br />';
 
         $mailData = [
             "body" => $body
@@ -204,7 +205,7 @@ class AublEmi extends Base
                 'Refund Type' => $this->getRefundType($row),
                 'Refund Amount' => $this->getFormattedAmount($row->amount/100),
                 'Refund Date' => $this->formattedDateFromTimestamp($row->created_at),
-                'Refund Auth Code' => $this->formattedDateFromTimestamp($row->id),
+                'Refund Auth Code' => $row->id,
             ];
         }
 
@@ -232,6 +233,15 @@ class AublEmi extends Base
         }
     }
 
+    public function generateData(PublicCollection $entities)
+    {
+        $data = $entities->all();
+
+        $this->emiFilePassword = $this->generatePassword();
+
+        return $data;
+    }
+
     public function createFile($data)
     {
         $defaultExcelEnclosure = $this->config->get('excel.exports.csv.enclosure');
@@ -255,6 +265,9 @@ class AublEmi extends Base
                 ->store(FileStore\Store::S3)
                 ->type(static::FILE_TYPE)
                 ->entity($this->gatewayFile);
+
+            $creator->password($this->generatePassword())
+                ->compress();
 
             $creator->save();
 

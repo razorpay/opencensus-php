@@ -55,7 +55,9 @@ class Limit
         Type::SUB_MERCHANT                          => 5000,
         Type::MERCHANT_UPLOAD_MIQ                   => 1000,
         Type::JAMMU_AND_KASHMIR_ONBOARDING          => 10000,
+        Type::HDFC_SMS_PAY_ONBOARDING              => 10000,
         Type::HDFC_ONBOARDING                       => 10000,
+        Type::HDFC_BANK_ACQUIRED_TERMINAL_ONBOARDING=> 10000,
         Type::SUBMERCHANT_ASSIGN                    => 50000,
         TYPE::IIN_NPCI_RUPAY                        => 50000,
         TYPE::IIN_HITACHI_VISA                      => 500000,
@@ -68,6 +70,7 @@ class Limit
         'nach_debit_nach_citi'                      => 350000,
         'nach_debit_nach_icici'                     => 100000,
         Type::ECOLLECT_RBL                          => 100000,
+        Type::ECOLLECT_RBL_BANKING                  => 100000,
         Type::ECOLLECT_YESBANK                      => 100000,
         Type::ECOLLECT_AXIS                         => 100000,
         Type::ECOLLECT_AXIS_BANKING                 => 100000,
@@ -122,6 +125,7 @@ class Limit
         Type::MANDATE_CONTINUITY                    => 1000000,
         Type::TOKEN_CONTINUITY                    => 1000000,
         Type::CUSTOMER_MIGRATION                    => 1000000,
+        Type::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL => 1000000,
     ];
 
     /**

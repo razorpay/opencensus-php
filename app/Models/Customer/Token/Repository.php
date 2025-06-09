@@ -11,6 +11,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Models\Customer;
 use Rzp\Wda_php\Cluster;
@@ -47,10 +48,20 @@ class Repository extends Base\Repository
     public function getByCustomer($customer, bool $withVpas = false, $merchantId = null, $mode = 'test')
     {
         $isPassUnusedRejectedTokensExperimentEnabled = false;
+        $isLinkAndPayEnabled = false;
 
         if ($merchantId !== null)
         {
             $isPassUnusedRejectedTokensExperimentEnabled = $this->evaluateSplitzExperimentForPassRejectedUnusedTokens($merchantId);
+
+            $merchant = $this->repo->merchant->find($merchantId);
+            $isLinkAndPayEnabled = $merchant->isFeatureEnabled(Feature\Constants::WALLET_LINK_AND_PAY);
+        }
+
+        if ($isLinkAndPayEnabled)
+        {
+            // This is being done only for link and pay based wallet tokens. Currently only support for AmazonPay is added here.
+            return $this->getExternalTokensByCustomer($customer, $isPassUnusedRejectedTokensExperimentEnabled, $withVpas, true);
         }
 
         if($withVpas and $isPassUnusedRejectedTokensExperimentEnabled === false)
@@ -372,6 +383,24 @@ class Repository extends Base\Repository
         // entity_type has subscription and null as values at the moment
         // To fetch just CAW tokens we check entity_type is NULL as using `!=` with WHERE clause excludes null entries
         $query = $query->whereNull(Token\Entity::ENTITY_TYPE);
+
+        if ((new Customer\Account\SplitzExperimentEvaluator())->isLazyReadOverrideToCmsEnabled('token'))
+        {
+            $query = $this->buildFetchQuery($query, $input);
+            $tokens = $query->get();
+            $customerIds = [];
+            foreach ($tokens as $t)
+                $customerIds[] = $t->getCustomerId();
+
+            $customers = (new Customer\Repository())->fetchByMerchantIdAndIds($merchantId, $customerIds);
+
+            for ($i = 0; $i < count($customers); $i++)
+            {
+                $tokens[$i]->customer()->associate($customers[$i]);
+            }
+
+            return $tokens;
+        }
 
         $query = $query->with('customer');
 

@@ -8,6 +8,7 @@ use RZP\Constants;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\AffordabilityService;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
@@ -21,6 +22,7 @@ class Service extends Base\Service
 {
     public function all()
     {
+
         $plans = $this->fetchEmiPlans();
 
         $plans = $this->formatPlan($plans);
@@ -405,6 +407,7 @@ class Service extends Base\Service
     public function addEmiPlan(array $input)
     {
         $emiPlan = (new Core)->addEmiPlan($input);
+
         if (isset($input[Entity::SOURCE_CHANNEL]) && $input[Entity::SOURCE_CHANNEL] === Entity::SOURCE_CHANNEL_IN_PERSON)
         {
             return $emiPlan;
@@ -415,11 +418,7 @@ class Service extends Base\Service
 
     public function deleteEmiPlan($id)
     {
-        $emiPlan = $this->repo->emi_plan->findOrFailPublic($id);
-
-        (new Migration)->handleMigration(Migration::DELETE, $emiPlan);
-
-        $this->repo->emi_plan->deleteOrFail($emiPlan);
+        $emiPlan = (new Core)->deleteEmiPlan($id);
 
         return $emiPlan->toArrayAdmin();
     }
@@ -650,6 +649,7 @@ class Service extends Base\Service
 
     private function fetchEmiPlans()
     {
+
         $sharedCreditEmiPlans = new PublicCollection();
 
         $sharedDebitEmiPlans = new PublicCollection();
@@ -810,5 +810,17 @@ class Service extends Base\Service
         $sharedEmiPlans = $sharedCreditEmiPlans->merge($sharedDebitEmiPlans);
 
         return $merchantEmiPlans->merge($sharedEmiPlans);
+    }
+
+    function fetchByMid($mid)
+    {
+        $sharedPlans = $this->repo->emi_plan->fetchEmiPlanByMerchantId(Account::SHARED_ACCOUNT);
+
+        $merchantEmiPlans = $this->repo->emi_plan->fetchEmiPlanByMerchantId($mid);
+
+        return [
+            'sharedPlans' => $sharedPlans,
+            'merchantEmiPlans' => $merchantEmiPlans
+        ];
     }
 }

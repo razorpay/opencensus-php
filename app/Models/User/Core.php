@@ -1592,9 +1592,13 @@ class Core extends Base\Core
 
                 $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
-                $permissionEnabled = (new \RZP\Models\Admin\Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+                $org = $this->repo->org->findOrFailPublic($orgId);
 
-                if ($permissionEnabled === true)
+                $vasOrgFeatureEnabled = $org->isFeatureEnabled(FeatureConstant::VAS_ORG_IDENTIFIER);
+
+                $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+                if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true))
                 {
                     $skip = true;
                 }
@@ -4407,6 +4411,35 @@ class Core extends Base\Core
                 if ($merchant->getOrgID() === $orgId or in_array($merchant->getId(), $merchantIdsWithCrossOrgFeature, true) === true)
                 {
                     $filteredMerchants->add($merchant);
+
+                    $ezetapMid = $this->app['config']->get('app.ezetap_merchant_id');
+
+                    if(!empty($merchant[Entity::PIVOT]) && !empty($merchant[Entity::PIVOT][Entity::ROLE]) && $merchant[Entity::PIVOT][Entity::ROLE] == ROLE::PARTNER_AGENT && $merchant->getId() == $ezetapMid) {
+                        $this->trace->info(TraceCode::PARTNER_AGENT_MERCHANT_FOUND, [
+                            'user_id' => $user->getUserId()
+                        ]);
+
+                        $partnerAgentMerchants = new Base\PublicCollection;
+
+                        $partnerAgentMerchants->add($merchant);
+
+                        $partnerMerchants = $partnerAgentMerchants->callOnEveryItem('toArrayUser');
+
+                        $partnerMerchantsUnique = $this->getUnifiedMerchants($partnerMerchants);
+
+                        $userId = $user->getUserId();
+
+                        $partnerMerchantsUnique = $this->appendBankingSpecificDetails($partnerMerchantsUnique, $userId);
+
+                        $partnerMerchantsUnique = $this->addProductSpecificDetails($partnerMerchantsUnique);
+
+                        $response['rzp_partner_agent'] = $partnerMerchantsUnique;
+
+                        $this->trace->info(TraceCode::PARTNER_AGENT_RESPONSE_UPDATED, [
+                            'merchant_id' => $merchant->getId(),
+                            'user_id' => $userId
+                        ]);
+                    }
                 }
             }
         }
@@ -4430,6 +4463,8 @@ class Core extends Base\Core
             $response[Entity::INVITATIONS] = $invitations;
             $response[Entity::SETTINGS]    = $settings;
         }
+
+        $this->getSortedMerchantsForCustomInvite($merchantsUnique, $orgId);
 
         $response[Entity::MERCHANTS]   = $merchantsUnique;
 
@@ -7438,8 +7473,7 @@ class Core extends Base\Core
         // merchants for whom pgos is serving onboarding requests
         // merchants who are not completely activated
         if ($merchant->getService() === Merchant\Constants::PGOS and
-            empty($users) === false and
-            $merchant->merchantDetail->getActivationStatus() != Merchant\Detail\Status::ACTIVATED)
+            empty($users) === false)
             {
                 $user = $this->repo->user->find($users[0]);
 
@@ -7482,5 +7516,21 @@ class Core extends Base\Core
     {
         // create merchant, merchant_user, merchant_attribute,
         $merchantData = $this->merchantService->create($merchantInputData, $merchantDetailInputData);
+    }
+
+    protected function getSortedMerchantsForCustomInvite(&$merchantsUnique, $orgId): void
+    {
+        $org = $this->repo->org->findOrFailPublic($orgId);
+
+        $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+        $vasOrgFeatureEnabled = $org->isFeatureEnabled(FeatureConstant::VAS_ORG_IDENTIFIER);
+
+        if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true))
+        {
+            usort($merchantsUnique, function ($a, $b) {
+                return $b[Entity::CREATED_AT] <=> $a[Entity::CREATED_AT]; // Sorting merchant list to get newly created merchant first.
+            });
+        }
     }
 }

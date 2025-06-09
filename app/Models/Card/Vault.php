@@ -11,6 +11,7 @@ class Vault
     const HDFC                   = 'hdfc';
     const PROVIDERS              = 'providers';
     const UTIB                   = 'UTIB';
+    const JUSPAY                 = 'juspay';
 
     const RZP_VAULT_SCHEME       = '0';
     const RZP_ENCRYPTION_SCHEME  = '1';

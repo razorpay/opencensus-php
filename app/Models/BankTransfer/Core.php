@@ -18,6 +18,8 @@ use RZP\Models\Feature;
 use RZP\Models\Address;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\LedgerStatus;
@@ -1258,6 +1260,33 @@ class Core extends Base\Core
             ]);
         }
 
+        $name_upper = strtoupper($senderDetails[0]);
+
+        try {
+            if (preg_match('/^' . preg_quote(Constants\Entity::AMAZON_PAYOUT, '/') . '/', $name_upper)) {
+                // only applicable for amazon merchant
+                (new \RZP\Models\Merchant\Core)->addFeatureFlagForMerchant($this->merchant, Feature\Constants::CB_SKIP_B2B_EXPORT_INVOICE);
+                (new \RZP\Models\Merchant\Core)->addFeatureFlagForMerchant($this->merchant, Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B);
+                $addressPayload = $this->getAmazonBillingAddressByWallet($payment->getWallet());
+                $this->trace->info(TraceCode::RAW_ADDRESS_CREATE_REQUEST,[
+                    'Amazon Billing Address Payload' => $addressPayload,
+                ]);
+                if($addressPayload){
+                    (new Address\Core)->create($payment, $payment->getEntity(),$addressPayload);
+                }
+            }
+        } catch (\Throwable $ex) {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::B2B_AMAZON_SKIP_INVOICE_FAILED,
+                [
+                    'message' => 'Exception while processing amazon skip-invoice merchant',
+                    'payment_id' => $payment->getId() ?? null,
+                ]
+            );
+        }
+
         $billingAddressFromInput['type']        = Address\Type::SENDER_ADDRESS;
         $billingAddressFromInput['name']        = trim($senderDetails[0]);
         $billingAddressFromInput['zipcode']     = trim(last($address));
@@ -1354,7 +1383,13 @@ class Core extends Base\Core
                     Payment\Entity::CURRENCY => $payment->getCurrency(),
                 ];
 
+                $shouldSendSegmentEvent = $this->canSendMoneySaverPaymentSegmentEvent($merchantId, Payment\status::CAPTURED);
+
                 $paymentProcessor->capture($payment,$values);
+
+                if ($shouldSendSegmentEvent === true) {
+                    $this->sendPaymentSegmentEvent($merchantId, Payment\status::CAPTURED, $payment);
+                }
             }
             else
             {
@@ -1369,6 +1404,86 @@ class Core extends Base\Core
                     'reason'     => 'Payment Not Authorized yet',
                 ]);
             }
+    }
+
+    public function sendPaymentSegmentEvent($merchantID, $paymentStatus, $payment)
+    {
+        $this->trace->info(TraceCode::MONEYSAVER_SEGMENT_EVENT_REQUEST, [
+            'merchant_id' => $merchantID,
+            'event_type' => $paymentStatus,
+            "payment_id" => $payment->getId(),
+        ]);
+        try {
+            $properties = [
+                "merchant_id" => $merchantID,
+                "merchant_type" => "cross_border_money_saver",
+                "payment_id" => $payment->getId(),
+                "payment_created_timestamp" => $payment->getCreatedAt(),
+                "payment_authorization_timestamp" => $payment->getAuthorizeTimestamp(),
+            ];
+
+            if ($paymentStatus === Payment\status::CAPTURED) {
+                $properties["payment_capture_timestamp"] = $payment->getCapturedAt();
+            }
+
+            $properties["event"] = BankTransferConstants::FIRST_MONEYSAVER_PAYMENT . $paymentStatus;
+
+            $merchant = $this->repo->merchant->findOrFail($merchantID);
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $properties, $properties['event']);
+            $this->trace->info(TraceCode::MONEYSAVER_SEGMENT_EVENT_SUCCESS, [
+                'merchant_id' => $merchantID,
+                'event_type' => $paymentStatus,
+                'properties' => $properties,
+            ]);
+        } catch (\Throwable $ex) {
+            $this->trace->info(TraceCode::MONEYSAVER_SEGMENT_EVENT_FAILED, [
+                'error_message' => $ex->getMessage(),
+                'merchant_id' => $merchantID,
+                'event_type' => $paymentStatus,
+            ]);
+        }
+    }
+
+    public function canSendMoneySaverPaymentSegmentEvent($merchantID, $status): bool
+    {
+
+        if(!isset($this->app['rzp.mode'])){
+            $this->app['rzp.mode'] = Mode::LIVE;
+        }
+
+        try {
+            $queryInput = [
+                "methods" => [Method::INTL_BANK_TRANSFER],
+                "merchant_ids" => [$merchantID],
+            ];
+
+            $statuses = [Payment\status::CAPTURED];
+
+            // if status is authorized, we want to fetch both authorized and captured
+            if ($status === Payment\status::AUTHORIZED) {
+                $statuses = [Payment\status::AUTHORIZED, Payment\status::CAPTURED];
+            }
+
+            $paymentsCount = $this->repo->payment->fetchIntlBankTransferPaymentsCount($queryInput, $statuses, Gateway::CURRENCY_CLOUD);
+            
+            //Returning false if already payments exists, since we need to trigger segment for first auth and captured payment of a merchant.
+            if ($paymentsCount > 0) {
+                return false;
+            }
+
+            return true;
+        } catch (\Throwable $ex) {
+            $this->trace->error(
+                TraceCode::MONEYSAVER_SEGMENT_EVENT_FAILED,
+                [
+                    'error_message' => $ex->getMessage(),
+                    'merchant_id' => $merchantID,
+                    'event_type' => $status,
+                ]
+            );
+            return false;
+        }
     }
 
     protected function getIntlBankTransferModeFromResponse(array $response)
@@ -1625,5 +1740,126 @@ class Core extends Base\Core
 
         return $response['response']['variant']['name'] == $checkVariant;
 
+    }
+
+    public function fetchPaymentsToBeCaptured($limit)
+    {
+        // Fetch payments with invoice and reference16 not null
+        $payments = $this->repo->payment->getPaymentsWithReferenceId(
+            Constants\Entity::CURRENCY_CLOUD,
+            Payment\Status::AUTHORIZED,
+            $limit
+        );
+
+        try {
+            // Fetch payments with reference16 but without invoice
+            $skipInvoicePayments = $this->repo->payment->getPaymentsWithOutInvoice(
+                Constants\Entity::CURRENCY_CLOUD,
+                Payment\Status::AUTHORIZED,
+                $limit
+            );
+
+            $validSkipInvoicePayments = collect();
+
+            // Group skip-invoice payments by merchant ID
+            $groupedByMerchantId = $skipInvoicePayments->groupBy(function ($payment) {
+                return $payment->getMerchantId();
+            });
+
+            // Fetch all involved merchants in one go
+            $merchantIds = $groupedByMerchantId->keys();
+            $merchants = $this->repo->merchant->findMany($merchantIds)->keyBy(Merchant\Entity::ID);
+
+            foreach ($groupedByMerchantId as $merchantId => $paymentsGroup) {
+                try {
+                    $merchant = $merchants->get($merchantId);
+
+                    if ($merchant && $merchant->isFeatureEnabled(Feature\Constants::CB_SKIP_B2B_EXPORT_INVOICE)) {
+                        $validSkipInvoicePayments = $validSkipInvoicePayments->merge($paymentsGroup);
+                    }
+                } catch (\Exception $ex) {
+                    // Trace exception for this specific merchant
+                    $this->trace->traceException(
+                        $ex,
+                        null,
+                        TraceCode::B2B_AMAZON_SKIP_INVOICE_FAILED,
+                        [
+                            'message' => 'Exception while processing skip-invoice merchant',
+                            'merchant_id' => $merchantId,
+                        ]
+                    );
+                }
+            }
+
+            // Merge valid skip-invoice payments into original list
+            $payments = $payments->merge($validSkipInvoicePayments);
+        } catch (\Exception $ex) {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::B2B_SETTLEMENT_TO_RZP_PARENT_ACCOUNT_FAILED_FOR_SKIP_INVOICE_MERCHANTS,
+                [
+                    'message' => 'B2B settlement failed for SKIP Invoice Merchants',
+                ]
+            );
+        }
+
+        return $payments;
+    }
+
+    public function paymentInvalidForCapture($payment,$merchant,$addresses): bool
+    {
+        return ($payment->getReference16() != null or
+            !$merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B) or
+            ($addresses->isEmpty() === true));
+    }
+
+    private function getAmazonBillingAddressByWallet($wallet): array
+    {
+        $formattedAddress = [];
+
+        switch ($wallet) {
+            case IntlBankTransfer::ACH:
+                // Hardcoded address for Mode ACH and Amazon Merchants
+                $formattedAddress = [
+                    'type' => Address\Type::BILLING_ADDRESS,
+                    'name' => 'Amazon',
+                    'zipcode' => '98170',
+                    'line1' => '440 Terry Ave N',
+                    'city' => 'SEATTLE',
+                    'country' => 'United States',
+                    'state' => 'US-WA',
+                ];
+                break;
+
+            case IntlBankTransfer::SEPA:
+                $formattedAddress = [
+                    'type' => Address\Type::BILLING_ADDRESS,
+                    'name' => 'Amazon UK',
+                    'zipcode' => 'EC2A 2FA',
+                    'line1' => '1 Principal Place, Worship Street',
+                    'city' => 'London',
+                    'country' => 'United Kingdom',
+                    'state' => '', // UK addresses typically don't require a state
+                ];
+                break;
+
+            case IntlBankTransfer::FPS:
+                $formattedAddress = [
+                    'type' => Address\Type::BILLING_ADDRESS,
+                    'name' => 'Amazon Europe',
+                    'zipcode' => 'L-1855',
+                    'line1' => '38, avenue John F. Kennedy',
+                    'city' => 'Luxembourg',
+                    'country' => 'Luxembourg',
+                    'state' => '', // Luxembourg does not use states
+                ];
+                break;
+
+            default:
+                break;
+        }
+
+        return $formattedAddress;
     }
 }

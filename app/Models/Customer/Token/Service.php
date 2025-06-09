@@ -1534,18 +1534,23 @@ class Service extends Base\Service
             Card\Entity::GLOBAL_FINGERPRINT     => $card->getGlobalFingerPrint() ?? "",
         ];
 
-        if ( $card->getVault() === Card\Vault::HDFC)
+        if ( $card->getVault() === Card\Vault::JUSPAY)
         {
-            $input = $this->getAdditionalDinersCardInputForRearch($token,$input);
-
-            $this->trace->info(
-                TraceCode::DINERS_TOKENISED_PAYMENT_TRACE,
-                [
-                    'token_reference_number' => $input[E::TOKEN_REFERENCE_NUMBER],
-                    'token_requestor_id'     => $input[E::TOKEN_REFERENCE_ID],
-                ]);
-
+            $input[Card\Entity::VAULT] = Card\Vault::JUSPAY;
         }
+
+        if ( $card->getVault() === Card\Vault::HDFC)
+                {
+                    $input = $this->getAdditionalDinersCardInputForRearch($token,$input);
+
+                    $this->trace->info(
+                        TraceCode::DINERS_TOKENISED_PAYMENT_TRACE,
+                        [
+                            'token_reference_number' => $input[E::TOKEN_REFERENCE_NUMBER],
+                            'token_requestor_id'     => $input[E::TOKEN_REFERENCE_ID],
+                        ]);
+
+                }
 
 
         if(isset($cryptogram["cvv"]) === true && Card\Network::getFullName(Network::AMEX) === $card->getNetwork())
@@ -1947,13 +1952,21 @@ class Service extends Base\Service
 
     public function updateTokenOnAuthorized($input) {
 
+        $oldRecurringStatus = null;
+
+        if ((empty($input['token_id']) === false) and
+            (empty($input['recurring_status']) === false))
+        {
+            $token = $this->repo->token->findOrFailPublic($input['token_id']);
+            $oldRecurringStatus = $token->getRecurringStatus();
+        }
+
         $token = $this->core->updateTokenOnAuthorized($input);
 
         $response = [
             'token_id' => $input['token_id'],
         ];
 
-        $oldRecurringStatus = $token->getRecurringStatus();
         (new Payment\Processor\Processor($token->merchant))->eventTokenStatus($token, $oldRecurringStatus);
 
         $response['vault_token'] = $token->card['vault_token'];
@@ -2729,12 +2742,14 @@ class Service extends Base\Service
 
         //For recurring, migrate the token in sync and store recurring details
         if(!empty($input['additional_data']) && !empty($input['additional_data']['card_mandate_id'])){
-
+            $token->setCardMandateId($input['additional_data']['card_mandate_id']);
             $payment->localToken()->associate($token);
 
             (new Payment\Processor\Processor($token->merchant))->migrateTokenIfApplicable($payment, $callbackData);
 
             $card = $this->repo->card->fetchForToken($token);
+
+            $oldRecurringStatus = $token->getRecurringStatus();
 
             if ($card->isRzpSavedCard() === true)
             {
@@ -2743,6 +2758,11 @@ class Service extends Base\Service
             }
             $token->setRecurringDetails($input['additional_data']);
             $this->repo->saveOrFail($token);
+
+            if($token->getRecurringStatus() === RecurringStatus::REJECTED)
+            {
+                (new Payment\Processor\Processor($token->merchant))->eventTokenStatus($token, $oldRecurringStatus);
+            }
 
             $createTokenResponse = $token->toArrayPublic();
 
@@ -3282,7 +3302,7 @@ class Service extends Base\Service
 
     public function createTokenForOptimizerMandateContinuityFlow($input)
     {
-       
+
         (new Validator)->validateInput(Validator::CREATE_RECURRING_TOKEN_CONTINUITY_OPTIMIZER_MANDATE, $input);
 
         (new Validator)->validateInput(Validator::CREATE_OPTIMIZER_TOKEN_CREATE_FIELDS, $input['fields']);

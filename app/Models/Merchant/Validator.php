@@ -448,6 +448,12 @@ class Validator extends Base\Validator
         Methods\Entity::SODEXO  => 'sometimes|bool',
         Methods\Entity::COD     => 'sometimes|bool',
         Methods\Entity::DUITNOW_PAY  => 'sometimes|bool',
+        Methods\Entity::EMI  => 'sometimes|array',
+        Methods\Entity::CARD_NETWORKS  => 'sometimes|array',
+        Methods\Entity::DEBIT_CARD  => 'sometimes|bool',
+        Methods\Entity::CREDIT_CARD  => 'sometimes|bool',
+        Methods\Entity::CARD_SUBTYPE  => 'sometimes|array',
+        Methods\Entity::CARD_SUBTYPE.'.*'  => 'sometimes|boolean'
     ];
 
     protected static $resetSettlementScheduleRules = [

@@ -117,7 +117,7 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
-    public function fetchSubMerchantReferredByPartner(string $subMerchantId, string $partnerId)
+    public function fetchSubMerchantReferredByPartner(string $subMerchantId, string $partnerId, $appType = 'referred')
     {
         $experimentEnabled = $this->app['partnerships']->evaluateSwitchOverPartnershipsSplitzExperiment(__FUNCTION__);
         if($experimentEnabled){
@@ -136,7 +136,7 @@ class Repository extends Base\Repository
             ->merchantId($subMerchantId)
             ->join(Table::MERCHANT_APPLICATION, $accessMapsEntityId, $applicationIds)
             ->where($accessMapsEntityType, '=', Entity::APPLICATION)
-            ->where($applicationType, '=', 'referred')
+            ->where($applicationType, '=', $appType)
             ->where(Entity::ENTITY_OWNER_ID, $partnerId)
             ->whereNull($applicationDeleted)
             ->first();

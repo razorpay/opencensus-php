@@ -377,7 +377,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             {
                 if((isset($token->cardMandate)) and
                    ($token->cardMandate !== null) and
-                   ($token->cardMandate->getVaultTokenPan() !== null))
+                   (!empty($token->cardMandate->getVaultTokenPan())))
                 {
                     $recurringTokenNumber = (new Card\CardVault)->getCardNumber($token->cardMandate->getVaultTokenPan(),[],null,true);
 

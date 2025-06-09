@@ -4,12 +4,14 @@ namespace RZP\Models\Merchant\Methods;
 
 use App;
 use RZP\Base\Common;
+use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use Illuminate\Support\Facades\Cache;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Repository extends Base\Repository
 {
@@ -57,6 +59,15 @@ class Repository extends Base\Repository
         Entity::ZIP                    => 'sometimes|in:0,1',
     );
 
+    protected PaymentMethodsService $paymentMethodsService;
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->paymentMethodsService = $this->app['payment_methods_service'];
+        $this->trace = $this->app['trace'];
+    }
+
     public function fetchRouteName()
     {
         $app = App::getFacadeRoot();
@@ -70,21 +81,26 @@ class Repository extends Base\Repository
 
     public function getMethodsForMerchant(Merchant\Entity $merchant)
     {
-
         $metricData = [
-            'route' => $this->fetchRouteName(),
-            'function' => __FUNCTION__
+            'route'    => $this->fetchRouteName(),
+            'function' => __FUNCTION__,
         ];
 
-        $methods = $this->find($merchant->getId());
+        $merchantId = $merchant->getId();
 
+        // 1. Fetch methods from the database (current behavior)
+        $dbMethods = $this->find($merchantId);
+
+        $methods = $this->getMethods($merchantId, $dbMethods);
+
+        // 4. Associate merchant and set relation if methods found
         if ($methods !== null)
         {
             $methods->merchant()->associate($merchant);
-
             $merchant->setRelation('methods', $methods);
         }
 
+        // 5. Trace metric
         $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
 
         return $methods;
@@ -96,11 +112,41 @@ class Repository extends Base\Repository
             'route' => $this->fetchRouteName(),
             'function' => __FUNCTION__
         ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
+
+        if ($this->paymentMethodsService->isMethodServiceReadEnabled())
+        {
+            try
+            {
+                $path = sprintf('/v1/merchant/%s/api_methods', $merchantId);
+                $serviceMethods = $this->paymentMethodsService->fetchMethodsFromService($merchantId, $path);
+
+                if ($serviceMethods !== null)
+                {
+                    $upiStatus = $serviceMethods->getAttribute(Entity::UPI);
+                    $this->trace->info(TraceCode::PAYMENT_METHODS_UPI_STATUS_FROM_SERVICE, [
+                        'merchant_id' => $merchantId,
+                        'upi_status'  => $upiStatus,
+                    ]);
+
+                    $this->trace->count(Methods\Metric::PAYMENT_METHOD_SERVICE_CALL_SUCCESS_METRIC);
+                    return $upiStatus;
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->count(Methods\Metric::PAYMENT_METHOD_SERVICE_CALL_FAILED_METRIC);
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_METHODS_SERVICE_CALL_FAILED_FOR_UPI, [
+                    'merchant_id' => $merchantId,
+                    'reason'      => 'Service call failed for UPI status, falling back to DB.',
+                ]);
+            }
+        }
+
         $query = $this->newQuery()
                     ->select(Entity::UPI)
                     ->where(Entity::MERCHANT_ID, $merchantId);
 
-        $this->trace->count(Methods\Metric::PAYMENT_METHODS_READ_METRIC, $metricData);
         return $query->pluck(Entity::UPI)
             ->first();
     }
@@ -235,6 +281,74 @@ class Repository extends Base\Repository
             ->update([
                 'addon_methods' => $updatedMethods,
             ]);
+    }
+
+    /**
+     * @param mixed $merchantId
+     * @param $dbMethods
+     * @return Entity|null
+     */
+    public function getMethods(mixed $merchantId, $dbMethods): ?Entity
+    {
+        $methods = null;
+        if ($this->paymentMethodsService->isMethodServiceReadEnabled()) {
+            $serviceMethods = null;
+
+            try {
+                // 2. Fetch methods from the payment_methods service
+                $path = sprintf('/v1/merchant/%s/api_methods', $merchantId);
+                $serviceMethods = $this->paymentMethodsService->fetchMethodsFromService($merchantId, $path);
+
+                // 3. Compare and decide
+                if ($dbMethods !== null) {
+                    // Compare only if DB methods exist
+                    $areDifferent = $this->paymentMethodsService->areMethodsDifferent($serviceMethods, $dbMethods);
+                    $this->trace->count(Methods\Metric::PAYMENT_METHOD_DIFF_COUNT, ['diff' => $areDifferent]);
+
+                    if ($areDifferent === false) {
+                        // No difference, prefer service methods
+                        $methods = $serviceMethods;
+                        $this->trace->info(TraceCode::PAYMENT_METHODS_USING_SERVICE_DATA, [
+                            'merchant_id' => $merchantId,
+                            'reason' => 'No difference found between DB and Service.'
+                        ]);
+                    } else {
+                        // Difference found, use DB methods (current source of truth)
+                        $methods = $dbMethods;
+                        if ($serviceMethods != null) {
+                            $this->trace->info(TraceCode::PAYMENT_METHODS_DIFF_FOUND, [
+                                'merchant_id' => $merchantId,
+                                'reason' => 'Difference found between DB and Service. Using DB data.',
+                            ]);
+                        }
+                    }
+                } else {
+                    // DB methods don't exist, use service methods if fetched
+                    $methods = $serviceMethods;
+                    if ($methods !== null) {
+                        $this->trace->info(TraceCode::PAYMENT_METHODS_USING_SERVICE_DATA, [
+                            'merchant_id' => $merchantId,
+                            'reason' => 'DB methods not found, using Service data.'
+                        ]);
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Service call failed or comparison error, fallback to DB methods
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_METHODS_SERVICE_CALL_FAILED, [
+                    'merchant_id' => $merchantId,
+                    'fallback' => 'Using DB methods data due to service error.'
+                ]);
+
+                $methods = $dbMethods; // Fallback to DB data
+            }
+        } else {
+            $this->trace->info(TraceCode::PAYMENT_METHODS_USING_API_DB_DATA, [
+                'merchant_id' => $merchantId,
+                'reason' => 'Splitz Experiment is off.',
+            ]);
+            $methods = $dbMethods;
+        }
+        return $methods;
     }
 
     protected function addQueryOrder($query)
@@ -432,6 +546,8 @@ class Repository extends Base\Repository
                 ->orderBy(COMMON::CREATED_AT,'desc')
                 ->first();
 
+            $methods = $this->getMethods($merchant->getId(), $methods);
+
             if ($methods!==null)
             {
                 Cache::put($cacheKey, $methods->toJson(), $this->getCacheTtl());
@@ -463,10 +579,24 @@ class Repository extends Base\Repository
             'route' => $this->fetchRouteName(),
             'function' => __FUNCTION__
         ];
+        $this->trace->count(Methods\Metric::PAYMENT_METHODS_UPDATE_METRIC, $metricData);
+
+        if ($this->paymentMethodsService->isMethodServiceWriteEnabled()){
+            try{
+                $this->paymentMethodsService->saveMethods($entity, $options);
+                return;
+            }catch(\Throwable $exception)
+            {
+                $this->trace->traceException($exception, Trace::ERROR, TraceCode::PAYMENT_METHODS_SERVICE_UPDATE_CALL_FAILED, [
+                    'merchant_id' => $entity->getMerchantId(),
+                    'exception_message' => $exception->getMessage(),
+                ]);
+            }
+        }
 
         try
         {
-            $this->trace->count(Methods\Metric::PAYMENT_METHODS_UPDATE_METRIC, $metricData);
+            $this->trace->info(TraceCode::PAYMENT_METHODS_DB_UPDATE_FLOW, ["method_entity" => $entity]);
             $this->saveOrFailTestAndLive($entity, $options);
         }
         catch (\Throwable $exception)
@@ -478,7 +608,9 @@ class Repository extends Base\Repository
                 $this->trace->count(Methods\Metric::PAYMENT_METHOD_DIFF_METRIC, $metricData);
             }
             $this->trace->count(Methods\Metric::PAYMENT_METHOD_UPDATE_FAILED_METRIC, $metricData);
-        }
-    }
 
+            throw $exception;
+        }
+
+    }
 }

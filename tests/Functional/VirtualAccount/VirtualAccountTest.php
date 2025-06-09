@@ -4116,9 +4116,155 @@ class VirtualAccountTest extends TestCase
 
         $payment = $this->getDbLastEntity('payment');
 
+
         //Verifying the mock response of smart routing request by terminal id
 
         $this->assertEquals('Oc3KkqYe4LjpdA', $payment['terminal_id']);
+
+    }
+
+    public function testOfflinePaymentCreditWithMerchantChallanForemptyPaymentInstrumentDetailsAndPaymentDetailsForFileSource()
+    {
+        $this->testValidateOfflineChallanPresentInNotes();
+
+        $challanNumber = $this->testData['testValidateOfflineChallanPresentInNotes']['request']['content']['challan_no'];
+
+        $content = $this->createPricingPlan();
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'method'  => 'post',
+            'content' => [
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $resp['plan_id']]);
+
+        $paymentData = [
+            'challan_no' =>  $challanNumber,
+            'amount' => 1000,
+            'mode' => 'cash',
+            'status' => 'processed',
+            'payment_date' => '01-sep-2024',
+            'payment_time' => '21:30:45',
+            'client_code'  =>  '12345678',
+            'description' => 'Received INR 1000 through Cheque',
+            "payment_instrument_details" => "",
+            "payer_details" => "",
+            // "source" => "callback",
+            "source" => "file",
+        ];
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/credit/ecollect/offline',
+            'method'  => 'post',
+            'content' => $paymentData,
+        ];
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'challan_no' => $challanNumber,
+                'status' => 0
+            ],
+        ];
+
+        $this->startTest();
+
+        $offlinePayment = $this->getDbLastEntityPublic('offline_payment');
+
+        //Verifying the mock response of offline payment
+        print_r($offlinePayment);
+        $this->assertEquals('{}',  $offlinePayment['payment_instrument_details']);
+        $this->assertEquals('{}',  $offlinePayment['payer_details']);
+
+    }
+
+    public function testOfflinePaymentCreditWithMerchantChallanForemptyPaymentInstrumentDetailsAndPaymentDetailsForSourceCallback()
+    {
+        $this->testValidateOfflineChallanPresentInNotes();
+
+        $challanNumber = $this->testData['testValidateOfflineChallanPresentInNotes']['request']['content']['challan_no'];
+
+        $content = $this->createPricingPlan();
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'method'  => 'post',
+            'content' => [
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $resp['plan_id']]);
+
+        $paymentData = [
+            'challan_no' =>  $challanNumber,
+            'amount' => 1000,
+            'mode' => 'cash',
+            'status' => 'processed',
+            'payment_date' => '01-sep-2024',
+            'payment_time' => '21:30:45',
+            'client_code'  =>  '12345678',
+            'description' => 'Received INR 1000 through Cheque',
+            "payment_instrument_details" => "",
+            "payer_details" => "",
+            "source" => "callback",
+        ];
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/credit/ecollect/offline',
+            'method'  => 'post',
+            'content' => $paymentData,
+        ];
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'challan_no' => $challanNumber,
+                'status' => 0
+            ],
+        ];
+
+        $this->startTest();
+       
+        $offlinePayment = $this->getDbLastEntityPublic('offline_payment');
+
+        //Verifying the mock response of offline payment
+
+        $this->assertEquals('""',  $offlinePayment['payment_instrument_details']);
+        $this->assertEquals('""',  $offlinePayment['payer_details']);
 
     }
 

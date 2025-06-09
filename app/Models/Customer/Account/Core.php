@@ -40,6 +40,7 @@ use RZP\Models\Merchant\Merchant1ccConfig;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService\Client;
 use RZP\Http\Request\Requests;
 use RZP\Services\CMS as CMSService;
+use RZP\Models\Insurance\Entity as InsuranceEntity;
 
 class Core extends Base\Core
 {
@@ -2038,6 +2039,7 @@ class Core extends Base\Core
         if (!empty($payment['insurance_status']))
         {
             $formattedPaymentDetails['insurance']['status'] = $payment['insurance_status'];
+            $formattedPaymentDetails['insurance']['provider'] = $payment[InsuranceEntity::INSURANCE_PROVIDER];
         }
         if (!empty($payment['insurance_claim_status']))
         {
@@ -2077,6 +2079,11 @@ class Core extends Base\Core
         $contact = $truecallerResponse['user_profile']['contact'] ?? '';
 
         $email = $truecallerResponse['user_profile']['email'] ?? null;
+
+        // Add + prefix if contact doesn't have it. Truecaller does not send + prefix in contact.
+        if (!empty($contact) && !str_starts_with($contact, '+')) {
+            $contact = '+' . $contact;
+        }
 
         $contact = Customer\Validator::validateAndParseContact($contact);
 

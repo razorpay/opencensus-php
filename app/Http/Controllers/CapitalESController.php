@@ -42,10 +42,12 @@ class CapitalESController extends Controller
             'X-Auth-Type'         => 'admin'
         ];
 
-        if ($request->getQueryString() !== null) {
+        if ($request->getQueryString() !== null)
+        {
             $url .= '?' . $request->getQueryString();
-        } else if (($request->method() === 'GET') and
-            (empty($body) === false)) {
+        }
+        else if (empty($body) === false && $request->method() === 'GET')
+        {
             $url .= '?' . http_build_query($body);
         }
 
@@ -70,6 +72,15 @@ class CapitalESController extends Controller
             'X-Admin-Permissions' => $this->getCapitalPermissionsStringForAdmin(),
             'X-Auth-Type'   => 'admin'
         ];
+
+        if ($request->getQueryString() !== null)
+        {
+            $url .= '?' . $request->getQueryString();
+        }
+        else if (empty($body) === false && $request->method() === 'GET')
+        {
+            $url .= '?' . http_build_query($body);
+        }
 
         return $this->sendRequestAndParseResponse($url, $request->method(), $body, $headers);
     }

@@ -36,7 +36,8 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
 
         if(($payment->isAuthorized() === true) or
            ($payment->isCaptured() === true) or
-           ($payment->getStatus() === Payment\Status::REFUNDED))
+            ($payment->getStatus() === Payment\Status::REFUNDED) or
+            ($payment->getStatus() === Payment\Status::FAILED))
         {
             $this->trace->info(TraceCode::PAYMENT_ALREADY_CAPTURED_OR_AUTHORIZED, [
                 'paymentId'    => $payment->getId(),

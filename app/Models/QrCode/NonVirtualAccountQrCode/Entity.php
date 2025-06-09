@@ -202,6 +202,30 @@ class Entity extends QrCode\Entity
         $this->setAttribute(self::PROVIDER, $input[self::REQ_PROVIDER]);
     }
 
+    public function modifyCloseByIfApplicable() : void
+    {
+        if($this->getAttribute(self::REQUEST_SOURCE) === RequestSource::API)
+        {
+            $isMerchantExcluded = (new Core())->evaluateSplitzExperimentForSettingQrCloseBy($this->merchant->getId());
+            if (!$isMerchantExcluded) {
+                if ($this->getAttribute(self::USAGE_TYPE) === UsageType::SINGLE_USE)
+                {
+                    $twoHoursFromNow = now()->addHours(2)->getTimestamp();
+                    $currentCloseBy = $this->getAttribute(self::CLOSE_BY);
+
+                    if ((empty($currentCloseBy) === true) ||
+                        ($currentCloseBy > $twoHoursFromNow))
+                    {
+                        $this->setAttribute(self::CLOSE_BY, $twoHoursFromNow);
+                    }
+                }
+            }
+        }
+
+    }
+
+
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');

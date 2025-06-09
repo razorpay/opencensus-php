@@ -18,6 +18,9 @@ use RZP\Models\QrCode\Entity as QrCodeEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVaQrCodeEntity;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\InvoiceDetails as InvoiceDetails;
+use RZP\Exception;
+use RZP\Exception\BadRequestValidationFailureException;
+
 
 /**
  * This class is to be used by all QR Code and QR Payment related operations to communicate with Mozart.
@@ -436,12 +439,44 @@ class QrGatewayModule
 
     public function preProcessQrCallback($callbackData, string $gateway): array
     {
-        $payload = json_encode($callbackData, JSON_THROW_ON_ERROR);
+        $id = "";
+        if ($gateway === Gateway::HDFC_MINTOAK)
+        {
+            if (empty($callbackData['terminalId']) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException('terminalId missing in callback data.');
+            }
 
-        $input = [
-            'payload' => $payload,
-            'gateway' => $gateway,
-        ];
+            // Fetch terminal entity using terminalId from the payload
+            $terminal = $this->app['repo']->terminal->findByGatewayMerchantId($callbackData['terminalId'], $gateway);
+
+            if ($terminal === null)
+            {
+                throw new Exception\BadRequestValidationFailureException('Terminal not found for given terminalId and gateway.');
+            }
+            // Add internal terminal id to input
+            $id = $terminal->getId();
+            $payload = json_encode($callbackData, JSON_THROW_ON_ERROR);
+
+            $input = [
+                'payload' => $payload,
+                'gateway' => $gateway,
+                'terminal' => [
+                    'id'     => $id,
+                ],
+            ];
+
+        }
+        else
+        {
+            $payload = json_encode($callbackData, JSON_THROW_ON_ERROR);
+
+            $input = [
+                'payload' => $payload,
+                'gateway' => $gateway,
+            ];
+
+        }
 
         $response = $this->app['mozart']->sendMozartRequest(
             namespace  : Namespaces::PAYMENTS,
@@ -450,9 +485,28 @@ class QrGatewayModule
             input      : $input,
             addEntities: false
         );
+        // REF: https://docs.google.com/document/d/1mGep0btVixd-tcOU0F7Y0cCsDuGReUMgCXQDGQzGTEk/edit?tab=t.0#heading=h.itwx71h7nr3n
+        if (($response['data']['payment']['method'] ?? '') === 'card')
+        {
+            $errorData = [
+                'payment' => $response['data']['payment'] ?? [],
+                'terminal' => [
+                    'gateway'             => $gateway,
+                    'gateway_merchant_id' => $callbackData['terminalId'],
+                ],
+            ];
+
+            throw new Exception\GatewayErrorException(
+                'Card payment not supported by QR',
+                'CARD_PAYMENT_IN_CALLBACK',
+                null,
+                $errorData
+            );
+        }
 
         return $response['data'];
     }
+
 
     public static function checkIfNewQrPaymentGateway(string $gateway, $mode = Mode::LIVE)
     {

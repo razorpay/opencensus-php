@@ -891,59 +891,9 @@ class Service extends Base\Service
         {
             $orderId = Entity::verifyIdAndSilentlyStripSign($id);
 
-            $properties = [
-                "id" => UniqueIdEntity::generateUniqueId(),
-                "experiment_id" => $this->app['config']->get('app.internal_order_payments_experiment_id'),
-            ];
+            $payments = $this->repo->payment->fetchPaymentsForOrderId($orderId, $input['merchant_id']);
 
-            $variant = (new MerchantCore())->isSplitzExperimentEnable($properties, 'allow');
-
-            if ($variant)
-            {
-                $payments = $this->repo->payment->fetchPaymentsForOrderId($orderId, $input['merchant_id']);
-
-                return $payments->toArrayPublic();
-            }
-
-            $apiPayments = $this->repo->payment->fetchInternalPaymentsForOrderId($orderId, $input['merchant_id']);
-
-            $responseList = []; // Initialize an array to hold all responses
-
-            // Iterate through each payment
-            foreach ($apiPayments as &$payment) {
-                $response = $payment->toArray();
-
-                if ($payment->isMethodCardOrEmi() === true)
-                {
-                    // Fetch card details for the current payment
-                    $response['card'] = $this->repo->card->fetchForPayment($payment);
-                }
-
-                $discount = $payment->getDiscountIfApplicable($payment);
-
-                if (isset($discount) === true)
-                {
-                    $response['discount'] = $discount;
-                }
-
-                $upiMetadata = $payment->getUpiMetadata();
-
-                if (isset($upiMetadata) === true and $upiMetadata->getFlow() === Flow::IN_APP)
-                {
-                    $response['upi_metadata'] = $upiMetadata;
-                }
-
-                $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($payment->getId());
-
-                if (isset($paymentMeta) === true)
-                {
-                    $response['payment_meta'] = $paymentMeta;
-                }
-
-                $responseList[] = $response;
-            }
-
-            return $responseList;
+            return $payments->toArrayPublic();
         }
         catch(\Throwable $ex)
         {

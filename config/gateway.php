@@ -100,6 +100,7 @@ return [
         'upi_axis',
         'upi_icici',
         'upi_mindgate',
+        'hdfc_mintoak',
         'upi_hulk',
         'upi_sbi',
         'upi_juspay',

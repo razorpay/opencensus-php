@@ -3,6 +3,7 @@
 namespace RZP\Models\P2p\Mandate;
 
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Models\Customer;
@@ -26,6 +27,7 @@ class Entity extends Base\Entity
     use Base\Traits\HasHandle;
     use Base\Traits\HasMerchant;
     use Base\Traits\HasBankAccount;
+    use CmsGetAttribute;
 
     const NAME                = 'name';
     const DEVICE_ID           = 'device_id';

@@ -41,6 +41,7 @@ final class Metric
     const MERCHANT_ACTIVATION_STATE_TRANSITION = 'merchant_activation_state_transition';
     const MERCHANT_ACTIVATION                  = 'merchant_activation';
     const ACTIVATED_NOT_LIVE = "activated_not_live";
+    const POS_ACTIVATED_OR_KQS_NOT_LIVE = "pos_activated_or_kqs_not_live";
     const INTERNATIONAL_MERCHANT_ACTIVATION    = 'international_merchant_activation';
 
     //activation_flow_metrics constants
@@ -328,6 +329,8 @@ final class Metric
     const FETCH_BATCHES_WITH_PAYMENT_PAGE_ID = 'FETCH_BATCHES_WITH_PAYMENT_PAGE_ID';
 
     const MERCHANTS_AUTOMATIC_IIR_CREATION          = 'MERCHANTS_AUTOMATIC_IIR_CREATION';
+
+    const EMPTY_BALANCE_ID_FROM_LEDGER          = 'empty_balance_id_from_ledger';
 
     const DATA_MISMATCH_FOR_WEBSITE_POLICY_AND_BMC_RESPONSE = 'data_mismatch_for_website_policy_and_bmc_response';
 

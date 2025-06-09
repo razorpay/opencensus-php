@@ -164,11 +164,9 @@ class Issued extends Base
         if(($this->view == "emails.invoice.customer.notification" || $this->view == "emails.mjml.customer.payment_page.payment")
             && $data['invoice']['type'] !== 'link' )
         {
-            $isStorkEmailVIAEnabled = $this->isSendingPaymentLinkMailsSupported($this->data['merchant']['id'],$this->view);
-
             if($this->view == "emails.invoice.customer.notification")
             {
-                return $isStorkEmailVIAEnabled;
+                return true;
             }
             else if($this->view == "emails.mjml.customer.payment_page.payment" && $this->fileData !== null && $this->fileData['path'] !== null)
             {
@@ -182,7 +180,7 @@ class Issued extends Base
                     {
                         $this->fileData['file_id'] = $file_id;
 
-                        return $isStorkEmailVIAEnabled;
+                        return true;
                     }
                 }
                 catch (\Throwable $e)
@@ -323,32 +321,5 @@ class Issued extends Base
             'owner_type'         => 'merchant',
             'url_count'          => '1'
         ];
-    }
-
-    public function isSendingPaymentLinkMailsSupported($merchantId,$view) : bool {
-        $traceCode = TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK_ISSUED;
-
-        $experimentId = 'app.send_payment_link_emails_via_stork_issued';
-
-        try {
-            $app = \App::getFacadeRoot();
-            $properties = [
-                'id'            => $merchantId,
-                'experiment_id' => $app['config']->get($experimentId),
-                'request_data'  => json_encode(['merchant_id' => $merchantId , 'template_name' => $view])
-            ];
-            $response = $app['splitzService']->evaluateRequest($properties);
-            $variant = $response['response']['variant']['name'] ?? '';
-
-            $app['trace']->info($traceCode, [
-                'splitzUserResult' => $response,
-            ]);
-
-            return  $variant == "enable";
-
-        } catch (\Exception $e) {
-            $app['trace']->traceException($e, null, $traceCode);
-        }
-        return false;
     }
 }

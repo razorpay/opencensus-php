@@ -225,6 +225,8 @@ trait Authorize
 
         $this->pushCardMetaDataEvent($input, $payment);
 
+        $this->pushOfferMetrics($input, $payment);
+
         $authPaymentData = $this->gatewayRelatedProcessing($payment, $input, $gatewayInput);
 
         // creating invoice entity for opgsp payment requires payment entity
@@ -1606,6 +1608,25 @@ trait Authorize
         $this->trace->info(TraceCode::TERMINAL_FAILURE, $traceData);
 
         $this->segment->trackPayment($payment, TraceCode::TERMINAL_FAILURE, $traceData);
+
+        if ($payment->getMethod() === Method::CARD &&
+            $payment->getRecurringType() === Payment\RecurringType::AUTO) {
+            $properties = [
+                "id" => $payment->getMerchantId(),
+                'experiment_name' => 'card_auto_recurring_retry',
+                'request_data' => json_encode(['merchant_id' => $payment->getMerchantId()])
+            ];
+            $splitzResponse = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable') === true ;
+
+            $this->trace->info(TraceCode::CARD_RECURRING_CASCADING_RETRY, [
+                'payment_id' => $payment->getId(),
+                'splitzResponse' => $splitzResponse,
+                'exception' =>$e->getDataAsString()
+            ]);
+            if($splitzResponse){
+               return true;
+            }
+        }
 
         // retry only if it is safe to do so
         return ((property_exists($e, 'safeRetry') === true) and
@@ -9919,7 +9940,22 @@ trait Authorize
                 ($token->card->isRuPay()))
             {
                 $cardMandateId = $token->getCardMandateId();
-                $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($cardMandateId, $payment->merchant);
+
+                $cardMandate = null;
+
+                if(empty($cardMandateId) === false) {
+                    try {
+                        $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($cardMandateId, $payment->merchant);
+                    } catch (\Throwable $e) {
+                        // If card mandate not found by ID, try getting it from token fallback
+                        $cardMandate = $token->cardMandate;
+
+                        if ($cardMandate === null) {
+                            throw new Exception\BadRequestException(
+                                'Card mandate not found either by ID or from token relationship');
+                        }
+                    }
+                }
 
                 $mandate_end_date = $cardMandate->getEndAt();
 
@@ -12702,7 +12738,7 @@ trait Authorize
                     [
                         'payment_id'        => $payment->getId(),
                         'late_authorize'    => $wasFailed,
-                ]);
+                    ]);
 
                 $this->createLedgerEntriesForGatewayCaptureOnAuthorize($payment);
             }
@@ -14524,6 +14560,13 @@ trait Authorize
         else
         {
             (new Address\Core)->edit($tokenBillingAddress, $billingAddressToSave);
+        }
+    }
+    protected function pushOfferMetrics($input, Payment\Entity $payment)
+    {
+        if (empty($input['offer_id']) === false)
+        {
+            (new Payment\Metric)->pushOfferMetrics($payment,$input);
         }
     }
 

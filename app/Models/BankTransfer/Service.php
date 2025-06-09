@@ -22,6 +22,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\BankTransfer\Collectx\Processor\Factory;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\UpiTransfer\Entity as UpiTransferEntity;
 use RZP\Models\UpiTransfer\Service as UpiTransferService;
@@ -222,12 +223,18 @@ class Service extends Base\Service
         //are skipped.
         //$response is returned empty if it is not a validation request
 
+        if ($provider === Provider::IDFC)
+        {
+            $payeeAccount = $input['payee_account'];
+            $this->validateIdfcAccountPrefix($payeeAccount);
+        }
+
         if ($provider === Provider:: RBL)
         {
             $this->trace->error(
                 TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR, [
-                    'Request' => $input
-                ]);
+                'Request' => $input
+            ]);
 
             throw new Exception\BadRequestValidationFailureException(TraceCode::RBL_PROVIDER_UNEXPEXTED_PAYMENT_ERROR);
         }
@@ -328,6 +335,19 @@ class Service extends Base\Service
         }
 
         return $this->validateAndProcessRequest($input, $bankTransferRequest, $provider, $checkForIfsc);
+    }
+
+    private function validateIdfcAccountPrefix(string $payeeAccount): void
+    {
+        if(in_array(substr($payeeAccount, 0, 4), Provider::IDFC_VA_PREFIX) === false)
+        {
+            $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA, [
+                'message'   => 'invalid Va idfc account prefix',
+                'va_prefix' => substr($payeeAccount, 0, 4)
+            ]);
+
+            throw new BadRequestValidationFailureException('INVALID_DATA');
+        }
     }
 
     /**
@@ -449,6 +469,9 @@ class Service extends Base\Service
                 case Provider::RBL:
                     return $this->checkforRblBankCollectxCallback($input);
 
+                case Provider::IDFC:
+                    return $this->checkForIdfcCollectxCallback($input);
+
                 default:
                     $this->trace->info(
                         TraceCode::INVALID_PROVIDER_COLLECTX_BANK_TRANSFER, [
@@ -469,6 +492,45 @@ class Service extends Base\Service
 
             return false;
         }
+    }
+
+    protected function checkForIdfcCollectxCallback(array $input): bool
+    {
+        $accountNumber = $input['payee_account'];
+
+        $ifsc = $input['payee_ifsc'];
+
+        // Check1: Check if bank account and VA exists for the given account number and IFSC
+        /* @var VirtualAccountEntity $virtualAccount*/
+        $virtualAccount = $this->getVirtualAccountUsingAccountNumberAndIfsc($accountNumber, $ifsc);
+
+        if ($virtualAccount === null) {
+            return false;
+        }
+
+        // Check2: Check if experiment is enabled for the given merchant
+        $isCollectxIDFCExpEnabled = $this->isCollectxIDFCExperimentEnabled($virtualAccount->getMerchantId());
+
+        if ($isCollectxIDFCExpEnabled !== true) {
+            return false;
+        }
+
+        // Check3: Check if collectx feature is enabled for attached merchant
+        if (($virtualAccount->merchant !== null) &&
+            ($virtualAccount->merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED) === true)) {
+            return true;
+        }
+
+        //check 4: Check if the account number is prefixed with the collectx series
+        $merchantID = $virtualAccount->getMerchantId();
+
+        $isCollectxAccountNumber = $this->isCollectxAccountNumber($accountNumber, $merchantID, $input);
+
+        if ($isCollectxAccountNumber === true) {
+            return true;
+        }
+
+        return false;
     }
 
     public function checkForYesBankCollectxCallback(array $input): bool
@@ -586,6 +648,17 @@ class Service extends Base\Service
         return false;
     }
 
+    protected function isCollectxIDFCExperimentEnabled($merchantID): bool
+    {
+        $properties = [
+            "id" => $merchantID,
+            "experiment_name" => RazorxTreatment::COLLECTX_IDFC_PAYMENT_TRANSFER_RAMP_UP,
+            'request_data'  => json_encode(['id' => $merchantID])
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable') === true;
+    }
+
     protected function isCollectxRblExperimentEnabled($merchantID): bool
     {
         $properties = [
@@ -665,6 +738,10 @@ class Service extends Base\Service
                 $formattedPayload = $this->formatAxisInputForCollectX($input);
                 break;
 
+            case Provider::IDFC:
+                $formattedPayload = $this->formatIDFCInputForCollectX($input);
+                break;
+
             default:
                 $this->trace->info(
                     TraceCode::INVALID_PROVIDER_COLLECTX_BANK_TRANSFER, [
@@ -682,6 +759,13 @@ class Service extends Base\Service
         $formattedPayload[Entity::MODE] = strtoupper($formattedPayload[Entity::MODE]);
 
         return $formattedPayload;
+    }
+
+    protected function formatIDFCInputForCollectX(array $input): array
+    {
+        $input[Entity::TRANSACTION_ID] = strtoupper($input[Entity::TRANSACTION_ID]);
+
+        return $input;
     }
 
     protected function formatAxisInputForCollectX(array $input): array
@@ -1762,6 +1846,8 @@ class Service extends Base\Service
                 ]);
             }
 
+            $this->sendSegmentEventForMoneySaverAccountActivated($this->merchant);
+
             return (new InternationalIntegration\Core)->fetchIntlVirtualBankAccountsForGateway($merchantId, Constants\Entity::CURRENCY_CLOUD);
         } catch (\Exception $ex)
         {
@@ -1771,10 +1857,44 @@ class Service extends Base\Service
 
             // add metric
             $this->trace->count(BankTransferMetrics::INTERNATIONAL_B2B_CURRENCY_CLOUD_BANK_ACCOUNT_CREATION_FAILED, [
-                'error_code' => $ex->getCode()
+                'action' => 'B2B Account Creation Failed',
             ]);
 
             throw $ex;
+        }
+    }
+
+    public function sendSegmentEventForMoneySaverAccountActivated($merchant)
+    {
+        $merchantID = $merchant->getId();
+        try {
+            $properties = [
+                "merchant_id" => $merchantID,
+                "merchant_type" => "cross_border_money_saver",
+                "event" => BankTransferConstants::MONEYSAVER_ACTIVATED,
+                "moneysaver_activation_timestamp" => time(),
+            ];
+
+
+            $this->trace->info(TraceCode::MONEYSAVER_SEGMENT_EVENT_REQUEST, [
+                'merchant_id' => $merchantID,
+                'properties' => $properties
+            ]);
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $properties, $properties['event']);
+            $this->app['segment-analytics']->buildRequestAndSend();
+
+            $this->trace->info(TraceCode::MONEYSAVER_SEGMENT_EVENT_SUCCESS, [
+                'merchant_id' => $merchantID,
+                'properties' => $properties,
+            ]);
+        } catch (\Exception $ex) {
+            $this->trace->info(TraceCode::MONEYSAVER_SEGMENT_EVENT_FAILED, [
+                'error_message' => $ex->getMessage(),
+                'merchant_id' => $merchantID,
+                'event_type' => BankTransferConstants::MONEYSAVER_ACTIVATED,
+            ]);
         }
     }
 
@@ -1932,7 +2052,7 @@ class Service extends Base\Service
         if ($funding_accounts == null) {
             throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_INTL_BANK_TRANSFER_ACCOUNT_DOES_NOT_EXIST, null,
                 [
-                    'error_data' => $ex->getData() ?? [],
+                    'error_msg' => "Funding Account is Null Despite Multiple Retries",
                 ]);
         }
 
@@ -1965,6 +2085,14 @@ class Service extends Base\Service
 
         $name = explode(' ', trim($merchantDetail->getPromoterPanName()), 2);
 
+        if(strlen($name[0]) < 2 ){
+            $name[0] = $name[1];
+        }
+        $name[1] = isset($name[1]) ? $name[1] : "LNU";
+        if(strlen($name[1]) < 2){
+            $name[1] = $name[0];
+        }
+
         $address = [
             'street' => $merchantDetail->getBusinessRegisteredAddress(),
             'city' => $merchantDetail->getBusinessRegisteredCity(),
@@ -1975,7 +2103,7 @@ class Service extends Base\Service
 
         $contact = [
             'first_name' => $name[0],
-            'last_name' => isset($name[1]) ? $name[1] : "LNU",
+            'last_name' => $name[1],
             'email' => $merchantDetail->getContactEmail(),
             'phone' => $merchantDetail->getContactMobile(),
             'login_id' => $merchantId . "_razorpay"
@@ -1998,16 +2126,16 @@ class Service extends Base\Service
         ]);
 
 
-        if ($this->app['env'] === Environment::BETA or
-            $this->app['env'] === Environment::AUTOMATION or
-            $this->app['env'] === Environment::TESTING
-        ) {
-            DefaultConnection::set(Mode::TEST);
-            $this->app['rzp.mode'] = Mode::TEST;
-        } else {
-            $this->app['rzp.mode'] = Mode::LIVE;
-        }
-
+       if ($this->app['env'] === Environment::BETA or
+           $this->app['env'] === Environment::AUTOMATION or
+           $this->app['env'] === Environment::TESTING
+       ) {
+           DefaultConnection::set(Mode::TEST);
+           $this->app['rzp.mode'] = Mode::TEST;
+       } else {
+           $this->app['rzp.mode'] = Mode::LIVE;
+       }
+       
         switch ($header) {
             case self::CASH_MANAGER_TRANSACTION_NOTIFICATION:
                 $this->fundsArrivedFlowFromCurrencyCloud($input);
@@ -2114,7 +2242,7 @@ class Service extends Base\Service
 
         $limit = isset($input['limit']) ? $input['limit'] : 10;
 
-        $payments = $this->repo->payment->getPaymentsWithReferenceId(Constants\Entity::CURRENCY_CLOUD, Payment\Status::AUTHORIZED, $limit);
+        $payments = $this->core->fetchPaymentsToBeCaptured($limit);
 
         foreach ($payments as $payment) {
             try {
@@ -2136,9 +2264,7 @@ class Service extends Base\Service
                     ['type' => Address\Type::BILLING_ADDRESS]);
 
                 // Transfer_id which we get from CC is stored in Reference16 attribute
-                if ($payment->getReference16() != null or
-                    !$merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B) or
-                    ($addresses->isEmpty() === true)) {
+                if ($this->core->paymentInvalidForCapture($payment,$merchant,$addresses)) {
 
                     $this->trace->count(BankTransferMetrics::INTL_BANK_TRANSFER_PAYMENT_PROCESSING_FAILED, [
                         'flow' => TraceCode::B2B_TRANSFER_COMPLETION_PENDING,
@@ -2513,7 +2639,13 @@ class Service extends Base\Service
             ]);
         }
 
+        $shouldSendSegmentEvent = $this->core->canSendMoneySaverPaymentSegmentEvent($merchantId, Payment\status::AUTHORIZED);
+
         $payments = $this->core->createAndAuthorizePaymentForIntlBankTransfer($response['data'], $merchantId, $input);
+
+        if ($shouldSendSegmentEvent === true) {
+            $this->core->sendPaymentSegmentEvent($merchantId, Payment\status::AUTHORIZED, $payments[0]);
+        }
 
         return [
             'success' => 'true',
@@ -3046,6 +3178,10 @@ class Service extends Base\Service
         if ($this->app['env'] != Environment::TESTING) {
             $this->app['rzp.mode'] = Mode::LIVE;
         }
+
+        // Adding bank_transfer method and date range filter in query
+        $input['methods'] = [Method::BANK_TRANSFER];
+        $input['timestamp_filter'] = true;
 
         $payments = $this->repo->payment->getIntlBankTransferPayments( $input, Payment\Status::AUTHORIZED, Gateway::PING_PONG);
         $encryptionKey = $this->app['config']['app']['cross_border_handle']['aes_encryption_key'];
@@ -3693,16 +3829,6 @@ class Service extends Base\Service
 
         $payeeAccount = $input['VANum'];
 
-        if(in_array(substr($payeeAccount, 0, 4), Provider::IDFC_VA_PREFIX) === false)
-        {
-            $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA, [
-                'message'   => 'invalid Va idfc account prefix',
-                'va_prefix' => substr($payeeAccount, 0, 4)
-            ]);
-
-            throw new BadRequestValidationFailureException('INVALID_DATA');
-        }
-
         return array(
             'input' => [
                 'request_type'  => 'validation',
@@ -3788,16 +3914,6 @@ class Service extends Base\Service
         }
 
         $payerName = $input['remitterName']??"";
-
-        if(in_array(substr($payeeAccount, 0, 4), Provider::IDFC_VA_PREFIX)  === false)
-        {
-            $this->trace->error(TraceCode::IDFC_VA_CALLBACK_INVALID_DATA, [
-                'message'   => 'invalid Va idfc account prefix',
-                'va_prefix' => substr($payeeAccount, 0, 4)
-            ]);
-
-            throw new BadRequestValidationFailureException('INVALID_DATA');
-        }
 
         // https://razorpay.slack.com/archives/C07PW1M7HAQ/p1737011718760019
         // Check if the request is > 2 days old, reject the request if true

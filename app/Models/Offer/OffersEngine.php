@@ -767,6 +767,14 @@ class OffersEngine extends Base\Core
             $redeemConditionWhenArray
         );
 
+        $this->processUpiConditionCreate(
+            $input,
+            Constants::PAYER_ACCOUNT_ISSUER,
+            Constants::ALL,
+            Constants::UPI_PAYER_ACCOUNT_ISSUER,
+            $redeemConditionWhenArray
+        );
+
         if (empty($redeemConditionWhenArray))
         {
             return;
@@ -940,20 +948,26 @@ class OffersEngine extends Base\Core
     {
         if (isset($publicOffer[Constants::RULES]) === true)
         {
+            $offer->setRules($publicOffer[Constants::RULES]);
             foreach ($publicOffer[Constants::RULES] as $rule)
             {
-                if (isset($rule[Constants::INCLUDES]) === true)
+                if (isset($rule[Constants::FILTERS]) === true)
                 {
-                    if (isset($rule[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]) === true)
+                    $filters = $rule[Constants::FILTERS];
+                    if (isset($filters[Constants::INCLUDES]) === true)
                     {
-                        if (count($rule[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]) > 1)
+                        if (isset($filters[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]) === true)
                         {
-                            $offer->setAttribute(Entity::PAYMENT_METHOD, Entity::MULTIPLE);
+                            if (count($filters[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]) > 1)
+                            {
+                                $offer->setAttribute(Entity::PAYMENT_METHOD, Entity::MULTIPLE);
 
-                            $offer->setInstruments($rule[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]);
+                                $offer->setInstruments($filters[Constants::INCLUDES][Constants::PAYMENT_INSTRUMENTS]);
+                            }
                         }
                     }
                 }
+
             }
         }
     }
@@ -1023,8 +1037,10 @@ class OffersEngine extends Base\Core
             $whenExpression = $redeemRule[Constants::WHEN];
             $appsRegex = '/' . Constants::PAYMENT_INSTRUMENT . '\.'. Constants::UPI_APP .'\("([^"]+)"(?:,"([^"]+)")*\)/';
             $PayerAccountTypeRegex = '/' . Constants::PAYMENT_INSTRUMENT .'\.'. Constants::UPI_PAYER_ACCOUNT .'\("([^"]+)"(?:,"([^"]+)")*\)/';
+            $PayerAccountIssuerRegex = '/' . Constants::PAYMENT_INSTRUMENT .'\.'. Constants::UPI_PAYER_ACCOUNT_ISSUER .'\("([^"]+)"(?:,"([^"]+)")*\)/';
             $offer->setUpiApps($this->extractValuesFromFunctionCalls($whenExpression, $appsRegex));
             $offer->setPayerAccountType($this->extractValuesFromFunctionCalls($whenExpression, $PayerAccountTypeRegex));
+            $offer->setPayerAccountIssuer($this->extractValuesFromFunctionCalls($whenExpression, $PayerAccountIssuerRegex));
         }
     }
 

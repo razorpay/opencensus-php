@@ -505,7 +505,7 @@ class Service extends Base\Service
                     'cf_subcategory'  => $fdSubcategory,
                     'cf_product'      => 'Payment Gateway',
                     'cf_new_category'               =>  Constants::FD_CF_NEW_CATEGORY,
-                    'cf_new_sub_category'           =>  ($requestParams['subCategory'] ?? 'Fraud alerts'),
+                    'cf_new_sub_category'           =>  $fdSubcategory,
                     'cf_risk_woc_category'          =>  Constants::FD_RISK_WOC_CATEGORY_NEED_CLARIFICATION,
                     'cf_new_requester_category'     =>  Constants::FD_NEW_RISK_CATEGORY,
                     "cf_new_requester_sub_category" =>  Constants::FD_NEW_RISK_SUB_CATEGORY,

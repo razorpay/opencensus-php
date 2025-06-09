@@ -39,6 +39,12 @@ class Core extends Base\Core
         return $this->repo->vpa->find($id);
     }
 
+    public function updateVpaWithPublicId(Entity $vpa, array $input)
+    {
+        $vpa->fill($input);
+        return $this->repo->saveOrFail($vpa);
+    }
+
 //    public function updateVpaWithFtsId(Entity $entity, $ftsFundAccountId)
 //    {
 //        $entity->setFtsFundAccountId($ftsFundAccountId);

@@ -25,6 +25,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstants;
 use RZP\Models\Merchant\Website\Constants as WebsiteConstants;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Models\DeviceDetail\Entity as DeviceDetailEntity;
+use RZP\Models\DeviceDetail\Core as DeviceDetailCore;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Detail\Core as MerchantDetail;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailConstants;
@@ -54,6 +55,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
     // modular onboarding APIs
     const ONBOARDING_GET      = 'onboarding_get';
     const ONBOARDING_SAVE     = 'onboarding_save';
+    const ACTIVATE_MERCHANT     = 'activate_merchant';
     const ONBOARDING_CREATE_OR_FETCH = 'onboarding_create_or_fetch';
 
     const MERCHANT_ACTIVATION_FETCH_INTERNAL    = 'merchant_activation_fetch_internal';
@@ -151,6 +153,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const GET_VCIP_LINK                          = 'get_vcip_link';
     const BDD_VERIFICATION_STATUS_UPDATE         = 'bdd_verification_status_update';
 
+    const GET_MERCHANT_ONBOARDING_DETAILS        = 'get_merchant_onboarding_details';
+
     const ONBOARDING_ROUTES = [self::ONBOARDING_GET, self::ONBOARDING_SAVE, self::ONBOARDING_CREATE_OR_FETCH, self::MERCHANT_WEBSITE_POLICY_PREVIEW_V2];
 
     const PGOS_OWNED_FIELDS = [
@@ -222,7 +226,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::VERIFY_OTP,
         self::ONBOARDING_GET,
         self::ONBOARDING_SAVE,
+        self::ACTIVATE_MERCHANT,
         self::ONBOARDING_CREATE_OR_FETCH,
+        self::GET_MERCHANT_ONBOARDING_DETAILS,
     ];
 
     const ADMIN_ROUTES = [
@@ -272,6 +278,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::ONBOARDING_GET                   => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/OnboardingGet',
         self::ONBOARDING_CREATE_OR_FETCH       => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/OnboardingCreateOrFetch',
         self::ONBOARDING_SAVE                  => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/OnboardingSave',
+        self::ACTIVATE_MERCHANT                => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/ActivateMerchant',
         self::MERCHANT_WEBSITE_POLICY_VERIFY           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantIndividualPolicyVerification',
         self::MERCHANT_GET_L2_DYNAMIC_CONFIGS           => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetL2DynamicConfigs',
         self::MERCHANT_GET_POLICY_COMPLIANCE_DETAILS    => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantGetPolicyComplianceDetails',
@@ -331,6 +338,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::INITIATE_POS_ONBOARDING                       => '/twirp/rzp.pg_onboarding.external.pos.v1.PosActivationStatusService/InitiatePosOnboarding',
         self::GET_VCIP_LINK                                 => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetVcipLink',
         self::BDD_VERIFICATION_STATUS_UPDATE                => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/UpdateBddVerificationStatus',
+        self::GET_MERCHANT_ONBOARDING_DETAILS               => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/GetMerchantOnboardingDetails',
     ];
 
     // timeout in seconds
@@ -345,6 +353,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         // will throw context canceled error in case of timeout. This has to be reverted
         // once the latencies of the API is optimised.
         self::ONBOARDING_SAVE                           => 50,
+        self::ACTIVATE_MERCHANT                         => 15,
         self::ONBOARDING_GET                            => 15,
         self::MERCHANT_SIGN_UP                          => 20,
         self::SALES_ASSISTED_MERCHANT_SIGN_UP           => 20,
@@ -404,7 +413,6 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_DOCUMENT_VALIDITY_CHECK,
         self::MERCHANT_DOCUMENT_UPLOAD,
         self::MERCHANT_CONSENTS_SAVE,
-        self::BDD_VERIFICATION_STATUS_UPDATE,
         self::GENERATE_MERCHANT_IDENTITY_VERIFICATION_URL,
         self::PROCESS_MERCHANT_IDENTITY_VERIFICATION,
         self::MERCHANT_WEBSITE_SECTION_PAGE_LOAD_V2,
@@ -417,7 +425,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_RM_UPDATE,
         self::ACTIVATION_DOCUMENT_TYPES,
         self::MERCHANT_SIGN_UP,
-        self::SALES_ASSISTED_MERCHANT_SIGN_UP
+        self::SALES_ASSISTED_MERCHANT_SIGN_UP,
+        self::BDD_VERIFICATION_STATUS_UPDATE,
+        self::GET_MERCHANT_ONBOARDING_DETAILS,
     ];
 
     // ROUTES_ENABLED_FOR_POS_FLOW contains the list of routes for which the PGOS call should be enabled.
@@ -438,6 +448,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_POS_PAYMENT_CALLBACK,
         self::MERCHANT_POS_FETCH_LATEST_ORDER,
     ];
+
+    const MUTEX_LOCK_ACQUIRED = 'mutex_lock_acquired';
 
     protected $mutex;
 
@@ -771,6 +783,13 @@ class MerchantOnboardingProxyController extends BaseProxyController
             }
 
             $headers['X-Route-Name'] = $routeKey;
+
+            $request = $this->app['request'];
+
+
+            if(!empty($request->headers) && !empty($request->headers->get('Is-Aes'))){
+                $headers['Admin-Login-Header'] = "aes_created";
+            }
 
             $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
                 'route'     => $route,
@@ -1360,6 +1379,12 @@ class MerchantOnboardingProxyController extends BaseProxyController
     private function sendRequestAndParseResponseWithMutexIfApplicable($headers, $body, $twirpPath, $routeKey)
     {
         $merchant = $this->app['basicauth']->getMerchant();
+
+        if ($merchant === null)
+        {
+            return $this->sendRequestAndParseResponse($routeKey, 'POST', $twirpPath, $body, $headers);
+        }
+
         $merchantId = $merchant->getId();
         $core = new MerchantDetail();
 
@@ -1368,6 +1393,12 @@ class MerchantOnboardingProxyController extends BaseProxyController
             !empty($merchantId) &&
             $core->shouldApplyMutexOnOnboardingSave($merchantId)
         ) {
+
+            $body[self::MUTEX_LOCK_ACQUIRED] = true;
+
+            $this->trace->info(TraceCode::MUTEX_LOCK_ACQUIRED_FOR_ONBOARDING_SAVE, [
+                'merchant_id'               => $merchantId,
+            ]);
 
             return $this->mutex->acquireAndRelease(
                 $merchantId,

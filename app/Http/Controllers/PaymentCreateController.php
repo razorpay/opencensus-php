@@ -681,6 +681,15 @@ class PaymentCreateController extends Controller
         {
             unset($input['view']);
         }
+        /*
+         * user_risk_providers_token is not expected in non-rearch flow,
+         * so we unset it if present
+         */
+
+        if (isset($input['user_risk_providers_token']) === true)
+        {
+            unset($input['user_risk_providers_token']);
+        }
 
         // Adding extra param to segregate payment_create events from calculate fees events
 

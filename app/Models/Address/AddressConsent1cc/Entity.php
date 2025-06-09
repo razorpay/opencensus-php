@@ -5,12 +5,13 @@ namespace RZP\Models\Address\AddressConsent1cc;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
+    use SoftDeletes, CmsGetAttribute;
 
     const ID             = 'id';
     const CUSTOMER_ID    = 'customer_id';

@@ -780,9 +780,7 @@ class CrossBorderCommonUseCases extends Job
                 ]);
 
             $this->trace->count(Metrics::CROSS_BORDER_MERCHANT_ACTIVATION_FAILED, [
-                'action' => 'ACTIVATE_INTERNATIONAL_MODULAR_MERCHANT',
-                'error_code' => $ex->getCode(),
-                'error_message' => $ex->getMessage(),
+                'action' => 'ACTIVATE_INTERNATIONAL_MODULAR_MERCHANT'
             ]);
         }
     }
@@ -849,17 +847,14 @@ class CrossBorderCommonUseCases extends Job
             // Get the selected product from the merchant's additional details (defaults to null if not set)
             $selectedProduct = $existingAdditionalDetails['cross_border_onboarding']['selected_product'] ?? null;
 
+            // If the selected product is null or "all" activate the money saver product
+            if(empty($selectedProduct) || $selectedProduct === self::EXPORT_PRODUCT_ALL) {
+                    $this->activateMoneySaverProduct($merchantID);
+            }
+
             if ($selectedProduct) {
                 // Always activate international cards for any selected product
-                $this->activateInternationalCards($merchantID);
-
-                // If the selected product is "all", also activate the money saver product
-                if ($selectedProduct === self::EXPORT_PRODUCT_ALL) {
-                    $this->activateMoneySaverProduct($merchantID);
-                }
-
-            } else {
-                $this->activateMoneySaverProduct($merchantID);
+                    $this->activateInternationalCards($merchantID);
             }
 
         } catch (\Throwable $ex) {
@@ -892,19 +887,22 @@ class CrossBorderCommonUseCases extends Job
 
             $this->app['basicauth']->setMerchant($merchant);
 
-            $internationalEnablementService = new InternationalEnablementDetailService();
-            $internationalEnablementEntity = $internationalEnablementService->get();
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantID) {
+                $internationalEnablementService = new InternationalEnablementDetailService();
+                $internationalEnablementEntity = $internationalEnablementService->get();
 
-            $submitRequest = $this->getInternationalEnablementSubmitRequest($internationalEnablementEntity);
+                $submitRequest = $this->getInternationalEnablementSubmitRequest($internationalEnablementEntity);
 
-            Request::replace($submitRequest);
-            $response = $internationalEnablementService->submit($submitRequest);
+                $submitRequest['async_cross_border_workflow_create'] = true;
+                Request::replace($submitRequest);
+                $response = $internationalEnablementService->submit($submitRequest);
 
-            $this->trace->info(TraceCode::INTERNATIONAL_PRODUCT_ACTIVATION_SUCCESS_FOR_MODULAR_MERCHANT, [
-                'merchant_id' => $merchantID,
-                'product' => 'cards',
-                'response' => $response
-            ]);
+                $this->trace->info(TraceCode::INTERNATIONAL_PRODUCT_ACTIVATION_SUCCESS_FOR_MODULAR_MERCHANT, [
+                    'merchant_id' => $merchantID,
+                    'product' => 'cards',
+                    'response' => $response
+                ]);
+            });
         } catch (\Throwable $ex) {
             $this->trace->error(
                 TraceCode::INTERNATIONAL_PRODUCT_ACTIVATION_FAILED_FOR_MODULAR_MERCHANT, [
@@ -916,9 +914,7 @@ class CrossBorderCommonUseCases extends Job
             );
 
             $this->trace->count(Metrics::CROSS_BORDER_MODULAR_MERCHANT_INTERNATIONAL_PRODUCT_ACTIVATION_FAILED, [
-                'product' => 'cards',
-                'error_code' => $ex->getCode(),
-                'error_message' => $ex->getMessage(),
+                'product' => 'cards'
             ]);
         }
     }
@@ -947,8 +943,10 @@ class CrossBorderCommonUseCases extends Job
     // activateMoneySaverProduct function to activate moneysaver product
     private function activateMoneySaverProduct(string $merchantID): void {
         try {
-            $bankTransferService = new BankTransferService();
-            $bankTransferService->createInternationalVirtualAccountInternally($merchantID);
+            $this->repo->transactionOnLiveAndTestAndAsv(function() use ($merchantID) {
+                $bankTransferService = new BankTransferService();
+                $bankTransferService->createInternationalVirtualAccountInternally($merchantID);
+            });
 
             $this->trace->info(TraceCode::INTERNATIONAL_PRODUCT_ACTIVATION_SUCCESS_FOR_MODULAR_MERCHANT, [
                 'merchant_id' => $merchantID,
@@ -965,9 +963,7 @@ class CrossBorderCommonUseCases extends Job
             );
 
             $this->trace->count(Metrics::CROSS_BORDER_MODULAR_MERCHANT_INTERNATIONAL_PRODUCT_ACTIVATION_FAILED, [
-                'product' => 'moneysaver',
-                'error_code' => $ex->getCode(),
-                'error_message' => $ex->getMessage(),
+                'product' => 'moneysaver'
             ]);
         }
     }
@@ -1012,15 +1008,23 @@ class CrossBorderCommonUseCases extends Job
 
     protected function sendActivatedSegmentEvent($merchant)
     {
-        $merchantDetails = $this->repo->merchant_detail->findOrFail($merchant->getId());
-        $properties = [
-            "u_em" => $merchantDetails->getContactEmail(),
-            "u_mb" => $merchantDetails->getContactMobile(),
-            "first_name" => $merchantDetails->getContactName(),
-            "merchant_type" => "cross_border_money_saver",
-        ];
-        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
-            $merchant, $properties, "Merchant Activated");
+        try {
+            $merchantDetails = $this->repo->merchant_detail->findOrFail($merchant->getId());
+            $properties = [
+                "u_em" => $merchantDetails->getContactEmail(),
+                "u_mb" => $merchantDetails->getContactMobile(),
+                "first_name" => $merchantDetails->getContactName(),
+                "merchant_type" => "cross_border_money_saver",
+            ];
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $properties, "Merchant Activated");
+            $this->app['segment-analytics']->buildRequestAndSend();
+        } catch (\Throwable $ex) {
+            $this->trace->error(TraceCode::CROSS_BORDER_MODULAR_MERCHANT_SEGMENT_EVENT_FAILED, [
+                'merchant_id' => $merchant->getId(),
+                'segment_error' => $ex->getMessage()
+            ]);
+        }
     }
 
     protected function zipFIRS()

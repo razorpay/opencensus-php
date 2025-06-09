@@ -57,6 +57,8 @@ class Metric extends Base\Core
     const CONTACT_VALIDATION_FAILURE = 'contact_validation_failure';
     const EMAIL_VALIDATION_FAILURE = 'email_validation_failure';
     const TRANSFER_PROCESSING_EXCEPTION_MESSAGE         = 'transfer_processing_exception_message';
+    const REARCH_TRANSFER_ES_SYNC         = 'rearch_transfer_es_sync';
+    const TRANSFER_FETCH_DIFF_CHECK           = 'transfer_fetch_diff_check';
 
 
     public function pushCreateSuccessMetrics(array $input = [])
@@ -324,5 +326,26 @@ class Metric extends Base\Core
         $dimensions['reverse_shadow_enabled_for_linked_account_mid'] = $reverseShadowEnabledForLinkedAccount;
 
         $this->trace->count(self::PG_LEDGER_TRANSFER_MERCHANTS_ONBOARDING_MISMATCH, $dimensions);
+    }
+
+    public function pushRearchTransferEsSyncSucessMetric()
+    {
+        $dimensions = $this->getCreateDefaultDimensions();
+
+        $this->trace->count(self::REARCH_TRANSFER_ES_SYNC, $dimensions);
+    }
+
+    public function pushRearchTransferEsSyncFailureMetric(\Throwable $e)
+    {
+        $this->pushExceptionMetrics($e, self::REARCH_TRANSFER_ES_SYNC, $this->getCreateDefaultDimensions());
+    }
+
+    public function pushRearchTransferFetchDiffMetric($success)
+    {
+        $dimensions = $this->getCreateDefaultDimensions();
+
+        $dimensions['success'] = $success;
+
+        $this->trace->count(self::TRANSFER_FETCH_DIFF_CHECK, $dimensions);
     }
 }

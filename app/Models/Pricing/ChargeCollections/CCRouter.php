@@ -339,14 +339,14 @@ class CCRouter
                         'mode' => $this->mode,
                     ]);
 
-                $this->monitorChargeCollectionsRequestNotRouted($routeName,$fqcn, self::TRANSFORMATION_NOT_FOUND);
+                $this->monitorChargeCollectionsRequestNotRouted($routeName,$fqcn, self::TRANSFORMATION_NOT_FOUND, $rampPhase);
                 return null;
             }
 
             return $response;
         }catch (\Throwable $e){
             $this->trace->traceException($e, Trace::WARNING, TraceCode::CC_ROUTER_EXCEPTION);
-            $this->monitorChargeCollectionsRequestNotRouted($routeName, $fqcn ,self::EXCEPTION);
+            $this->monitorChargeCollectionsRequestNotRouted($routeName, $fqcn ,self::EXCEPTION, $rampPhase);
 
             if ($rampPhase == self::REVERSE_SHADOW || $rampPhase == self::ENABLE){
                 throw $e;
@@ -356,16 +356,17 @@ class CCRouter
         }
     }
 
-    private function monitorChargeCollectionsRequestNotRouted($routeName, $functionName, $reason): void
+    private function monitorChargeCollectionsRequestNotRouted($routeName, $functionName, $reason, $ramp_phase): void
     {
         $this->trace->count(Metric::CC_REQUEST_NOT_ROUTED, [
             'route' => $routeName,
             'function' => $functionName,
             'reason' => $reason,
+            'ramp_phase' => $ramp_phase
         ]);
     }
 
-    private function shouldRouteRequestToChargeCollections($functionName, $planID): string {
+    public function shouldRouteRequestToChargeCollections($functionName, $planID): string {
 
         $routeName = null;
 
@@ -377,7 +378,7 @@ class CCRouter
 
             if($this->isRouteApplicableForDecomp($routeName) === false &&
                 $this->isFunctionApplicableForDecomp($functionName) === false) {
-                $this->monitorChargeCollectionsRequestNotRouted($routeName,$functionName,self::ROUTE_OR_FUNCTION_NOT_ONBOARDED);
+                $this->monitorChargeCollectionsRequestNotRouted($routeName,$functionName,self::ROUTE_OR_FUNCTION_NOT_ONBOARDED, 'pre_ramp');
                 return self::DISABLE;
             }
 
@@ -389,14 +390,14 @@ class CCRouter
 
             $result = $this->checkSplitzExperiment($planID, $experimentID);
             if($result[self::VALID] === false) {
-                $this->monitorChargeCollectionsRequestNotRouted($routeName,$functionName,self::SPLITZ_RESPONSE_ERROR);
+                $this->monitorChargeCollectionsRequestNotRouted($routeName,$functionName,self::SPLITZ_RESPONSE_ERROR, 'pre_ramp');
                 return self::DISABLE;
             }
 
             return $result[self::VARIANT];
         }catch (\Throwable $e){
             $this->trace->traceException($e, Trace::WARNING, TraceCode::CC_ROUTER_EXCEPTION);
-            $this->monitorChargeCollectionsRequestNotRouted($routeName, $functionName, self::EXCEPTION);
+            $this->monitorChargeCollectionsRequestNotRouted($routeName, $functionName, self::EXCEPTION, 'pre_ramp');
             return self::DISABLE;
         }
     }
@@ -407,57 +408,76 @@ class CCRouter
 
     private function checkSplitzExperiment(string $id, string $experimentId): array
     {
-        $startTimeMs = round(microtime(true) * 1000);
-        try {
-            $request = ['id' => $id, 'experiment_id' => $experimentId];
+        $maxRetries = 3; // Number of retries
+        $retryDelayMs = 100; // Delay between retries in milliseconds
 
-            $response = $this->app['splitzService']->evaluateRequest($request);
+        for ($attempt = 0; $attempt < $maxRetries; $attempt++) {
+            $startTimeMs = round(microtime(true) * 1000);
 
-            if ($response['status_code'] !== 200) {
-                $this->trace->info(TraceCode::CC_ROUTER_SPLITZ_ERROR, ['response' => $response, 'mode' => $this->mode]);
-                return [
-                    self::VALID => false,
-                    self::VARIANT => '',
-                ];
-            }
+            try {
+                $request = ['id' => $id, 'experiment_id' => $experimentId];
 
-            $variant = $response['response']['variant'] ?? [];
-            $variantName = $variant['name'] ?? '';
-            $endTimeMs = round(microtime(true) * 1000);
-            $this->trace->histogram(Metric::CC_ROUTER_SPLITZ_RESPONSE_TIME, $endTimeMs- $startTimeMs);
+                $response = $this->app['splitzService']->evaluateRequest($request);
+                $endTimeMs = round(microtime(true) * 1000);
+                $this->trace->histogram(Metric::CC_ROUTER_SPLITZ_RESPONSE_TIME, $endTimeMs - $startTimeMs);
 
-            if (in_array($variantName, self::VALID_CC_EXPERIMENT_VARIANTS)) {
-                return [
-                    self::VALID => true,
-                    self::VARIANT => $variantName,
-                ];
-            }else{
+                if ($response['status_code'] !== 200) {
+                    $this->trace->info(TraceCode::CC_ROUTER_SPLITZ_ERROR, ['response' => $response, 'mode' => $this->mode]);
+                    return [
+                        self::VALID => false,
+                        self::VARIANT => '',
+                    ];
+                }
+
+                $variant = $response['response']['variant'] ?? [];
+                $variantName = $variant['name'] ?? '';
+
+                if (in_array($variantName, self::VALID_CC_EXPERIMENT_VARIANTS)) {
+                    return [
+                        self::VALID => true,
+                        self::VARIANT => $variantName,
+                    ];
+                } else {
+                    $this->trace->info(TraceCode::CC_ROUTER_SPLITZ_ERROR, [
+                        'invalid_variant_response' => $response,
+                        'variant' => $variantName,
+                        'mode' => $this->mode,
+                    ]);
+                    return [
+                        self::VALID => false,
+                        self::VARIANT => '',
+                    ];
+                }
+            } catch (\Throwable $e) {
+                $endTimeMs = round(microtime(true) * 1000);
+                $this->trace->histogram(Metric::CC_ROUTER_SPLITZ_RESPONSE_TIME, $endTimeMs - $startTimeMs);
+
                 $this->trace->info(TraceCode::CC_ROUTER_SPLITZ_ERROR, [
-                    'invalid_variant_response' => $response,
-                    'variant' => $variantName,
+                    'splitz_exception' => $e,
+                    "splitz_call_response" => $response ?? null,
+                    "experiment_id" => $experimentId,
+                    "identifier" => $id,
+                    'attempt' => $attempt + 1,
                     'mode' => $this->mode,
                 ]);
+
+                // Retry only for timeout errors
+                if (str_contains($e->getMessage(), "cURL error 28") && $attempt < $maxRetries - 1) {
+                    usleep($retryDelayMs * 1000);
+                    continue;
+                }
+
                 return [
                     self::VALID => false,
                     self::VARIANT => '',
                 ];
             }
-        } catch (\Throwable $e) {
-            $this->trace->info(TraceCode::CC_ROUTER_SPLITZ_ERROR, [
-                'splitz_exception' => $e,
-                "splitz_call_response" => $response,
-                "experiment_id" => $experimentId,
-                "identifier" => $id,
-                'mode' => $this->mode,
-            ]);
-            $endTimeMs = round(microtime(true) * 1000);
-            $this->trace->histogram(Metric::CC_ROUTER_SPLITZ_RESPONSE_TIME, $endTimeMs- $startTimeMs);
-
-            return [
-                self::VALID => false,
-                self::VARIANT => '',
-            ];
         }
+
+        return [
+            self::VALID => false,
+            self::VARIANT => '',
+        ];
     }
 
     private function isRouteApplicableForDecomp($routeName)
@@ -731,6 +751,7 @@ class CCRouter
                 $entityClass = PricingEntity::class;
                 $entityClass::unguard();
                 $pricingEntity = new PricingEntity($response['rule']);
+                $pricingEntity->exists = true;
             } catch (\Throwable $e) {
                 throw new \Exception('Could not map charge collections response to entity');
             } finally {
@@ -751,7 +772,9 @@ class CCRouter
             foreach($response['rules'] as $rule) {
                 try {
                     $entityClass::unguard();
-                    $pricingEntities[] = new PricingEntity($rule);
+                    $pricingEntity = new PricingEntity($rule);
+                    $pricingEntity->exists = true;
+                    $pricingEntities[] = $pricingEntity;
                 } catch (\Throwable $e) {
                     throw new \Exception('Could not map charge collections response to entity');
                 } finally {

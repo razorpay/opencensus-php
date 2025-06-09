@@ -6,7 +6,7 @@ use RZP\Http\Request\Requests;
 
 class Api extends Base
 {
-    const FETCH_STORE_URL = '/api/3.0/rzp_app/devices/%s/info';
+    const FETCH_STORE_URL = '/api/3.0/devices/%s/info';
 
     /**
      * To fetch a store by device_id from POS Device microservice
@@ -15,11 +15,11 @@ class Api extends Base
      */
     public function fetchDevice(string $deviceId) : array
     {
-        $config = config('applications.ezetap-api');
-        $baseUrl = $config['url'];
+        $baseUrl = config('applications.ezetap_device_gatway.url');
 
         $url = sprintf($baseUrl.self::FETCH_STORE_URL, $deviceId);
 
+        //return $this->sendRequest(Requests::GET, $url);
         return $this->sendRequest(Requests::GET, $url);
     }
 }

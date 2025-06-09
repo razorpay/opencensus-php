@@ -49,6 +49,9 @@ class Validator extends Base\Validator
     const EDIT_USER_INTERNAL                     = 'editUserInternal';
     const GET_MULTIPLE_USERS                     = 'getMultipleUsers';
     const CREATE_VENDOR_ENTITIES                 = 'createVendorEntities';
+    const GET_USERS_WITH_RELATIONS               = 'getUsersWithRelations';
+    const UPSERT_USER_DETAILS                    = 'upsertUserDetails';
+    const DELETE_USER_DETAILS                    = 'deleteUserDetails';
     const CREATE_COMMON_RULES = [
         Entity::ID                              => 'sometimes|max:14',
         Entity::NAME                            => 'sometimes|string|max:200|utf8',
@@ -157,6 +160,7 @@ class Validator extends Base\Validator
     protected static $checkUserExistsRules = [
         Entity::CONTACT_MOBILE                  => 'required_without:email|max:15|contact_syntax',
         Entity::EMAIL                           => 'required_without:contact_mobile|email',
+        Entity::FINGERPRINT                     => 'sometimes|string'
     ];
 
     protected static $sendEmailOtpRules = [
@@ -600,6 +604,13 @@ class Validator extends Base\Validator
         Entity::EMAIL           => 'required|email',
     ];
 
+    protected static $getUsersWithRelationsRules = [
+        'user_id'         => 'sometimes|string|size:14',
+        'email'           => 'sometimes|email',
+        'contact_mobile'  => 'sometimes|string|size:10',
+        'merchant_id'     => 'sometimes|string|size:14',
+    ];
+
     protected static $getUserRolesRules = [
         'user_id'     => 'required|alpha_num|size:14',
         'merchant_id' => 'required|alpha_num|size:14',
@@ -702,6 +713,53 @@ class Validator extends Base\Validator
 
     protected static $resetPasswordValidators = [
         'country_code'
+    ];
+
+    protected static $upsertUserDetailsRules = [
+        'user' => 'sometimes|array',
+        'user.id' => 'sometimes|string|size:14',
+        'user.name' => 'sometimes|string|max:255',
+        'merchant_users' => 'sometimes|array',
+        'merchant_users.*.user_id' => 'sometimes|string|size:14',
+        'merchant_users.*.merchant_id' => 'sometimes|string|size:14',
+        'merchant_users.*.product' => 'sometimes|string',
+        'merchant_users.*.role' => 'sometimes|string',
+        'merchant_users.*.created_at' => 'sometimes|integer',
+        'merchant_users.*.updated_at' => 'sometimes|integer',
+        'user_device_details' => 'sometimes|array',
+        'user_device_details.*.user_id' => 'sometimes|string|size:14',
+        'user_device_details.*.merchant_id' => 'sometimes|string',
+        'user_device_details.*.appsflyer_id' => 'sometimes|string',
+        'user_device_details.*.signup_source' => 'sometimes|string',
+        'user_device_details.*.signup_campaign' => 'sometimes|string',
+        'user_device_details.*.metadata' => 'sometimes|array',
+        'user_device_details.*.created_at' => 'sometimes|integer',
+        'user_device_details.*.updated_at' => 'sometimes|integer',
+        'invitations' => 'sometimes|array',
+        'invitations.*.id' => 'sometimes|int',
+        'invitations.*.user_id' => 'sometimes|string|size:14',
+        'invitations.*.merchant_id' => 'sometimes|string|size:14',
+        'invitations.*.email' => 'sometimes|email',
+        'invitations.*.contact_mobile' => 'sometimes|max:15|contact_syntax',
+        'invitations.*.product' => 'sometimes|string',
+        'invitations.*.role' => 'sometimes|string',
+        'invitations.*.is_draft' => 'sometimes|int',
+        'invitations.*.metadata' => 'sometimes|array',
+        'invitations.*.created_at' => 'sometimes|integer',
+        'invitations.*.updated_at' => 'sometimes|integer',
+        'invitations.*.deleted_at' => 'sometimes|integer'
+    ];
+
+    protected static $deleteUserDetailsRules = [
+        'merchant_users' => 'sometimes|array',
+        'merchant_users.*.merchant_id' => 'required|string|size:14',
+        'merchant_users.*.user_id' => 'required|string|size:14',
+        'merchant_users.*.product' => 'required|string',
+        'user_device_details' => 'sometimes|array',
+        'user_device_details.*.merchant_id' => 'required|string|size:14',
+        'user_device_details.*.user_id' => 'required|string|size:14',
+        'invitations' => 'sometimes|array',
+        'invitations.*.id' => 'required|int',
     ];
 
     /**
@@ -885,6 +943,19 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateMobileNumberUnique(array $input): void
+    {
+        if (isset($input[Entity::CONTACT_MOBILE]) === true)
+        {
+            // Generate all valid formats (e.g., with/without country code) for the input mobile number
+            $validMobileNumberFormats = (new PhoneBook($input[Entity::CONTACT_MOBILE]))->getMobileNumberFormats();
+            foreach ($validMobileNumberFormats as $mobileNumber)
+            {
+                // Validate the uniqueness of each formatted mobile number
+                $this->validateInput('createMobileUnique', [Entity::CONTACT_MOBILE => $mobileNumber]);
+            }
+        }
+    }
     /**
      * @throws BadRequestException
      */
