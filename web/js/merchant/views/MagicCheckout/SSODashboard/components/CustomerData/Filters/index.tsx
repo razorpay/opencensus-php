@@ -7,7 +7,7 @@ import FilterList from 'merchant/views/MagicCheckout/SSODashboard/components/Cus
 interface CustomerFiltersProps {
   selectedFilter: SSO_CUSTOMER_FILTER;
   isFetching: boolean;
-  onSearchClick: () => void;
+  onSearchClick: (search?: string) => void;
   setSearch: Dispatch<React.SetStateAction<string>>;
   onFilterChange: (filter: SSO_CUSTOMER_FILTER) => void;
 }
@@ -33,7 +33,7 @@ const CustomerFilters = ({
           size="medium"
           label=""
           onChange={onSearchChange}
-          onClearButtonClick={() => setSearch('')}
+          onClearButtonClick={() => onSearchClick('')}
         />
         <Box flexShrink={0}>
           <Button

@@ -34,8 +34,9 @@ const CustomerData = ({ timeRange }: CustomerDataProps) => {
     setSelectedFilter(filter);
   };
 
-  const onSearchClick = () => {
-    getCustomerListData(0, selectedFilter, searchTerm);
+  const onSearchClick = (search?: string) => {
+    const searchParam = search ?? searchTerm;
+    getCustomerListData(0, selectedFilter, searchParam);
     setCurrentPage(0);
   };
 
@@ -66,7 +67,6 @@ const CustomerData = ({ timeRange }: CustomerDataProps) => {
   };
 
   useEffect(() => {
-    console.log('ye cll ho raha hai');
     getCustomerListData(0, selectedFilter, searchTerm);
     setCurrentPage(0);
   }, [timeRange.start, timeRange.end]);
