@@ -1865,7 +1865,7 @@ class Processor
         return false;
     }
 
-    private function evaluateSplitzExperimentForIntlCardRecurringRearchMerchant($merchant, $routeName)
+    private function evaluateSplitzExperimentForIntlCardRecurringRearch($merchant, $routeName)
     {
         try
         {
@@ -2393,7 +2393,7 @@ class Processor
                     return false;
                 }
 
-                $cbRecurringRearchResult = $this->evaluateSplitzExperimentForIntlCardRecurringRearchMerchant($merchant, $currentRouteName);
+                $cbRecurringRearchResult = $this->evaluateSplitzExperimentForIntlCardRecurringRearch($merchant, $currentRouteName);
                 if ($cbRecurringRearchResult === false) {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         'reason' => "cross_border_splitz_experiment",
