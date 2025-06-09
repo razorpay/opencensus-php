@@ -91,6 +91,10 @@ class BusinessType
         self::NOT_YET_REGISTERED     => "Not Yet Registered",
         self::OTHER                  => "Other",
         self::HUF                    => "HUF",
+        self::GOVERNMENT => "Government",
+        self::SECTION_8_COMPANY => "Section 8 Company",
+        self::LOCAL_AUTHORITY => "Local Authority",
+        self::JUDICAL_PERSON => "Judical Person"
     ];
     const REGISTERED   = 'registered';
     const UNREGISTERED = 'unregistered';

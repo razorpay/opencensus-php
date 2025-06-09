@@ -513,7 +513,7 @@ class Core extends Base\Core
                 Entity::CREATED_AT => $document->getCreatedAt(),
                 Entity::METADATA => $document->getMetadata()
             ];
-
+            
             if (isset($documentsResponse[$document->getDocumentType()]) === false)
             {
                 $documentsResponse[$document->getDocumentType()] = [];
@@ -923,7 +923,7 @@ class Core extends Base\Core
         $isMkycMerchant = $this->pgosProxyController->isIndiaPgModularMerchant($merchant);
 
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['isExperimentEnabled' => $isExperimentEnabled,"isMkycMerchant"=>$isMkycMerchant]);
-
-        return ($isExperimentEnabled and $isMkycMerchant);
+        return true;
+       // return ($isExperimentEnabled and $isMkycMerchant);
     }
 }
