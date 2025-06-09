@@ -1423,7 +1423,7 @@ class UserTest extends TestCase
 
             $this->assertNotEmpty($mail->otp);
 
-            $this->assertEquals('emails.user.verify_user', $mail->view);
+            $this->assertEquals('emails.user.otp_email_verify', $mail->view);
 
             $mailSubject = "Razorpay | OTP to verify email";
 
