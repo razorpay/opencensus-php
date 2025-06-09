@@ -11137,6 +11137,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHIPPING_INFO_USER_NOT_FOUND                        = 'SHIPPING_INFO_USER_NOT_FOUND';
 
     const ADDRESS_SUGGEST_1CC_ERROR                          = 'ADDRESS_SUGGEST_1CC_ERROR';
+    const GMAPS_CACHE_RATE                                   = 'GMAPS_CACHE_RATE';
     const MERCHANT_SERVICEABILITY_EXTERNAL_CALL_ERROR        = 'MERCHANT_SERVICEABILITY_EXTERNAL_CALL_ERROR';
 
     const COD_ELIGIBILITY_VALIDITY_REQUEST                   = 'COD_ELIGIBILITY_VALIDITY_REQUEST';
