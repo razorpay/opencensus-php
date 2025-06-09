@@ -36,7 +36,7 @@ const ScrapperModal = ({ isOpen, handleModal, showNotification, props }) => {
       const timeoutId = setTimeout(() => {
         controller.abort();
         isPolling = false;
-        trackScraperModal('Website Scraper Polling', 'timed_out', props, {
+        trackScraperModal('Website Scraper Polling', 'timed out', props, {
           timeout_ms: timeout,
         });
         reject(new Error('Polling timed out after 1 minute'));
@@ -66,7 +66,7 @@ const ScrapperModal = ({ isOpen, handleModal, showNotification, props }) => {
             }
           } else {
             clearTimeout(timeoutId);
-            trackScraperModal('Website Scraper Polling', 'api_error', props, {
+            trackScraperModal('Website Scraper Polling', 'api error', props, {
               errors: data?.errors,
             });
             reject(data?.errors);
@@ -175,7 +175,7 @@ const ScrapperModal = ({ isOpen, handleModal, showNotification, props }) => {
     })
       .then((d) => {
         if (d?.success) {
-          trackScraperModal('Website Scraper Form', 'submission_success', props);
+          trackScraperModal('Website Scraper Form', 'submission success', props);
 
           setRetries(0);
           handleModal(true);
@@ -184,7 +184,7 @@ const ScrapperModal = ({ isOpen, handleModal, showNotification, props }) => {
         return false;
       })
       .catch((error) => {
-        trackScraperModal('Website Scraper Form', 'submission_error', props, {
+        trackScraperModal('Website Scraper Form', 'submission error', props, {
           error: JSON.stringify(error?.errors),
         });
 
