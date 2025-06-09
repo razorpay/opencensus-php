@@ -47,6 +47,6 @@ describe('Optimizer Rules Precondition', () => {
     const { getByDisplayValue } = renderApp(props);
     expect(getByDisplayValue('Payment Method')).toBeInTheDocument();
     expect(getByDisplayValue('Equal to')).toBeInTheDocument();
-    expect(getByDisplayValue('card')).toBeInTheDocument();
+    expect(getByDisplayValue('Card')).toBeInTheDocument();
   });
 });

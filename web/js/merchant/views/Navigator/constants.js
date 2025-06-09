@@ -58,6 +58,7 @@ export const METHODS_MAP = {
   cod: 'Cash on Delivery (COD)',
   paylater: 'Pay Later',
   cardless_emi: 'Cardless EMI',
+  bank_transfer: 'Bank Transfer',
 };
 
 export const INIT_PROVIDER_STATE = {

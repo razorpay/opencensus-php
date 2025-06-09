@@ -42,31 +42,44 @@ describe('Optimizer Utils > getValue', () => {
       id: 2,
       values: [
         {
+          label: 'Card',
           value: 'card',
         },
         {
+          label: 'Netbanking',
           value: 'netbanking',
         },
         {
+          label: 'UPI Intent',
           value: 'upi_intent',
         },
         {
+          label: 'UPI Collect',
           value: 'upi_collect',
         },
         {
+          label: 'Wallet',
           value: 'wallet',
         },
         {
+          label: 'EMI',
           value: 'emi',
         },
         {
+          label: 'Cardless EMI',
           value: 'cardless_emi',
         },
         {
+          label: 'Emandate',
           value: 'emandate',
         },
         {
+          label: 'Paylater',
           value: 'paylater',
+        },
+        {
+          label: 'Bank Transfer',
+          value: 'bank_transfer',
         },
       ],
       operators: {

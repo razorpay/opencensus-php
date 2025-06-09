@@ -68,8 +68,8 @@ describe('Optimizer Rules Expression', () => {
     expect(valueElem).toBeInTheDocument();
     await userEvent.click(valueElem);
     expect(getByPlaceholderText('Search')).toBeInTheDocument();
-    expect(getByText('card')).toBeInTheDocument();
-    expect(getByText('netbanking')).toBeInTheDocument();
+    expect(getByText('Card')).toBeInTheDocument();
+    expect(getByText('Netbanking')).toBeInTheDocument();
   });
 
   it('should render Exression component for input when readOnly is true', () => {
@@ -97,6 +97,6 @@ describe('Optimizer Rules Expression', () => {
     expect(getByText('When')).toBeInTheDocument();
     expect(getByDisplayValue('Payment Method')).toBeInTheDocument();
     expect(getByDisplayValue('One Of')).toBeInTheDocument();
-    expect(getByDisplayValue('card,netbanking')).toBeInTheDocument();
+    expect(getByDisplayValue('Card,Netbanking')).toBeInTheDocument();
   });
 });
