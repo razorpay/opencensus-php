@@ -1,11 +1,13 @@
 import React from 'react';
 import SlabRateSettings from './SlabRateSettings';
 import ZoneSetting from './ZoneSettings';
-function BasicFlow({ isRcod }) {
+import { PLATFORMS } from 'merchant/views/MagicCheckout/constants';
+
+function BasicFlow({ isRcod, platform }) {
   return (
     <>
       <SlabRateSettings />
-      {!isRcod ? <ZoneSetting /> : null}
+      {!isRcod && platform !== PLATFORMS.MAGENTO ? <ZoneSetting /> : null}
     </>
   );
 }

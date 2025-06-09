@@ -25,6 +25,7 @@ const PlatformSubText = ({
   nested_view_type,
   shop_id,
   updatePage,
+  domain_url,
   updateSettings,
   platform,
   shipping_info,
@@ -41,6 +42,11 @@ const PlatformSubText = ({
   if (platform === PLATFORMS.VALUES.WOOCOMMERCE) {
     domainSubText = shipping_info?.split('wp-json')[0];
   }
+
+  if (platform === PLATFORMS.VALUES.MAGENTO) {
+    domainSubText = domain_url;
+  }
+
   if (nested_view_type !== NESTED_VIEW_TYPE.SETTINGS) {
     return (
       <div className="margin-t-8 platform-subtext">
@@ -139,7 +145,8 @@ const PlatformSubText = ({
     <>
       <div className="display-flex align-center margin-t-16">
         <div className="font-12 platform-details">{CONTENT[platform]?.VIEW_LABEL}</div>
-        {domainSubText && platform === PLATFORMS.VALUES.WOOCOMMERCE ? (
+        {domainSubText &&
+        (platform === PLATFORMS.VALUES.WOOCOMMERCE || platform === PLATFORMS.VALUES.MAGENTO) ? (
           <div className="font-12 platform-details">{domainSubText}</div>
         ) : null}
         <div

@@ -1,8 +1,9 @@
 import { connect } from 'react-redux';
 import SettingsCard from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsCard';
+import { PLATFORMS } from 'merchant/views/MagicCheckout/constants';
 
 const CouponCard = ({
-  settings: { list_promotions, apply_promotion, one_cc_auto_fetch_coupons },
+  settings: { list_promotions, apply_promotion, one_cc_auto_fetch_coupons, platform },
   switchToEdit,
   isWooCommerce,
   edit = null,
@@ -22,12 +23,16 @@ const CouponCard = ({
                 </div>
               </div>
             )}
-            <div className="flex setting-card-item gap--12">
-              <SettingsCard.Item label="URL for get promotions" value={list_promotions} />
-            </div>
-            <div className="flex setting-card-item gap--12">
-              <SettingsCard.Item label="URL for apply promotions" value={apply_promotion} />
-            </div>
+            {platform !== PLATFORMS.MAGENTO && (
+              <>
+                <div className="flex setting-card-item gap--12">
+                  <SettingsCard.Item label="URL for get promotions" value={list_promotions} />
+                </div>
+                <div className="flex setting-card-item gap--12">
+                  <SettingsCard.Item label="URL for apply promotions" value={apply_promotion} />
+                </div>
+              </>
+            )}
             <div className="flex setting-card-item gap--12 setting-card-item-last">
               <SettingsCard.Item
                 label="Auto fetch coupon"

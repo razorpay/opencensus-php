@@ -148,7 +148,7 @@ const PlatformSettings: React.FC<PlatformSettingsProps> = ({
             <div className="padding-16 bg-settings platform-heading-container">
               <div className="font-bold font-20 platform-heading">
                 {user.isC360OnboardingCompleted
-                  ? 'Magic Checkout (Formerly Checkout360)'
+                  ? 'Magic Checkout'
                   : 'Platform'}{' '}
                 Settings
               </div>

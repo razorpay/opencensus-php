@@ -174,4 +174,28 @@ export const RTO_REDUCTION_ROUTES: PlatformSpecificRoutes = {
       onRCOD: true,
     },
   ],
+  [PLATFORMS.MAGENTO]: [
+    {
+      label: 'RTO Reduction',
+      id: 'delivery-tracking',
+      path: '/magic/settings/rto-reduction-setup/rto-reduction',
+      Component: RTOReduction,
+    },
+
+    {
+      label: 'Allow List',
+      id: 'allowlist',
+      path: '/magic/settings/rto-reduction-setup/allow-list',
+      condition: (_user) => ACCESS_ROLES?.includes(_user?.role as string),
+      Component: AllowList,
+    },
+    {
+      label: 'Block List',
+      id: 'blocklist',
+      path: '/magic/settings/rto-reduction-setup/block-list',
+      condition: (_user) => ACCESS_ROLES?.includes(_user?.role as string),
+      Component: BlockList,
+      onRCOD: true,
+    },
+  ],
 };

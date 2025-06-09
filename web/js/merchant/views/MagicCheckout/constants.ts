@@ -27,6 +27,7 @@ export const PLATFORMS: Record<string, string> = {
   SHOPIFY: 'shopify',
   WOOCOMMERCE: 'woocommerce',
   NATIVE: 'native',
+  MAGENTO: 'magento',
 } as const;
 
 export const ACCESS_ROLES = ['owner', 'admin'];

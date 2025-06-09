@@ -89,6 +89,7 @@ const CODSettingsTab = ({
 
     const enableEngineConfigPromise = (params) =>
       new Promise((resolve) => {
+        updateSettings(params, false);
         if (fee_rules.length && zones.length) {
           setEditMode(true);
           updateEngineConfig(params);

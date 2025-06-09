@@ -8,6 +8,12 @@ const WoocSettingsForm = lazy(() =>
   ),
 );
 
+const MagentoSettingsForm = lazy(() =>
+  import(
+    /* webpackChunkName: "MagentoMagicSettings" */ 'merchant/views/MagicCheckout/MagicSettings/containers/magento/SettingsForm'
+  ),
+);
+
 const WoocSettingsCard = lazy(() =>
   import(
     /* webpackChunkName: "MagicSettings" */ 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/ShippingCard'
@@ -17,6 +23,18 @@ const WoocSettingsCard = lazy(() =>
 const WoocShippingTabForm = lazy(() =>
   import(
     /* webpackChunkName: "MagicSettings" */ 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/ShippingForm'
+  ),
+);
+
+const MagentoSettingsCard = lazy(() =>
+  import(
+    /* webpackChunkName: "MagentoMagicSettings" */ 'merchant/views/MagicCheckout/MagicSettings/containers/magento/ShippingCard'
+  ),
+);
+
+const MagentoShippingTabForm = lazy(() =>
+  import(
+    /* webpackChunkName: "MagentoMagicSettings" */ 'merchant/views/MagicCheckout/MagicSettings/containers/magento/ShippingForm'
   ),
 );
 
@@ -53,11 +71,13 @@ export const PLATFORMS = {
     WOOCOMMERCE: 'WooCommerce',
     SHOPIFY: 'Shopify',
     NATIVE: 'Custom E-Commerce Platform',
+    MAGENTO: 'Magento',
   },
   VALUES: {
     WOOCOMMERCE: 'woocommerce',
     SHOPIFY: 'shopify',
     NATIVE: 'native',
+    MAGENTO: 'magento',
   },
 };
 
@@ -66,6 +86,7 @@ export const PLATFORMS_DROPDOWN = [
   { label: PLATFORMS.LABELS.WOOCOMMERCE, name: PLATFORMS.VALUES.WOOCOMMERCE },
   { label: PLATFORMS.LABELS.SHOPIFY, name: PLATFORMS.VALUES.SHOPIFY },
   { label: PLATFORMS.LABELS.NATIVE, name: PLATFORMS.VALUES.NATIVE },
+  { label: PLATFORMS.LABELS.MAGENTO, name: PLATFORMS.VALUES.MAGENTO },
 ];
 
 export const FETCH_STATUS = {
@@ -89,6 +110,11 @@ export const CONTENT = {
     LOGO: '',
     VIEW_LABEL: 'Custom e-commerce platform',
     EDIT_LABEL: 'CUSTOM E-COMMERCE PLATFORM',
+  },
+  [PLATFORMS.VALUES.MAGENTO]: {
+    LOGO: '',
+    VIEW_LABEL: 'Magento',
+    EDIT_LABEL: 'Magento',
   },
 };
 
@@ -129,6 +155,11 @@ export const COMPONENTS = {
     platformComponent: () => <WoocSettingsForm />,
     formComponent: (onEdit) => <WoocShippingTabForm onEdit={onEdit} />,
     cardComponent: (onEdit) => <WoocSettingsCard onEdit={onEdit} />,
+  },
+  [PLATFORMS.VALUES.MAGENTO]: {
+    platformComponent: () => <MagentoSettingsForm />,
+    formComponent: (onEdit) => <MagentoShippingTabForm onEdit={onEdit} />,
+    cardComponent: (onEdit) => <MagentoSettingsCard onEdit={onEdit} />,
   },
 };
 

@@ -61,4 +61,13 @@ export const COD_ROUTES = {
       renderNavItemTag: () => <RouteNewTag />,
     },
   ],
+  [PLATFORMS.MAGENTO]: [
+    {
+      className: 'cod-settings',
+      label: 'COD Settings',
+      path: '/magic/settings/cod-settings/settings',
+      condition: (_user: GenericRecord) => _user?.isMagicCODEngineEnabled as boolean,
+      Component: CODSettingsTab,
+    },
+  ],
 };

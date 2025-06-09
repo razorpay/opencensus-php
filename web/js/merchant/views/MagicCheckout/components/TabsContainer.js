@@ -27,12 +27,15 @@ import { TabsContainer, TabsHeader } from './styled';
 import getDocsUrl from '@dashboards/payments/views/MagicCheckout/utils/getDocsurl';
 import { useStore } from '@apps/shell/src/client/store/commonStore';
 
-const getTabName = (tabName, dashboardView, abExperiments) => {
+const getTabName = (tabName, dashboardView, platform) => {
   if (
     tabName === 'Order Analytics' &&
     (dashboardView === SOPC_APP_NAME || dashboardView === RCOD_APP_NAME)
   ) {
     return 'Analytics';
+  }
+  if (tabName === 'Reports & Analytics' && platform === PLATFORMS.VALUES.MAGENTO) {
+    return 'Reports';
   }
   return tabName;
 };
@@ -144,7 +147,7 @@ const RouteContainer = ({
     }
     return (
       <NavLink key={item.path} to={item.path}>
-        {getTabName(item.tabName, dashboardView, abExperiments)}
+        {getTabName(item.tabName, dashboardView, platform)}
       </NavLink>
     );
   };

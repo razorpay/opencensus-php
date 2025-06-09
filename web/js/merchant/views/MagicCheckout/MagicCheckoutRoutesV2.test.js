@@ -52,7 +52,7 @@ describe('Valid Platform Check', () => {
     });
   });
   test('Should return false in case of invalid platforms', () => {
-    [null, '', 'magento'].forEach((invalidPlatform) => {
+    [null, '', 'testplatform'].forEach((invalidPlatform) => {
       expect(isValidPlatform(_user, _abExp, invalidPlatform)).toBe(false);
     });
   });

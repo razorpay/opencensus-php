@@ -225,7 +225,7 @@ const MagicIntelligenceTab = ({
             sopcMetafields={settings.sopc_metafields}
             rcodEnabled={rcodEnabled}
           />
-          {!rcodEnabled && (
+          {!rcodEnabled && platform !== PLATFORMS.VALUES.MAGENTO && (
             <>
               <ManualReviewToggle
                 checked={codOrderControl}

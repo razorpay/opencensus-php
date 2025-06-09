@@ -37,6 +37,10 @@ function SettingsView({
   const { engine } = configs;
   const { platform, shop_id, rcodEnabled } = settings;
 
+  const shouldShowSettingType = !rcodEnabled && platform !== PLATFORMS.MAGENTO;
+  const shouldShowAdvancedFlow =
+    engine === COD_ENGINES.ADVANCED && !rcodEnabled && platform !== PLATFORMS.MAGENTO;
+
   const updateConfigAndRefetchSummary = () => {
     const params = {
       platform,
@@ -90,7 +94,7 @@ function SettingsView({
 
   return (
     <div className="settings-view" data-testid="settings-view">
-      {!rcodEnabled ? (
+      {shouldShowSettingType ? (
         <div className="cod-setting-item">
           <SettingsLabel
             value="Type of setting"
@@ -107,8 +111,8 @@ function SettingsView({
           />
         </div>
       ) : null}
-      <BasicFlow isRcod={rcodEnabled} />
-      {engine === COD_ENGINES.ADVANCED && !rcodEnabled && <AdvancedFlow />}
+      <BasicFlow isRcod={rcodEnabled} platform={platform} />
+      {shouldShowAdvancedFlow && <AdvancedFlow />}
     </div>
   );
 }

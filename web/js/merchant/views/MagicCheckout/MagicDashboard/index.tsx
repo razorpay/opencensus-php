@@ -8,19 +8,22 @@ import {
   DEFAULT_ROUTES as NAV_ITEMS,
   PATH_PREFIX,
 } from 'merchant/views/MagicCheckout/MagicDashboard/routes';
+import { PLATFORMS } from 'merchant/views/MagicCheckout/constants';
 
 const MagicDashboard = ({ magicCheckout }) => {
   const {
     cod_intelligence: isCODIntelligenceEnabled,
     cod_order_control: isCODOrderControlEnabled,
+    platform,
   } = magicCheckout;
 
   const customRouteCheck = (item, user) => {
     if (
       item.label === 'Key Reports and Analytics' &&
-      !isCODIntelligenceEnabled &&
-      (!user?.isMagicRTOAnalyticsV3Enabled || !isCODOrderControlEnabled) &&
-      !user.isMagicOrderAnalyticsEnabled
+      ((!isCODIntelligenceEnabled &&
+        (!user?.isMagicRTOAnalyticsV3Enabled || !isCODOrderControlEnabled) &&
+        !user.isMagicOrderAnalyticsEnabled) ||
+        platform === PLATFORMS.MAGENTO)
     ) {
       return false;
     }

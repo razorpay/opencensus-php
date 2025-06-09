@@ -10,13 +10,14 @@ import { GenericRecord, User } from 'merchant/views/MagicCheckout/types';
 
 import { SOPC_APP_NAME, RCOD_APP_NAME } from 'merchant/views/MagicCheckout/common/constants';
 import { PATH_PREFIX } from 'merchant/views/MagicCheckout/ReportsAndAnalyticsV2/constants';
+import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 
 interface ReportsAndAnalyticsProps {
   magicCheckout: GenericRecord;
 }
 
 const ReportsAndAnalytics: React.FC<ReportsAndAnalyticsProps> = ({ magicCheckout }) => {
-  const { dashboardView, cod_intelligence, cod_order_control } = magicCheckout;
+  const { dashboardView, cod_intelligence, cod_order_control, platform } = magicCheckout;
 
   const customRouteCheck = (
     item,
@@ -36,6 +37,10 @@ const ReportsAndAnalytics: React.FC<ReportsAndAnalyticsProps> = ({ magicCheckout
       !cod_intelligence &&
       (!user?.isMagicRTOAnalyticsV3Enabled || !cod_order_control)
     ) {
+      return false;
+    }
+
+    if (item.label !== 'Reports' && platform === PLATFORMS.VALUES.MAGENTO) {
       return false;
     }
 

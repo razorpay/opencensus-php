@@ -1,5 +1,6 @@
 import lazy from 'merchant/routes/LazyLoader';
 import WoocCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/woocommerce/CouponGCSetting';
+import MagentoSettings from 'merchant/views/MagicCheckout/MagicSettings/components/magento/CheckoutCouponSetting';
 import WoocShippingTab from 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/ShippingSettingsWrapper';
 
 import MagicIntelligenceTab from 'merchant/views/MagicCheckout/Settings/containers/MagicIntelligenceTab';
@@ -26,6 +27,7 @@ import BulkAddressUpload from 'merchant/views/MagicCheckout/BulkAddressUpload';
 import { convertPlatformRoutesToConfigurationFlow } from 'merchant/views/MagicCheckout/utils/Configuration';
 import RouteNewTag from 'merchant/views/MagicCheckout/common/components/RouteNewTag';
 import { useSplitzService } from 'common/splitz';
+import MagentoShippingWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/magento/ShippingWrapper';
 import SSO from 'merchant/views/MagicCheckout/Settings/containers/SSO';
 
 const AnalyticsSettings = lazy(() =>
@@ -65,6 +67,7 @@ export const PLATFORMS = {
   SHOPIFY: 'shopify',
   WOOCOMMERCE: 'woocommerce',
   NATIVE: 'native',
+  MAGENTO: 'magento',
 };
 
 export const ACCESS_ROLES = ['owner', 'admin'];
@@ -253,6 +256,36 @@ export const TABS = {
       renderNavItemTag: () => <RouteNewTag />,
     },
   ],
+  [PLATFORMS.MAGENTO]: [
+    {
+      className: 'magic-checkout-settings',
+      path: '/magic/settings',
+      label: 'Checkout Settings',
+      Component: MagentoSettings,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+    },
+    {
+      className: 'cod-settings',
+      path: '/magic/settings/cod-settings',
+      label: 'COD Settings',
+      Component: CODSettingsTab,
+      condition: (_user) => _user.isMagicCODEngineEnabled,
+    },
+    {
+      className: 'shipping-settings',
+      path: '/magic/settings/shipping',
+      label: 'Shipping Settings',
+      Component: MagentoShippingWrapper,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+    },
+    {
+      className: 'intelligence-settings',
+      path: '/magic/settings/rto-settings',
+      label: 'RTO settings',
+      Component: MagicIntelligenceTab,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+    },
+  ],
 };
 
 export const CONFIG_TABS = convertPlatformRoutesToConfigurationFlow(TABS);
@@ -338,7 +371,7 @@ export const CREDENTIALS_MODAL = {
 export const COD_SETTINGS_INFO = `Use this setting to enable COD on your store and configure the rules for selectively
 showing COD to customers based on location, products, etc. as well as for setting the
 COD fees. Please note that this will override any COD settings on your
-Shopify/WooC store.`;
+Shopify/WooC/Magento store.`;
 
 export const MAGIC_SHIPPING_DESCRIPTION = `Enabling Magic Shipping will bypass all shipping configurations from any plugins on your E-commerce platform and follow configurations added below.`;
 export const SHIPPING_SETTINGS_INFO = `Choose where you ship and how much you charge for shipping at checkout.`;
@@ -519,6 +552,44 @@ export const ROUTES = {
       label: 'COD Review Workflow',
       Component: CODOrderAutomation,
       condition: (_user) => _user.isMagicCODOrderAutomationEnabled,
+    },
+    {
+      path: '/magic/settings/upload-address',
+      label: 'Upload Addresses',
+      Component: BulkAddressUpload,
+      condition: (_user) => _user.isBulkAddressUploadEnabled,
+      onRCOD: true,
+    },
+  ],
+
+  [PLATFORMS?.MAGENTO]: [
+    {
+      className: 'magic-checkout-settings',
+      path: '/magic/settings/checkout-setup',
+      label: 'Checkout Setup',
+      Component: MagentoSettings,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+    },
+    {
+      className: 'shipping-settings',
+      path: '/magic/settings/shipping-setup',
+      label: 'Shipping Setup',
+      Component: MagentoShippingWrapper,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+    },
+    {
+      className: 'cod-settings',
+      path: '/magic/settings/cod-settings',
+      label: 'COD Setup',
+      Component: CODComponentV2,
+      condition: (_user) => _user.isMagicPrepayCODEnabled || _user.isMagicCODEngineEnabled,
+    },
+    {
+      path: '/magic/settings/rto-reduction-setup',
+      label: 'RTO Reduction Setup',
+      Component: RTOReductionSetupV2,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+      onRCOD: true,
     },
     {
       path: '/magic/settings/upload-address',

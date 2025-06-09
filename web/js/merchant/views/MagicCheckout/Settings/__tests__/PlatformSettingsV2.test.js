@@ -67,7 +67,7 @@ describe('PlatformSettingsV2', () => {
     await waitFor(() => {
       expect(screen.queryByText(/Platform Settings/)).not.toBeInTheDocument();
       expect(
-        screen.queryByText(/Magic Checkout \(Formerly Checkout360\) Settings/),
+        screen.queryByText(/Magic Checkout Settings/),
       ).toBeInTheDocument();
     });
   });
@@ -87,7 +87,7 @@ describe('PlatformSettingsV2', () => {
     await waitFor(() => {
       expect(screen.queryByText(/Platform Settings/)).toBeInTheDocument();
       expect(
-        screen.queryByText(/Magic Checkout \(Formerly Checkout360\) Settings/),
+        screen.queryByText(/Magic Checkout Settings/),
       ).not.toBeInTheDocument();
     });
   });

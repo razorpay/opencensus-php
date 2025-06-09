@@ -13,11 +13,12 @@ import SettingsView from 'merchant/views/MagicCheckout/CODSettings/components/CO
 import ConfirmSettings from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/common/ConfirmSettings';
 import { COD_ENGINE_TYPES } from 'merchant/views/MagicCheckout/CODSettings/constants';
 import { openModal } from 'merchant_common/reducers/modals';
+import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 
 function CODEngine(props) {
   const { codEngineConfig, openModal, validateConfig, setEditMode, settings } = props;
   const { configs, editMode, fee_rules, zones, item_categories } = codEngineConfig;
-  const { rcodEnabled } = settings;
+  const { rcodEnabled, platform } = settings;
 
   const handleSave = () => {
     let hasError = false;
@@ -84,7 +85,9 @@ function CODEngine(props) {
           </div>
           {!editMode ? <PreviewView handleEdit={() => setEditMode(true)} /> : <SettingsView />}
         </div>
-        {editMode && <Button onClick={handleSave}>Save & apply</Button>}
+        {editMode && platform !== PLATFORMS.VALUES.MAGENTO && (
+          <Button onClick={handleSave}>Save & apply</Button>
+        )}
       </div>
     </ErrorBoundary>
   );

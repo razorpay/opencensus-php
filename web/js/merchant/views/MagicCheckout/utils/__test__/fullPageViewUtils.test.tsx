@@ -38,6 +38,7 @@ describe('Full Page View Utils', () => {
         shopify: [{ path: '/magic/settings', Component: TestComponent, label: 'Settings' }],
         woocommerce: [{ path: '/magic/analytics', Component: TestComponent, label: 'Analytics' }],
         native: [{ path: '/magic/Orders', Component: TestComponent, label: 'Orders' }],
+        magento: [{ path: '/magic/coupons', Component: TestComponent, label: 'Coupons' }],
       };
 
       const expectedRoutes: PlatformSpecificRoutes = {
@@ -49,6 +50,9 @@ describe('Full Page View Utils', () => {
         ],
         native: [
           { path: '/configuration/magic/Orders', Component: TestComponent, label: 'Orders' },
+        ],
+        magento: [
+          { path: '/configuration/magic/coupons', Component: TestComponent, label: 'Coupons' },
         ],
       };
 
@@ -67,6 +71,7 @@ describe('Full Page View Utils', () => {
           { path: '/configuration/magic/analytics', Component: TestComponent, label: 'Settings' },
         ],
         native: [],
+        magento: [],
       };
 
       const result = convertPlatformRoutesToConfigurationFlow(inputRoutes);
