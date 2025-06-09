@@ -127,7 +127,9 @@ const BankAccountDetails = ({
           </span>
         )}
         {showRequestChange &&
-          (isWorkflowChangeAllowed(bank_detail_update_workflow) && isBankAccountChangeAllowed ? (
+          (isWorkflowChangeAllowed(bank_detail_update_workflow) &&
+          isBankAccountChangeAllowed &&
+          !user.isCountrySingapore ? (
             <span
               className="nav-link pull-right"
               onClick={(...e) => {
@@ -176,7 +178,7 @@ const BankAccountDetails = ({
         customerRespondedStatus={REVIEW_STATUS}
       />
       <div className="list-group details-row-container">
-        <DetailRow label="IFSC Code" value={bankAccount.ifsc} />
+        {!user.isCountrySingapore && <DetailRow label="IFSC Code" value={bankAccount.ifsc} />}
         <DetailRow label="Account Number" value={bankAccount.account_number} />
         <DetailRow
           label={() => (

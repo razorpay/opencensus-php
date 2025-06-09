@@ -72,7 +72,7 @@ const AccountSection = ({
             <CollapsibleIcon onClick={handleToggle} open={isShow} data-testid="collapse-btn">
               <ChevronDownIcon size="large" color="interactive.icon.primary.subtle" />
             </CollapsibleIcon>
-          ) : !isMobile && isCtaAction && isBankAccountUpdateAllowed ? (
+          ) : !isMobile && isCtaAction && isBankAccountUpdateAllowed && !user.isCountrySingapore ? (
             <Button
               variant="primary"
               icon={EditIcon}
@@ -84,7 +84,7 @@ const AccountSection = ({
           ) : null}
         </HeaderTopBar>
         <Text color="surface.text.gray.subtle">{description}</Text>
-        {isMobile && isCtaAction && isBankAccountUpdateAllowed && (
+        {isMobile && isCtaAction && isBankAccountUpdateAllowed && !user.isCountrySingapore && (
           <Button
             variant="primary"
             icon={EditIcon}

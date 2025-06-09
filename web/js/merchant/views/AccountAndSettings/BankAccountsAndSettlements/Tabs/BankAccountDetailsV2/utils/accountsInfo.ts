@@ -9,6 +9,7 @@ import {
   BankDataInterface,
 } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/typings';
 import moment from 'moment';
+import { getUser } from 'merchant/store';
 
 const getDateFormat = (timestamp: number): string => {
   if (!timestamp) return '--';
@@ -20,13 +21,15 @@ const getBankDetailPayload = ({
   details,
   isSettlementOnhold,
 }: Omit<AccountInfoPayloadInterface, 'data'>): BankDataInterface[] => {
+  const user = getUser();
   const bankDetails = BANK_DATA.reduce((accumulator, each) => {
     const { id, title } = each;
-    accumulator.push({
-      id,
-      name: title,
-      value: id === 'updated_at' ? getDateFormat(details[id]) : details[id],
-    });
+    if (!(id === 'ifsc' && user?.isCountrySingapore))
+      accumulator.push({
+        id,
+        name: title,
+        value: id === 'updated_at' ? getDateFormat(details[id]) : details[id],
+      });
     return accumulator;
   }, [] as BankDataInterface[]);
   if (type === 'active') {
