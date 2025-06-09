@@ -1879,12 +1879,12 @@ class Service extends Base\Service
         $isRequestFromXVerifyEmail = $inputData['isRequestFromXVerifyEmail'] ?? false;
 
         // Check whether business banking is enabled for the merchant to determine USL behavior on X platform
-        $isBusinessBanking = false;
+        $isBbPlusEnabledOnUsl = false;
         if ($merchant !== null)
         {
             try
             {
-                $isBusinessBanking = $merchant->isBusinessBankingEnabled();
+                $isBbPlusEnabledOnUsl = $merchant->isBusinessBankingEnabled();
             }
             catch (\Exception $e)
             {
@@ -1897,7 +1897,7 @@ class Service extends Base\Service
         }
 
         $this->trace->info(TraceCode::BUSINESS_BANKING_STATUS_CHECK, [
-            'isBusinessBanking' => $isBusinessBanking,
+            'isBusinessBanking' => $isBbPlusEnabledOnUsl,
             'isRequestFromXVerifyEmail' => $isRequestFromXVerifyEmail,
             'merchantId' => $merchant?->getId(),
         ]);
@@ -1908,7 +1908,7 @@ class Service extends Base\Service
 
         if ((($requestOriginProduct !== Product::BANKING) or
              ($isRequestFromXVerifyEmail === true) or
-             ($isBusinessBanking === true)) and
+             ($isBbPlusEnabledOnUsl === true)) and
               $sendOtpEmail and
              ($user->getConfirmedAttribute() === false))
         {
