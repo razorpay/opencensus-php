@@ -72,6 +72,8 @@ use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Services\Dcs\Configurations\Constants as DcsConfigConst;
 use RZP\Models\Merchant\MerchantApplications\Repository as ApplicationRepo;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
+use RZP\Models\Merchant\Referral\Core as ReferralCore;
+use RZP\Models\Base;
 
 class Core extends Detail\Core
 {
@@ -1253,6 +1255,12 @@ class Core extends Detail\Core
             $this->trace->info(TraceCode::MIGRATE_RESELLER_TO_AGGREGATOR_SUCCESS, ['merchant_id' => $merchant->getId()]);
             $this->trace->count(Metric::RESELLER_TO_AGGREGATOR_MIGRATION_SUCCESS, ['newAuthCreate' => $newAuthCreate]);
             PartnerMigrationAuditJob::dispatch($merchantId, $actorDetails, $oldPartnerType);
+
+            // Regenerate referral links after successful migration
+            $partners = new Base\PublicCollection();
+            $partners->push($merchant);
+            (new ReferralCore())->regenerate($partners);
+            $this->trace->info(TraceCode::PARTNER_REFERRAL_LINK_REGENERATE, ['merchant_id' => $merchant->getId()]);
         }
         else
         {
