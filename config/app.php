@@ -1337,6 +1337,8 @@ return array(
 
     'my_save_card_splitz_experiment_id' => env('MY_SAVE_CARD_SPLITZ_EXPERIMENT_ID'),
 
+    'in_save_int_card_splitz_experiment_id' => env('IN_SAVE_INT_CARD_SPLITZ_EXPERIMENT_ID'),
+
     'partner_qr_code_feature_override_exp_id'=> env('PARTNER_QR_CODE_OVERRIDE_EXP_ID'),
 
     'ignore_tos_acceptance_exp_id'=> env('IGNORE_TOS_ACCEPTANCE_EXP_ID'),
