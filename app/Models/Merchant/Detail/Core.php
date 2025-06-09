@@ -11577,6 +11577,9 @@ class Core extends Base\Core
             $merchantBusinessType = $merchant->merchantDetail->getBusinessType();
             $userDeviceDetails = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
         }
+        $this->trace->info(TraceCode::REMOVE_INDIVIDUAL_BUSINESS_TYPE, [
+            "merchant_id_for_business_type"       => $merchantId
+        ]);
         foreach (BusinessType::$businessTypeBuckets as $bucketName => $businessTypes)
         {
             $result[$bucketName] = [];

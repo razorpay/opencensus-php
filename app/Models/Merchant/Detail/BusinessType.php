@@ -97,6 +97,7 @@ class BusinessType
         self::JUDICAL_PERSON => "Judical Person"
     ];
     const REGISTERED   = 'registered';
+    
     const UNREGISTERED = 'unregistered';
 
     // business type is divided into two category which decides on-boarding experience
@@ -112,7 +113,11 @@ class BusinessType
             self::SOCIETY,
             self::OTHER,
             self::NGO,
-            self::HUF
+            self::HUF,
+            self::GOVERNMENT,
+            self::JUDICAL_PERSON,
+            self::LOCAL_AUTHORITY,
+            self::SECTION_8_COMPANY
         ],
         self::UNREGISTERED => [
             self::INDIVIDUAL,
