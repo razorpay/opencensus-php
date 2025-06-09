@@ -2816,11 +2816,15 @@ class Core extends Base\Core
         }
         if (empty($tokenData[Entity::RECURRING_STATUS]) === false)
         {
-            $token->setRecurringStatus($tokenData[Entity::RECURRING_STATUS]);
-            if (!empty($tokenData[Entity::RECURRING_FAILURE_REASON])) {
-                $token->setRecurringFailureReason($tokenData[Entity::RECURRING_FAILURE_REASON]);
+            $oldRecurringStatus = $token->getRecurringStatus();
+            if ($oldRecurringStatus !== RecurringStatus::REJECTED)
+            {
+                $token->setRecurringStatus($tokenData[Entity::RECURRING_STATUS]);
+                if (!empty($tokenData[Entity::RECURRING_FAILURE_REASON])) {
+                    $token->setRecurringFailureReason($tokenData[Entity::RECURRING_FAILURE_REASON]);
+                }
+                $this->repo->saveOrFail($token);
             }
-            $this->repo->saveOrFail($token);
             return $token;
         }
         $token->setUsedAt(Carbon::now()->getTimestamp());

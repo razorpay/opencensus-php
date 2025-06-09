@@ -827,18 +827,6 @@ class Type
         self::AADHAR_FRONT,
         self::AADHAR_BACK,
     ];
-    
-    /**
-     * List of all Aadhaar-related document types
-     */
-    public static $AADHAAR_DOC_TYPES = [
-        self::AADHAR_FRONT,
-        self::AADHAR_BACK,
-        self::AADHAR_XML,
-        self::AADHAR_ZIP,
-        self::AADHAAR,
-        self::EMERCHANTPAY_AADHAAR
-    ];
 
     public static function isValid($value)
     {
@@ -883,37 +871,6 @@ class Type
         }
 
         return in_array($documentType, self::$poaDocuments, true);
-    }
-    
-    /**
-     * Determines if a document type is an Aadhaar document
-     * 
-     * This function checks if the provided document type is an Aadhaar document by:
-     * 1. Checking if it's in the predefined list of Aadhaar document types
-     * 2. Checking if the string contains 'aadhar' (common misspelling)
-     * 3. Checking if the string contains 'aadhaar' (correct spelling)
-     * 
-     * Note: The string matching is case-sensitive. For example:
-     * - 'aadhaar_front' will return true
-     * - 'Aadhaar_front' will return true
-     * - 'AADHAAR_FRONT' will return true
-     * - 'aadhar_back' will return true
-     * - 'identity_card' will return false
-     * - 'pan_card' will return false
-     * 
-     * @param string $documentType The document type to check
-     * @return bool True if the document type is an Aadhaar document, false otherwise
-     */
-    public static function isAadhaarDocument($documentType): bool
-    {
-        if (empty($documentType))
-        {
-            return false;
-        }
-
-        return in_array($documentType, self::$AADHAAR_DOC_TYPES, true) || 
-               strpos($documentType, 'aadhar') !== false || 
-               strpos($documentType, 'aadhaar') !== false;
     }
 
     public static function isValidProofType($value)

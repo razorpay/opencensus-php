@@ -2795,11 +2795,10 @@ class Processor
                                 }
 
                                 $tokenRearchExperimentName = 'app.saved_card_token_payments_rearch';
-                                $tokenRearchResult = (new Payment\Service())->getSplitzExpResponse($merchant->getId(),$tokenRearchExperimentName);
+                                $tokenRearchResult = (new Payment\Service())->getSplitzExpResponseForTokenFetchFromTokenService($merchant->getId(), $card->getVault(), $tokenRearchExperimentName);
 
-                                if ($tokenRearchResult == 'enable' && app()->isEnvironmentProduction() &&
-                                    ($card->getNetwork() == 'Visa' || $card->getNetwork() == 'MasterCard')
-                                    && ($card->getVault() === 'mastercard' || $card->getVault() === 'visa')
+                                if ($tokenRearchResult == 'enable'
+                                    && (app()->isEnvironmentProduction() || $this->isDarkRequest())
                                     && $this->inputCurrencyNotINR($input) === false
                                     && $this->merchant->isFeatureEnabled(FeatureConstants::RAAS) === false
                                     && $this->merchant->getCountry() == "IN")
@@ -3376,6 +3375,28 @@ class Processor
                 Card\Entity::CRYPTOGRAM_VALUE       => $cryptogram['cryptogram_value'] ?? null,
                 Card\Entity::GLOBAL_FINGERPRINT     => $card->getGlobalFingerPrint() ?? ""
             ];
+
+            // Only fetch additional card input data for Diners & Amex from API for cases where tokenRearchResult is not ON
+            // When it's ON, the data will be fetched from CPS
+
+            if ( $card->getVault() === Card\Vault::HDFC)
+            {
+                $input = $this->getAdditionalDinersCardInputForRearch($token,$input);
+
+                $this->trace->info(
+                    TraceCode::DINERS_TOKENISED_PAYMENT_TRACE,
+                    [
+                        'token_reference_number' => $input[E::TOKEN_REFERENCE_NUMBER],
+                        'token_requestor_id'     => $input[E::TOKEN_REFERENCE_ID],
+                    ]);
+
+            }
+
+            if(isset($cryptogram["cvv"]) === true && Card\Network::getFullName(Network::AMEX) === $card->getNetwork())
+            {
+                $input["cvv"] = $cryptogram["cvv"];
+            }
+
         } else {
             // Move this to CPS before enabling bypass
             $input += [
@@ -3383,26 +3404,8 @@ class Processor
             ];
         }
 
-        if ( $card->getVault() === Card\Vault::HDFC)
-        {
-            $input = $this->getAdditionalDinersCardInputForRearch($token,$input);
-
-             $this->trace->info(
-                    TraceCode::DINERS_TOKENISED_PAYMENT_TRACE,
-                    [
-                        'token_reference_number' => $input[E::TOKEN_REFERENCE_NUMBER],
-                        'token_requestor_id'     => $input[E::TOKEN_REFERENCE_ID],
-                    ]);
-
-        }
-
         if ($card->getVault() === Card\Vault::AXIS) {
             $input[Card\Entity::NUMBER] = Card\Entity::DUMMY_AXIS_TOKENHQ_CARD;
-        }
-
-        if(isset($cryptogram["cvv"]) === true && Card\Network::getFullName(Network::AMEX) === $card->getNetwork())
-        {
-            $input["cvv"] = $cryptogram["cvv"];
         }
 
         if (($this->merchant->isFeatureEnabled(Feature::RAAS)) === true )
@@ -13295,6 +13298,18 @@ class Processor
             return $response;
         }
 
+        // Do not capture late authorized payments when the payment is split payment because
+        // wallet payment status is unknown
+        if (($payment->isLateAuthorized() === true) and
+            ($payment->isSplitPayment() === true))
+        {
+            $response['should_auto_capture'] = false;
+
+            $response['reason'] = Constants::SPLIT_PAYMENT_LATE_AUTH_FALSE;
+
+            return $response;
+        }
+
         if ($captureConfig === true)
         {
             $response['should_auto_capture'] = true;
@@ -13626,13 +13641,6 @@ class Processor
         if ($payment->hasInvoiceOrProductTypeInvoice() === true)
         {
             return $this->shouldAutoCaptureLateAuthorizedInvoice($payment);
-        }
-
-        // Do not capture late authorized payments when the payment is split payment because
-        // wallet payment is already refunded on initial failed event. Hence, skip capture for this payment.
-        if ($payment->isSplitPayment() === true)
-        {
-            return false;
         }
 
         $merchant = $payment->merchant;

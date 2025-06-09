@@ -495,6 +495,27 @@ abstract class Base extends BaseModel\Core
 
     protected function applyFiltersOnRules($rules, $filters)
     {
+        // Get initial plan IDs if rules exist for logging
+        $initialPlanIds = [];
+        if (empty($rules) === false)
+        {
+            foreach ($rules as $rule)
+            {
+                try
+                {
+                    $planId = $rule->getPlanId();
+                    if ($planId !== null)
+                    {
+                        $initialPlanIds[] = $planId;
+                    }
+                }
+                catch (\Throwable $e)
+                {
+                    continue;
+                }
+            }
+        }
+
         foreach ($filters as $filter)
         {
             $beforeCount = count($rules);
@@ -513,6 +534,7 @@ abstract class Base extends BaseModel\Core
                         'value' => $filter[1],
                         'before_count' => $beforeCount,
                         'after_count' => $afterCount,
+                        'initial_plan_ids' => array_values(array_unique($initialPlanIds)),
                     ]
                 );
             }
