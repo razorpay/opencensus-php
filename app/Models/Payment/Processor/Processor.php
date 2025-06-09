@@ -1865,42 +1865,6 @@ class Processor
         return false;
     }
 
-    private function evaluateSplitzExperimentForIntlCardRecurringRearch($merchant)
-    {
-        try
-        {
-            $properties = [
-                'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.cross_border_recurring_rearch_experiment_id'),
-                'request_data'  => json_encode(
-                    [
-                        'merchant_id' => $merchant->getId(),
-                    ]),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $variant = $response['response']['variant']['name'] ?? '';
-
-            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
-
-            if ($variant === 'variant_on')
-            {
-                return true;
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
-            );
-        }
-
-        return false;
-    }
-
     private function evaluateSplitzExperimentForIntlCardRecurringRearchMerchant($merchant, $routeName)
     {
         try
@@ -2429,13 +2393,23 @@ class Processor
                     return false;
                 }
 
-                // First extract IIN information for international check
+                $cbRecurringRearchResult = $this->evaluateSplitzExperimentForIntlCardRecurringRearchMerchant($merchant, $currentRouteName);
+                if ($cbRecurringRearchResult === false) {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "cross_border_splitz_experiment",
+                        'merchant_id' => $merchant->getId(),
+                        'route_name' => $currentRouteName,
+                        'flow' => 'intl_card_recurring',
+                    ]);
+                    return false;
+                }
+                // Extract IIN information once for all checks
                 $card_number = str_replace(" ", "", $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
                 $iinId = substr($card_number, 0, 8);
                 $iin = $this->repo->iin->find($iinId);
-
-                // Always block domestic non-INR traffic
-                if ($this->inputCurrencyNotINR($input) && IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry()) === false) {
+                $isInternational = IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry());
+                // Block domestic non-INR traffic
+                if ($this->inputCurrencyNotINR($input) && !$isInternational) {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         "reason" => "domestic_non_inr_currency_blocked",
                         "merchant_id" => $merchant->getId(),
@@ -2444,25 +2418,6 @@ class Processor
                     return false;
                 }
 
-                // For international traffic with non-INR currency, check Splitz experiment
-                if (!$this->evaluateSplitzExperimentForIntlCardRecurringRearch($merchant) && $this->inputCurrencyNotINR($input) && IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry()) === true) {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "international_currency_without_splitz_enabled",
-                        'merchant_id' => $merchant->getId(),
-                        'flow' => 'card_recurring',
-                    ]);
-                    return false;
-                }
-                $res = $this->evaluateSplitzExperimentForIntlCardRecurringRearchMerchant($merchant, $currentRouteName);
-                if ($res === false) {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "cross_border_merchant_splitz_experiment",
-                        'merchant_id' => $merchant->getId(),
-                        'route_name' => $currentRouteName,
-                        'flow' => 'intl_card_recurring',
-                    ]);
-                    return false;
-                }
                 $result = $this->evaluateSplitzExperimentForCardRecurringRearchMerchant($merchant, $currentRouteName);
                 if ($result === false) {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
@@ -2488,14 +2443,6 @@ class Processor
 
                         return false;
                     }
-                    if ($card->isInternational() === true && !$this->evaluateSplitzExperimentForIntlCardRecurringRearch($merchant, $card)) {
-                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                            'reason' => "international_card",
-                            'merchant_id' => $merchant->getId(),
-                            'flow' => 'card_recurring',
-                        ]);
-                        return false;
-                    }
 
                     $cardInput = [
                         Card\Entity::NAME => Card\Entity::DUMMY_NAME,
@@ -2518,7 +2465,8 @@ class Processor
                     ];
                 }
 
-                if (self::isCardRecurringAutoRearchRoute($currentRouteName) && $card->isInternational() === false) {
+                if (self::isCardRecurringAutoRearchRoute($currentRouteName) && !empty($card)
+                    && $card->isInternational() === false) {
                     // Check card mandate created date and mandate hub for ramp up
                     $cardMandate = (new CardMandate\Repository())->findByCardMandateId($token->getCardMandateId());
 
@@ -2575,18 +2523,6 @@ class Processor
                     //Check hub, mhq and rupay not to be routed to rearch for now
                     if (empty($input[Payment\Entity::TOKEN]))
                     {
-                        $card_number = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
-                        $iinId = substr($card_number, 0, 8);
-                        $iin = $this->repo->iin->find($iinId);
-                        if ($iin->getCountry() !== 'IN' && !$this->evaluateSplitzExperimentForIntlCardRecurringRearch($merchant, $card))
-                        {
-                            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                                'reason' => "international_card_initial",
-                                'merchant_id' => $merchant->getId(),
-                                'flow' => 'card_recurring',
-                            ]);
-                            return false;
-                        }
 
                         $app = App::getFacadeRoot();
                         if ($iin->isRupay() && !$this->evaluateSplitzExperimentForCardRecurringRearchRupayInitial($merchant) ||
@@ -2607,7 +2543,7 @@ class Processor
                         if ($card->isInternational() === true)
                         {
                             $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                                'reason' => "international_card_initial",
+                                'reason' => "international_card_initial_rupay",
                                 'merchant_id' => $merchant->getId(),
                                 'flow' => 'card_recurring',
                             ]);
@@ -2647,7 +2583,7 @@ class Processor
                 if (!empty($card)) {
                     $input[Payment\Entity::API_VAULT] = $card->getVault();
                 }
-                if (!empty($input[Payment\Entity::TOKEN])) {
+                if (!empty($input[Payment\Entity::TOKEN]) && !empty($token)) {
                     $input[Payment\Entity::TOKEN] = $token->getId();
                 }
                 if (!empty($cardInput)) {
