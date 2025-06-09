@@ -220,6 +220,19 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function getByGatewayTokenAndMerchantIdFromTidb(string $gatewayToken, string $merchantId, string $mode)
+    {
+        $query = $this->newQueryWithConnection(
+            $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+
+        return $query
+            ->where(Token\Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Token\Entity::GATEWAY_TOKEN, '=', $gatewayToken)
+            ->orderBy(Token\Entity::CREATED_AT, 'desc')
+            ->first();
+    }
+
+
     public function getByGatewayToken(string $gatewayToken)
     {
         return $this->newQuery()
