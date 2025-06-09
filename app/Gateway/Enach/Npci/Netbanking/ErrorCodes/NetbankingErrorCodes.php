@@ -237,6 +237,7 @@ class NetbankingErrorCodes
     const AP29 = 'AP29';
     const AP30 = 'AP30';
     const AP31 = 'AP31';
+    const AP32 = 'AP32';
     const AP33 = 'AP33';
     const AP34 = 'AP34';
     const AP35 = 'AP35';
@@ -252,6 +253,10 @@ class NetbankingErrorCodes
     const AP45 = 'AP45';
     const AP46 = 'AP46';
     const AP47 = 'AP47';
+    const AP50 = 'AP50';
+    const AP62 = 'AP62';
+    const AP63 = 'AP63';
+    const AP67 = 'AP67';
 
     protected static $emandateregisterErrorCodeDescMappings = [
         self::R151 => 'Merchant Xmlns name empty or incorrect',
@@ -656,37 +661,42 @@ class NetbankingErrorCodes
         self::AP13 => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         self::AP14 => ErrorCode::BAD_REQUEST_INVALID_USER_CREDENTIALS,
         self::AP15 => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
-        self::AP16 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
-        self::AP17 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
+        self::AP16 => ErrorCode::BAD_REQUEST_MINOR_ACCOUNT_NOT_ALLOWED,
+        self::AP17 => ErrorCode::BAD_REQUEST_NRE_ACCOUNT_NOT_ALLOWED,
         self::AP18 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
         self::AP19 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
         self::AP20 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
-        self::AP21 => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_EMANDATE_REGISTRATION,
+        self::AP21 => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
         self::AP22 => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
-        self::AP23 => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_EMANDATE_REGISTRATION,
+        self::AP23 => ErrorCode::BAD_REQUEST_REGISTRATION_CANCELLED_BY_CUSTOMER,
         self::AP24 => ErrorCode::BAD_REQUEST_ACCOUNT_BLOCKED,
         self::AP25 => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
         self::AP26 => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN,
         self::AP27 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
         self::AP28 => ErrorCode::BAD_REQUEST_EMANDATE_REGISTRATION_FAILED,
-        self::AP29 => ErrorCode::GATEWAY_ERROR_COMMUNICATION_ERROR,
+        self::AP29 => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
         self::AP30 => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_EMANDATE_REGISTRATION,
         self::AP31 => ErrorCode::BAD_REQUEST_EMANDATE_REGISTRATION_FAILED_JOINT_ACCOUNT,
+        self::AP32 => ErrorCode::BAD_REQUEST_INVALID_PAYMENT_MODE,
         self::AP33 => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_EMANDATE_REGISTRATION,
         self::AP34 => ErrorCode::BAD_REQUEST_NETBANKING_USER_NOT_REGISTERED,
-        self::AP35 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID,
+        self::AP35 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_DB_CARD,
         self::AP36 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
         self::AP37 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_PIN,
         self::AP38 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
         self::AP39 => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
-        self::AP40 => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
+        self::AP40 => ErrorCode::BAD_REQUEST_PAYMENT_OTP_MAX_LIMIT_EXCEEDED,
         self::AP41 => ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED,
         self::AP42 => ErrorCode::BAD_REQUEST_CARD_INACTIVE,
         self::AP43 => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD,
         self::AP44 => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD,
         self::AP45 => ErrorCode::BAD_REQUEST_PAYMENT_CARD_EXPIRED,
         self::AP46 => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_EMANDATE_REGISTRATION,
-        self::AP47 => ErrorCode::BAD_REQUEST_NETBANKING_USER_NOT_REGISTERED,
+        self::AP47 => ErrorCode::BAD_REQUEST_CUST_VIEW_ONLY_RIGHTS_NB,
+        self::AP50 => ErrorCode::BAD_REQUEST_PAYMENT_OTP_FAILED,
+        self::AP62 => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_AADHAR_OTP,
+        self::AP63 => ErrorCode::BAD_REQUEST_AMOUNT_MISMATCH,
+        self::AP67 => ErrorCode::BAD_REQUEST_INVALID_MOBILE_NUMBER,
     ];
 
     public static function getEmandateRegisterErrorDescriptionFromCode($code)
