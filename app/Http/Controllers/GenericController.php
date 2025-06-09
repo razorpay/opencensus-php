@@ -164,6 +164,18 @@ class GenericController extends Controller
             }
         }
 
+        if ($path === Constants::BIN_FILE_UPLOAD_ACTION_ROUTE) {
+
+            list($error, $response) = (new Admin\Service)->uploadBinFileToBinService($input);
+
+            if(empty($error) === false)
+            {
+                return [$error, []];
+            }
+
+            return AppResponse::jsonResponse($error, $response);
+        }
+
         $refineUrlPathExpEnable = $this->isRefinedUrlPathExpEnabled();
         $request = new App\Admin\ApiRequestAny([
             'mode'                  => $mode,

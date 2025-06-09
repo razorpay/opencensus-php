@@ -75,4 +75,6 @@ class Constants {
     const REDIRECTION_URL_CACHE_NAME = "redirection_url_cache";
 
     const NEW_AUTH_REARCH = 'NEW_AUTH_REARCH';
+    const BIN_SERVICE_UPLOAD_ROUTE = '/upload';
+
 }

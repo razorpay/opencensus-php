@@ -2,6 +2,7 @@
 
 namespace App\Admin;
 
+use App\Services\BinService\BinServiceClient;
 use DB;
 use Auth;
 use Hash;
@@ -45,6 +46,11 @@ use App\Constants\Constants as AppConstants;
 use App\Transaction\Service as TransactionService;
 use Razorpay\Api\Errors\ServerError as ServerError;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
+
+use GuzzleHttp\Client;
+use GuzzleHttp\RequestOptions;
+use GuzzleHttp\Psr7\Utils;
+
 
 use Carbon\Carbon;
 use UAParser\Parser;
@@ -2118,5 +2124,65 @@ class Service extends Base\Service
         ]);
 
         return [$error, $data, $request->getResponseHeaders()];
+    }
+
+    public function uploadBinFileToBinService($input)
+    {
+        $client = new BinServiceClient();
+
+        try{
+            $binServiceResponse = $client->uploadBinFileAtBinService($input);
+
+            if (!isset($binServiceResponse) || !isset($binServiceResponse['location']))
+            {
+                //throw error response
+                return [['Bin Service Upload Failed'], []];
+            }
+
+            $bucketLocation = $binServiceResponse['location'];
+            $request = $this->buildUpsertionRequest($input, $bucketLocation);
+
+            $url = 'upsertion';
+            $binServiceResponse = $client->sendRequest($url, 'PUT', $request);
+
+            if (!isset($binServiceResponse) || !isset($binServiceResponse['status']))
+            {
+                //throw error response
+                return [['Bin Service Upload Failed: Validation Failure'], []];
+            }
+            $response = $this->adaptResponse($binServiceResponse);
+
+        }
+        catch (\Throwable $e){
+            $this->trace->error(TraceCode::BIN_SERVICE_UPLOAD_FAILED, [
+                'error' => $e->getMessage(),
+                'input' => $input
+            ]);
+            return [$e->getMessage(), []];
+        }
+
+        return [null, $response];
+
+    }
+
+    private function buildUpsertionRequest($input, $bucketLocation)
+    {
+
+        $request = [];
+        $request['flow'] = $input['type'];
+        $request['bucketLocation'] = $bucketLocation;
+        $request['updateFileAsReference'] = $input['updateFileAsReference'] === 'true' ? true : false;;
+        $request['password'] = $input['password'];
+
+        return $request;
+    }
+
+    private function adaptResponse(mixed $binServiceResponse)
+    {
+        $response = [];
+        $response['status'] = $binServiceResponse['status'] ?? null;
+        $response['message'] = $binServiceResponse['message'] ?? null;
+        $response['jobId'] = $binServiceResponse['jobId'] ?? null;
+        return $response;
     }
 }

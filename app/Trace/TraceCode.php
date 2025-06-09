@@ -374,6 +374,13 @@ class TraceCode
     const ACCESS_DENIED_FOR_CROSS_ORG       = 'ACCESS_DENIED_FOR_CROSS_ORG';
     const INVALID_DOMAIN_REDIRECT = 'INVALID_DOMAIN_REDIRECT';
 
+    const BIN_SERVICE_ERROR = 'BIN_SERVICE_ERROR';
+    const BIN_SERVICE_GUZZLE_EXCEPTION = 'BIN_SERVICE_GUZZLE_EXCEPTION';
+    const BIN_SERVICE_REQUEST = 'BIN_SERVICE_REQUEST';
+    const BIN_SERVICE_RESPONSE = 'BIN_SERVICE_RESPONSE';
+
+    const BIN_SERVICE_UPLOAD_FAILED = 'BIN_SERVICE_UPLOAD_FAILED';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',

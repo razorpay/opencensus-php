@@ -337,6 +337,13 @@ return array(
         'url' => env('OMNI_HOST_URL'),
         'secret' => env('OMNI_SECRET'),
         'timeout' => 20,
-    ]
+    ],
+
+    'bin_service' => [
+        'username' => env('BIN_SERVICE_USERNAME'),
+        'password' => env('BIN_SERVICE_PASSWORD'),
+        'url' => env('BIN_SERVICE_LIVE_URL'),
+        'sec_url' => env('BIN_SERVICE_SEC_URL'),
+    ],
 
 );
