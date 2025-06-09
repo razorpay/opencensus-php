@@ -91,7 +91,7 @@ class NoCostEMIForm extends BaseForm {
     }
 
     // Call parent's onFieldChange
-    super.onFieldChange(event);
+    super.onFieldChange?.(event);
   };
 
   get tabsData() {
