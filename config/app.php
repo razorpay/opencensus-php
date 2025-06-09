@@ -808,6 +808,8 @@ return array(
 
     'cross_border_payment_fee_fix_experiment_id' => env('CROSS_BORDER_PAYMENT_FEE_FIX_EXPERIMENT_ID'),
 
+    'cross_border_recurring_rearch_experiment_id' => env('CROSS_BORDER_RECURRING_REARCH_EXPERIMENT_ID'),
+
     'show_upi_autopay_method_on_dashboard' => env('SHOW_UPI_AUTOPAY_METHOD_ON_DASHBOARD'),
 
     'upi_autopay_rearch_pre_process' => env('UPI_AUTOPAY_REARCH_PRE_PROCESS'),
