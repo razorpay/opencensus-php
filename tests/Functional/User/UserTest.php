@@ -1417,15 +1417,15 @@ class UserTest extends TestCase
 
         Mail::assertQueued(Otp::class, function ($mail)
         {
-            $this->assertEquals('x_verify_email', $mail->input['action']);
+            $this->assertEquals('verify_user', $mail->input['action']);
 
             $this->assertNotEmpty($mail->user);
 
             $this->assertNotEmpty($mail->otp);
 
-            $this->assertEquals('emails.user.razorpayx.otp_email_verify', $mail->view);
+            $this->assertEquals('emails.user.verify_user', $mail->view);
 
-            $mailSubject = "Verify your Email for RazorpayX";
+            $mailSubject = "Razorpay | OTP to verify email";
 
             $this->assertEquals($mailSubject, $mail->subject);
 

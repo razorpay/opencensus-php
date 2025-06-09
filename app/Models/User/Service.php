@@ -724,7 +724,6 @@ class Service extends Base\Service
         if($requestedProduct == DeviceDetailConstants::PRODUCT_BANKING_ONBOARDING) {
 
             $this->auth->setRequestOriginProduct(Product::BANKING);
-            $input[Entity::X_VERIFY_EMAIL]="true";
         }
 
         $this->trace->info(TraceCode::USER_REGISTER, [
@@ -1870,12 +1869,37 @@ class Service extends Base\Service
         // Remove this when signup experiment for X is ramped up.
         $isRequestFromXVerifyEmail = $inputData['isRequestFromXVerifyEmail'] ?? false;
 
+        // Check whether business banking is enabled for the merchant to determine USL behavior on X platform
+        $isBusinessBanking = false;
+        if ($merchant !== null)
+        {
+            try
+            {
+                $isBusinessBanking = $merchant->isBusinessBankingEnabled();
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(TraceCode::BUSINESS_BANKING_CHECK_FAILED, [
+                    'error' => $e->getMessage(),
+                    'merchantId' => $merchant->getId(),
+                    'userId' => $user->getId()
+                ]);
+            }
+        }
+
+        $this->trace->info(TraceCode::BUSINESS_BANKING_STATUS_CHECK, [
+            'isBusinessBanking' => $isBusinessBanking,
+            'isRequestFromXVerifyEmail' => $isRequestFromXVerifyEmail,
+            'merchantId' => $merchant?->getId(),
+        ]);
+
         // If User is New Signed up with new auth flow and
         // Already Not confirmed and product is PG.
         // Or if the request is coming from new signup flow for X (v2)
 
         if ((($requestOriginProduct !== Product::BANKING) or
-             ($isRequestFromXVerifyEmail === true)) and
+             ($isRequestFromXVerifyEmail === true) or
+             ($isBusinessBanking === true)) and
               $sendOtpEmail and
              ($user->getConfirmedAttribute() === false))
         {
