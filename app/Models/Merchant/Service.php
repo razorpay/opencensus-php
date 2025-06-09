@@ -3690,12 +3690,13 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function liveEnable($id)
+    public function liveEnable($id, $skipWorkflow = false)
     {
         $this->trace->info(
             TraceCode::MERCHANT_LIVE_ENABLE_REQUEST,
             [
                 'merchant_id' => $id,
+                'skip_workflow' => $skipWorkflow,
             ]);
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
@@ -3722,10 +3723,14 @@ class Service extends Base\Service
 
         $merchant->liveEnable();
 
-        // Triggering
-        $workflow = $this->app['workflow']
-                         ->setEntity($merchant->getEntity())
-                         ->handle($oldMerchant, $merchant);
+        // Only trigger workflow if not skipped
+        if ($skipWorkflow === false)
+        {
+            // Triggering
+            $workflow = $this->app['workflow']
+                             ->setEntity($merchant->getEntity())
+                             ->handle($oldMerchant, $merchant);
+        }
 
         $this->repo->saveOrFail($merchant);
 
@@ -3734,12 +3739,13 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function liveDisable($id)
+    public function liveDisable($id, $skipWorkflow = false)
     {
         $this->trace->info(
             TraceCode::MERCHANT_LIVE_DISABLE_REQUEST,
             [
                 'merchant_id' => $id,
+                'skip_workflow' => $skipWorkflow,
             ]);
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
@@ -3760,10 +3766,14 @@ class Service extends Base\Service
 
         $merchant->liveDisable();
 
-        // Triggering
-        $workflow = $this->app['workflow']
-                         ->setEntity($merchant->getEntity())
-                         ->handle($oldMerchant, $merchant);
+        // Only trigger workflow if not skipped
+        if ($skipWorkflow === false)
+        {
+            // Triggering
+            $workflow = $this->app['workflow']
+                             ->setEntity($merchant->getEntity())
+                             ->handle($oldMerchant, $merchant);
+        }
 
         $this->repo->saveOrFail($merchant);
 

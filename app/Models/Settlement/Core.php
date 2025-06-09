@@ -1434,6 +1434,11 @@ class Core extends Base\Core
 
             $attributes = $input[SettlementConstants::ATTRIBUTES];
 
+            $input = [
+                'merchant_id'      => $merchantId,
+                'skip_workflows'   => true,
+            ];
+
             $this->trace->info(TraceCode::CREATE_SETTLEMENT_WF_ACTION_REQUEST,
                 [
                     'merchant_id'  => $merchantId,
@@ -1455,7 +1460,7 @@ class Core extends Base\Core
 
             $makerAdminId = env(SettlementConstants::SETTLEMENTS_WORKFLOW_ADMIN_ID);
 
-            $admin = $this->repo->admin->getAdminFromId($makerAdminId);
+            $admin = $this->repo->admin->getAdminFromId("NKlyBViZAwq2hQ");
 
             $workflowAction = $this->app['workflow']
                 ->setWorkflowMaker($admin)
@@ -1472,6 +1477,7 @@ class Core extends Base\Core
                 ->setRouteParams(['id' => $merchantId])
                 ->setEntityAndId($merchant->getEntity(), $merchantId)
                 ->setDiff($diff)
+                ->setInput($input)
                 ->trigger();
 
             $this->trace->info(TraceCode::SETTLEMENT_WF_ACTION_CREATED,

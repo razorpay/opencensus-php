@@ -582,14 +582,22 @@ class MerchantController extends Controller
 
     public function postLiveEnable($id)
     {
-        $data = $this->service()->liveEnable($id);
+        $input = Request::all();
+
+        $skipWorkflow = $input['skip_workflows'] ?? false;
+
+        $data = $this->service()->liveEnable($id, $skipWorkflow);
 
         return ApiResponse::json($data);
     }
 
     public function postLiveDisable($id)
     {
-        $data = $this->service()->liveDisable($id);
+        $input = Request::all();
+
+        $skipWorkflow = $input['skip_workflows'] ?? false;
+
+        $data = $this->service()->liveDisable($id, $skipWorkflow);
 
         return ApiResponse::json($data);
     }
