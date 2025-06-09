@@ -15,8 +15,10 @@ use RZP\Constants\HyperTrace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\CapitalSubmerchantUtility;
+use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Attribute\Type;
+use RZP\Models\PaymentLink\ElfinWrapper;
 use RZP\Models\Partner\Constants as PartnerConstants;
 
 class Core extends Base\Core
@@ -379,20 +381,17 @@ class Core extends Base\Core
 
                 $productConfig[$product]["params"]["referral_code"] = $refCode;
 
-                $newShortUrl = $this->createShortenReferralUrl(
-                    $productConfig[$product]["url"],
-                    $productConfig[$product]["params"]
-                );
+                $oldHash =  (new ElfinWrapper(ElfinService::GIMLI))->getHashFromUrl($oldUrl);
+
+                $updatedHash = (new ElfinWrapper(ElfinService::GIMLI))->update($oldHash, $productConfig[$product]);
 
                 $referralData = [
                         'product' => $product,
-                        'ref_code' => $refCode
+                        'ref_code' => $refCode,
+                        'hash' => $updatedHash
                     ];
                 $this->updateReferralLinkWithKycAccessConsent($merchant, $referralData);
 
-
-                $referral[Entity::URL] = $newShortUrl;
-                $this->repo->saveOrFail($referral);
 
                 $this->trace->info(
                     TraceCode::PARTNER_REFERRAL_LINK_REGENERATE,
@@ -424,6 +423,7 @@ class Core extends Base\Core
                 'name'           => PartnerConstants::REFERRAL_WITH_CONSENT,
                 'meta'           => [
                     'referral_code' => $referralData['ref_code'],
+                    'referral_hash' => $referralData['hash'],
                 ]
             ];
 

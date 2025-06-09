@@ -223,7 +223,7 @@ final class ElfinWrapper
      *
      * @return string|null
      */
-    private function getHashFromUrl(string $url): ?string
+    public function getHashFromUrl(string $url): ?string
     {
         $parts = explode('/', $url);
 
