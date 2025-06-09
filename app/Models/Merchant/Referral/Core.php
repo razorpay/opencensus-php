@@ -55,12 +55,12 @@ class Core extends Base\Core
 
         // Only check for MKYC flow if merchant is provided
         if ($merchant !== null &&
+            $merchant->getPartnerType() == MerchantConstants::AGGREGATOR &&
             $this->isMKYCFlowEnabled(
                 $merchant->getId(),
                 $this->app['config']->get('app.mkyc_aggregator_experiment_id'),
                 'mkyc_aggregator_flow_enabled'
-            ) &&
-            $merchant->getPartnerType() == MerchantConstants::AGGREGATOR
+            )
         ) {
             $baseUrl = $this->config['applications.dashboard.usl_url'] . 'auth/?auth_intent=signup';
         }
@@ -428,15 +428,15 @@ class Core extends Base\Core
             ];
 
             $referralWithKycAccess = $this->app->partnerships->updateReferralLinkWithKycAccessConsent($parameters);
-            
+
             return $referralWithKycAccess;
         } catch (Throwable $e) {
             $this->trace->count(Merchant\Metric::EASY_KYC_ACCESS_REFERRAL_FETCH_FAILURE_TOTAL);
-            
+
             $this->trace->traceException(
-                $e, 
-                null, 
-                TraceCode::EASY_KYC_ACCESS_PARTNER_REFERRAL_FETCH_ERROR, 
+                $e,
+                null,
+                TraceCode::EASY_KYC_ACCESS_PARTNER_REFERRAL_FETCH_ERROR,
                 ['entity_id' => $merchant->getId()]
             );
 
