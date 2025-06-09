@@ -1729,6 +1729,15 @@ class Header
     const CREATE_BULK_GIFT_CARD_CONTACT = 'Contact (Optional)';
     const CREATE_BULK_GIFT_CARD_BUYER_USER_ID = 'Buyer User ID (Optional)';
 
+    // Cancel bulk gift cards batch headers
+    const CANCEL_BULK_GIFT_CARD_ID = "Gift Card ID";
+    const CANCEL_BULK_GIFT_CARD_NUMBER = 'Gift Card Number (Optional)';
+    const CANCEL_BULK_GIFT_CARD_CONTACT = 'Contact';
+    const CANCEL_BULK_GIFT_CARD_TICKET_LINK = 'Ticket Link';
+    const CANCEL_BULK_GIFT_CARD_TIMESTAMP = "Timestamp";
+    const CANCEL_BULK_GIFT_CARD_SOURCE = 'Source';
+    const CANCEL_BULK_GIFT_CARD_NOTES = 'Notes (Optional)';
+
    // Wallet update Gift Cards expiry
     const UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_ID = "Gift Card ID";
     const UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_NUMBER = "Gift Card Number";
@@ -2425,7 +2434,7 @@ class Header
     const HDFC_TERMINAL_SUCCESS = "SUCCESS";
     const HDFC_TERMINAL_ERROR_CODE = "Error Code";
     const HDFC_TERMINAL_ERROR_DESCRIPTION = "Error Description";
-  
+
     // Headers for token continuity
     const TOKEN_CONTINUITY_JUSPAY_CUSTOMER_ID = "juspay_customer_id";
     const TOKEN_CONTINUITY_JUSPAY_MERCHANT_ID = "juspay_merchant_id";
@@ -2499,6 +2508,14 @@ class Header
     const MANDATORY_HEADERS_FOR_CREATE_BULK_GIFT_CARDS = [
         Header::CREATE_BULK_GIFT_CARD_PROGRAM_ID,
         Header::CREATE_BULK_GIFT_CARD_AMOUNT
+    ];
+    // mandatory headers for cancellation gift card batch
+    const MANDATORY_HEADERS_FOR_CREATE_BULK_GIFT_CARDS = [
+        Header::CANCEL_BULK_GIFT_CARD_ID,
+        Header::CANCEL_BULK_GIFT_CARD_CONTACT
+        Header::CANCEL_BULK_GIFT_CARD_TICKET_LINK
+        Header::CANCEL_BULK_GIFT_CARD_TIMESTAMP
+        Header::CANCEL_BULK_GIFT_CARD_SOURCE
     ];
 
 //     mandatory headers for create gift card transfers batch
@@ -6742,6 +6759,19 @@ class Header
             self::OUTPUT => []
         ],
 
+        TYPE::CREATE_BULK_GIFT_CARDS => [
+                self::INPUT => [
+                self::CANCEL_BULK_GIFT_CARD_ID,
+                self::CANCEL_BULK_GIFT_CARD_NUMBER,
+                self::CANCEL_BULK_GIFT_CARD_CONTACT,
+                self::CANCEL_BULK_GIFT_CARD_TICKET_LINK,
+                self::CANCEL_BULK_GIFT_CARD_TIMESTAMP,
+                self::CANCEL_BULK_GIFT_CARD_SOURCE,
+                self::CANCEL_BULK_GIFT_CARD_NOTES,
+            ],
+            self::OUTPUT => []
+        ],
+
         TYPE::UPDATE_GIFT_CARDS_EXPIRY => [
             self::INPUT => [
                 self::UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_ID,
@@ -8291,6 +8321,11 @@ class Header
         if ($type === Type::CREATE_BULK_GIFT_CARDS )
         {
             self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_CREATE_BULK_GIFT_CARDS);
+        }
+
+        if ($type === Type::CANCEL_BULK_GIFT_CARDS )
+        {
+            self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_CANCEL_BULK_GIFT_CARDS);
         }
 
         if ($type === Type::CREATE_GIFT_CARD_TRANSFERS )
