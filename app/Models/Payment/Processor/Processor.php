@@ -2688,9 +2688,9 @@ class Processor
                                 return false;
                             }
 
-//                            $tokenRearchExperimentName = 'app.saved_card_token_payments_rearch';
-//                            $tokenRearchResult = (new Payment\Service())->getSplitzExpResponseForTokenFetchFromTokenService($merchant->getId(), $card->getVault(), $tokenRearchExperimentName);
-                            $tokenRearchResult = 'on';
+                            $tokenRearchExperimentName = 'app.saved_card_token_payments_rearch';
+                            $tokenRearchResult = (new Payment\Service())->getSplitzExpResponseForTokenFetchFromTokenService($merchant->getId(), $card->getVault(), $tokenRearchExperimentName);
+
                             if ($card->getVault() === Card\Vault::PROVIDERS || $card->getVault() === Card\Vault::AXIS)
                             {
                                 if($this->mode!==MODE::LIVE && !app()->isEnvironmentProduction()){
