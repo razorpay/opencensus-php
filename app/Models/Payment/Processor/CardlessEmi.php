@@ -61,7 +61,6 @@ class CardlessEmi
         self::TVSC         => 300000, // Rs. 3000
         self::LIQUILOANS   => 90000,  // Rs. 900
         self::SHOPSE       => 100000, // Rs. 1000
-        self::SNAPMINT     => 100000, // Rs. 1000
     ];
 
     public static $fullName = [
