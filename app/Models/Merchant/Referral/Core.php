@@ -16,6 +16,8 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\CapitalSubmerchantUtility;
 use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Merchant\Attribute\Type;
+use RZP\Models\Partner\Constants as PartnerConstants;
 
 class Core extends Base\Core
 {
@@ -360,35 +362,86 @@ class Core extends Base\Core
 
             $oldReferrals = $this->repo->referrals->getReferralsByMerchantIds($ids);
 
-            foreach ($oldReferrals as $referral)
-            {
+            foreach ($oldReferrals as $referral) {
                 $refCode = $referral->getReferralCode();
-
                 $oldUrl = $referral->getReferralLink();
+                $merchantId = $referral->getMerchantId();
+                $product = $referral->getProduct();
 
-                $productConfig[$referral->getProduct()]["params"]["referral_code"] = $refCode;
+                // Get the merchant entity
+                $merchant = $this->repo->merchants->find($merchantId);
+                if ($merchant && $merchant->getPartnerType() === MerchantConstants::AGGREGATOR) {
+                    $merchantSpecificConfig = $this->getReferralConfig($merchant);
+                    if (isset($merchantSpecificConfig[$product])) {
+                        $productConfig[$product] = $merchantSpecificConfig[$product];
+                    }
+                }
+
+                $productConfig[$product]["params"]["referral_code"] = $refCode;
 
                 $newShortUrl = $this->createShortenReferralUrl(
-                    $productConfig[$referral->getProduct()]["url"],
-                    $productConfig[$referral->getProduct()]["params"]
+                    $productConfig[$product]["url"],
+                    $productConfig[$product]["params"]
                 );
 
-                $referral[Entity::URL] = $newShortUrl;
+                $referralData = [
+                        'product' => $product,
+                        'ref_code' => $refCode
+                    ];
+                $this->updateReferralLinkWithKycAccessConsent($merchant, $referralData);
 
+
+                $referral[Entity::URL] = $newShortUrl;
                 $this->repo->saveOrFail($referral);
 
                 $this->trace->info(
                     TraceCode::PARTNER_REFERRAL_LINK_REGENERATE,
                     [
-                        'partner_id' => $referral->getMerchantId(),
-                        'product'    => $referral->getProduct(),
+                        'partner_id' => $merchantId,
+                        'product'    => $product,
                         'new_url'    => $referral->getReferralLink(),
                         'old_url'    => $oldUrl,
                     ]
                 );
-
             }
         });
+    }
+
+    /**
+     * Updates the referral link with KYC access consent
+     *
+     * @param Merchant\Entity $merchant
+     * @param array $referralData
+     * @return string|null
+     */
+    protected function updateReferralLinkWithKycAccessConsent(Merchant\Entity $merchant, array $referralData): ?string
+    {
+        try {
+            $parameters = [
+                'entity_id'      => $merchant->getId(),
+                'entity_type'    => 'merchant',
+                'product'        => $referralData['product'],
+                'name'           => PartnerConstants::REFERRAL_WITH_CONSENT,
+                'meta'           => [
+                    'referral_code' => $referralData['ref_code'],
+                ]
+            ];
+
+            $referralWithKycAccess = $this->app->partnerships->updateReferralLinkWithKycAccessConsent($parameters);
+            
+            return $referralWithKycAccess;
+        } catch (Throwable $e) {
+            $this->trace->count(Merchant\Metric::EASY_KYC_ACCESS_REFERRAL_FETCH_FAILURE_TOTAL);
+            
+            $this->trace->traceException(
+                $e, 
+                null, 
+                TraceCode::EASY_KYC_ACCESS_PARTNER_REFERRAL_FETCH_ERROR, 
+                ['entity_id' => $merchant->getId()]
+            );
+
+            return null;
+        }
     }
 
     /**
