@@ -1417,7 +1417,7 @@ class UserTest extends TestCase
 
         Mail::assertQueued(Otp::class, function ($mail)
         {
-            $this->assertEquals('verify_user', $mail->input['action']);
+            $this->assertEquals('verify_email', $mail->input['action']);
 
             $this->assertNotEmpty($mail->user);
 
