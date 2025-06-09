@@ -366,7 +366,7 @@ class CCRouter
         ]);
     }
 
-    private function shouldRouteRequestToChargeCollections($functionName, $planID): string {
+    public function shouldRouteRequestToChargeCollections($functionName, $planID): string {
 
         $routeName = null;
 

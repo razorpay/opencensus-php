@@ -51,4 +51,9 @@ class Config
     {
         return $this->config[EXTERNAL_QUERY][$query] ?? false;
     }
+
+    public function isExternalQueryAndDiffEnabled($query)
+    {
+        return $this->config[EXTERNAL_QUERY][$query] ?? [];
+    }
 }

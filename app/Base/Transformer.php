@@ -222,11 +222,12 @@ class Transformer
                 break;
             case "verification_details"  :
                 // if the experiment is on, instead of dual-write, PGOS will call ASV for merchant_details and stakeholder table
-                if ($this->shouldRemoveDualWriteOnMerchantDetailsAndStakeholder($merchantId) === true)
+                if ($this->shouldRemoveDualWriteOnMerchantDetails($merchantId) === true)
                 {
                     return [
                         new MerchantVerificationDetail\VerificationDetailTransformer(),
                         new MerchantBvsValidation\VerificationDetailsTransformer(),
+                        new MerchantStakeholder\VerificationDetailsTransformer(),
                     ];
                 }
                 return [
@@ -249,7 +250,7 @@ class Transformer
         }
     }
 
-    private function shouldRemoveDualWriteOnMerchantDetailsAndStakeholder($merchantId)
+    private function shouldRemoveDualWriteOnMerchantDetails($merchantId)
     {
         $mode = 'enable';
 

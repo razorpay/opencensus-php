@@ -7,7 +7,7 @@
 
 <div>
         We have received a request to update the registered email of Razorpay account to {{$email}} from {{$current_owner_email}}.
-        To successfully update your registered email id, please <a href="{{'https://' . $org['hostname'] . '/#/access/emailupdate?email=' . urlencode($email) .'&token='.$token . '&mid=' . $merchant_id }}" target="_blank">click here</a>. <br/>
+        To successfully update your registered email id, please <a href="{{'https://' . $org['hostname'] . '/emailupdate?email=' . urlencode($email) .'&token='.$token . '&mid=' . $merchant_id }}" target="_blank">click here</a>. <br/>
         and set the login password for {{$email}}.
 </div>
 

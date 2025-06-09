@@ -510,6 +510,7 @@ class Route
         'merchant_create_terminal_v3'              => ['post',     'merchants/{id}/terminals/v3',                    'MerchantController@postCreateTerminalV3'                           ],
         'merchant_create_terminal_internal'        => ['post',     'merchants/{id}/terminals/internal',              'MerchantController@postCreateTerminalWithId',                      ],
         'merchant_info_fetch'                      => ['get',      'internal/merchant_info_fetch/{mid}',             'MerchantController@fetchUserIdAndOrgIdFromMerchantId',             ],
+        'merchant_list_by_org_and_category'        => ['get',      'merchant_list/org/{orgid}/category/{category}',        'MerchantController@fetchMidAndNameFromOrgAndCategoryFromTiDB'                       ],
         'merchant_get_terminals'                   => ['get',      'merchants/{id}/terminals',                       'MerchantController@getTerminals'                                   ],
         'proxy_merchant_get_terminals'             => ['get',      'proxy/merchant/terminals',                       'MerchantController@proxyGetTerminals'                              ],
         'admin_merchant_get_terminals'             => ['post',     'admin/merchant/terminals',                       'TerminalController@proxyV2TerminalService'                        ],
@@ -1548,6 +1549,7 @@ class Route
         'onboarding_get'                                    => ['get',      'onboarding/workflow/merchant/{id}',                            'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'onboarding_create_or_fetch'                        => ['get',      'onboarding/workflow/merchant/{id}/create_or_fetch',            'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'onboarding_save'                                   => ['post',     'onboarding/workflow/merchant/{id}',                            'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'activate_merchant'                                 => ['post',     'pg/onboarding/activate_merchant',                              'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'onboarding_order_create'                           => ['post',     'pg/onboarding/payment_order_create',                           'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'onboarding_order_verify'                           => ['post',     'pg/onboarding/payment_order_verify',                           'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'onboarding_payment_webhook'                        => ['post',     'pg/onboarding/payment_order_webhook',                          'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
@@ -7211,6 +7213,7 @@ class Route
         'onboarding_get',
         'onboarding_create_or_fetch',
         'onboarding_save',
+        'activate_merchant',
         'merchant_bmc_response_save',
         'onboarding_order_create',
         'onboarding_order_verify',
@@ -9979,6 +9982,7 @@ class Route
         'merchant_bmc_response_fetch_admin'               => Permission::VIEW_MERCHANT,
         'merchant_bmc_response_save'                      => Permission::EDIT_MERCHANT,
         'onboarding_save'                                 => Permission::EDIT_MERCHANT,
+        'activate_merchant'                               => Permission::EDIT_MERCHANT,
         'pgos_send_sms_otp'                               => Permission::EDIT_MERCHANT,
         'pgos_verify_otp'                                 => Permission::EDIT_MERCHANT,
         'onboarding_order_create'                         => Permission::EDIT_MERCHANT,
@@ -12221,6 +12225,7 @@ class Route
     ];
 
     public static $direct = [
+        'merchant_list_by_org_and_category',
         'update_late_auth_config_bulk',
         'onboarding_payment_webhook',
         'payment_page_fetch_records',
