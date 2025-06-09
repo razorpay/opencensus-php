@@ -1901,6 +1901,48 @@ class Processor
         return false;
     }
 
+    private function evaluateSplitzExperimentForIntlCardRecurringRearchMerchant($merchant, $routeName)
+    {
+        try
+        {
+            $experimentId = "";
+            if (self::isCardRecurringAutoRearchRoute($routeName)) {
+                $experimentId = $this->app['config']->get('app.cross_border_rearch_card_recurring_flow_experiment_id');
+            } else if (self::isCardRecurringInitialRearchRoute($routeName)) {
+                $experimentId = $this->app['config']->get('app.cross_border_rearch_card_recurring_initial_flow_experiment_id');
+            }
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $experimentId,
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_REARCH_EXPERIMENT_SPILTZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
     private function isOpgspImportMerchant(): bool
     {
         return $this->merchant->isOpgspImportEnabled();
@@ -2395,7 +2437,16 @@ class Processor
                     ]);
                     return false;
                 }
-
+                $res = $this->evaluateSplitzExperimentForIntlCardRecurringRearchMerchant($merchant, $currentRouteName);
+                if ($res === false) {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "cross_border_merchant_splitz_experiment",
+                        'merchant_id' => $merchant->getId(),
+                        'route_name' => $currentRouteName,
+                        'flow' => 'intl_card_recurring',
+                    ]);
+                    return false;
+                }
                 $result = $this->evaluateSplitzExperimentForCardRecurringRearchMerchant($merchant, $currentRouteName);
                 if ($result === false) {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
