@@ -1039,8 +1039,7 @@ class Service extends Base\Service
         $newplan = (new Pricing\Core)->create([Entity::PLAN_NAME => $planName, Entity::RULES => $rules], $ruleOrgId);
 
         // Check splitz experiment for the new pricing plan
-        $ccRouter = new CCRouter(true);
-        $rampPhase = $ccRouter->shouldRouteRequestToChargeCollections(
+        $rampPhase = $this->ccRouter->shouldRouteRequestToChargeCollections(
             'RZP\\Models\\Pricing\\Service\\replicatePlanAndAssign',
             $newplan->getId()
         );

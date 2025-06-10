@@ -1337,6 +1337,8 @@ return array(
 
     'my_save_card_splitz_experiment_id' => env('MY_SAVE_CARD_SPLITZ_EXPERIMENT_ID'),
 
+    'in_save_int_card_splitz_experiment_id' => env('IN_SAVE_INT_CARD_SPLITZ_EXPERIMENT_ID'),
+
     'partner_qr_code_feature_override_exp_id'=> env('PARTNER_QR_CODE_OVERRIDE_EXP_ID'),
 
     'ignore_tos_acceptance_exp_id'=> env('IGNORE_TOS_ACCEPTANCE_EXP_ID'),
@@ -1503,4 +1505,6 @@ return array(
     'optimizer_bank_transfer_enable' => env('OPTIMIZER_BANK_TRANSFER_ENABLE_EXPERIMENT_ID'),
 
     'merchant_with_qr_expiry_gt_2_hours' => env('MERCHANT_WITH_QR_EXPIRY_GT_2_HOURS'),
+
+    'emandate_fetch_token_from_tidb' => env('EMANDATE_FETCH_TOKEN_FROM_TIDB'),
 );
