@@ -732,7 +732,6 @@ class Service extends Base\Service
             'signup_source'          =>$input[DeviceDetail\Entity::SIGNUP_SOURCE],
             'signup_campaign'        =>$input[DeviceDetail\Entity::SIGNUP_CAMPAIGN],
             'merchant_product'       =>$this->auth->getRequestOriginProduct(),
-            'x_verify_email'         =>$input[Entity::X_VERIFY_EMAIL] ?? null,
         ]);
 
         $merchantInputData = [
