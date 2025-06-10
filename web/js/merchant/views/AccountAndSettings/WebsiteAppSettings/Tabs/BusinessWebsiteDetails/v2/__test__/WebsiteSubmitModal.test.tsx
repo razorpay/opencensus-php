@@ -35,11 +35,6 @@ let mockCurrentStep = '';
 let mockData = {};
 let mockMainPageSubmitPayload = {};
 
-jest.mock('merchant/reducers/session', () => ({
-  ...(jest.requireActual('merchant/reducers/session') as unknown as any),
-  updateSession: () => mockUpdateSession,
-}));
-
 jest.mock(
   'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/components/WebsiteInputModal',
   () => ({
@@ -110,6 +105,7 @@ const defaultProps = {
   isOpen: true,
   onDismiss: mockOnDismiss,
   mode: 'live',
+  updateUserSession: mockUpdateSession,
 };
 
 const renderApp = (

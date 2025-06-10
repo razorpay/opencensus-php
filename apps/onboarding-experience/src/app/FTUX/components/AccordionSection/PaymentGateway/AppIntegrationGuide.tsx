@@ -4,6 +4,7 @@ import { isMobileDevice } from '@libs/shared-utils';
 import { INTEGRATION_GUIDE } from '@FTUX/constants/accordion';
 import SelectableOptionCard from '@OnboardingExperienceCommons/components/SelectableOptionCard';
 import websiteIntegratedIcon from '@OnboardingExperienceAssets/WebsiteIntegratedIcon.svg';
+import { AvailablePlatformTypesEnum } from '@OnboardingExperienceCommons/utils/website';
 
 const AppIntegrationGuide = ({
   hasAndroidIntent,
@@ -20,7 +21,7 @@ const AppIntegrationGuide = ({
       <Text color="surface.text.gray.subtle" weight="medium" size={textSize}>
         Resources for Apps
       </Text>
-      <Box paddingTop={{ base: 'spacing.4', m: 'spacing.5' }}>
+      <Box paddingTop="spacing.4">
         <SelectableOptionCard
           customTitle={
             <Box
@@ -37,7 +38,7 @@ const AppIntegrationGuide = ({
                 <Link
                   size={textSize}
                   icon={LayersIcon}
-                  href={INTEGRATION_GUIDE['android']}
+                  href={INTEGRATION_GUIDE[AvailablePlatformTypesEnum.ANDROID]}
                   target="_blank"
                 >
                   Integration guide set up (Android)
@@ -47,7 +48,7 @@ const AppIntegrationGuide = ({
                 <Link
                   size={textSize}
                   icon={LayersIcon}
-                  href={INTEGRATION_GUIDE['ios']}
+                  href={INTEGRATION_GUIDE[AvailablePlatformTypesEnum.IOS]}
                   target="_blank"
                 >
                   Integration guide set up (iOS)
@@ -55,7 +56,7 @@ const AppIntegrationGuide = ({
               ) : null}
             </Box>
           }
-          subTitle={'App integration'}
+          subTitle={isMobile ? undefined : 'App integration'}
           cardImageUrl={websiteIntegratedIcon}
         />
       </Box>

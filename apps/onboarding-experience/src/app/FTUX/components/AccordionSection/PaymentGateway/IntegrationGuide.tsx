@@ -8,10 +8,12 @@ import { PAYMENT_CHANNEL_OPTIONS } from '@OnboardingExperienceCommons/types/merc
 import SelectableOptionCard, {
   SelectableOptionCardProps,
 } from '@OnboardingExperienceCommons/components/SelectableOptionCard';
+import { hasAcceptedAnyPaymentChannel } from '@OnboardingExperienceCommons/utils/merchant';
 import {
-  hasAcceptedAnyPaymentChannel,
-  getSpecificPlatformType,
-} from '@OnboardingExperienceCommons/utils/merchant';
+  AvailablePlatformTypesEnum,
+  getBusinessPlatformType,
+} from '@OnboardingExperienceCommons/utils/website';
+import { hasAddedWebsite } from '@OnboardingExperienceCommons/utils/merchant';
 import customWebsiteIntegrationIcon from '@OnboardingExperienceAssets/CustomWebsiteIntegrationIcon.svg';
 import websiteIntegratedIcon from '@OnboardingExperienceAssets/WebsiteIntegratedIcon.svg';
 import pluginWebsiteIntegrationIcon from '@OnboardingExperienceAssets/PluginWebsiteIntegrationIcon.svg';
@@ -30,22 +32,27 @@ const IntegrationGuide = () => {
   // Check if the merchant has added a website, has API key access and is activated
   const hasApiKeyAccess = Boolean(merchantData?.merchantById?.hasApiKeyAccess);
 
+  // Check if the merchant has added a website, has API key access and is activated
+  const isWebsiteVerified =
+    Boolean(merchantData?.merchantById?.hasApiKeyAccess) &&
+    hasAddedWebsite(merchantData?.merchantById?.business?.paymentAcceptanceChannels);
+
   const websiteUrl =
     merchantData?.merchantById?.business?.paymentAcceptanceChannels?.[
       PAYMENT_CHANNEL_OPTIONS.Websites
     ]?.urls?.[0]?.value;
-  const platformType = getSpecificPlatformType(websiteUrl);
+  const platformType = getBusinessPlatformType(websiteUrl);
 
   const hasAndroidIntent =
-    platformType === 'android' ||
+    platformType === AvailablePlatformTypesEnum.ANDROID ||
     hasAcceptedAnyPaymentChannel(paymentChannels, [PAYMENT_CHANNEL_OPTIONS.Android]);
 
   const hasIOSIntent =
-    platformType === 'ios' ||
+    platformType === AvailablePlatformTypesEnum.IOS ||
     hasAcceptedAnyPaymentChannel(paymentChannels, [PAYMENT_CHANNEL_OPTIONS.IOS]);
 
   const hasWebsiteIntent =
-    platformType === 'website' ||
+    platformType === AvailablePlatformTypesEnum.WEBSITE ||
     hasAcceptedAnyPaymentChannel(paymentChannels, [PAYMENT_CHANNEL_OPTIONS.Websites]);
 
   const handleAddPlugin = async (newPlugin: string) => {
@@ -84,7 +91,9 @@ const IntegrationGuide = () => {
         (plugin) => plugin?.name === websitePluginName,
       );
 
-      const integrationGuide = activePluginConfig?.integrationGuide || INTEGRATION_GUIDE['website'];
+      const integrationGuide =
+        activePluginConfig?.integrationGuide ||
+        INTEGRATION_GUIDE[AvailablePlatformTypesEnum.WEBSITE];
 
       return [
         {
@@ -132,8 +141,8 @@ const IntegrationGuide = () => {
   }, [websiteUrl, platformType, selectedWebsitePlugin, isMobile]);
 
   useEffect(() => {
-    // In case of KLA, we will only show the plugin integration guide on Client side
-    if (!hasApiKeyAccess) {
+    // In case of KLA or no website, we will only show the plugin integration guide on Client side
+    if (!hasApiKeyAccess || !websiteUrl) {
       return;
     }
 
@@ -180,7 +189,7 @@ const IntegrationGuide = () => {
             display="flex"
             flexDirection={{ base: 'column', l: 'row' }}
             gap={{ base: 'spacing.5', m: 'spacing.7' }}
-            paddingTop={{ base: 'spacing.4', m: 'spacing.5' }}
+            paddingTop="spacing.4"
           >
             {websiteIntegrationOptions.map((option) => (
               <SelectableOptionCard

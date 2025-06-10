@@ -146,7 +146,7 @@ const GenerateAPIKeys = () => {
       ) : hasGeneratedApiKeys ? (
         <Button
           variant="secondary"
-          size="medium"
+          size={isMobile ? 'small' : 'medium'}
           icon={RefreshIcon}
           isLoading={isLoading}
           onClick={() => openModal(ApiKeysModalScreens.REGEN)}
@@ -157,7 +157,7 @@ const GenerateAPIKeys = () => {
       ) : (
         <Button
           color="primary"
-          size="medium"
+          size={isMobile ? 'small' : 'medium'}
           icon={EyeIcon}
           isLoading={isLoading}
           onClick={() => openModal(ApiKeysModalScreens.REVEAL)}

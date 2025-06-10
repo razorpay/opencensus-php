@@ -2,6 +2,7 @@ import { HOMEPAGE_ELEMENTS } from '@FTUX/types/homepage';
 import {
   PaymentAcceptanceChannelsType,
   PAYMENT_CHANNEL_OPTIONS,
+  MerchantActivationDataType,
 } from '@OnboardingExperienceCommons/types/merchant';
 import { NO_CODE_CHANNEL_OPTIONS } from '@OnboardingExperienceCommons/constants/merchant';
 import {
@@ -9,6 +10,8 @@ import {
   PG_PAGE_LAYOUT,
   PG_PLUS_NO_CODE_PAGE_LAYOUT,
 } from '@FTUX/constants/homepage';
+import { WebsiteVerificationUpdateStatus } from '@OnboardingExperienceCommons/types/onboarding';
+import { hasAddedWebsite } from '@OnboardingExperienceCommons/utils/merchant';
 import { hasAcceptedAnyPaymentChannel } from '@OnboardingExperienceCommons/utils/merchant';
 import NoCodeHeaderIcon from '@OnboardingExperienceAssets/NoCodeHeaderIcon.svg';
 import WebsiteHeaderIcon from '@OnboardingExperienceAssets/WebsiteHeaderIcon.svg';
@@ -39,10 +42,8 @@ export const getLayoutByMerchantType = ({
   if (isPgMerchant) {
     return [...PG_PAGE_LAYOUT];
   }
-  if (isNoCodeMerchant) {
-    return [...NO_CODE_PAGE_LAYOUT];
-  }
-  return [];
+
+  return [...NO_CODE_PAGE_LAYOUT];
 };
 
 /**
@@ -52,21 +53,62 @@ export const getAccordionWebsiteTitle = (
   paymentChannels?: PaymentAcceptanceChannelsType,
 ): string => {
   // Check if merchant intends to accept payments through different channels
-  const isWebsiteIntent = paymentChannels?.[PAYMENT_CHANNEL_OPTIONS.Websites]?.accept;
-  const isAndroidIntent = paymentChannels?.[PAYMENT_CHANNEL_OPTIONS.Android]?.accept;
-  const isIosIntent = paymentChannels?.[PAYMENT_CHANNEL_OPTIONS.IOS]?.accept;
+  const isWebsiteIntent = hasAcceptedAnyPaymentChannel(paymentChannels, [
+    PAYMENT_CHANNEL_OPTIONS.Websites,
+  ]);
+  const isAppIntent = hasAcceptedAnyPaymentChannel(paymentChannels, [
+    PAYMENT_CHANNEL_OPTIONS.IOS,
+    PAYMENT_CHANNEL_OPTIONS.Android,
+  ]);
 
   // Both website and at least one mobile platform
-  if (isWebsiteIntent && (isIosIntent || isAndroidIntent)) {
+  if (isWebsiteIntent && isAppIntent) {
     return 'Add your website/app details';
   }
   // Only mobile platforms (iOS and/or Android)
-  if (isIosIntent || isAndroidIntent) {
+  if (isAppIntent) {
     return 'Add your app links';
   }
 
   // Default case: only website or no specific intent indicated
   return 'Add your website details';
+};
+
+/**
+ * Maps WebsiteVerificationAutomationStatus to WebsiteUpdateAutomationStatus
+ * since they have the same enum values but different types
+ */
+export const mapToWebsiteUpdateData = (websiteUpdateData?: WebsiteVerificationUpdateStatus) => {
+  if (!websiteUpdateData) return undefined;
+
+  return {
+    current_status: websiteUpdateData.currentStatus,
+    current_status_updated_at: websiteUpdateData.currentStatusUpdatedAt,
+    main_page_url: websiteUpdateData.mainPageUrl,
+    website_verification_stage: websiteUpdateData.websiteVerificationStage,
+    website_verification_page_status: websiteUpdateData.websiteVerificationPageStatus,
+  };
+};
+
+export const getAccordionCompletedSteps = (merchant?: MerchantActivationDataType): number => {
+  const isMerchantActivated = Boolean(merchant?.activation?.isActivated);
+  const hasWebsite = hasAddedWebsite(merchant?.business?.paymentAcceptanceChannels);
+  const hasApiKeys = Boolean(merchant?.apiKeys?.[0]?.id);
+  const hasTransacted = Boolean(merchant?.activation?.isTransacted);
+
+  // Do not evaluate the website section for non-activated merchants
+  if (!isMerchantActivated) {
+    if (!hasApiKeys) return 0;
+    if (!hasTransacted) return 1;
+    return 2;
+  }
+
+  const apiKeyAccess = merchant?.hasApiKeyAccess;
+
+  if (!hasWebsite || !apiKeyAccess) return 0;
+  if (!hasApiKeys) return 1;
+  if (!hasTransacted) return 2;
+  return 3;
 };
 
 /**
@@ -126,4 +168,67 @@ export const getMerchantHeaderData = (paymentChannels?: PaymentAcceptanceChannel
     icons: headerIcons,
     text: formatPlatformList(addedPlatforms),
   };
+};
+
+export const getWebsiteAdditionContent = (
+  paymentChannels?: PaymentAcceptanceChannelsType,
+): {
+  title: string;
+  content: string;
+  label?: string;
+} => {
+  // Check if merchant intends to accept payments through different channels
+  const isWebsiteIntent = hasAcceptedAnyPaymentChannel(paymentChannels, [
+    PAYMENT_CHANNEL_OPTIONS.Websites,
+  ]);
+  const isAndroidIntent = hasAcceptedAnyPaymentChannel(paymentChannels, [
+    PAYMENT_CHANNEL_OPTIONS.Android,
+  ]);
+  const isIosIntent = hasAcceptedAnyPaymentChannel(paymentChannels, [PAYMENT_CHANNEL_OPTIONS.IOS]);
+
+  let data = {
+    title: 'Website / App',
+    label: "To accept payments on your website, you'll need a ready website.",
+    content:
+      "If you don't have one yet, you can try a test integration from step 2 or explore ready-to-use payment options below.",
+  };
+
+  // Both website and at least one mobile platform
+  if (isWebsiteIntent && (isAndroidIntent || isIosIntent)) {
+    return data;
+  }
+  // Only mobile platforms (iOS and/or Android)
+  if (isWebsiteIntent && !(isAndroidIntent || isIosIntent)) {
+    return {
+      ...data,
+      title: 'Website link',
+    };
+  }
+  // Only mobile platforms (iOS and/or Android)
+  if (isAndroidIntent && isIosIntent) {
+    return {
+      title: 'App link',
+      content:
+        "Add your Play Store / App Store link. If it's not ready, move to step two and set up payments in Test Mode.",
+    };
+  }
+  // Only Android platform
+  if (isAndroidIntent) {
+    return {
+      title: 'Android app',
+      content:
+        "Add your Play Store app link. If it's not ready, move to step two and set up payments in Test Mode.",
+    };
+  }
+  // Only iOS platform
+  if (isIosIntent) {
+    return {
+      title: 'iOS app',
+      content:
+        "Add your App Store app link. If it's not ready, move to step two and set up payments in Test Mode.",
+    };
+  }
+
+  // Default case: only website or no specific intent indicated
+  return data;
 };

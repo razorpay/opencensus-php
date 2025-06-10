@@ -37,15 +37,13 @@ jest.mock('@FTUX/modals/ProductRecommender', () => ({
 }));
 
 describe('NoCodeSection Component', () => {
-  test('renders with correct title and subtitle', () => {
+  test('renders with correct title', () => {
     renderWithWrappers(<NoCodeSection />);
 
     // Use test IDs to precisely identify the title and subtitle elements
     const titleElement = screen.getByTestId('pitch-title');
-    const subtitleElement = screen.getByTestId('pitch-subtitle');
 
-    expect(titleElement).toHaveTextContent('Ready-to-use products');
-    expect(subtitleElement).toHaveTextContent('Instant payment collection');
+    expect(titleElement).toHaveTextContent('Ready-to-use products. No setup needed');
   });
 
   test('renders all three product options', () => {

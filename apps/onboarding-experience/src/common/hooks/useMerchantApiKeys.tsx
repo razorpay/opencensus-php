@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { dashboardFetch } from '@libs/shared-utils';
 import { useStore } from '@federated/apps/shell/commonStore';
 import {
@@ -13,7 +13,9 @@ import {
 } from '@OnboardingExperienceCommons/utils/apiKeys';
 
 const useMerchantApiKeys = (): UseMerchantApiKeysReturnType => {
-  const { mode } = useStore((state) => state.session);
+  const mode = useStore((state) => state.session.mode);
+  const activeUser = useStore((state) => state.session.user);
+  const queryClient = useQueryClient();
 
   const { mutateAsync: generateApiKeyMutation } = useMutation<
     ReturnType<typeof transformRevealApiKeyResponse>,
@@ -29,6 +31,10 @@ const useMerchantApiKeys = (): UseMerchantApiKeysReturnType => {
       });
 
       return transformRevealApiKeyResponse(response);
+    },
+    onSuccess: () => {
+      // Invalidate merchant data cache to force a refresh
+      queryClient.invalidateQueries(['merchant_activation_data', activeUser.merchant?.id]);
     },
   });
 
@@ -51,6 +57,10 @@ const useMerchantApiKeys = (): UseMerchantApiKeysReturnType => {
       });
 
       return transformRegenerateApiKeyResponse(response);
+    },
+    onSuccess: () => {
+      // Invalidate merchant data cache to force a refresh
+      queryClient.invalidateQueries(['merchant_activation_data', activeUser.merchant?.id]);
     },
   });
 

@@ -5,8 +5,6 @@ import { bindActionCreators } from 'redux';
 import { useMobile } from 'common/hooks/useMobile';
 import { Environments, ShowNotificationType, User as UserType } from 'common/typings';
 import { noop } from 'common/utils/rzp-utils';
-import User from 'merchant/models/User';
-import { updateSession as updateSessionReducer } from 'merchant/reducers/session';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { closeModal as closeModalReducer } from 'merchant_common/reducers/modals';
@@ -62,22 +60,24 @@ interface WebsiteSubmitModalProps {
   isOpen: boolean;
   onDismiss: () => void;
   showNotification: ShowNotificationType;
-  updateSession: (args: { user: UserType; mode?: string }) => void;
   user: UserType;
   mode: Environments;
   org: { business_name: string };
   refetchData: VoidFunction;
+  updateUserSession: (user: UserType) => void;
+  refreshWebsiteData?: VoidFunction;
 }
 
 const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
   isOpen,
   onDismiss,
   showNotification,
-  updateSession,
   user,
   mode,
   org,
+  updateUserSession = () => {},
   refetchData = noop,
+  refreshWebsiteData = noop,
 }) => {
   const isMobile = useMobile();
   const saveWebsiteUpdate = useSaveWebsiteUpdate();
@@ -130,15 +130,10 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
   async function submitAppAndWebsiteForNonActivated(formState: MainPageFormData) {
     try {
       const response = await handleAppAndWebsiteSubmitForNonActivated(formState);
-      const newUser = new User({
+      updateUserSession({
         ...user,
         business_website: response.data.business_website,
         has_key_access: response.data.has_key_access,
-      });
-
-      updateSession({
-        user: newUser as unknown as UserType,
-        mode,
       });
 
       refetchData();
@@ -252,6 +247,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
       } else {
         await submitAppAndWebsiteForNonActivated(formState);
       }
+      refreshWebsiteData();
     } else {
       // save button
       setCurrentStep(WebsiteSubmitModalSteps.MAIN_PAGE_SUBMIT_IN_PROGRESS);
@@ -266,6 +262,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
         }),
         {
           onSuccess: (response) => {
+            refreshWebsiteData();
             // istanbul ignore else
             if (response?.current_status) {
               trackBasicWebsiteCheckCompleteModalLoad({
@@ -293,6 +290,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
             }
           },
           onError: (error) => {
+            refreshWebsiteData();
             if ((error as Error)?.message?.includes('liviness')) {
               trackBasicWebsiteCheckFailureModalLoad({
                 basicCheckPassed: 'no',
@@ -376,6 +374,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
       }),
       {
         onSuccess: (response) => {
+          refreshWebsiteData();
           const { current_status, main_page_url, website_verification_page_status } = response;
           if (current_status === WebsiteUpdateAutomationStatus.IN_PROGRESS) {
             pagesFilled.forEach((page) => {
@@ -444,6 +443,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
           }
         },
         onError: (error) => {
+          refreshWebsiteData();
           /* @ts-expect-error error-message-check */
           const errorMessage = getErrorMessage(error?.message);
           trackBasicWebsiteCheckFailureModalLoad({
@@ -496,17 +496,11 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
           business_website,
           merchant: { has_key_access },
         } = response.data;
-        const newUser = new User({
+
+        updateUserSession({
           ...user,
           business_website,
           has_key_access,
-          merchant: {
-            ...user.merchant,
-            has_key_access,
-          },
-        });
-        updateSession({
-          user: newUser as unknown as UserType,
         });
       } else {
         showNotification({
@@ -587,6 +581,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
           policyPagesToBeMade={policyPagesToBeMade}
           mode={mode}
           showNotification={showNotification}
+          onSuccess={refreshWebsiteData}
         />
       );
     case WebsiteSubmitModalSteps.POLICY_PAGES_COMPLETE:
@@ -644,7 +639,6 @@ const mapDispatchToProps = (dispatch) => {
       showNotification: showNotificationReducer,
       closeModal: closeModalReducer,
       fetchWorkflowStatus: fetchWorkflowStatusReducer,
-      updateSession: updateSessionReducer,
     },
     dispatch,
   );

@@ -21,6 +21,7 @@ import {
 import styled from 'styled-components';
 
 import { Environments, ShowNotificationType } from 'common/typings';
+import { noop } from 'common/utils/rzp-utils';
 
 import PreviewPagesIllustration from './assets/previewPagesIllustration.svg';
 import { PolicyPageContent } from './utils';
@@ -61,6 +62,7 @@ export interface PreviewPagesProps {
   policyPagesToBeMade: PartialPolicyPages;
   mode: Environments;
   showNotification: ShowNotificationType;
+  onSuccess?: VoidFunction;
 }
 
 function PreviewPages({
@@ -70,6 +72,7 @@ function PreviewPages({
   showNotification,
   isMobile,
   policyPagesToBeMade,
+  onSuccess = noop,
 }: PreviewPagesProps): JSX.Element {
   const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
   const {
@@ -135,6 +138,7 @@ function PreviewPages({
                 res.current_status === WebsiteUpdateAutomationStatus.COMPLETED ||
                 isWorkflowRaised
               ) {
+                onSuccess();
                 trackPreviewPolicyPages('Success', {
                   ...commonProperties,
                   isWorkflowRaised,

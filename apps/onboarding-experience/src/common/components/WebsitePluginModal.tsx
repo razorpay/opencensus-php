@@ -65,13 +65,12 @@ const SelectableHeroPlugin = ({
     >
       <Card
         width="100%"
-        height="100%"
+        height="55px"
         elevation="none"
         padding="spacing.5"
         isSelected={selectedPlugin === pluginName}
         onClick={() => onClick(pluginName)}
         accessibilityLabel="Payment Links Card"
-        shouldScaleOnHover
         testID={`plugin-card-${pluginName}`}
       >
         <CardBody>

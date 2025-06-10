@@ -227,7 +227,7 @@ function PaymentHandleActions() {
             weight="semibold"
             color="surface.text.primary.normal"
           >
-            {isMobile ? activeHandle : activeHandleUrl?.split('https://')?.[1]}
+            {activeHandleUrl?.split('https://')?.[1]}
           </Text>
         )}
         <Tooltip content={isCopied ? 'Copied!' : 'Click to copy'}>

@@ -9,23 +9,25 @@ export enum MerchantOnboardingDataRequestEnum {
   WEBSITE_VERIFICATION_STATUS = 'WEBSITE_VERIFICATION_STATUS',
 }
 
-type SelfServeWorkflowStatus = {
-  code: number;
-  success: boolean;
-  message: string;
-  selfServeWorkflow?: {
-    isWorkflowExits?: boolean;
-    workflowStatus?: string;
-    permission?: string;
-    isRequestUnderBvsValidation?: boolean;
-    rejectionReason?: string;
-    needsClarificationMessage?: string;
-    customerActions?: MERCHANT_CUSTOMER_ACTIONS[];
-    bankAccountId: string | null;
-    createdAt?: string;
-    rejectedAt?: string;
-  };
+export type SelfServeWorkflowStatus = {
+  isWorkflowExits?: boolean;
+  workflowStatus?: string;
+  permission?: string;
+  isRequestUnderBvsValidation?: boolean;
+  rejectionReason?: string;
+  needsClarificationMessage?: string;
+  customerActions?: MERCHANT_CUSTOMER_ACTIONS[];
+  bankAccountId: string | null;
+  createdAt?: string;
+  rejectedAt?: string;
 };
+
+export enum MerchantWebsiteCheckStatusEnum {
+  INITIATED = 'INITIATED',
+  PASSED = 'PASSED',
+  FAILED = 'FAILED',
+  NOT_APPLICABLE = 'NOT_APPLICABLE',
+}
 
 /**
  * Type representing the different verification stages for a merchant's website
@@ -33,9 +35,14 @@ type SelfServeWorkflowStatus = {
  */
 type WebsiteVerificationStage = {
   workflowExist?: boolean;
-  mccCheckStatus?: string;
-  negativeKeywordCheckStatus?: string;
-  bvsCheckStatus?: string;
+  mccCheckStatus?: MerchantWebsiteCheckStatusEnum;
+  negativeKeywordCheckStatus?: MerchantWebsiteCheckStatusEnum;
+  bvsCheckStatus?: MerchantWebsiteCheckStatusEnum;
+};
+
+export type WebsitePageKeys = {
+  url: string;
+  verified: MerchantWebsiteCheckStatusEnum;
 };
 
 /**
@@ -43,28 +50,35 @@ type WebsiteVerificationStage = {
  * Includes terms, privacy, refund, shipping, and contact pages
  */
 type WebsiteVerificationPageStatus = {
-  terms?: { url: string; verified: string };
-  privacy?: { url: string; verified: string };
-  refund?: { url: string; verified: string };
-  shipping?: { url: string; verified: string };
-  contact?: { url: string; verified: string };
+  terms?: WebsitePageKeys;
+  privacy?: WebsitePageKeys;
+  refund?: WebsitePageKeys;
+  shipping?: WebsitePageKeys;
+  contact?: WebsitePageKeys;
 };
+
+export enum WebsiteVerificationAutomationStatus {
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+  WORKFLOW_IN_PROGRESS = 'workflow_in_progress',
+  WORKFLOW_REJECTED = 'workflow_rejected',
+  WORKFLOW_COMPLETED = 'workflow_completed',
+  WORKFLOW_EXECUTED = 'workflow_executed',
+  WORKFLOW_CREATION_FAILED = 'workflow_creation_failed',
+  WEBSITE_UPDATE_FAILED = 'website_update_failed',
+  WEBSITE_LIVENESS_FAILED = 'website_update_failed_due_to_liveness_check_failure',
+}
 
 /**
  * Type representing the overall status of a merchant's website verification process
  * Includes verification stages and page statuses
  */
-type WebsiteVerificationUpdateStatus = {
-  code: number;
-  success: boolean;
-  message: string;
-  verificationStatus?: {
-    currentStatus?: string;
-    currentStatusUpdatedAt?: string;
-    mainPageUrl?: string;
-    websiteVerificationStage?: WebsiteVerificationStage;
-    websiteVerificationPageStatus?: WebsiteVerificationPageStatus;
-  };
+export type WebsiteVerificationUpdateStatus = {
+  currentStatus?: WebsiteVerificationAutomationStatus;
+  currentStatusUpdatedAt?: string;
+  mainPageUrl?: string;
+  websiteVerificationStage?: WebsiteVerificationStage;
+  websiteVerificationPageStatus?: WebsiteVerificationPageStatus;
 };
 
 export type SupportedPlugin = {
@@ -79,7 +93,7 @@ export type SelectedPlugin = { website: string; selectedPlugin: string | null };
 /**
  * Enum for possible merchant customer action states in workflows
  */
-enum MERCHANT_CUSTOMER_ACTIONS {
+export enum MERCHANT_CUSTOMER_ACTIONS {
   AWAITING_CUSTOMER_RESPONSE = 'AWAITING_CUSTOMER_RESPONSE',
   CUSTOMER_RESPONDED = 'CUSTOMER_RESPONDED',
 }
@@ -104,8 +118,18 @@ export type MerchantOnboardingDataType = {
   };
   selectedPlugins?: SelectedPlugin[];
   supportedPlugins?: SupportedPlugin[];
-  selfServeWorkflowStatus?: SelfServeWorkflowStatus;
-  websiteVerificationUpdateStatus?: WebsiteVerificationUpdateStatus;
+  selfServeWorkflowStatus?: {
+    code: number;
+    success: boolean;
+    message: string;
+    selfServeWorkflow?: SelfServeWorkflowStatus;
+  };
+  websiteVerificationUpdateStatus?: {
+    code: number;
+    success: boolean;
+    message: string;
+    verificationStatus?: WebsiteVerificationUpdateStatus;
+  };
 };
 
 export type MerchantOnboardingDataResponseType = {
@@ -117,3 +141,20 @@ export type AddMerchantSelectedPluginResponse = {
     plugins: SelectedPlugin[];
   };
 };
+
+/**
+ * User-facing verification status values used for displaying status to merchants
+ * Consolidates the more granular internal statuses into actionable states
+ */
+export enum WebsiteVerificationStatusEnum {
+  Success = 'success',
+  BvsNeedsClarification = 'bvs_needs_clarification',
+  BvsInProgress = 'bvs_in_progress',
+  WorkflowInReview = 'workflow_in_review',
+  WorkflowNeedsClarification = 'workflow_needs_clarification',
+  Rejected = 'rejected',
+  WebsiteUpdateFailed = 'website_update_failed',
+  WebsiteLivenessFailed = 'website_liveness_failed',
+  NeedsUpdate = 'needs_update',
+  NoWebsite = 'no_website_added',
+}

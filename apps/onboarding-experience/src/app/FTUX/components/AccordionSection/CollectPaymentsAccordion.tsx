@@ -1,31 +1,49 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Box,
   Accordion,
   AccordionItem,
   AccordionItemHeader,
   AccordionItemBody,
-  CheckIcon,
-  Avatar,
 } from '@razorpay/blade/components';
 import { AccordionDataType } from '@FTUX/types/homepage';
+import completedIcon from '@OnboardingExperienceAssets/AccordionIcons/Completed.svg';
+import { activeStepIcons, upcomingStepIcons } from '@FTUX/constants/accordion';
 
+type CollectPaymentsAccordionTypes = {
+  data: AccordionDataType[];
+  expandedStep: number;
+  setExpandedStep: (step: number) => void;
+  completedSteps: number;
+};
+
+// Currently icons are supported for 3 steps only, to add more steps, add relevant icons in the constants
 const CollectPaymentsAccordion = ({
   data,
-  activeStep = 0,
-}: {
-  data: AccordionDataType[];
-  activeStep?: number;
-}) => {
-  const [expandedIndex, setExpandedIndex] = useState(activeStep);
-
+  expandedStep = 0,
+  setExpandedStep,
+  completedSteps,
+}: CollectPaymentsAccordionTypes) => {
   const handleExpandChange = ({ expandedIndex: newExpandedIndex }: { expandedIndex: number }) => {
-    setExpandedIndex(newExpandedIndex);
+    setExpandedStep(newExpandedIndex);
+  };
+
+  const getIconForStep = (index: number) => {
+    if (index < completedSteps) {
+      // Completed step
+      return completedIcon;
+    } else if (index === completedSteps) {
+      // Active step - use icon based on index
+      return activeStepIcons[Math.min(index, activeStepIcons.length - 1)];
+    } else {
+      // Upcoming step - use icon based on index
+      return upcomingStepIcons[Math.min(index, upcomingStepIcons.length - 1)];
+    }
   };
 
   return (
     <Accordion
-      expandedIndex={expandedIndex}
+      expandedIndex={expandedStep}
       onExpandChange={handleExpandChange}
       variant="filled"
       maxWidth="auto"
@@ -36,26 +54,10 @@ const CollectPaymentsAccordion = ({
           <AccordionItem key={item.title}>
             <AccordionItemHeader
               leading={
-                index < activeStep && !item.isIncomplete ? (
-                  <Avatar icon={CheckIcon} color="positive" size="small" variant="circle" />
-                ) : (
-                  <Box
-                    borderRadius="round"
-                    borderWidth={index === activeStep ? 'thick' : 'none'}
-                    borderStyle="dashed"
-                    borderColor="surface.border.primary.normal"
-                  >
-                    <Avatar
-                      name={`${index + 1}`}
-                      color={index === activeStep ? 'primary' : 'neutral'}
-                      size="small"
-                      variant="circle"
-                    />
-                  </Box>
-                )
+                <img src={getIconForStep(index)} alt={`Step ${index + 1}`} width={24} height={24} />
               }
               title={item.title}
-              titleSuffix={item.getTitleSuffix?.(expandedIndex === index)}
+              titleSuffix={item.getTitleSuffix?.(expandedStep === index)}
             />
             <AccordionItemBody>
               <Box paddingLeft={{ base: 'spacing.1', m: 'spacing.8' }}>{item.content}</Box>

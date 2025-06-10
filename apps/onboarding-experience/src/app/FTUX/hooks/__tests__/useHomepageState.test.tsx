@@ -29,6 +29,7 @@ describe('useHomepageState hook', () => {
       const state = {
         session: {
           user: { id: 'user-1' },
+          mode: 'live',
         },
       };
       return selector(state);
@@ -257,12 +258,23 @@ describe('useHomepageState hook', () => {
     );
   });
 
-  test('adds COMPLETED_TRANSACTION element when merchant has transacted', () => {
+  test('adds COMPLETED_TRANSACTION element when merchant has transacted and is in live mode', () => {
     const mockPaymentChannels = { website: { accept: true } };
     const mockLayout = [HOMEPAGE_ELEMENTS.ACCORDION, HOMEPAGE_ELEMENTS.NOCODE_NUDGE];
 
     // Mock getLayoutByMerchantType to return a known layout
     (getLayoutByMerchantType as jest.Mock).mockReturnValue([...mockLayout]);
+
+    // Mock store to return live mode
+    (useStore as unknown as jest.Mock).mockImplementation((selector) => {
+      const state = {
+        session: {
+          user: { id: 'user-1' },
+          mode: 'live',
+        },
+      };
+      return selector(state);
+    });
 
     // Mock merchant data with completed transaction
     (useMerchantContext as jest.Mock).mockReturnValue({
@@ -275,6 +287,7 @@ describe('useHomepageState hook', () => {
           activation: {
             status: MerchantActivationStatusEnum.ACTIVATED,
             isTransacted: true,
+            isActivated: true,
           },
         },
       },
@@ -293,6 +306,55 @@ describe('useHomepageState hook', () => {
     // Verify COMPLETED_TRANSACTION was added at the beginning of the array
     expect(result.current[0]).toBe(HOMEPAGE_ELEMENTS.COMPLETED_TRANSACTION);
     expect(result.current.slice(1)).toEqual(mockLayout);
+  });
+
+  test('does not add COMPLETED_TRANSACTION element when in test mode even if merchant has transacted', () => {
+    const mockPaymentChannels = { website: { accept: true } };
+    const mockLayout = [HOMEPAGE_ELEMENTS.ACCORDION, HOMEPAGE_ELEMENTS.NOCODE_NUDGE];
+
+    // Mock getLayoutByMerchantType to return a known layout
+    (getLayoutByMerchantType as jest.Mock).mockReturnValue([...mockLayout]);
+
+    // Mock store to return test mode
+    (useStore as unknown as jest.Mock).mockImplementation((selector) => {
+      const state = {
+        session: {
+          user: { id: 'user-1' },
+          mode: 'test',
+        },
+      };
+      return selector(state);
+    });
+
+    // Mock merchant data with completed transaction
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
+        merchantById: {
+          id: 'merchant-1',
+          business: {
+            paymentAcceptanceChannels: mockPaymentChannels,
+          },
+          activation: {
+            status: MerchantActivationStatusEnum.ACTIVATED,
+            isTransacted: true,
+            isActivated: true,
+          },
+        },
+      },
+      onboardingData: {
+        merchantOnboardingData: {
+          websiteVerificationUpdateStatus: {
+            verificationStatus: null,
+          },
+        },
+      },
+    });
+
+    // Execute the hook
+    const { result } = renderHook(() => useHomepageState());
+
+    // Verify COMPLETED_TRANSACTION was not added
+    expect(result.current).toEqual(mockLayout);
   });
 
   test('adds PREACTIVATION_BANNER element when merchant is not activated', () => {

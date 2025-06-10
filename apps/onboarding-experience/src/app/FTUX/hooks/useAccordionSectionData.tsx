@@ -1,57 +1,55 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Badge, DotIcon, Tooltip } from '@razorpay/blade/components';
 import { useStore } from '@federated/apps/shell/commonStore';
 import { AccordionDataType } from '@FTUX/types/homepage';
-import { getAccordionWebsiteTitle } from '@FTUX/utils/homepage';
+import { getAccordionCompletedSteps, getAccordionWebsiteTitle } from '@FTUX/utils/homepage';
 import AddWebsite from '@FTUX/components/AccordionSection/AddWebsite';
 import PaymentGateway from '@FTUX/components/AccordionSection/PaymentGateway';
 import AcceptTransactions from '@FTUX/components/AccordionSection/AcceptTransactions';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
-import { hasAddedWebsite } from '@OnboardingExperienceCommons/utils/merchant';
 import CollectPaymentsBannerImg from '@OnboardingExperienceAssets/CollectPaymentsBanner.svg';
 import CollectPaymentsBannerAppsImg from '@OnboardingExperienceAssets/CollectPaymentsBannerApps.svg';
 import { NO_CODE_CHANNEL_OPTIONS } from '@OnboardingExperienceCommons/constants/merchant';
 import { hasAcceptedAnyPaymentChannel } from '@OnboardingExperienceCommons/utils/merchant';
 import { PAYMENT_CHANNEL_OPTIONS } from '@OnboardingExperienceCommons/types/merchant';
 
-const useAccordionSectionData = (): {
-  activeStep: number;
+type UseAccordionSectionDataResponse = {
+  expandedStep: number;
+  setExpandedStep: (val: number) => void;
+  completedSteps: number;
   accordionData: AccordionDataType[];
+  isAppOnlyMerchant: boolean;
   accordionHeaderImage: string;
-} => {
+};
+
+const useAccordionSectionData = (): UseAccordionSectionDataResponse => {
   const { mode } = useStore((state) => state.session);
   const { merchantData } = useMerchantContext();
-  const merchant = merchantData?.merchantById;
 
+  const merchant = merchantData?.merchantById;
   const isMerchantActivated = Boolean(merchant?.activation?.isActivated);
-  const hasWebsite = hasAddedWebsite(
-    merchantData?.merchantById?.business?.paymentAcceptanceChannels,
-  );
-  const hasApiKeys = Boolean(merchant?.apiKeys?.[0]?.id);
-  const hasTransacted = Boolean(merchant?.activation?.isTransacted);
   const paymentChannels = merchant?.business?.paymentAcceptanceChannels;
 
-  // Calculate active step based on merchant status and activation type
-  const determineActiveStep = (): number => {
-    // Do not evaluate the website section for non-activated merchants
-    if (!isMerchantActivated) {
-      if (!hasApiKeys) return 0;
-      if (!hasTransacted) return 1;
-      return 2;
-    }
+  // Determine merchant category based on their selected payment channels
+  const isNoCodeMerchant = hasAcceptedAnyPaymentChannel(paymentChannels, NO_CODE_CHANNEL_OPTIONS);
+  const isWebsiteMerchant = hasAcceptedAnyPaymentChannel(paymentChannels, [
+    PAYMENT_CHANNEL_OPTIONS.Websites,
+  ]);
+  const isAppMerchant = hasAcceptedAnyPaymentChannel(paymentChannels, [
+    PAYMENT_CHANNEL_OPTIONS.Android,
+    PAYMENT_CHANNEL_OPTIONS.IOS,
+  ]);
 
-    if (!hasWebsite) return 0;
-    if (!hasApiKeys) return 1;
-    if (!hasTransacted) return 2;
-    return 3;
-  };
+  // Calculate completed step based on merchant status and activation type
+  const completedSteps = useMemo(() => getAccordionCompletedSteps(merchant), [merchant]);
 
-  const activeStep = determineActiveStep();
+  // Initially open the accordion to the upcoming step
+  const [expandedStep, setExpandedStep] = useState(completedSteps);
 
   // Display pending badge when the website section is incomplete and collapsed
   const renderWebsiteStatusBadge = useCallback(
     (isExpanded: boolean): React.ReactNode => {
-      if (!isExpanded && activeStep === 0) {
+      if (!isExpanded && completedSteps === 0) {
         return (
           <Badge color="information" size="medium">
             Pending
@@ -60,7 +58,7 @@ const useAccordionSectionData = (): {
       }
       return null;
     },
-    [activeStep],
+    [completedSteps],
   );
 
   // Display the current mode as badge when the accordion is expanded
@@ -86,12 +84,17 @@ const useAccordionSectionData = (): {
     [mode],
   );
 
+  // In case of add later, collapse the 1st step and expand the 2nd step (index 1)
+  const handleAddLater = useCallback(() => {
+    setExpandedStep(1);
+  }, []);
+
   // Define accordion data
   let accordionData: AccordionDataType[] = [
     {
       title: getAccordionWebsiteTitle(paymentChannels),
       getTitleSuffix: renderWebsiteStatusBadge,
-      content: <AddWebsite />,
+      content: <AddWebsite handleAddLater={handleAddLater} />,
     },
     {
       title: 'Set up your payment gateway',
@@ -107,16 +110,6 @@ const useAccordionSectionData = (): {
   // Do not display add website section for non-activated merchants
   accordionData = isMerchantActivated ? accordionData : accordionData.slice(1);
 
-  // Determine merchant category based on their selected payment channels
-  const isNoCodeMerchant = hasAcceptedAnyPaymentChannel(paymentChannels, NO_CODE_CHANNEL_OPTIONS);
-  const isWebsiteMerchant = hasAcceptedAnyPaymentChannel(paymentChannels, [
-    PAYMENT_CHANNEL_OPTIONS.Websites,
-  ]);
-  const isAppMerchant = hasAcceptedAnyPaymentChannel(paymentChannels, [
-    PAYMENT_CHANNEL_OPTIONS.IOS,
-    PAYMENT_CHANNEL_OPTIONS.Android,
-  ]);
-
   let accordionHeaderImage = CollectPaymentsBannerImg;
 
   if (isAppMerchant) {
@@ -126,8 +119,11 @@ const useAccordionSectionData = (): {
     accordionHeaderImage = CollectPaymentsBannerImg;
   }
   return {
-    activeStep,
+    completedSteps,
+    expandedStep,
+    setExpandedStep,
     accordionData,
+    isAppOnlyMerchant: isAppMerchant && !isWebsiteMerchant,
     accordionHeaderImage,
   };
 };

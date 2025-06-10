@@ -44,6 +44,7 @@ const ProductRecommendations = ({
                 key={productDetails.title}
                 imageHeight="215px"
                 maxContentHeight="small"
+                elevateCard
                 {...productDetails}
               />
             );

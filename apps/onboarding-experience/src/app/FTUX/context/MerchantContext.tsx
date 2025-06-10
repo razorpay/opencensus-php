@@ -78,7 +78,7 @@ export interface MerchantContextType extends MerchantState {
     keyRollDelay: ApiKeyDelay;
     oldApiKeyId: string;
   }) => Promise<MerchantApiKeyRegenerateResponse>;
-  isAddingWebsitePlugin: boolean;
+  isRefetchingAllData: boolean;
 }
 
 export const MerchantContext = createContext<MerchantContextType | undefined>(undefined);

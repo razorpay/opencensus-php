@@ -59,25 +59,30 @@ const InviteTeamMember = () => {
       >
         Watch a set up video
       </Link>
-      {isLoading ? (
-        <Box display="flex" alignItems="center" justifyContent="center" width="200px">
+      <Box
+        display="flex"
+        alignItems="center"
+        gap="spacing.1"
+        paddingLeft={{ base: 'none', m: isLoading ? 'none' : 'spacing.2' }}
+      >
+        {isLoading && (
           <Spinner
             size="medium"
             color="primary"
             accessibilityLabel="Loading Invite Member Journey"
+            testID="loadingInviteTeamMember"
           />
-        </Box>
-      ) : (
+        )}
         <Link
           size="small"
-          icon={UserPlusIcon}
+          icon={isLoading ? undefined : UserPlusIcon}
           variant="button"
           onClick={() => handleInviteTeamMember()}
           isDisabled={isLoading}
         >
           {isAnyMemberInvited ? 'Invite more team members' : 'Invite your developer as an admin'}
         </Link>
-      )}
+      </Box>
       {isInvitationModalOpen && (
         <Suspense fallback={<></>}>
           <InviteNewMemberModal

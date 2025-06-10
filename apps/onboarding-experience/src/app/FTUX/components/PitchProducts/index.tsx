@@ -1,13 +1,13 @@
 import React from 'react';
 import { Box, Heading, Text } from '@razorpay/blade/components';
 import ImagePostCard, {
-  ImagePostCardProps,
+  ImagePostCardPropsType,
 } from '@OnboardingExperienceCommons/components/ImagePostCard';
 
 interface PitchProductsProps {
   title: string;
-  subtitle: string;
-  products: ImagePostCardProps[];
+  subtitle?: string;
+  products: ImagePostCardPropsType[];
 }
 
 const PitchProducts = ({ title, subtitle, products }: PitchProductsProps) => {
@@ -17,9 +17,11 @@ const PitchProducts = ({ title, subtitle, products }: PitchProductsProps) => {
         <Heading weight="semibold" size="medium">
           {title}
         </Heading>
-        <Text size="medium" color="surface.text.gray.subtle" marginTop="spacing.3">
-          {subtitle}
-        </Text>
+        {!!subtitle && (
+          <Text size="medium" color="surface.text.gray.subtle" marginTop="spacing.3">
+            {subtitle}
+          </Text>
+        )}
       </Box>
       <Box
         display="flex"
@@ -31,7 +33,7 @@ const PitchProducts = ({ title, subtitle, products }: PitchProductsProps) => {
         marginTop="spacing.7"
         justifyContent={{ base: 'none', l: 'space-between' }}
       >
-        {products.map((product: ImagePostCardProps) => (
+        {products.map((product: ImagePostCardPropsType) => (
           <Box key={product.title} maxWidth={{ base: 'auto', l: '295px' }} width="100%">
             <ImagePostCard {...product} />
           </Box>

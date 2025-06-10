@@ -11,6 +11,7 @@ import {
   TextArea,
   FileUpload,
   BladeFileList,
+  Spinner,
 } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
@@ -35,6 +36,7 @@ const NeedsClarificationModal = ({
   fetchWorkflowStatus,
   closeModal,
   org,
+  onDismiss,
 }) => {
   const [response, setResponse] = useState('');
   const [isResponseValid, setIsResponseValid] = useState(false);
@@ -54,6 +56,7 @@ const NeedsClarificationModal = ({
   const handleOnDismiss = () => {
     closeModal();
     setIsModalOpen(false);
+    onDismiss?.();
   };
 
   const handleFileUpload = (file, progressTracker = () => {}) => {
@@ -236,6 +239,8 @@ const NeedsClarificationModal = ({
     workflows[workflowType].loading || isSubmitting || !isResponseValid || isUploadingDocument;
   const needsClarificationMessage = workflows[workflowType].needs_clarification;
 
+  const isLoadingNcMessage = workflows[workflowType]?.loading;
+
   return (
     <BladeModal
       isOpen={isModalOpen}
@@ -249,9 +254,13 @@ const NeedsClarificationModal = ({
           <Alert
             title={`From ${org.business_name} support:`}
             description={
-              <Text color="surface.text.gray.subtle" wordBreak="break-word">
-                {needsClarificationMessage}
-              </Text>
+              isLoadingNcMessage ? (
+                <Spinner accessibilityLabel="Loading message" size="medium" />
+              ) : (
+                <Text color="surface.text.gray.subtle" wordBreak="break-word">
+                  {needsClarificationMessage}
+                </Text>
+              )
             }
             color="negative"
             isDismissible={false}

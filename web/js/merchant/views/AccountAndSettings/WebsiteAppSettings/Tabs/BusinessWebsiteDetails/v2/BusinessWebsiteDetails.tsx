@@ -11,7 +11,13 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { useMobile } from 'common/hooks/useMobile';
-import { OpenModalType, CloseModalType, Store, User, ShowNotificationType } from 'common/typings';
+import {
+  OpenModalType,
+  CloseModalType,
+  Store,
+  User as UserType,
+  ShowNotificationType,
+} from 'common/typings';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import { FLOWS } from 'merchant/views/Account/Profile/components/WebsiteSelfServe/Constants';
 import InitiateWebsiteChange from 'merchant/views/Account/Profile/components/WebsiteSelfServe/InitiateWebsiteChange';
@@ -20,6 +26,8 @@ import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/Workfl
 import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constants';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification as showNotificationReducer } from 'merchant_common/reducers/notifications';
+import User from 'merchant/models/User';
+import { updateSession as updateSessionReducer } from 'merchant/reducers/session';
 
 import RenderWebsites from './RenderWebsites';
 import WebsiteSubmitModal from './WebsiteSubmitModal';
@@ -30,7 +38,7 @@ import { AddWebsiteClickArgs, WebsiteSubmitModalSteps, WebsiteUpdateActionOn } f
 import { getCTACondition, getWebsiteCount } from './utils';
 
 interface BusinessWebsiteDetailsProps {
-  user: User;
+  user: UserType;
   org: { business_name: string };
   workflows: Record<string, any>;
   fetchWorkflowStatus: (workflowType: string) => {
@@ -40,6 +48,7 @@ interface BusinessWebsiteDetailsProps {
   openModal: OpenModalType;
   closeModal: CloseModalType;
   showNotification: ShowNotificationType;
+  updateSession: (args: { user: UserType; mode?: string }) => void;
 }
 
 const BusinessWebsiteDetails: React.FC<BusinessWebsiteDetailsProps> = ({
@@ -49,6 +58,7 @@ const BusinessWebsiteDetails: React.FC<BusinessWebsiteDetailsProps> = ({
   openModal,
   showNotification,
   org,
+  updateSession,
 }) => {
   const isMobile = useMobile(mobileBreakoints);
   const [openModalName, setOpenModalName] = useState('');
@@ -224,7 +234,16 @@ const BusinessWebsiteDetails: React.FC<BusinessWebsiteDetailsProps> = ({
           ctaDisabledReason={ctaDisabledReason}
         />
       </Box>
-      <WebsiteSubmitModal isOpen={openModalName === FLOWS.BUSINESS_WEBSITE} onDismiss={onDismiss} />
+      <WebsiteSubmitModal
+        isOpen={openModalName === FLOWS.BUSINESS_WEBSITE}
+        onDismiss={onDismiss}
+        updateUserSession={(userData) => {
+          const newUser = new User(userData);
+          updateSession({
+            user: newUser as unknown as UserType,
+          });
+        }}
+      />
       {openModalName === FLOWS.ADDITIONAL_WEBSITE ? (
         <UpdateWebsiteDetails
           flowType={FLOWS.ADDITIONAL_WEBSITE}
@@ -244,6 +263,7 @@ const mapDispatchToProps = (dispatch) =>
       closeModal,
       fetchWorkflowStatus: fetchWorkflowStatusReducer,
       showNotification: showNotificationReducer,
+      updateSession: updateSessionReducer,
     },
     dispatch,
   );

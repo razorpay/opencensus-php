@@ -88,7 +88,7 @@ const SharePaymentHandleModal = ({
             alignSelf="stretch"
           />
           <Divider width="100%" alignSelf="stretch" />
-          <Text size="xsmall" color="surface.text.gray.subtle">
+          <Text size="small" color="surface.text.gray.subtle">
             You can add a specific amount for your customer to pay. This will not affect your
             default link.
           </Text>

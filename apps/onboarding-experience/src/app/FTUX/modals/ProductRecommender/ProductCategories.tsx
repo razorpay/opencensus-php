@@ -42,8 +42,8 @@ const ProductCategories = ({
               handleClick={() => {
                 setSelectedProduct(index);
               }}
-              imageWidth="60px"
-              imageHeight="60px"
+              imageWidth={isMobile ? '60px' : '80px'}
+              imageHeight={isMobile ? '60px' : '70px'}
               containerProps={{
                 gap: 'spacing.5',
               }}

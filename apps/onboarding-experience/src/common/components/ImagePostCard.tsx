@@ -1,8 +1,8 @@
 import React from 'react';
-import { Box, Text, Link, Card, Badge, IconComponent } from '@razorpay/blade/components';
+import { Box, Text, Link, Card, Badge, IconComponent, Spinner } from '@razorpay/blade/components';
 import { isMobileDevice } from '@libs/shared-utils';
 
-export interface ImagePostCardProps {
+export interface ImagePostCardPropsType {
   tagIcon: IconComponent;
   tagText: string;
   image: string;
@@ -15,6 +15,8 @@ export interface ImagePostCardProps {
   handleClick?: () => void;
   linkUrl?: string;
   maxContentHeight?: 'small' | 'large';
+  isCtaLoading?: boolean;
+  elevateCard?: boolean;
 }
 
 const ImagePostCard = ({
@@ -29,11 +31,17 @@ const ImagePostCard = ({
   linkIcon,
   linkText,
   handleClick,
+  isCtaLoading,
   maxContentHeight = 'large',
-}: ImagePostCardProps): JSX.Element => {
+  elevateCard,
+}: ImagePostCardPropsType): JSX.Element => {
   const isMobile = isMobileDevice();
   return (
-    <Card width="100%" elevation="none" padding={isMobile ? 'spacing.5' : 'spacing.7'}>
+    <Card
+      width="100%"
+      elevation={elevateCard ? 'lowRaised' : undefined}
+      padding={isMobile ? 'spacing.5' : 'spacing.7'}
+    >
       <Box
         display="flex"
         flexDirection="column"
@@ -82,19 +90,20 @@ const ImagePostCard = ({
               {description}
             </Text>
           </Box>
-          {linkUrl && (
+          {isCtaLoading && <Spinner accessibilityLabel="Loading..." />}
+          {!isCtaLoading && linkUrl && (
             <Link
               icon={linkIcon}
               iconPosition="right"
               variant="anchor"
               href={linkUrl}
-              target={'_blank'}
+              target="_blank"
               size={isMobile ? 'small' : 'medium'}
             >
               {linkText}
             </Link>
           )}
-          {handleClick && (
+          {!isCtaLoading && handleClick && (
             <Link
               icon={linkIcon}
               iconPosition="right"

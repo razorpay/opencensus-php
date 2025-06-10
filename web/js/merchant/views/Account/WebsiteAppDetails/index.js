@@ -28,6 +28,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { useSplitzService } from 'common/splitz';
 import WebsiteSubmitModal from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails/v2/WebsiteSubmitModal';
+import User from 'merchant/models/User';
+import { updateSession as updateSessionReducer } from 'merchant/reducers/session';
 
 function WebsiteAppDetails({
   activationData,
@@ -40,6 +42,7 @@ function WebsiteAppDetails({
   user,
   fetchEligibilityForPolicyWizardV2,
   policyWizardV2Data,
+  updateSession,
 }) {
   const params = new Proxy(new URLSearchParams(window.location.search), {
     get: (searchParams, prop) => searchParams.get(prop),
@@ -297,6 +300,12 @@ function WebsiteAppDetails({
           isOpen={showSubmitWebsiteModal}
           onDismiss={() => setShowSubmitWebsiteModal(false)}
           refetchData={onWebsiteAdd}
+          updateUserSession={(userData) => {
+            const newUser = new User(userData);
+            updateSession({
+              user: newUser,
+            });
+          }}
         />
       </div>
     );
@@ -380,6 +389,7 @@ const mapDispatchToProps = (dispatch) =>
       fetchActivationDetails,
       fetchMerchantWebsiteDetails,
       fetchEligibilityForPolicyWizardV2,
+      updateSession: updateSessionReducer,
     },
     dispatch,
   );

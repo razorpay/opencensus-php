@@ -5,7 +5,7 @@ import { bindActionCreators } from 'redux';
 
 import { useSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
-import { User } from 'common/typings';
+import { User as UserType } from 'common/typings';
 import { fetchMerchantPlugin } from 'merchant/reducers/plugins';
 import { FLOWS } from 'merchant/views/Account/Profile/components/WebsiteSelfServe/Constants';
 import InitiateWebsiteChange from 'merchant/views/Account/Profile/components/WebsiteSelfServe/InitiateWebsiteChange';
@@ -17,6 +17,8 @@ import {
 import { trackCTAClick } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/events';
 import { MerchantProduct, Platform } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/types';
 import * as ModalActions from 'merchant_common/reducers/modals';
+import { updateSession as updateSessionReducer } from 'merchant/reducers/session';
+import User from 'merchant/models/User';
 
 import AddLinkModal from './AddLinkModal';
 import RestrictWebsiteModal from './RestrictWebsiteModal';
@@ -27,8 +29,9 @@ type AddLinkProps = {
   openModal: any;
   closeModal: any;
   userHasKeyAccess: boolean;
-  user: User;
+  user: UserType;
   fetchMerchantPlugin: (args) => void;
+  updateSession: (args: { user: UserType; mode?: string }) => void;
 };
 
 const AddLink = ({
@@ -40,6 +43,7 @@ const AddLink = ({
   userHasKeyAccess,
   user,
   fetchMerchantPlugin,
+  updateSession,
 }: AddLinkProps): JSX.Element => {
   const navigate = useNavigate();
   const [isSubmitWebsiteModalVisible, setIsSubmitWebsiteModalVisible] = useState(false);
@@ -90,13 +94,22 @@ const AddLink = ({
         isOpen={isSubmitWebsiteModalVisible}
         onDismiss={() => setIsSubmitWebsiteModalVisible(false)}
         refetchData={() => fetchMerchantPlugin({ merchantId: user.current })}
+        updateUserSession={(userData) => {
+          const newUser = new User(userData);
+          updateSession({
+            user: newUser as unknown as UserType,
+          });
+        }}
       />
     </div>
   );
 };
 
 const mapDispatchToProps = (dispatch) =>
-  bindActionCreators({ ...ModalActions, fetchMerchantPlugin }, dispatch);
+  bindActionCreators(
+    { ...ModalActions, fetchMerchantPlugin, updateSession: updateSessionReducer },
+    dispatch,
+  );
 
 export default connect(
   (state) => ({

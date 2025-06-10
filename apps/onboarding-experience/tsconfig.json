@@ -7,12 +7,12 @@
     "paths": {
       "@libs/shared-qsuite/playwright": ["libs/shared-qsuite/dist/playwright.cjs.js"],
       "@federated/apps/shell/*": ["apps/shell/src/client/exposed/*"],
+      "@federated/dashboards/payments/*": ["web/js/merchant/exposed/*"],
       "@FTUX/*": ["apps/onboarding-experience/src/app/FTUX/*"],
       "@libs/shared-types": ["libs/shared-types/src/common/index.ts"],
       "@libs/shared-types/la": ["libs/shared-types/src/dashboards/la/index.ts"],
       "@libs/shared-types/payments": ["libs/shared-types/src/dashboards/payments/index.ts"],
       "@libs/shared-utils": ["libs/shared-utils/src/common/index.ts"],
-      "@federated/dashboards/payments/*": ["web/js/merchant/exposed/*"],
       "@libs/shared-ui": ["libs/shared-ui/src/common/index.ts"],
       "@OnboardingExperienceCommons/*": ["apps/onboarding-experience/src/common/*"],
       "@OnboardingExperienceAssets/*": ["apps/onboarding-experience/src/assets/*"]

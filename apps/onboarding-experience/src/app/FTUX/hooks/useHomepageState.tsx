@@ -23,6 +23,7 @@ import { MerchantActivationStatusEnum } from '@OnboardingExperienceCommons/types
  * - Whether they have completed a transaction
  */
 const useHomepageState = (): HOMEPAGE_ELEMENTS[] => {
+  const mode = useStore((state) => state.session.mode);
   const { merchantData, onboardingData } = useMerchantContext();
 
   // Return empty array if required data is not available yet
@@ -47,20 +48,15 @@ const useHomepageState = (): HOMEPAGE_ELEMENTS[] => {
   const pageElements = getLayoutByMerchantType({
     isPgMerchant,
     isNoCodeMerchant,
-    hasWebsite:
-      hasAddedWebsite(merchantData?.merchantById?.business?.paymentAcceptanceChannels) ||
-      isWebsiteAddInProgress,
+    hasWebsite: hasAddedWebsite(paymentChannels) || isWebsiteAddInProgress,
   });
 
   // If merchant has completed a transaction, add the transaction banner at the top
-  if (merchantData.merchantById?.activation?.isTransacted) {
+  if (merchantData.merchantById?.activation?.isTransacted && mode !== 'test') {
     pageElements.unshift(HOMEPAGE_ELEMENTS.COMPLETED_TRANSACTION);
   }
 
-  if (
-    merchantData.merchantById?.activation?.status &&
-    merchantData.merchantById.activation.status !== MerchantActivationStatusEnum.ACTIVATED
-  ) {
+  if (!merchantData.merchantById?.activation?.isActivated) {
     pageElements.unshift(HOMEPAGE_ELEMENTS.PREACTIVATION_BANNER);
   }
 

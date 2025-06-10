@@ -70,6 +70,15 @@ jest.mock('@OnboardingExperienceCommons/components/WebsitePluginModal', () => ({
 }));
 
 describe('IntegrationGuide Component', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Default mock implementation
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: null,
+      onboardingData: null,
+      addMerchantWebsitePlugin: jest.fn(),
+    });
+  });
   const mockAddMerchantWebsitePlugin = jest.fn();
 
   const defaultMerchantData = {

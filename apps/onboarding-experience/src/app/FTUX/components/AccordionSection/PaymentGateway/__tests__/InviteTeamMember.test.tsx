@@ -68,8 +68,7 @@ describe('InviteTeamMember Component', () => {
     });
 
     // Check that the spinner is displayed
-    expect(screen.getByLabelText('Loading Invite Member Journey')).toBeInTheDocument();
-    expect(inviteButton).not.toBeInTheDocument();
+    expect(screen.getByTestId('loadingInviteTeamMember')).toBeInTheDocument();
   });
 
   test('opens invitation modal when 2FA succeeds', async () => {

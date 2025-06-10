@@ -11,3 +11,9 @@ export enum ApiKeysModalScreens {
   REGEN = 'REGEN',
   REVEAL = 'REVEAL',
 }
+
+export enum ModalStatus {
+  INITIAL = 'initial',
+  LOADING = 'loading',
+  OPEN = 'open',
+}

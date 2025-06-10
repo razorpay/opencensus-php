@@ -36,8 +36,8 @@ const ExploreAllProducts = ({ onDismiss, handleMoveToCategories }: ExploreAllPro
                 if (!product.linkUrl) return;
                 window.open(product.linkUrl, '_blank');
               }}
-              imageWidth="60px"
-              imageHeight="60px"
+              imageWidth={isMobile ? '60px' : '120px'}
+              imageHeight={isMobile ? '60px' : '120px'}
               containerProps={{
                 gap: 'spacing.5',
               }}

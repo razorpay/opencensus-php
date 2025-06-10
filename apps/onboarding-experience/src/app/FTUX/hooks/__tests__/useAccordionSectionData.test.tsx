@@ -2,9 +2,9 @@ import { renderHook } from 'apps/onboarding-experience/src/services/test/jest-ut
 import useAccordionSectionData from '../useAccordionSectionData';
 import { useStore } from '@federated/apps/shell/commonStore';
 import { PAYMENT_CHANNEL_OPTIONS } from '@OnboardingExperienceCommons/types/merchant';
-import { getAccordionWebsiteTitle } from '@FTUX/utils/homepage';
+import { getAccordionWebsiteTitle, getAccordionCompletedSteps } from '@FTUX/utils/homepage';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
-import { hasAddedWebsite } from '@OnboardingExperienceCommons/utils/merchant';
+import { hasAcceptedAnyPaymentChannel } from '@OnboardingExperienceCommons/utils/merchant';
 
 jest.mock('@OnboardingExperienceCommons/hooks/useMerchant');
 jest.mock('@federated/apps/shell/commonStore');
@@ -28,14 +28,15 @@ describe('useAccordionSectionData hook', () => {
       return selector(state);
     });
     (getAccordionWebsiteTitle as jest.Mock).mockReturnValue('Add your website details');
-    (hasAddedWebsite as jest.Mock).mockReturnValue(false);
+    (getAccordionCompletedSteps as jest.Mock).mockReturnValue(0);
+    (hasAcceptedAnyPaymentChannel as jest.Mock).mockReturnValue(false);
   });
 
-  test('returns correct active step when no website, API keys, or transactions', () => {
-    // Mock hasAddedWebsite to return false
-    (hasAddedWebsite as jest.Mock).mockReturnValue(false);
+  test('returns correct expanded step when no steps are completed', () => {
+    // Mock getAccordionCompletedSteps to return 0
+    (getAccordionCompletedSteps as jest.Mock).mockReturnValue(0);
 
-    // Mock merchant data with no website, API keys, or transactions
+    // Mock merchant data
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
         merchantById: {
@@ -54,17 +55,18 @@ describe('useAccordionSectionData hook', () => {
     // Execute the hook
     const { result } = renderHook(() => useAccordionSectionData());
 
-    // Verify the correct active step is returned
-    expect(result.current.activeStep).toBe(0);
+    // Verify the correct step values are returned
+    expect(result.current.expandedStep).toBe(0);
+    expect(result.current.completedSteps).toBe(0);
     expect(result.current.accordionData.length).toBe(3);
-    expect(hasAddedWebsite).toHaveBeenCalledWith({});
+    expect(getAccordionCompletedSteps).toHaveBeenCalled();
   });
 
-  test('returns correct active step when website exists but no API keys', () => {
-    // Mock hasAddedWebsite to return true
-    (hasAddedWebsite as jest.Mock).mockReturnValue(true);
+  test('returns correct expanded step when website is added but no API keys', () => {
+    // Mock getAccordionCompletedSteps to return 1
+    (getAccordionCompletedSteps as jest.Mock).mockReturnValue(1);
 
-    // Mock merchant data with no API keys or transactions
+    // Mock merchant data
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
         merchantById: {
@@ -83,16 +85,17 @@ describe('useAccordionSectionData hook', () => {
     // Execute the hook
     const { result } = renderHook(() => useAccordionSectionData());
 
-    // Verify the active step is 1 (next step after website)
-    expect(result.current.activeStep).toBe(1);
-    expect(hasAddedWebsite).toHaveBeenCalledWith({});
+    // Verify the expanded step is 1
+    expect(result.current.expandedStep).toBe(1);
+    expect(result.current.completedSteps).toBe(1);
+    expect(getAccordionCompletedSteps).toHaveBeenCalled();
   });
 
-  test('returns correct active step when website and API keys exist but no transactions', () => {
-    // Mock hasAddedWebsite to return true
-    (hasAddedWebsite as jest.Mock).mockReturnValue(true);
+  test('returns correct expanded step when website and API keys exist but no transactions', () => {
+    // Mock getAccordionCompletedSteps to return 2
+    (getAccordionCompletedSteps as jest.Mock).mockReturnValue(2);
 
-    // Mock merchant data with API keys but no transactions
+    // Mock merchant data
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
         merchantById: {
@@ -111,16 +114,17 @@ describe('useAccordionSectionData hook', () => {
     // Execute the hook
     const { result } = renderHook(() => useAccordionSectionData());
 
-    // Verify the active step is 2 (transactions step)
-    expect(result.current.activeStep).toBe(2);
-    expect(hasAddedWebsite).toHaveBeenCalledWith({});
+    // Verify the expanded step is 2
+    expect(result.current.expandedStep).toBe(2);
+    expect(result.current.completedSteps).toBe(2);
+    expect(getAccordionCompletedSteps).toHaveBeenCalled();
   });
 
-  test('returns active step 3 when all steps are completed', () => {
-    // Mock hasAddedWebsite to return true
-    (hasAddedWebsite as jest.Mock).mockReturnValue(true);
+  test('returns expanded step 3 when all steps are completed', () => {
+    // Mock getAccordionCompletedSteps to return 3
+    (getAccordionCompletedSteps as jest.Mock).mockReturnValue(3);
 
-    // Mock merchant data with API keys and completed transactions
+    // Mock merchant data
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
         merchantById: {
@@ -139,9 +143,10 @@ describe('useAccordionSectionData hook', () => {
     // Execute the hook
     const { result } = renderHook(() => useAccordionSectionData());
 
-    // Verify the active step is 3 (all steps completed)
-    expect(result.current.activeStep).toBe(3);
-    expect(hasAddedWebsite).toHaveBeenCalledWith({});
+    // Verify the expanded step is 3
+    expect(result.current.expandedStep).toBe(3);
+    expect(result.current.completedSteps).toBe(3);
+    expect(getAccordionCompletedSteps).toHaveBeenCalled();
   });
 
   test('calls getAccordionWebsiteTitle with payment channels', () => {
@@ -156,6 +161,7 @@ describe('useAccordionSectionData hook', () => {
         merchantById: {
           apiKeys: [],
           activation: {
+            isActivated: true,
             isTransacted: false,
           },
           business: {
@@ -170,7 +176,7 @@ describe('useAccordionSectionData hook', () => {
 
     // Verify getAccordionWebsiteTitle was called with payment channels
     expect(getAccordionWebsiteTitle).toHaveBeenCalledWith(mockPaymentChannels);
-    expect(hasAddedWebsite).toHaveBeenCalledWith(mockPaymentChannels);
+    expect(getAccordionCompletedSteps).toHaveBeenCalled();
   });
 
   test('returns test mode badge for payment gateway section when in test mode', () => {
@@ -217,9 +223,9 @@ describe('useAccordionSectionData hook', () => {
     expect(titleSuffix).not.toBeNull();
   });
 
-  test('returns pending badge for website section when active step is 0', () => {
-    // Set active step to 0 (website step) by mocking hasAddedWebsite
-    (hasAddedWebsite as jest.Mock).mockReturnValue(false);
+  test('returns pending badge for website section when expanded step is 0', () => {
+    // Mock getAccordionCompletedSteps to return 0
+    (getAccordionCompletedSteps as jest.Mock).mockReturnValue(0);
 
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
@@ -247,9 +253,9 @@ describe('useAccordionSectionData hook', () => {
     expect(titleSuffix).not.toBeNull();
   });
 
-  test('does not return badge for collapsed sections that are not the active step', () => {
-    // Set active step to 1 (API keys step) by mocking hasAddedWebsite
-    (hasAddedWebsite as jest.Mock).mockReturnValue(true);
+  test('does not return badge for collapsed sections that are not the expanded step', () => {
+    // Mock getAccordionCompletedSteps to return 1
+    (getAccordionCompletedSteps as jest.Mock).mockReturnValue(1);
 
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
@@ -305,12 +311,12 @@ describe('useAccordionSectionData hook', () => {
 
     // Verify the second item is the transactions section
     expect(result.current.accordionData[1].title).toBe('Accept your first payment');
-
-    // Verify the active step is 0 (first item - payment gateway)
-    expect(result.current.activeStep).toBe(0);
   });
 
-  test('handles pre-activation case with API keys - active step should be 1', () => {
+  test('handles pre-activation case with API keys', () => {
+    // Mock getAccordionCompletedSteps to return 1 for a non-activated merchant with API keys
+    (getAccordionCompletedSteps as jest.Mock).mockReturnValue(1);
+
     // Mock non-activated merchant with API keys
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
@@ -330,12 +336,16 @@ describe('useAccordionSectionData hook', () => {
     // Execute the hook
     const { result } = renderHook(() => useAccordionSectionData());
 
-    // Verify the active step is 1 (transactions section)
-    expect(result.current.activeStep).toBe(1);
+    // Verify the expanded step is 1
+    expect(result.current.expandedStep).toBe(1);
+    expect(result.current.completedSteps).toBe(1);
     expect(result.current.accordionData.length).toBe(2);
   });
 
-  test('handles pre-activation case with API keys and transactions - active step should be 2', () => {
+  test('handles pre-activation case with API keys and transactions', () => {
+    // Mock getAccordionCompletedSteps to return 2 for a non-activated merchant with transactions
+    (getAccordionCompletedSteps as jest.Mock).mockReturnValue(2);
+
     // Mock non-activated merchant with API keys and transactions
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
@@ -355,8 +365,215 @@ describe('useAccordionSectionData hook', () => {
     // Execute the hook
     const { result } = renderHook(() => useAccordionSectionData());
 
-    // Verify the active step is 2 (all steps completed)
-    expect(result.current.activeStep).toBe(2);
+    // Verify the expanded step is 2
+    expect(result.current.expandedStep).toBe(2);
+    expect(result.current.completedSteps).toBe(2);
     expect(result.current.accordionData.length).toBe(2);
+  });
+
+  test('correctly sets isAppOnlyMerchant flag when merchant has only mobile apps', () => {
+    // Mock merchant data with only mobile app channels
+    (hasAcceptedAnyPaymentChannel as jest.Mock).mockImplementation((channels, options) => {
+      if (options.includes(PAYMENT_CHANNEL_OPTIONS.Websites)) {
+        return false; // Not a website merchant
+      }
+      if (
+        options.includes(PAYMENT_CHANNEL_OPTIONS.Android) ||
+        options.includes(PAYMENT_CHANNEL_OPTIONS.IOS)
+      ) {
+        return true; // Is an app merchant
+      }
+      return false;
+    });
+
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
+        merchantById: {
+          apiKeys: [],
+          activation: {
+            isActivated: true,
+            isTransacted: false,
+          },
+          business: {
+            paymentAcceptanceChannels: {
+              [PAYMENT_CHANNEL_OPTIONS.Android]: { accept: true },
+              [PAYMENT_CHANNEL_OPTIONS.Websites]: { accept: false },
+            },
+          },
+        },
+      },
+    });
+
+    // Execute the hook
+    const { result } = renderHook(() => useAccordionSectionData());
+
+    // Verify isAppOnlyMerchant is true
+    expect(result.current.isAppOnlyMerchant).toBe(true);
+  });
+
+  test('correctly sets isAppOnlyMerchant flag to false when merchant has website', () => {
+    // Mock merchant data with website channel
+    (hasAcceptedAnyPaymentChannel as jest.Mock).mockImplementation((channels, options) => {
+      if (options.includes(PAYMENT_CHANNEL_OPTIONS.Websites)) {
+        return true; // Is a website merchant
+      }
+      if (
+        options.includes(PAYMENT_CHANNEL_OPTIONS.Android) ||
+        options.includes(PAYMENT_CHANNEL_OPTIONS.IOS)
+      ) {
+        return true; // Is also an app merchant
+      }
+      return false;
+    });
+
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
+        merchantById: {
+          apiKeys: [],
+          activation: {
+            isActivated: true,
+            isTransacted: false,
+          },
+          business: {
+            paymentAcceptanceChannels: {
+              [PAYMENT_CHANNEL_OPTIONS.Android]: { accept: true },
+              [PAYMENT_CHANNEL_OPTIONS.Websites]: { accept: true },
+            },
+          },
+        },
+      },
+    });
+
+    // Execute the hook
+    const { result } = renderHook(() => useAccordionSectionData());
+
+    // Verify isAppOnlyMerchant is false when merchant has both website and app
+    expect(result.current.isAppOnlyMerchant).toBe(false);
+  });
+
+  test('returns isAppOnlyMerchant as true when merchant accepts only Android/iOS channels', () => {
+    // Mock payment channels with only mobile apps
+    const mockPaymentChannels = {
+      [PAYMENT_CHANNEL_OPTIONS.Android]: { accept: true, urls: [] },
+      [PAYMENT_CHANNEL_OPTIONS.IOS]: { accept: true, urls: [] },
+      [PAYMENT_CHANNEL_OPTIONS.Websites]: { accept: false, urls: [] },
+    };
+
+    // Setup hasAcceptedAnyPaymentChannel mock to return true for Android/iOS and false for Websites
+    (hasAcceptedAnyPaymentChannel as jest.Mock).mockImplementation((channels, options) => {
+      if (
+        options.includes(PAYMENT_CHANNEL_OPTIONS.Android) ||
+        options.includes(PAYMENT_CHANNEL_OPTIONS.IOS)
+      ) {
+        return true;
+      }
+      if (options.includes(PAYMENT_CHANNEL_OPTIONS.Websites)) {
+        return false;
+      }
+      return false;
+    });
+
+    // Mock merchant data with payment channels
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
+        merchantById: {
+          apiKeys: [],
+          activation: {
+            isActivated: true,
+            isTransacted: false,
+          },
+          business: {
+            paymentAcceptanceChannels: mockPaymentChannels,
+          },
+        },
+      },
+    });
+
+    // Execute the hook
+    const { result } = renderHook(() => useAccordionSectionData());
+
+    // Verify isAppOnlyMerchant is true
+    expect(result.current.isAppOnlyMerchant).toBe(true);
+  });
+
+  test('returns isAppOnlyMerchant as false when merchant accepts website channel', () => {
+    // Mock payment channels with website
+    const mockPaymentChannels = {
+      [PAYMENT_CHANNEL_OPTIONS.Android]: { accept: false, urls: [] },
+      [PAYMENT_CHANNEL_OPTIONS.IOS]: { accept: false, urls: [] },
+      [PAYMENT_CHANNEL_OPTIONS.Websites]: { accept: true, urls: [] },
+    };
+
+    // Setup hasAcceptedAnyPaymentChannel mock to return correct values for different channels
+    (hasAcceptedAnyPaymentChannel as jest.Mock).mockImplementation((channels, options) => {
+      if (options.includes(PAYMENT_CHANNEL_OPTIONS.Websites)) {
+        return true;
+      }
+      if (
+        options.includes(PAYMENT_CHANNEL_OPTIONS.Android) ||
+        options.includes(PAYMENT_CHANNEL_OPTIONS.IOS)
+      ) {
+        return false;
+      }
+      return false;
+    });
+
+    // Mock merchant data with payment channels
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
+        merchantById: {
+          apiKeys: [],
+          activation: {
+            isActivated: true,
+            isTransacted: false,
+          },
+          business: {
+            paymentAcceptanceChannels: mockPaymentChannels,
+          },
+        },
+      },
+    });
+
+    // Execute the hook
+    const { result } = renderHook(() => useAccordionSectionData());
+
+    // Verify isAppOnlyMerchant is false
+    expect(result.current.isAppOnlyMerchant).toBe(false);
+  });
+
+  test('returns isAppOnlyMerchant as false when merchant accepts both website and mobile channels', () => {
+    // Mock payment channels with both website and mobile
+    const mockPaymentChannels = {
+      [PAYMENT_CHANNEL_OPTIONS.Android]: { accept: true, urls: [] },
+      [PAYMENT_CHANNEL_OPTIONS.IOS]: { accept: true, urls: [] },
+      [PAYMENT_CHANNEL_OPTIONS.Websites]: { accept: true, urls: [] },
+    };
+
+    // Setup hasAcceptedAnyPaymentChannel mock to return true for all channel types
+    (hasAcceptedAnyPaymentChannel as jest.Mock).mockImplementation((channels, options) => {
+      return true;
+    });
+
+    // Mock merchant data with payment channels
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
+        merchantById: {
+          apiKeys: [],
+          activation: {
+            isActivated: true,
+            isTransacted: false,
+          },
+          business: {
+            paymentAcceptanceChannels: mockPaymentChannels,
+          },
+        },
+      },
+    });
+
+    // Execute the hook
+    const { result } = renderHook(() => useAccordionSectionData());
+
+    // Verify isAppOnlyMerchant is false when both website and mobile are accepted
+    expect(result.current.isAppOnlyMerchant).toBe(false);
   });
 });

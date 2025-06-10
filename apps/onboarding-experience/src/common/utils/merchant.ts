@@ -69,11 +69,3 @@ export const getCountryOnboardingUrl = (countryCode: CountryCodeType): string =>
 
   return countryOnboardingUrls[countryCode] || window.EASY_ONBOARDING_URL;
 };
-
-// Checks if any of the specified payment channel options are accepted by the merchant
-export const isAppIntentMerchant = (paymentChannels?: PaymentAcceptanceChannelsType): boolean => {
-  return hasAcceptedAnyPaymentChannel(paymentChannels, [
-    PAYMENT_CHANNEL_OPTIONS.Android,
-    PAYMENT_CHANNEL_OPTIONS.IOS,
-  ]);
-};

@@ -58,7 +58,8 @@ const App = () => {
             paddingY="spacing.1"
             display="flex"
             flexDirection="column"
-            gap={{ base: 'spacing.7', m: 'spacing.9' }}
+            gap={{ base: 'spacing.10', m: 'spacing.9' }}
+            paddingBottom={{ base: 'spacing.3', m: 'spacing.0' }}
           >
             {/* Dynamically render components based on the homepage state */}
             {homepageState.map((element: HOMEPAGE_ELEMENTS, idx: number) => (

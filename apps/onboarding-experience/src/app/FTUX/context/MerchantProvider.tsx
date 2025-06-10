@@ -32,6 +32,7 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children, triggerTw
     data: merchantData,
     isLoading: isLoadingMerchant,
     refetch: refetchMerchantData,
+    isRefetching: isRefetchingMerchant,
   } = useMerchant();
 
   // Fetch merchant onboarding data
@@ -39,6 +40,7 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children, triggerTw
     data: onboardingData,
     isLoading: isLoadingOnboardingData,
     refetch: refetchOnboardingData,
+    isRefetching: isRefetchingOnboardingData,
   } = useMerchantOnboardingData({
     defaultWorkflow: WORKFLOW_TYPES.BUSINESS_WEBSITE,
     defaultFeatureFlags: FTUX_FEATURE_FLAGS,
@@ -155,6 +157,7 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children, triggerTw
     initiateTwoFaAuth,
     generateApiKey,
     regenerateApiKey,
+    isRefetchingAllData: isRefetchingMerchant || isRefetchingOnboardingData,
   };
 
   return <MerchantContext.Provider value={contextValue}>{children}</MerchantContext.Provider>;

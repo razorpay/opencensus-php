@@ -31,6 +31,7 @@ export enum PRODUCT_TYPES {
   MAGIC_CHECKOUT = 'MAGIC_CHECKOUT',
   OPTIMIZER = 'OPTIMIZER',
   STOREFRONT = 'STOREFRONT',
+  PAYMENT_HANDLE = 'PAYMENT_HANDLE',
 }
 
 export const AVAILABLE_PRODUCTS_MAP = {
@@ -62,7 +63,7 @@ export const AVAILABLE_PRODUCTS_MAP = {
     title: 'Affordability widget',
     description:
       'Highlight EMI, Pay Later, and Offers on product pages to drive early interest and more sales.',
-    linkUrl: '/app/magic',
+    linkUrl: '/app/affordability/widget',
     linkText: 'Use now',
     linkIcon: ArrowUpRightIcon,
   },
@@ -176,13 +177,23 @@ export const AVAILABLE_PRODUCTS_MAP = {
     linkText: 'Use now',
     linkIcon: ArrowUpRightIcon,
   },
+  [PRODUCT_TYPES.PAYMENT_HANDLE]: {
+    image: PaymentLinksThumbnail,
+    tagIcon: SparklesIcon,
+    tagText: 'Set up in 2 mins',
+    title: 'Payment Handle',
+    description: 'Share payment handle link to receive instant payments from your customers.',
+    linkUrl: '/app/payment-handle',
+    linkText: 'Use now',
+    linkIcon: ArrowUpRightIcon,
+  },
 };
 
 export const PRODUCT_CATEGORIES = [
   {
     image: CollectPaymentFromCustomerIcon,
     description: 'I want to collect payments from customers directly',
-    products: [PRODUCT_TYPES.PAYMENT_BUTTON],
+    products: [PRODUCT_TYPES.PAYMENT_HANDLE],
   },
   {
     image: StorefrontIcon,
@@ -198,8 +209,8 @@ export const PRODUCT_CATEGORIES = [
     image: SplitIncomingPaymentsIcon,
     description:
       'I want to split incoming payments into linked accounts for managing settlements and reconciliation.',
-    products: [PRODUCT_TYPES.PAYMENT_LINKS],
+    products: [PRODUCT_TYPES.ROUTE],
   },
 ];
 
-export const ALL_PRODUCTS = Object.values(AVAILABLE_PRODUCTS_MAP);
+export const ALL_PRODUCTS = Object.values(AVAILABLE_PRODUCTS_MAP).slice(0, -1);

@@ -1,11 +1,16 @@
 import React from 'react';
 import { Box, Heading, Badge } from '@razorpay/blade/components';
+import { useMerchantContext } from '@FTUX/context/MerchantContext';
 import useAccordionSectionData from '@FTUX/hooks/useAccordionSectionData';
 import collectPaymentsBannerImg from '@OnboardingExperienceAssets/CollectPaymentsBanner.svg';
 import CollectPaymentsAccordion from './CollectPaymentsAccordion';
 
 const AccordionSection = () => {
-  const { activeStep, accordionData, accordionHeaderImage } = useAccordionSectionData();
+  const { merchantData } = useMerchantContext();
+  const { completedSteps, expandedStep, setExpandedStep, accordionData, isAppOnlyMerchant } =
+    useAccordionSectionData();
+
+  const isMerchantActivated = merchantData?.merchantById?.activation?.isActivated;
 
   return (
     <Box>
@@ -33,10 +38,12 @@ const AccordionSection = () => {
           }}
         >
           <Heading weight="semibold" size="medium">
-            Start collecting payments in {accordionData.length || 0} easy steps
+            {isMerchantActivated
+              ? `Set up your ${isAppOnlyMerchant ? 'apps' : 'website'}`
+              : `Test collecting payments in ${accordionData.length || 0} easy steps`}
           </Heading>
           <Badge color="neutral" size="large">
-            {activeStep || 0}/{accordionData.length || 0} COMPLETED
+            {completedSteps || 0}/{accordionData.length || 0} COMPLETED
           </Badge>
         </Box>
         <Box
@@ -48,7 +55,12 @@ const AccordionSection = () => {
           <img src={collectPaymentsBannerImg} alt="accordionHeader" width="100%" />
         </Box>
       </Box>
-      <CollectPaymentsAccordion activeStep={activeStep} data={accordionData} />
+      <CollectPaymentsAccordion
+        data={accordionData}
+        completedSteps={completedSteps}
+        expandedStep={expandedStep}
+        setExpandedStep={setExpandedStep}
+      />
     </Box>
   );
 };

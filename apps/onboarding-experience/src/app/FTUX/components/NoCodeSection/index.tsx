@@ -43,11 +43,7 @@ const NocodeSection = () => {
 
   return (
     <>
-      <PitchProducts
-        title="Ready-to-use products"
-        subtitle="Instant payment collection"
-        products={noCodeSuggestions}
-      />
+      <PitchProducts title="Ready-to-use products. No setup needed" products={noCodeSuggestions} />
       {isProductRecommenderModalVisible && (
         <ProductRecommender onDismiss={() => setProductRecommenderModalVisible(false)} />
       )}

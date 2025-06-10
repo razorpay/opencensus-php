@@ -96,6 +96,9 @@ export enum WebsiteSubmitModalSteps {
   POLICY_PAGES_CREATION = 'POLICY_PAGES_CREATION',
   POLICY_PAGES_PREVIEW = 'POLICY_PAGES_PREVIEW',
   POLICY_PAGES_COMPLETE = 'POLICY_PAGES_COMPLETE',
+
+  // Website NC step
+  WEBSITE_NC_RAISED = 'WEBSITE_NC_RAISED',
 }
 
 export enum SuggestionSteps {

@@ -53,13 +53,13 @@ describe('getLayoutByMerchantType', () => {
     expect(result).toEqual(PG_PLUS_NO_CODE_PAGE_LAYOUT);
   });
 
-  test('returns empty array when no condition is met', () => {
+  test('returns no code array when no condition is met', () => {
     const result = getLayoutByMerchantType({
       isPgMerchant: false,
       isNoCodeMerchant: false,
       hasWebsite: false,
     });
 
-    expect(result).toEqual([]);
+    expect(result).toEqual(NO_CODE_PAGE_LAYOUT);
   });
 });
