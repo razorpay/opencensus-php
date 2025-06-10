@@ -11,9 +11,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEE_RECOVERY_SPLITZ_RESPONSE              = 'FEE_RECOVERY_SPLITZ_RESPONSE';
     const BALANCE_ANALYSIS                          = 'BALANCE_ANALYSIS';
     const FEATURE_FETCH_FROM_DCS                    = 'FEATURE_FETCH_FROM_DCS';
-    const BVS_CONFIG_OVERRIDE                       = 'BVS_CONFIG_OVERRIDE';
-    const BVS_VALIDATION_DETAILS                    = 'BVS_VALIDATION_DETAILS';
-    const BVS_CONFIG_SELECTION                      = 'BVS_CONFIG_SELECTION';
     const PS_CA_FEE_RECOVERY_FAILED                 = 'PS_CA_FEE_RECOVERY_FAILED';
     const PS_CA_PAYOUT_STATUS_FAILED                = 'PS_CA_PAYOUT_STATUS_FAILED';
     const SKIP_NOTIFY_ON_LATE_AUTH = 'SKIP_NOTIFY_ON_LATE_AUTH';

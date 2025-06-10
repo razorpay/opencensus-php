@@ -7,13 +7,11 @@ use App;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\AutoKyc\Processor;
-use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\AutoKyc\Bvs\Processors\DefaultProcessorMock;
 use RZP\Models\Merchant\AutoKyc\Bvs\Processors\DefaultProcessor;
 use RZP\Models\Merchant\AutoKyc\OcrService\WebsitePolicyProcessor;
 use RZP\Models\Merchant\AutoKyc\OcrService\MccCategorisationProcessor;
 use RZP\Models\Merchant\AutoKyc\OcrService\BvsDocumentManagerProcessor;
-use RZP\Models\Merchant\Document\Type;
 
 class Factory
 {
@@ -30,12 +28,10 @@ class Factory
     public function getProcessor(array $input, $merchant, $ocrServiceName = null): Processor
     {
         $app = App::getFacadeRoot();
-        $trace = $app['trace'];
 
         $mock = $app['config']['services.bvs.mock'];
 
         $configName = $input[Constant::CONFIG_NAME]??null;
-        $currentRoute = $app['api.route']->getCurrentRouteName();
 
         if ($mock === true)
         {
@@ -53,25 +49,6 @@ class Factory
         }
         else
         {
-            // For merchant_document_admin_upload route, force Aadhaar config for Aadhaar documents
-            if ($currentRoute === Constant::ROUTE_MERCHANT_DOCUMENT_ADMIN_UPLOAD && 
-                isset($input['artefact']['details']['document_type']) && 
-                Type::isAadhaarDocument($input['artefact']['details']['document_type']))
-            {
-                $configName = Constant::CONFIG_AADHAAR;
-                // Also ensure the artefact type is set correctly
-                if (isset($input[Constant::ARTEFACT_TYPE])) {
-                    $input[Constant::ARTEFACT_TYPE] = Constant::AADHAAR;
-                }
-
-                $trace->info(TraceCode::BVS_CONFIG_OVERRIDE, [
-                    'route' => $currentRoute,
-                    'document_type' => $input['artefact']['details']['document_type'] ?? null,
-                    'new_config' => $configName,
-                    'artefact_type' => $input[Constant::ARTEFACT_TYPE] ?? null
-                ]);
-            }
-
             $processor = new DefaultProcessor($input, $configName, $merchant);
         }
 
