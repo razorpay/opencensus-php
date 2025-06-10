@@ -11,11 +11,11 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Country;
 use RZP\Http\RequestHeader;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\SplitzConstant;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Admin\Permission\Name as PermissionName;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailsCore;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\Workflow\Service\Workflow\Service as MakerCheckerWorkflowService;
@@ -5812,7 +5812,12 @@ class Core extends Base\Core
 
         $merchantId = $this->app['request']->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
         $merchant = $this->repo->merchant->find($merchantId);
-        if( $merchant != null and $this->pgosProxyController->isCurlecModularMerchant($merchant)){
+        $this->trace->info(TraceCode::NC_ADDITIONAL_DOCUMENTS,[
+            '$merchantId' => $merchantId,
+            "headers"=>$this->app['request']->headers,
+        ]);
+        $isModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
+        if(($merchant != null and $this->pgosProxyController->isCurlecModularMerchant($merchant)) || ($isModularMerchant)){
             $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::ACTIVATION_DOCUMENT_TYPES, [], $merchant);
             return $pgosResponse['data'];
         }
