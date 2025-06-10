@@ -386,7 +386,7 @@ function PreEnable({
     trackEnableNowClicked({ screen });
 
     return new Promise((resolve) => {
-      enableAutomaticSettlements()
+      enableAutomaticSettlements(user.id)
         .then(() => {
           const updatedUser = new User(user);
           updatedUser

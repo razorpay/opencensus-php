@@ -2,7 +2,7 @@ import moment from 'moment';
 
 import { getItem, setItem } from 'common/utils/localStorage';
 import store from 'merchant/store';
-import ajax from 'merchant/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 export const getAutomaticSettlementTime = () => {
   const currentHour = Number(moment().format('HH'));
@@ -11,15 +11,21 @@ export const getAutomaticSettlementTime = () => {
   return '9 AM';
 };
 
-export const enableAutomaticSettlements = () =>
-  ajax(
-    {
-      url: 'es/scheduled',
-      method: 'POST',
-    },
-    {},
-    '/merchant/api',
-  );
+export const enableAutomaticSettlements = (userId) => {
+  const payload = {
+    merchant_id: userId,
+    user_role: 'admin',
+    skip_user_role_check: false,
+  };
+
+  const url = 'capital_es/service/instant_settlements/scheduled/enable';
+
+  return merchantFetch({
+    url,
+    method: 'POST',
+    data: payload,
+  });
+};
 
 export const getEsPartialAutomaticDateKey = () => {
   const {
