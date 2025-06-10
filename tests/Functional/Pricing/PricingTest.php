@@ -3792,4 +3792,66 @@ class PricingTest extends TestCase
 
         $this->startTest($testData);
     }
+
+    public function testAddPricingPlanRuleForBuyerProtectionCustomer()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleForBuyerProtectionCustomerWithMethod()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleForBuyerProtectionCustomerMaxFixedRate()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddDuplicatePricingPlanRulesForBuyerProtectionCustomer()
+    {
+        $this->ba->adminAuth();
+
+        $pricingPlan = $this->createPricingPlan();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/pricing/' . $pricingPlan['id'] . '/rule',
+            'content' => [
+                'product'             => 'primary',
+                'feature'             => 'offer_prefunding_fee',
+                'payment_method'      => 'emi',
+                'percent_rate'        => 0,
+                'international'       => 0,
+                'amount_range_active' => 1,
+                'amount_range_max'    => 1500,
+                'amount_range_min'    => 0,
+                'fixed_rate'          => 1000000
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $testData['request']['url'] = '/pricing/' . $pricingPlan['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
 }
