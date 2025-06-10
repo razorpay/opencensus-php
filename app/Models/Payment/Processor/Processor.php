@@ -4846,8 +4846,10 @@ class Processor
         }
 
         // 2. Experiment to allow enabled wallets
+        // wallet ramp-up% can be controlled individually for each wallet by just adding
+        // experiment with name 'nbplus_wallet_payments_via_pg_router_supported_wallet_<wallet_name>'
         $isWalletEnabled = $this->isWalletRearchVariantOn(
-            '_supported_wallets',
+            '_supported_wallet_'.$input[Payment\Entity::WALLET],
             TraceCode::NBPLUS_WALLET_ROUTING_CRITERIA,
             ["wallet" => $input[Payment\Entity::WALLET]]
         );
