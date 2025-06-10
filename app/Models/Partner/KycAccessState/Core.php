@@ -31,7 +31,7 @@ class Core extends Base\Core
     const KYC_ACCESS_MUTEX_TIMEOUT = 300; // in seconds
     const PRTS_DUAL_WRITE_MUTEX_KEY = 'kyc_access_state_dual_write';
 
-    public function accessRequestExistHandle(Base\PublicCollection $accessRequest)
+    public function accessRequestExistHandle(Base\PublicCollection $accessRequest, string $max_rejection_count )
     {
         $kycAccessState = $accessRequest->first();
 
@@ -44,7 +44,7 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_KYC_ACCESS_ALREADY_APPROVED);
         }
 
-        if ($rejectionCount >= Constants::MAX_REJECTION_COUNT)
+        if ($rejectionCount >= $max_rejection_count)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_KYC_ACCESS_ALREADY_REJECTED);
@@ -93,7 +93,8 @@ class Core extends Base\Core
 
         if ($accessRequest->isEmpty() === false)
         {
-            $subMerchantKycAccess = $this->accessRequestExistHandle($accessRequest);
+            $max_rejection_count = $partner->getPartnerType() === MerchantConstants::AGGREGATOR ? Constants::AGGREGATOR_MAX_REJECTION_COUNT : Constants::MAX_REJECTION_COUNT;
+            $subMerchantKycAccess = $this->accessRequestExistHandle($accessRequest, $max_rejection_count);
         }
         else
         {

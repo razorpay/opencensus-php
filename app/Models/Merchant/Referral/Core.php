@@ -46,12 +46,13 @@ class Core extends Base\Core
         $this->elfin = $this->app['elfin'];
     }
 
-
-
     /**
-     * @return array[]
+     * Get the appropriate URL for MKYC flow based on merchant configuration
+     *
+     * @param Merchant\Entity|null $merchant
+     * @return string
      */
-    protected function getReferralConfig(?Merchant\Entity $merchant = null): array
+    private function getBaseUrl(?Merchant\Entity $merchant = null): string
     {
         $baseUrl = $this->config['applications.dashboard.url'] . 'signup';
 
@@ -67,6 +68,16 @@ class Core extends Base\Core
             $baseUrl = $this->config['applications.dashboard.usl_url'] . 'auth/?auth_intent=signup';
         }
 
+        return $baseUrl;
+    }
+
+    /**
+     * @return array[]
+     */
+    protected function getReferralConfig(?Merchant\Entity $merchant = null): array
+    {
+        $baseUrl = $this->getBaseUrl($merchant);
+
         return [
             Product::PRIMARY => [
                 "url" => $baseUrl,
@@ -81,7 +92,6 @@ class Core extends Base\Core
                 ]
             ],
         ];
-
     }
 
     /**
