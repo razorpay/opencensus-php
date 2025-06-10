@@ -2660,5 +2660,59 @@ class MerchantUploadMiqBatchTest extends TestCase
 
         $this->assertEmpty($businessDetailMetadata['org_defined_merchant_fields']);
     }
+
+    // Helper to prepare the test data and return a closure for startTest
+    public function getAsyncTestClosure()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $this->mockSplitzExperimentUploadMiq();
+        $testData = $this->testData['defaultSuccess'];
+        $testData['request']['content'][Header::MIQ_CONTACT_EMAIL] = 'banking-pod2969@razorpay.com';
+        $testData['request']['content'][Header::MIQ_CONTACT_NUMBER] = '9565656576';
+        $testData['response']['content'] = [];
+
+        return function() use ($testData) {
+            $this->testData[__FUNCTION__] = $testData;
+            return $this->startTest();
+        };
+    }
+
+    //This test function is designed to verify that different requests with the same email and contact number are executed in parallel, and that the response is successful due to a change in the mutex block scope in the multi-account upload MIQ process.
+    public function testUploadMiqForMultiAccountMutex()
+    {
+        $closure = $this->getAsyncTestClosure();
+        // Use Laravel's Bus to dispatch both closures in parallel
+        $promise1 = \Illuminate\Support\Facades\Bus::dispatch($closure);
+        $promise2 = \Illuminate\Support\Facades\Bus::dispatch($closure);
+        print_r($promise1);
+        print_r($promise2);
+
+        $response1 = $promise1;
+        $response2 = $promise2;
+
+        $this->assertEquals('success', $response1[Header::STATUS]);
+        $this->assertEquals('success', $response2[Header::STATUS]);
+    }
 }
 
