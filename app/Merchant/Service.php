@@ -451,6 +451,25 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function methodAggregate()
+    {
+        $currentUser = Auth::guard('user')->user();
+
+        $merchant = empty($currentUser) === true ? null : $currentUser->currentMerchant();
+
+        if (is_null($merchant)) {
+            throw new BadRequestError(
+                'Invalid method aggregate request.',
+                ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        list($error, $data) = (new InsightXClient())->methodAggregate($merchant->id);
+
+        return [$error, $data];
+    }
+
     public function createKey($merchantId, $mode)
     {
         $options = [

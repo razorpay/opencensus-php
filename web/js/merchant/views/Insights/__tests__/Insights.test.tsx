@@ -4,7 +4,7 @@ import { userEvent, render, screen, waitFor } from 'test-utils';
 import Insights from 'merchant/views/Insights/Insights';
 import { DOCUMENTATION_ROUTES, SUCCESS_RATE_TABS } from 'merchant/views/Insights/constants';
 import { useSupersetDashboard } from 'merchant/views/Insights/hooks/useSupersetDashboard';
-import { useInsightsSplitzExperiments } from 'merchant/views/Insights/hooks/useInsightsSplitzExperiments';
+import { getInsightsDataWithFlags } from 'merchant/views/Insights/utils/insightsDataManager';
 
 jest.mock('@superset-ui/embedded-sdk', () => ({
   embedDashboard: jest.fn(),
@@ -14,30 +14,58 @@ jest.mock('../hooks/useSupersetDashboard', () => ({
   useSupersetDashboard: jest.fn(),
 }));
 
-jest.mock('../hooks/useInsightsSplitzExperiments', () => ({
-  useInsightsSplitzExperiments: jest.fn(),
+jest.mock('../utils/insightsDataManager', () => ({
+  getInsightsDataWithFlags: jest.fn(),
 }));
 
-jest.mock('../DateRangePicker', () => ({
-  DateRangePicker: ({ selectedDateCallback }) => (
-    <div
-      data-testid="date-range-picker-input"
-      onClick={() => {
-        const now = new Date();
-        const nextDay = new Date(now);
-        nextDay.setDate(now.getDate() + 1);
-        nextDay.setHours(0, 0, 0, 0);
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useParams: () => ({
+    activetab: 'overview',
+    insights_dashboard: 'success-rate',
+  }),
+}));
 
-        const sevenDaysAgo = new Date(now);
-        sevenDaysAgo.setDate(now.getDate() - 7);
+jest.mock('../components/FilteredSection', () => ({
+  __esModule: true,
+  default: ({ selectedDateCallback }) => (
+    <div>
+      <div
+        data-testid="date-range-picker-input"
+        onClick={() => {
+          const now = new Date();
+          const nextDay = new Date(now);
+          nextDay.setDate(now.getDate() + 1);
+          nextDay.setHours(0, 0, 0, 0);
 
-        selectedDateCallback({
-          from: Math.floor(sevenDaysAgo.getTime() / 1000),
-          to: Math.floor(nextDay.getTime() / 1000),
-        });
-      }}
-    >
-      Select Date Range
+          const sevenDaysAgo = new Date(now);
+          sevenDaysAgo.setDate(now.getDate() - 7);
+
+          selectedDateCallback({
+            from: Math.floor(sevenDaysAgo.getTime() / 1000),
+            to: Math.floor(nextDay.getTime() / 1000),
+          });
+        }}
+      >
+        Select Date Range
+      </div>
+      <button>Refresh</button>
+    </div>
+  ),
+}));
+
+jest.mock('../components/HeaderSection', () => ({
+  __esModule: true,
+  default: () => (
+    <div>
+      <h1>Header Section</h1>
+      <a
+        href="https://razorpay.com/docs/payments/insights"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Documentation
+      </a>
     </div>
   ),
 }));
@@ -51,20 +79,23 @@ describe('Testing Insights Component', () => {
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (useInsightsSplitzExperiments as jest.Mock).mockReturnValue({
-      isExperimentEnabled: false,
-      isInsightsCheckoutMagicXEnabled: false,
-      isInsightsCheckoutEnabled: false,
-      isInsightsSuccessRateEnabled: false,
-    });
-
     (useSupersetDashboard as jest.Mock).mockReturnValue({
       refetch: mockRefetch,
       data: 'mockToken',
       isLoading: false,
       isError: false,
       error: null,
+    });
+
+    (getInsightsDataWithFlags as jest.Mock).mockReturnValue({
+      insightsData: {
+        checkout: [{ MagicX: 'test' }],
+        'success-rate': [{ overview: '700' }],
+      },
+      hasMagicX: true,
+      hasCheckoutData: true,
+      hasSuccessRateData: true,
+      hasApiData: true,
     });
   });
 
@@ -141,6 +172,19 @@ describe('Testing Insights Component', () => {
           }),
         }),
       );
+    });
+  });
+
+  it('should check MagicX availability from cache for checkout dashboard', async () => {
+    jest.spyOn(require('react-router-dom'), 'useParams').mockReturnValue({
+      activetab: 'overview',
+      insights_dashboard: 'checkout',
+    });
+
+    renderApp();
+
+    await waitFor(() => {
+      expect(getInsightsDataWithFlags).toHaveBeenCalled();
     });
   });
 });

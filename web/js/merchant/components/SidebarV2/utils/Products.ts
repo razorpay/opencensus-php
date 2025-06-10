@@ -60,7 +60,8 @@ import { isBillMeMerchant } from 'merchant/utils/omniUtils';
 import {  canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
 import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
-import { INSIGHTS_L1_PRODUCTS_DATA, getInsightsL1Products } from 'merchant/components/SidebarV2/Products/Insights/Insights';
+import { getInsightsL1ProductsFromFallbackData, getInsightsL1ProductsFromData } from 'merchant/components/SidebarV2/Products/Insights/Insights';
+import { getInsightsDataFromCache } from 'merchant/views/Insights/utils/insightsDataManager';
 import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
 
 export type ExtraConfig = {
@@ -451,7 +452,7 @@ export const PRODUCTS_DATA: Record<string, Partial<ProductData>> = {
       isConnectedNavigationEnabled({ user, abExperiments }) && 
       user.isCountryIndia &&
       !isMobileResolution(),
-    items: INSIGHTS_L1_PRODUCTS_DATA || [],
+    items: getInsightsL1ProductsFromFallbackData() || [],
     getTitleSuffix: (): TitleSuffixConfig => {
       return {
         componentType: 'Badge',
@@ -573,11 +574,11 @@ const getRouteL1Products = (items: L1ProductItem[], user: any) => {
   return items.filter((product) => product.title !== ROUTE_L1_PRODUCTS_TITLES.batchupload);
 };
 
-
 export const getL1ProductItems = (productId: string, user: any,abExperiments:any) => {
   switch (productId) {
     case 'insights':
-      return getInsightsL1Products(PRODUCTS_DATA[productId]?.items || [],user,abExperiments);
+      const cachedInsightsData = getInsightsDataFromCache();
+      return getInsightsL1ProductsFromData(cachedInsightsData) || PRODUCTS_DATA[productId]?.items || [];
       // Only for Optimizer merchants where route is enabled we will show L1 items on Route Product
     case 'route':
       if (user?.isOptimizerEnabled && user?.isOptimizerRouteEnabled) {

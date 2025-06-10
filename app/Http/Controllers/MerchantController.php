@@ -148,6 +148,13 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function methodAggregate()
+    {
+        list($error, $data) = (new Merchant\Service)->methodAggregate();
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function postActivation()
     {
         $input = ['submit' => true];

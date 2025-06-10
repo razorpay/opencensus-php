@@ -18,7 +18,7 @@ import { useStore } from '@federated/apps/shell/commonStore';
 import { initializeRoutes, ROUTE_REG } from 'merchant/components/SidebarV2/utils/href';
 import SidebarFooter from './components/SidebarFooter';
 import ActivationProgress from './components/ActivationProgress';
-
+import useInsightsProducts from 'merchant/views/Insights/hooks/useInsightsProducts';
 export const accountsAndSettingsIds = new Set(['settings', 'accountsettings', 'my_account']);
 
 const result = COMMON_PRODUCTS.reduce(
@@ -112,6 +112,7 @@ function transformDataWithRoutes(data, routes, { user, abExperiments, isConfigTa
 }
 
 const useSideNavHook = () => {
+  const { hasApiData } = useInsightsProducts();
   const location = useLocation();
   const user = useStore((state) => state.session.user);
   const { abExperiments } = useSplitzService();
@@ -142,7 +143,7 @@ const useSideNavHook = () => {
         abExperiments,
         isConfigTagEnabled,
       }),
-    [sideNavListItems, routes, abExperiments, isConfigTagEnabled],
+    [sideNavListItems, routes, abExperiments, isConfigTagEnabled, hasApiData],
   );
 
   const footerSectionData = useMemo(

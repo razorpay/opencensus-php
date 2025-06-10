@@ -39,54 +39,6 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
-        uniqueHashKey: 'insights_success_rate_experiment',
-        experimentId: {
-          beta: 'PsjSiQiDZHTfaa',
-          production: 'PsjcH4Cq7uOmx7',
-        },
-        defaultVariant: {
-          name: 'variables',
-          variables: [
-            {
-              key: 'result',
-              value: 'off',
-            },
-          ],
-        },
-      },
-      {
-        uniqueHashKey: 'insights_checkout_experiment',
-        experimentId: {
-          beta: 'PsjXU7KjsIP5kK',
-          production: 'PsjaC1pJmsN0PH',
-        },
-        defaultVariant: {
-          name: 'variables',
-          variables: [
-            {
-              key: 'result',
-              value: 'off',
-            },
-          ],
-        },
-      },
-      {
-        uniqueHashKey: 'insights_checkout_magicx_experiment',
-        experimentId: {
-          beta: 'Q8XepJItilLPsL',
-          production: 'Q8XmJZ6SSXXnW6',
-        },
-        defaultVariant: {
-          name: 'variables',
-          variables: [
-            {
-              key: 'result',
-              value: 'off',
-            },
-          ],
-        },
-      },
-      {
         uniqueHashKey: 'ramp_settlements_for_excluded_segment',
         experimentId: {
           beta: 'PQMyYVTn3GVaoo',

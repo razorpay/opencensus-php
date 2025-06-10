@@ -36,9 +36,13 @@ class InsightXClient
 
     const ERROR_GENERATING_SUPERSET_GUEST_TOKEN = 'ERROR_GENERATING_SUPERSET_GUEST_TOKEN';
 
+    const ERROR_GENERATING_METHOD_AGGREGATE = 'ERROR_GENERATING_METHOD_AGGREGATE';
+
     const DASHBOARD = 'dashboard';
 
     const GUEST_TOKEN_ENDPOINT = 'insightx/merchant/guest-token';
+
+    const METHOD_AGGREGATE_ENDPOINT = 'insightx/merchant/method-aggregate';
 
     public function __construct()
     {
@@ -94,4 +98,51 @@ class InsightXClient
 
         return [[self::ERROR_GENERATING_SUPERSET_GUEST_TOKEN], null];
     }
+
+    /**
+     * Retrieves aggregated payment method analytics data for a merchant from InsightX.
+     * 
+     * This method calls the InsightX API to fetch consolidated metrics and statistics
+     * about payment methods used by the specified merchant. The aggregated data typically
+     * includes success rates, transaction volumes, and performance metrics grouped by
+     * payment method types (cards, UPI, wallets, etc.).
+     *
+     * @param string $merchantId The merchant ID to fetch method aggregate data for
+     * @return array Returns a tuple: [errors, data]
+     *               - On success: [null, array] where array contains the aggregated method data
+     *               - On failure: [array of error messages, null]
+     */
+    public function methodAggregate($merchantId)
+    {
+        $response = null;
+
+        try {
+            $response = $this->httpClient->get(self::METHOD_AGGREGATE_ENDPOINT, [
+                'headers' => [
+                    self::MERCHANT_HEADER => $merchantId,
+                ],
+            ]);
+        } catch (\Exception $ex) {
+            $this->trace->error(TraceCode::INSIGHTX_METHOD_AGGREGATE_FAIL, [
+                'error' => $ex->getMessage(),
+            ]);
+
+            return [[$ex->getMessage()], null];
+        }
+
+        $statusCode = $response->getStatusCode();
+        $body = json_decode($response->getBody(), true);
+
+        if ($statusCode == 200) {
+            return [null, $body];
+        }
+
+        $this->trace->error(TraceCode::INSIGHTX_METHOD_AGGREGATE_FAIL, [
+            'status_code' => $statusCode,
+            'response' => $body
+        ]);
+
+        return [[self::ERROR_GENERATING_METHOD_AGGREGATE], null];
+    }
+    
 }

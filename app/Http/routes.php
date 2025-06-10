@@ -183,6 +183,9 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/merchant/insightx/generate_superset_token', 'MerchantController@generateSupersetToken')
             ->name('generate_superset_token');
 
+        Route::get('/merchant/insightx/method_aggregate', 'MerchantController@methodAggregate')
+        ->name('method_aggregate');
+
 
         Route::get('/cards/token', 'GenerateTokenController@generateToken')
             ->name('card_token');

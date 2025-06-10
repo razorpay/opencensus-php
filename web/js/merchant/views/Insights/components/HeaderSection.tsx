@@ -1,11 +1,8 @@
 import React from 'react';
 import { Box, Heading, Link } from '@razorpay/blade/components';
-import { useInsightsSplitzExperiments } from 'merchant/views/Insights/hooks/useInsightsSplitzExperiments';
 import { DOCUMENTATION_ROUTES } from 'merchant/views/Insights/constants';
 
 const HeaderSection = ({ Insights_Dashboard, activeTab, trackAnalytics }) => {
-  const { isInsightsCheckoutMagicXEnabled } = useInsightsSplitzExperiments();
-
   const getDocumentationUrl = (activeTab) => {
     return DOCUMENTATION_ROUTES[activeTab];
   };
@@ -18,6 +15,8 @@ const HeaderSection = ({ Insights_Dashboard, activeTab, trackAnalytics }) => {
     return documentationUrl;
   };
 
+  const displayTabName = activeTab === 'MagicX' ? 'Magic' : activeTab;
+
   return (
     <Box
       display="flex"
@@ -27,7 +26,7 @@ const HeaderSection = ({ Insights_Dashboard, activeTab, trackAnalytics }) => {
       alignItems="center"
     >
       <Heading color="surface.text.staticBlack.subtle" size="2xlarge" weight="semibold">
-        {Insights_Dashboard} - {activeTab === 'MagicX' ? 'Magic' : activeTab}
+        {Insights_Dashboard} - {displayTabName}
       </Heading>
       <Box gap="spacing.5" display="flex" justifyContent="center" alignItems="center">
         <Link
