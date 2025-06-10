@@ -249,6 +249,12 @@ class Core extends Base\Core
 
     const DUAL_WRITE_RETRY_EXHAUST = 'dual_write_retry_exhaust';
 
+    const PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND = 'PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND';
+
+    const PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD = 'PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD';
+
+    const PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID = 'PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID';
+
     /**
      * @var Mutex
      */
@@ -12765,5 +12771,67 @@ class Core extends Base\Core
                 'error'     => $e->getMessage()
             ]);
         }
+    }
+
+    public function trackPhoneNumberPayoutFailureEvents(
+        string $eventName,
+        array $properties): void
+    {
+        $eventDataGroup = null;
+
+        switch ($eventName)
+        {
+            case self::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND:
+                $eventDataGroup = EventCode::PAYOUTS_TO_PHONE_NUMBER_EVENT_VPA_NOT_FOUND;
+                break;
+            case self::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD:
+                $eventDataGroup = EventCode::PAYOUTS_TO_PHONE_NUMBER_EVENT_NAME_MATCHING_BELOW_THRESHOLD;
+                break;
+            case self::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID:
+                $eventDataGroup = EventCode::PAYOUTS_TO_PHONE_NUMBER_EVENT_MOBILE_NUMBER_FORMAT_INVALID;
+                break;
+        }
+
+        $this->app['diag']->trackPhoneNumberPayoutFailureEvents(
+            $eventDataGroup,
+            $properties
+        );
+
+        $this->trace->info(TraceCode::PAYOUTS_TO_PHONE_NUMBER_FAILURE_DATALAKE_EVENT_PUSHED,[
+            "event_name"       => $eventName,
+            "event_properties" => $properties,
+            "event_data_group" => $eventDataGroup
+        ]);
+    }
+
+    public function sanitizeDataForTracking(array $data): array
+    {
+        $results = [];
+        foreach ($data as $type => $value) {
+            switch ($type){
+                case FundAccount\Entity::MOBILE:
+                    // Replace all but the last 5 characters with 'x'
+                    if (strlen($value) < 5) {
+                        $results[$type] = str_repeat('x', strlen($value));
+                    } else {
+                        $maskLength = strlen($value) - 5;
+                        $results[$type] = str_repeat('x', $maskLength) . substr($value, -5);
+                    }
+                    break;
+                case FundAccount\Entity::VPA:
+                    // Mask the VPA by replacing everything before '@' with 'x'
+                    $atPosition = strpos($value, '@');
+                    if ($atPosition !== false) {
+                        $results[$type] = str_repeat('x', $atPosition) . substr($value, $atPosition);
+                    } else {
+                        $results[$type] = str_repeat('x', strlen($value)); // If no '@' found, mask entire string
+                    }
+                    break;
+                default:
+                    $results[$type] = $value; // Return data as is for unknown types
+                    break;
+            }
+        }
+        return $results;
     }
 }

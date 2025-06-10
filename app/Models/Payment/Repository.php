@@ -5544,6 +5544,23 @@ GROUP BY
     // and `method` = nach
     // limit 5
 
+    public function fetchIntlBankTransferPaymentsCount($input, $statuses, $gateway)
+    {
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::INTERNATIONAL, 1)
+            ->where(Entity::GATEWAY, $gateway)
+            ->whereIn(Entity::STATUS, $statuses);
+
+        if (isset($input['merchant_ids']) && sizeof($input['merchant_ids']) > 0) {
+            $query = $query->whereIn(Entity::MERCHANT_ID, $input['merchant_ids']);
+        }
+
+        if (isset($input['methods']) && sizeof($input['methods']) > 0) {
+            $query = $query->whereIn(Entity::METHOD, $input['methods']);
+        }
+
+        return $query->count();
+    }
     public function getPaymentCountByToken($tokenId)
     {
         $connectionType = $this->getSplitzStatusAndReturnConnectionForHarvesterMigration(true);
