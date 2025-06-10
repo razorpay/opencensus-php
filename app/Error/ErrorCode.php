@@ -1823,6 +1823,7 @@ class ErrorCode
     const ERROR_USER_NOT_FOUND_BY_EMAIL                                             = 'ERROR_USER_NOT_FOUND_BY_EMAIL';
     const ERROR_MERCHANT_USER_ALREADY_EXISTS                                        = 'BAD_REQUEST_MERCHANT_USER_ALREADY_EXISTS';
     const ASSISTED_WORKFLOW_CREATION_FAILED                                         = 'ASSISTED_WORKFLOW_CREATION_FAILED';
+    const BAD_REQUEST_MERCHANT_USER_DOES_NOT_EXISTS                                 = 'BAD_REQUEST_MERCHANT_USER_DOES_NOT_EXISTS';
     const BAD_REQUEST_USER_ID_NOT_EXPECTED_IN_INPUT                                 = 'BAD_REQUEST_USER_ID_NOT_EXPECTED_IN_INPUT';
     const BAD_REQUEST_USER_ROLE_INVALID                                             = 'BAD_REQUEST_USER_ROLE_INVALID';
     const BAD_REQUEST_USER_OAUTH_PROVIDER_INVALID                                   = 'BAD_REQUEST_USER_OAUTH_PROVIDER_INVALID';

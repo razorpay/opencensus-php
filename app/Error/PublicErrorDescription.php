@@ -1891,4 +1891,6 @@ class PublicErrorDescription
     const GATEWAY_VA_DEACTIVATION_FAILURE = "Gateway Failure in closing virtual account";
 
     const BAD_REQUEST_REFUND_BLOCKED_FOR_SMART_COLLECT_PAYMENTS = 'Refund is currently blocked for Smart Collect 2.0 payments';
+
+    const BAD_REQUEST_MERCHANT_USER_DOES_NOT_EXISTS  = 'Merchant User does not exits';
 }

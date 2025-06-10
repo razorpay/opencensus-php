@@ -1130,6 +1130,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
             case self::ONBOARDING_SAVE:
                 $this->preProcessOnboardingSaveRequest($body);
                 break;
+
+            case self::INITIATE_POS_ONBOARDING:
+                (new DeviceDetailCore())->createDeviceDetailForNonPgosMerchants($id);
+                break;
+
         }
     }
 

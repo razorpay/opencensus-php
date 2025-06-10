@@ -80,6 +80,7 @@ use RZP\Models\Merchant\Cron as CronJobHandler;
 use RZP\Models\Merchant\Document;
 use RZP\Services\Mock\KafkaProducerClient as KafkaProducerClientMock;
 use RZP\Services\Mock\DataLakePresto as DataLakePrestoMock;
+use RZP\Models\DeviceDetail\Core as DeviceDetailCore;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 
@@ -19561,42 +19562,18 @@ class CoreTest extends TestCase
         $this->assertTrue($merchantDetail->isLocked());
     }
 
-    public function testCreateDeviceDetailForNonPgosMerchants_DeviceDetailAlreadyExists()
-    {
-        $merchantId = 'OlyFnGyZQeEKrF';
-
-        $merchant = $this->fixtures->create('merchant', [
-            'id'                => $merchantId
-        ]);
-
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
-
-        $this->fixtures->create('user_device_detail', [
-            'merchant_id'     => $merchant->getId(),
-            'user_id'         => $merchantUser->getId(),
-        ]);
-
-       $response = (new MDS())->submitMerchantInternal($merchantId, [
-            'action'                  => 'CREATE_UDD_FOR_NON_PGOS_MERCHANTS'
-        ]);
-
-       $this->assertTrue($response["success"]);
-        $this->assertEquals("Device details already exist for this merchant.", $response["message"]);
-
-    }
-
     public function testCreateDeviceDetailForNonPgosMerchants_NoMerchantUserFound()
     {
         $merchantId = 'OlyFnGyZQeEKrF';
 
         $merchant = $this->fixtures->create('merchant', ['id' => $merchantId]);
 
-        $response = (new MDS())->submitMerchantInternal($merchantId, [
-            'action' => 'CREATE_UDD_FOR_NON_PGOS_MERCHANTS'
-        ]);
+        $this->app['basicauth']->setMerchant($merchant);
 
-        $this->assertFalse($response["success"]);
-        $this->assertEquals("Merchant user not found for ID: $merchantId", $response["message"]);
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_MERCHANT_USER_DOES_NOT_EXISTS);
+
+        (new DeviceDetailCore)->createDeviceDetailForNonPgosMerchants($merchantId);
     }
 
     public function testCreateDeviceDetailForNonPgosMerchants_CreateDeviceDetailsSuccessfully()
@@ -19606,14 +19583,11 @@ class CoreTest extends TestCase
         $merchant = $this->fixtures->create('merchant', ['id' => $merchantId]);
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
 
-        $response = (new MDS())->submitMerchantInternal($merchantId, [
-            'action' => 'CREATE_UDD_FOR_NON_PGOS_MERCHANTS'
-        ]);
+        $this->app['basicauth']->setMerchant($merchant);
 
-        // Assert that the response indicates device details were created successfully
-        $this->assertTrue($response["success"]);
-        $this->assertEquals("Device details created successfully for this merchant.", $response["message"]);
-        $this->assertArrayHasKey("device_details", $response);
+        (new DeviceDetailCore)->createDeviceDetailForNonPgosMerchants($merchantId);
+
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
+        $this->assertNotNull($userDeviceDetail);
     }
-
 }

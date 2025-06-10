@@ -188,44 +188,34 @@ class Core extends Base\Core
     }
 
 
-    public function createDeviceDetailForNonPgosMerchants(string $merchantId,$input)
+    public function createDeviceDetailForNonPgosMerchants(string $merchantId)
     {
+        $merchantId = $this->app['basicauth']->getMerchant()->getId();
+
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
 
-        $response = [];
+        // Case 1: If no device details, check if there is a primary user associated with the merchant
+        if(empty($userDeviceDetail)){
 
-        // Case 1: Check if user_device_detail already exists
-        if(!empty($userDeviceDetail)){
-
-            $response["success"] = true;
-            $response["message"] = "Device details already exist for this merchant.";
-
-            return $response;
-        } else{
-
-            // Case 2: If no device details, check if there is a primary user associated with the merchant
             $merchantUsers = $this->repo->merchant_user->fetchPrimaryUserIdForMerchantIdAndRole($merchantId, 'owner');
 
             if (!empty($merchantUsers)) {
 
                 $userId = array_first($merchantUsers);
 
-                // Prepare input data for creating device details
                 $input = [
                     Entity::MERCHANT_ID => $merchantId,
                     Entity::USER_ID => $userId,
-                    Entity::SIGNUP_CAMPAIGN => $input[Entity::SIGNUP_CAMPAIGN] ?? "",
                 ];
 
                 try
                 {
                     $deviceDetail = $this->createDeviceDetail($input);
 
-                    $response["success"] = true;
-                    $response["message"] = "Device details created successfully for this merchant.";
-                    $response["device_details"] = $deviceDetail;
+                    $this->trace->info(TraceCode::USER_DEVICE_CREATE_DETAIL_RESPONSE, [
+                        'response' => $deviceDetail,
+                    ]);
 
-                    return $response;
                 } catch (\Throwable $e)
                 {
                     $this->trace->traceException($e);
@@ -241,10 +231,13 @@ class Core extends Base\Core
                 }
             }
             else {
+                $this->trace->error(TraceCode::MERCHANT_USER_DOES_NOT_EXISTS, [
+                    'message'       => "Error in createDeviceDetailForNonPgosMerchants()",
+                ]);
 
-                $response["success"] = false;
-                $response["message"] = "Merchant user not found for ID: $merchantId";
-                return $response;
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_USER_DOES_NOT_EXISTS
+                );
             }
         }
     }
