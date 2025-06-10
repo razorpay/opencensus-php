@@ -102,6 +102,9 @@ class Validator extends Base\Validator
         Entity::OVO                 => 'sometimes|boolean',
         Entity::KLARNA              => 'sometimes|boolean',
         Entity::ZIP                 => 'sometimes|boolean',
+        Entity::INSTALMENT                 => 'sometimes|boolean',
+        Entity::INSTALMENT_PROVIDERS       => 'sometimes|array',
+        Entity::INSTALMENT_PROVIDERS.'.*'  => 'sometimes|boolean',
     ];
 
     protected static $setMethodsValidators = [

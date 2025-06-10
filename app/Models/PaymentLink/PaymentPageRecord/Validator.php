@@ -26,5 +26,8 @@ class Validator extends Base\Validator
         Entity::TOTAL_AMOUNT            => 'required|integer',
         Entity::CUSTOM_FIELD_SCHEMA     => 'required'
     ];
+    protected static $editRules = [
+        Entity::OTHER_DETAILS           => 'sometimes|string',
+    ];
 
 }

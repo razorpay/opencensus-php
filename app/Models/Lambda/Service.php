@@ -325,13 +325,17 @@ class Service extends Base\Service
         }
         $document = $this->uploadFileAndSaveInMerchantDocument($file, $input, $mode);
 
-        $documentMetaData = [
-            Entity::ID => $document->getId(),
-            Entity::FILE_STORE_ID => $document->getFileStoreId(),
-            Entity::MERCHANT_ID => $document->getMerchantId(),
-        ];
-
-        return $documentMetaData;
+        if ($document !== null) {
+            $documentMetaData = [
+                Entity::ID => $document->getId(),
+                Entity::FILE_STORE_ID => $document->getFileStoreId(),
+                Entity::MERCHANT_ID => $document->getMerchantId(),
+            ];
+        } else {
+            $documentMetaData = null;
+        }
+        
+        return $documentMetaData ?? null;
     }
 
     /**
@@ -371,8 +375,8 @@ class Service extends Base\Service
     protected function uploadFileAndSaveInMerchantDocument(HttpFoundation\File\UploadedFile $file, array $input, $mode = Mode::LIVE)
     {
         $filename = $file->getClientOriginalName();
-
         $ufhService = $this->app['ufh.service'];
+        $document = null;
 
        if($input['gateway'] === self::RBL)
        {
@@ -386,6 +390,11 @@ class Service extends Base\Service
             $storageFileName = 'FIRS/'.$merchantId.'/'.$part[1].'/'.$part[0].'/'.$filename;
             $type = 'firs_file';
             $documentDate = strtotime($part[0].'/'.'01'.'/'.$part[1]);
+
+            $existingDocument = $this->findExistingDocumentInUfh($ufhService, $merchantId, $storageFileName, $type);
+            if ($existingDocument !== null) {
+                return null;
+            }
 
             $response = $ufhService->uploadFileAndGetResponse($file, $storageFileName, $type, $merchant);
 
@@ -405,8 +414,7 @@ class Service extends Base\Service
 
             $this->triggerFIRSAvailableNotification($document, $mode);
        }
-
-       if($input['gateway'] === self::ICICI)
+       else if($input['gateway'] === self::ICICI)
        {
             list($tag, $referenceNumber, $utrNumberAndFileExtension) = explode('_',$filename);
 
@@ -426,6 +434,11 @@ class Service extends Base\Service
             $type = 'firs_icici_file';
             $documentDate = strtotime($month.'/'.'01'.'/'.$year);
 
+            $existingDocument = $this->findExistingDocumentInUfh($ufhService, $merchantId, $storageFileName, $type);
+            if ($existingDocument !== null) {
+                return null;
+            }
+
             $response = $ufhService->uploadFileAndGetResponse($file, $storageFileName, $type, $merchant);
 
             $this->trace->info(TraceCode::UPLOAD_FILE_DETAILS,
@@ -435,8 +448,7 @@ class Service extends Base\Service
 
             $document = (new Document\Core)->saveInMerchantDocument($response, $merchantId, $type, $documentDate);
        }
-
-       if ($input['gateway'] === self::FIRSTDATA)
+       else if ($input['gateway'] === self::FIRSTDATA)
        {
             // 15 Digit MID_FIRS_From_DDMMYY_ To_DDMMYY_POS_Det.pdf
             $tokens = explode('_',$filename);
@@ -486,6 +498,11 @@ class Service extends Base\Service
                 $type = self::FIRS_FIRSTDATA_SUMMARY_FILE;
             }
 
+            $existingDocument = $this->findExistingDocumentInUfh($ufhService, $merchantId, $storageFileName, $type);
+            if ($existingDocument !== null) {
+                return null;
+            }
+
             $response = $ufhService->uploadFileAndGetResponse($file, $storageFileName, $type, $merchant);
 
             $this->trace->info(TraceCode::UPLOAD_FILE_DETAILS, [
@@ -503,6 +520,68 @@ class Service extends Base\Service
        }
 
         return $document;
+    }
+
+    /**
+     * Checks if a file with the same storage signature already exists in UFH (recently)
+     * and has a corresponding merchant document.
+     *
+     * @param UfhService $ufhService
+     * @param string $merchantId
+     * @param string $fullStoragePathWithExtension The target full path in UFH, e.g., FIRS/merchantId/year/month/original.pdf
+     * @param string $fileTypeForUfhQuery The UFH file type string, e.g., 'firs_file'
+     * @return \RZP\Models\Merchant\Document\Entity|null Returns existing document if found, else null.
+     */
+    protected function findExistingDocumentInUfh(
+        UfhService $ufhService,
+        string $merchantId,
+        string $fullStoragePathWithExtension,
+        string $fileTypeForUfhQuery
+    )
+    {
+        try
+        {
+            $currentTimeEpoch = Carbon::now()->getTimestamp();
+            // Check files from the beginning of 5 days ago up to now.
+            $fiveDaysAgoEpoch = Carbon::now()->subDays(5)->startOfDay()->getTimestamp();
+
+            $this->trace->info(TraceCode::LAMBDA_REQUEST, [
+                'message'     => 'Checking UFH for existing file before upload',
+                'merchant_id' => $merchantId,
+                'file_type'   => $fileTypeForUfhQuery,
+                'from_epoch'  => $fiveDaysAgoEpoch,
+                'to_epoch'    => $currentTimeEpoch,
+                'checking_for_storage_path' => $fullStoragePathWithExtension,
+            ]);
+
+            $ufhFilesResponse = $ufhService->fetchFiles([
+                'type' => $fileTypeForUfhQuery,
+                'from' => $fiveDaysAgoEpoch,
+                'to'   => $currentTimeEpoch,
+            ], $merchantId);
+
+            if (isset($ufhFilesResponse['count']) && $ufhFilesResponse['count'] > 0 && isset($ufhFilesResponse['items'])) {
+                foreach ($ufhFilesResponse['items'] as $item) {
+                    if (isset($item['name']) && strtolower($item['name']) === strtolower($fullStoragePathWithExtension)) {
+                        $this->trace->info(TraceCode::LAMBDA_REQUEST, [
+                            'message'     => 'Matching file signature found in UFH response',
+                            'ufh_item_matched_id' => $item['id'],
+                            'merchant_id' => $merchantId,
+                            'file_type' => $fileTypeForUfhQuery,
+                        ]);
+                        return $item;
+                    }
+                }
+            }
+        }
+        catch (\Exception $e){
+            $this->trace->traceException($e, TraceCode::LAMBDA_BATCH_FAILURE, [
+                'message'     => 'UFH fetchFiles call failed during duplicate check',
+                'merchant_id' => $merchantId,
+                'file_type'   => $fileTypeForUfhQuery,
+            ]);
+        }
+        return null;
     }
 
     protected function deleteExistingZipFile(string $merchantId, array $part)

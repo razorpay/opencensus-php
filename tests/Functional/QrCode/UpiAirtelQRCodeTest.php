@@ -2306,6 +2306,108 @@ class UpiAirtelQRCodeTest extends TestCase
         );
         $this->runQrCodeEntityAssertions('test');
         $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $mockDcs = \Mockery::mock('RZP\Models\Feature\DCS');
+        $this->app->instance('dcs', $mockDcs);
+
+        // Mock fetchByEntityIdAndNamesViaProxy
+        $mockDcs->shouldReceive('fetchByEntityIdAndNamesViaProxy')
+            ->withAnyArgs()
+            ->andReturn(['omni_single_stack']);
+
+        // Create actual Entity objects collection
+        $entityType = 'merchant';
+        $entityId = '10000000000000';
+        $response = collect();
+
+        // Add omni_single_stack feature
+        $featureAttributes = [
+            'name' => 'omni_single_stack',
+            'entity_type' => $entityType,
+            'entity_id' => $entityId,
+        ];
+        $entity = new \RZP\Models\Feature\Entity();
+        $entity->forceFill($featureAttributes);
+        $response->push($entity);
+
+        $mockDcs->shouldReceive('getDcsEnabledFeatures')
+            ->withAnyArgs()
+            ->andReturn($response);
+
+        $this->makeUpiAirtelPayment($qrCodeEntity, ['payeeVPA' => 'testvpaOffline@mairtel', 'hdnOrderID' => 'Random78']);
+
+        $this->runQrPaymentEntityAssertions();
+        $this->assertEqualsCanonicalizing($eventList,$expectedEventList);
+        $this->assertEquals(1, $actualEzetapNotificationCallCount);
+    }
+
+    public function testEzetapDeviceNoficationForSingleStackPaymentWhenDcsGiveEmptyResponse()
+    {
+        $this->setMockSplitzTreatment(
+            [
+                'M25grFTOPZEGQS' => 'on',
+                'PAPS5BGHsCT2uJ' => 'on',
+                'PBJ7moguQGhkyK' => 'on',
+                'P1ihasxhcDs1ZE' => 'off'
+            ]
+        );
+        $this->config['applications.ezetap-notification.mock'] = true;
+        $this->fixtures->merchant->addFeatures(['omni_single_stack']);
+
+        $this->fixtures->create(
+            'terminal:dedicated_upi_airtel_offline_terminal',
+            [
+                'merchant_id' => '10000000000000'
+            ]
+        );
+        $actualEzetapNotificationCallCount =0 ;
+        $eventList =[] ;
+        $expectedEventList = [
+            'qr_code.credited',
+        ];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount,$eventList);
+        $this->createPricingForOffline();
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type' => 'upi_qr',
+                'vpa'   => 'testvpaoffline@mairtel',
+            ],
+            headers: [
+                'X-Razorpay-Request-Source' => 'ezetap'
+            ]
+        );
+        $this->runQrCodeEntityAssertions('test');
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+
+        $mockDcs = \Mockery::mock('RZP\Models\Feature\DCS');
+        $this->app->instance('dcs', $mockDcs);
+
+        // Mock fetchByEntityIdAndNamesViaProxy
+        $mockDcs->shouldReceive('fetchByEntityIdAndNamesViaProxy')
+            ->withAnyArgs()
+            ->andReturn([]);
+
+        // Create actual Entity objects collection
+        $entityType = 'merchant';
+        $entityId = '10000000000000';
+        $response = collect();
+
+        // Add omni_single_stack feature
+        $featureAttributes = [
+            'name' => 'omni_single_stack',
+            'entity_type' => $entityType,
+            'entity_id' => $entityId,
+        ];
+        $entity = new \RZP\Models\Feature\Entity();
+        $entity->forceFill($featureAttributes);
+        $response->push($entity);
+
+        $mockDcs->shouldReceive('getDcsEnabledFeatures')
+            ->withAnyArgs()
+            ->andReturn($response);
+
         $this->makeUpiAirtelPayment($qrCodeEntity, ['payeeVPA' => 'testvpaOffline@mairtel', 'hdnOrderID' => 'Random78']);
 
         $this->runQrPaymentEntityAssertions();

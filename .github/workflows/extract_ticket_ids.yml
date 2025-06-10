@@ -1,0 +1,77 @@
+name: Extract Ticket IDs
+
+on:
+  workflow_call:
+    outputs:
+      jira_id:
+        description: "Extracted Jira ID"
+        value: ${{ jobs.extract_tickets.outputs.jira_id }}
+      devrev_id:
+        description: "Extracted DevRev ID"
+        value: ${{ jobs.extract_tickets.outputs.devrev_id }}
+
+jobs:
+  extract_tickets:
+    name: Extract Ticket IDs
+    runs-on:
+      - api-public
+      - X64
+    outputs:
+      jira_id: ${{ steps.set_requirements.outputs.jira_id }}
+      devrev_id: ${{ steps.set_requirements.outputs.devrev_id }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Extract Ticket IDs
+        id: set_requirements
+        uses: actions/github-script@0.9.0
+        with:
+          script: |
+            try {
+              // Constants for ticket types
+              const TICKET_TYPES = {
+                JIRA: 'jiraid',
+                DEVREV: 'devrevid'
+              };
+
+              // Helper function to extract ticket ID from PR body
+              function extractTicketId(body, ticketType) {
+                if (!body.toLowerCase().includes(ticketType)) {
+                  return '';
+                }
+                
+                const ticketRow = body.toLowerCase()
+                  .substring(body.toLowerCase().indexOf(ticketType))
+                  .split('\n')[0];
+                
+                if (!ticketRow.includes('|')) {
+                  return '';
+                }
+                
+                const parts = ticketRow.split('|');
+                return parts.length === 2 ? parts[1].trim() : '';
+              }
+
+              // Main execution
+              const prBody = context.payload.pull_request.body || '';
+              
+              if (!prBody) {
+                core.setOutput('jira_id', '');
+                core.setOutput('devrev_id', '');
+                return;
+              }
+              
+              // Extract ticket IDs
+              const jiraId = extractTicketId(prBody, TICKET_TYPES.JIRA);
+              const devrevId = extractTicketId(prBody, TICKET_TYPES.DEVREV);
+              
+              // Set ticket IDs
+              core.setOutput('jira_id', jiraId);
+              core.setOutput('devrev_id', devrevId);
+              
+            } catch (error) {
+              console.error('Error in ticket extraction:', error);
+              core.setOutput('jira_id', '');
+              core.setOutput('devrev_id', '');
+            } 

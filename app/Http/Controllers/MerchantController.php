@@ -4679,4 +4679,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchMidAndNameFromOrgAndCategoryFromLiveConnection($orgId, $category)
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $response = $this->service(E::MERCHANT)->fetchMidAndNameFromOrgAndCategoryFromLiveConnection($orgId, $category);
+
+        return ApiResponse::json($response);
+    }
+
 }

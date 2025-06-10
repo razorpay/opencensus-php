@@ -70,6 +70,13 @@ class Status
         self::ACTIVATED                 => [],
     ];
 
+    const ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_FOR_EO_TO_MO_MERCHANTS = [
+        self::UNDER_REVIEW              => [self::NEEDS_CLARIFICATION, self::ACTIVATED, self::REJECTED],
+        self::NEEDS_CLARIFICATION       => [self::UNDER_REVIEW, self::ACTIVATED],
+        self::REJECTED                  => [self::UNDER_REVIEW],
+        self::ACTIVATED                 => [],
+    ];
+
     /*
      * Allowed next rekyc statuses mapping with state EDD_PENDING
      */
