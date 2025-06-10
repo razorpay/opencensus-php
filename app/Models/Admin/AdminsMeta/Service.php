@@ -70,7 +70,7 @@ class Service extends Base\Service
         }
 
         // verify roles and strip sign from roles
-        if (empty($input[Entity::ROLES]) === false) {
+        if (empty($transformedInput[Entity::ROLES]) === false) {
             Role\Entity::verifyIdAndStripSignMultiple($transformedInput[Entity::ROLES]);
         }
 
