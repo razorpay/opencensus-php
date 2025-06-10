@@ -3690,13 +3690,13 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function liveEnable($id, $skipWorkflow = false)
+    public function liveEnable($id, $skipWorkflowForSettlements = false)
     {
         $this->trace->info(
             TraceCode::MERCHANT_LIVE_ENABLE_REQUEST,
             [
-                'merchant_id' => $id,
-                'skip_workflow' => $skipWorkflow,
+                'merchant_id'                    => $id,
+                'skip_workflows_for_settlements' => $skipWorkflowForSettlements,
             ]);
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
@@ -3724,7 +3724,7 @@ class Service extends Base\Service
         $merchant->liveEnable();
 
         // Only trigger workflow if not skipped
-        if ($skipWorkflow === false)
+        if ($skipWorkflowForSettlements === false)
         {
             // Triggering
             $workflow = $this->app['workflow']
@@ -3739,13 +3739,13 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function liveDisable($id, $skipWorkflow = false)
+    public function liveDisable($id, $skipWorkflowForSettlements = false)
     {
         $this->trace->info(
             TraceCode::MERCHANT_LIVE_DISABLE_REQUEST,
             [
-                'merchant_id' => $id,
-                'skip_workflow' => $skipWorkflow,
+                'merchant_id'                    => $id,
+                'skip_workflows_for_settlements' => $skipWorkflowForSettlements,
             ]);
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
@@ -3767,7 +3767,7 @@ class Service extends Base\Service
         $merchant->liveDisable();
 
         // Only trigger workflow if not skipped
-        if ($skipWorkflow === false)
+        if ($skipWorkflowForSettlements === false)
         {
             // Triggering
             $workflow = $this->app['workflow']

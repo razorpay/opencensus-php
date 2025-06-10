@@ -1436,7 +1436,7 @@ class Core extends Base\Core
 
             $input = [
                 'merchant_id'      => $merchantId,
-                'skip_workflows'   => true,
+                'skip_workflows_for_settlements'   => true,
             ];
 
             $this->trace->info(TraceCode::CREATE_SETTLEMENT_WF_ACTION_REQUEST,

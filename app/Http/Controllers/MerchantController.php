@@ -584,9 +584,9 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $skipWorkflow = $input['skip_workflows'] ?? false;
+        $skipWorkflowForSettlements = $input['skip_workflows_for_settlements'] ?? false;
 
-        $data = $this->service()->liveEnable($id, $skipWorkflow);
+        $data = $this->service()->liveEnable($id, $skipWorkflowForSettlements);
 
         return ApiResponse::json($data);
     }
@@ -595,9 +595,9 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $skipWorkflow = $input['skip_workflows'] ?? false;
+        $skipWorkflowForSettlements = $input['skip_workflows_for_settlements'] ?? false;
 
-        $data = $this->service()->liveDisable($id, $skipWorkflow);
+        $data = $this->service()->liveDisable($id, $skipWorkflowForSettlements);
 
         return ApiResponse::json($data);
     }
