@@ -291,11 +291,17 @@ class Validator extends Base\Validator
         $now = Carbon::now(Timezone::IST);
 
         $minCloseBy = $now->copy()->addSeconds(self::MIN_CLOSE_BY_DIFF);
+        $maxCloseBy = $now->copy()->addDays(180);
 
         if ($closeBy < $minCloseBy->getTimestamp())
         {
             $message = 'close_by should be at least ' . $minCloseBy->diffForHumans($now) . ' current time';
 
+            throw new BadRequestValidationFailureException($message);
+        }
+        if ($closeBy > $maxCloseBy->getTimestamp())
+        {
+            $message = 'close_by cannot be more than 180 days from current time';
             throw new BadRequestValidationFailureException($message);
         }
     }

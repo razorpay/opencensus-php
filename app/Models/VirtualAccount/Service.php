@@ -261,6 +261,11 @@ class Service extends Base\Service
 
     private function addCloseBy(&$createArray, $input)
     {
+        if (isset($input[Entity::CLOSE_BY]) === true)
+        {
+            $createArray[Entity::CLOSE_BY] =  $input[Entity::CLOSE_BY];
+            return;
+        }
         $setVADefaultExpiryFeatureForMerchant = $this->merchant->isFeatureEnabled(Constants::SET_VA_DEFAULT_EXPIRY);
         $setVADefaultExpiryFeatureForORG      = $this->merchant->org->isFeatureEnabled(Constants::SET_VA_DEFAULT_EXPIRY);
 
@@ -1793,6 +1798,18 @@ class Service extends Base\Service
                 'response' => $response ,
                 'internal_error_code' => ErrorCode::BAD_REQUEST_CHALLAN_NOT_FOUND
             ]);
+        }
+
+        if ($virtualAccount->isDueToBeClosed())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CHALLAN_EXPIRED,
+                null,
+                [
+                    'response' => $response,
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_CHALLAN_EXPIRED,
+                ]
+            );
         }
 
         if($virtualAccount->isClosed() === true and $duplicateOfflinePayment !== null){
