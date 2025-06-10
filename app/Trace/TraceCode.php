@@ -12891,6 +12891,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BIN_SERVICE_IIN_NOT_FOUND                             = 'BIN_SERVICE_IIN_NOT_FOUND';
     const BIN_SERVICE_TOKEN_IIN_NOT_FOUND                       = 'BIN_SERVICE_TOKEN_IIN_NOT_FOUND';
     const BIN_SERVICE_FETCH_IIN_REQUEST                         = 'BIN_SERVICE_FETCH_IIN_REQUEST';
+    const FETCH_IIN_SOURCE                                      = 'FETCH_IIN_SOURCE';
 
     const TURBO_UPI_PAYMENT_PAYER_ACCOUNT_TYPE_MISMATCH        = 'TURBO_UPI_PAYMENT_PAYER_ACCOUNT_TYPE_MISMATCH';
 
