@@ -1193,7 +1193,7 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
-    public function fetchMidAndNameFromOrgAndCategoryFromTiDB($orgId, $category, string $mode = null)
+    public function fetchMidAndNameFromOrgAndCategoryFromLiveConnection($orgId, $category, string $mode = null)
     {
         /*
         *
@@ -1203,7 +1203,7 @@ class Repository extends Base\Repository
             -- If a specific category is provided (and it's not 'other'), it filters merchants by that category.
             -- Otherwise, it excludes merchants from 'education' and 'social' categories.
         */
-        $connection = $this->getDataWarehouseConnection($this->getDataWarehouseConnection());
+        $connection = $this->getDataWarehouseConnection();
 
         $query = $this->newQueryWithConnection($connection);
 
