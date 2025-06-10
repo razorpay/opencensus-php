@@ -146,8 +146,16 @@ class GoogleMapsClient
         $location = $this->cache->get(implode(':', [self::LOCATION_CACHE_PREFIX, $zipcode, $country]));
         if ($location !== null)
         {
+            $this->trace->info(
+                TraceCode::GMAPS_CACHE_RATE,
+                ['type' => 'hit', 'zipcode' => $zipcode, 'country' => $country]
+            );
             return $location;
         }
+        $this->trace->info(
+            TraceCode::GMAPS_CACHE_RATE,
+            ['type' => 'miss', 'zipcode' => $zipcode, 'country' => $country]
+        );
         $query = $this->buildQuery($country, $zipcode);
         $url = self::BASE_URL_GEOCODE . $query . '&key=' . $this->apiKey;
 
@@ -167,6 +175,10 @@ class GoogleMapsClient
         // Calculating radius in meters
         $location['radius'] = $this->distance($northeast['lat'], $northeast['lng'], $southwest['lat'], $southwest['lng']) / 2;
         $this->cache->put(implode(':', [self::LOCATION_CACHE_PREFIX, $zipcode, $country]), $location, self::CACHE_TTL);
+        $this->trace->info(
+            TraceCode::GMAPS_CACHE_RATE,
+            ['type' => 'save', 'zipcode' => $zipcode, 'country' => $country]
+        );
         return $location;
     }
 
