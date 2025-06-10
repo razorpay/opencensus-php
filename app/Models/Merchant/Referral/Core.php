@@ -255,6 +255,7 @@ class Core extends Base\Core
         // Calling this before the get call below to avoid calling validator
         // explicitly as build method will call it. The following get is to
 
+
         $newReferrals = [];
 
         foreach ($productConfigList as $product => $productConfig)
@@ -398,7 +399,6 @@ class Core extends Base\Core
                 $referralData = [
                         'product' => $product,
                         'ref_code' => $refCode,
-                        'hash' => $updatedHash
                     ];
                 $this->updateReferralLinkWithKycAccessConsent($merchant, $referralData);
 
@@ -433,7 +433,7 @@ class Core extends Base\Core
                 'name'           => PartnerConstants::REFERRAL_WITH_CONSENT,
                 'meta'           => [
                     'referral_code' => $referralData['ref_code'],
-                    'referral_hash' => $referralData['hash'],
+                    'update_long_url' => true
                 ]
             ];
 
