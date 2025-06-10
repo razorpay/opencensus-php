@@ -2223,6 +2223,8 @@ class Processor
                 }
             }
 
+            $routeMotoToRearch = false;
+
             if ((isset($input['auth_type']) === true) and ($input['auth_type'] === AuthType::SKIP))
             {
                 if ($merchant->gertOrgId() === '100000Razorpay')
@@ -2234,6 +2236,8 @@ class Processor
                     ]);
                     return false;
                 }
+
+                $routeMotoToRearch = true;
             }
 
             $order = null;
