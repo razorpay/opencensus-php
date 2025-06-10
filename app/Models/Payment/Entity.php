@@ -2900,6 +2900,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::GIFT_CARDS);
     }
 
+    public function isInstalment()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::INSTALMENT);
+    }
+
     public function isEmandate()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE);
