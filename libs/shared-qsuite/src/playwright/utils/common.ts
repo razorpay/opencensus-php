@@ -107,7 +107,7 @@ export const selectMerchant = async ({
   let isMultiAccountScreenVisible = false;
   try {
     // Check if account selection screen is visible with a timeout
-    await page.waitForSelector('text=Please select your preferred account', { timeout: 15000 });
+    await page.waitForSelector('text=Please select your preferred account');
 
     // If we reach here, the account selection screen is visible
     isMultiAccountScreenVisible = true;
