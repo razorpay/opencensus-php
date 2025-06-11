@@ -14491,9 +14491,9 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function fetchMidAndNameFromOrgAndCategoryFromTiDB($orgId, $category)
+    public function fetchMidAndNameFromOrgAndCategoryFromLiveConnection($orgId, $category)
     {
-        $response =  $this->repo->merchant->fetchMidAndNameFromOrgAndCategoryFromTiDB($orgId, $category);
+        $response =  $this->repo->merchant->fetchMidAndNameFromOrgAndCategoryFromLiveConnection($orgId, $category);
 
         $grouped = [];
 

@@ -3149,6 +3149,7 @@ class Service extends Base\Service
     public function isSaveTokenViaTokenService(): bool
     {
         $isMalaysianMerchant = Country::matches($this->merchant->getCountry(), Country::MY);
+        $isIndianMerchant = Country::matches($this->merchant->getCountry(), Country::IN);
 
         if ($isMalaysianMerchant )
         {
@@ -3167,6 +3168,38 @@ class Service extends Base\Service
                 $variant = $response['response']['variant']['name'] ?? 'control';
 
                 $this->trace->info(TraceCode::TOKENS_ENTITY_FETCH_SPLITZ_EXPERIMENT_RESPONSE, [
+                    'merchant_id' =>  $this->merchant->getId(),
+                    'variant' => $variant,
+                    'experiment_id' => $experimentId
+                ]);
+
+                return $variant === 'variant_on';
+            }
+            catch (\Exception $e)
+            {
+                $this->app['trace']->traceException(
+                    $e,
+                    null,
+                    TraceCode::TOKENS_ENTITY_FETCH_SPLITZ_EXPERIMENT_FAILURE);
+            }
+        }
+        else if ($isIndianMerchant)
+        {
+            try
+            {
+                $experimentId = $this->app['config']->get('app.in_save_int_card_splitz_experiment_id');
+
+                $properties = [
+                    'id' => $this->app['request']->getTaskId(),
+                    'experiment_id' => $experimentId,
+                    'request_data' => json_encode(['merchant_id' => $this->merchant->getId(), 'mode' => $this->mode]),
+                ];
+
+                $response = $this->app['splitzService']->evaluateRequest($properties);
+
+                $variant = $response['response']['variant']['name'] ?? 'control';
+
+                $this->trace->info(TraceCode::TOKENS_ENTITY_FETCH_SPLITZ_EXPERIMENT_RESPONSE_FOR_IN_MERCHANTS, [
                     'merchant_id' =>  $this->merchant->getId(),
                     'variant' => $variant,
                     'experiment_id' => $experimentId
