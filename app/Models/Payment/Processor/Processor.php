@@ -2464,7 +2464,7 @@ class Processor
                     ];
                 }
 
-                if (self::isCardRecurringAutoRearchRoute($currentRouteName) && !$isInternational) {
+                if (self::isCardRecurringAutoRearchRoute($currentRouteName)) {
                     // Check card mandate created date and mandate hub for ramp up
                     $cardMandate = (new CardMandate\Repository())->findByCardMandateId($token->getCardMandateId());
 
