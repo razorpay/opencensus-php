@@ -11,6 +11,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\BinService;
 use RZP\Http\Request\Requests;
 use RZP\Models\Base\QueryCache\CacheQueries;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -153,19 +154,20 @@ class Repository extends Base\Repository
 
             if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
             {
+                $this->trace->info(TraceCode::FETCH_IIN_SOURCE, [
+                    'iin' => substr($iin, 0, 6),
+                    'source' => 'bin_service'
+                ]);
                 return $this->fillIinEntity($binServiceIINEntity);
             }
         }
-        else if(!empty($iin) && $iinService->shouldReadFromBinServiceInShadowMode() === true)
-        {
-            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin, self::BIN_SERVICE_SHADOW_READ_MODE);
 
-            if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
-            {
-                $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
-            }
+        if (isset($apiServiceIINEntity)) {
+            $this->trace->info(TraceCode::FETCH_IIN_SOURCE, [
+                'iin' => substr($iin, 0, 6),
+                'source' => 'api_db'
+            ]);
         }
-
         return $apiServiceIINEntity;
     }
 
@@ -201,15 +203,6 @@ class Repository extends Base\Repository
 
             return $iinEntity->forceFill($binServiceIINEntity);
         }
-        else if(!empty($iin) && $iinService->shouldReadFromBinServiceInShadowMode() === true)
-        {
-            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin, self::BIN_SERVICE_SHADOW_READ_MODE);
-
-            if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
-            {
-                $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
-            }
-        }
 
         return $apiServiceIINEntity;
     }
@@ -219,7 +212,6 @@ class Repository extends Base\Repository
         $iinService = (new Service());
         $binService = (new BinService());
 
-        $apiServiceIINEntity = parent::findOrFailPublic($iin, $columns, $connectionType);
 
         if (!empty($iin) && $iinService->shouldReadBinServiceInPrimaryMode($iin) === true)
         {
@@ -227,16 +219,23 @@ class Repository extends Base\Repository
 
             $iinEntity = new Entity();
 
-            return $iinEntity->forceFill($binServiceIINEntity);
-        }
-        else if(!empty($iin) && $iinService->shouldReadFromBinServiceInShadowMode() === true)
-        {
-            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin, self::BIN_SERVICE_SHADOW_READ_MODE);
-
             if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
             {
-                $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
+                $this->trace->info(TraceCode::FETCH_IIN_SOURCE, [
+                    'iin' => substr($iin, 0, 6),
+                    'source' => 'bin_service'
+                ]);
+                return $this->fillIinEntity($binServiceIINEntity);
             }
+        }
+
+        $apiServiceIINEntity = parent::findOrFailPublic(substr($iin, 0, 6), $columns, $connectionType);
+
+        if (isset($apiServiceIINEntity)) {
+            $this->trace->info(TraceCode::FETCH_IIN_SOURCE, [
+                'iin' => substr($iin, 0, 6),
+                'source' => 'api_db'
+            ]);
         }
 
         return $apiServiceIINEntity;
