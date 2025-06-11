@@ -1731,12 +1731,13 @@ class Header
 
     // Cancel bulk gift cards batch headers
     const CANCEL_BULK_GIFT_CARD_ID = "Gift Card ID";
-    const CANCEL_BULK_GIFT_CARD_NUMBER = 'Gift Card Number (Optional)';
-    const CANCEL_BULK_GIFT_CARD_CONTACT = 'Contact';
-    const CANCEL_BULK_GIFT_CARD_TICKET_LINK = 'Ticket Link';
-    const CANCEL_BULK_GIFT_CARD_TIMESTAMP = "Timestamp";
-    const CANCEL_BULK_GIFT_CARD_SOURCE = 'Source';
-    const CANCEL_BULK_GIFT_CARD_NOTES = 'Notes (Optional)';
+    const CANCEL_BULK_GIFT_CARD_NUMBER = "Gift Card Number (Optional)";
+    const CANCEL_BULK_GIFT_CARD_CONTACT = "Contact (Optional)";
+    const CANCEL_BULK_GIFT_CARD_TICKET_LINK = "Ticket Link (Optional)";
+    const CANCEL_BULK_GIFT_CARD_TIMESTAMP = "Timestamp (Optional)";
+    const CANCEL_BULK_GIFT_CARD_SOURCE = "Source (Optional)";
+    const CANCEL_BULK_GIFT_CARD_NOTES = "Notes (Optional)";
+    const CANCEL_BULK_GIFT_CARD_REFERENCE_ID = "Reference ID (Optional)";
 
    // Wallet update Gift Cards expiry
     const UPDATE_GIFT_CARDS_EXPIRY_GIFT_CARD_ID = "Gift Card ID";
@@ -2510,12 +2511,8 @@ class Header
         Header::CREATE_BULK_GIFT_CARD_AMOUNT
     ];
     // mandatory headers for cancellation gift card batch
-    const MANDATORY_HEADERS_FOR_CREATE_BULK_GIFT_CARDS = [
-        Header::CANCEL_BULK_GIFT_CARD_ID,
-        Header::CANCEL_BULK_GIFT_CARD_CONTACT
-        Header::CANCEL_BULK_GIFT_CARD_TICKET_LINK
-        Header::CANCEL_BULK_GIFT_CARD_TIMESTAMP
-        Header::CANCEL_BULK_GIFT_CARD_SOURCE
+    const MANDATORY_HEADERS_FOR_CANCEL_BULK_GIFT_CARDS = [
+        Header::CANCEL_BULK_GIFT_CARD_ID
     ];
 
 //     mandatory headers for create gift card transfers batch
@@ -6759,7 +6756,7 @@ class Header
             self::OUTPUT => []
         ],
 
-        TYPE::CREATE_BULK_GIFT_CARDS => [
+        TYPE::CANCEL_BULK_GIFT_CARDS => [
                 self::INPUT => [
                 self::CANCEL_BULK_GIFT_CARD_ID,
                 self::CANCEL_BULK_GIFT_CARD_NUMBER,
@@ -6768,6 +6765,7 @@ class Header
                 self::CANCEL_BULK_GIFT_CARD_TIMESTAMP,
                 self::CANCEL_BULK_GIFT_CARD_SOURCE,
                 self::CANCEL_BULK_GIFT_CARD_NOTES,
+                self::CANCEL_BULK_GIFT_CARD_REFERENCE_ID
             ],
             self::OUTPUT => []
         ],
