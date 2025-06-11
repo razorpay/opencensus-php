@@ -4390,8 +4390,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_DEVICE_CREATE_DETAIL_RESPONSE                    = 'USER_DEVICE_CREATE_DETAIL_RESPONSE';
     const MERCHANT_USER_DOES_NOT_EXISTS                         = 'MERCHANT_USER_DOES_NOT_EXISTS';
 
-
-
     const DASHBOARD_HOMEPAGE_REDIRECTION_EXPERIMENT = 'DASHBOARD_HOMEPAGE_REDIRECTION_EXPERIMENT';
 
     //Trace codes for PGOS service
