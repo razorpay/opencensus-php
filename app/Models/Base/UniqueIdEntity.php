@@ -255,22 +255,33 @@ class UniqueIdEntity extends Entity
 
     public static function generateUniqueIdFromNanoTime($nanotime)
     {
-        // Get current nanosecond time
-        $nanoTime = hrtime(true);
+        $b62 = self::nanotimeToBase62($nanotime);
 
-        // Convert to string
-        $nanoTimeString = (string)$nanoTime;
+        // Generate 3 random bytes, convert to hex and then to dec
+        // @note: do not use bindec i.e. convert directly to dec
+        //        because it overflows!
+        $dec = hexdec(bin2hex(random_bytes(5)));
 
-        // Ensure the string is 14 digits long
-        if (strlen($nanoTimeString) > 14) {
-            // If longer than 14 digits, take the first 14 digits
-            $uniqueId = substr($nanoTimeString, 0, 14);
-        } else {
-            // If shorter than 14 digits, pad with zeros
-            $uniqueId = str_pad($nanoTimeString, 14, '0', STR_PAD_RIGHT);
+        // Convert the random decimal generated to base 62
+        $rand = self::base62($dec);
+
+        // Only 4 base 62 digits are needed, so cutoff any more and pad with
+        // 0 if less.
+
+        if (strlen($rand) > 4)
+        {
+            $rand = substr($rand, -4);
         }
 
-        return $uniqueId;
+        $rand = str_pad($rand, 4, '0', STR_PAD_LEFT);
+
+        // Combine the base 62 nanotime with 4 base 62 digits
+        // and create a unique identifier
+        $id = $b62 . $rand;
+
+        assertTrue(strlen($id) === 14);
+
+        return $id;
     }
 
     protected static function getNanotimeInteger()

@@ -188,7 +188,7 @@ class Core extends Base\Core
     }
 
 
-    public function createDeviceDetailForNonPgosMerchants(string $merchantId)
+    public function createDeviceDetailsForOmniMerchantsIfNotExist(string $merchantId)
     {
         $merchantId = $this->app['basicauth']->getMerchant()->getId();
 

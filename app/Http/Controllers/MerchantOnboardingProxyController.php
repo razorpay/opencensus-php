@@ -1132,7 +1132,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
                 break;
 
             case self::INITIATE_POS_ONBOARDING:
-                (new DeviceDetailCore())->createDeviceDetailForNonPgosMerchants($id);
+                (new DeviceDetailCore())->createDeviceDetailsForOmniMerchantsIfNotExist($id);
                 break;
 
         }

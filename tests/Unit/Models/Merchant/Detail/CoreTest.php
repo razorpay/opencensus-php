@@ -19562,7 +19562,7 @@ class CoreTest extends TestCase
         $this->assertTrue($merchantDetail->isLocked());
     }
 
-    public function testCreateDeviceDetailForNonPgosMerchants_NoMerchantUserFound()
+    public function testcreateDeviceDetailsForOmniMerchantsIfNotExist_NoMerchantUserFound()
     {
         $merchantId = 'OlyFnGyZQeEKrF';
 
@@ -19573,10 +19573,10 @@ class CoreTest extends TestCase
         $this->expectException(BadRequestException::class);
         $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_MERCHANT_USER_DOES_NOT_EXISTS);
 
-        (new DeviceDetailCore)->createDeviceDetailForNonPgosMerchants($merchantId);
+        (new DeviceDetailCore)->createDeviceDetailsForOmniMerchantsIfNotExist($merchantId);
     }
 
-    public function testCreateDeviceDetailForNonPgosMerchants_CreateDeviceDetailsSuccessfully()
+    public function testcreateDeviceDetailsForOmniMerchantsIfNotExist_CreateDeviceDetailsSuccessfully()
     {
         $merchantId = 'OlyFnGyZQeEKrF';
         
@@ -19585,7 +19585,7 @@ class CoreTest extends TestCase
 
         $this->app['basicauth']->setMerchant($merchant);
 
-        (new DeviceDetailCore)->createDeviceDetailForNonPgosMerchants($merchantId);
+        (new DeviceDetailCore)->createDeviceDetailsForOmniMerchantsIfNotExist($merchantId);
 
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
         $this->assertNotNull($userDeviceDetail);
