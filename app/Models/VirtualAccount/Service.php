@@ -13,6 +13,7 @@ use RZP\Exception;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\VirtualAccountsAutoCloseInactive;
 use RZP\Models\Base;
+use Rzp\Pg\Merchant\Checkout\GPBMetadata\Truecaller;
 use RZP\Trace\Tracer;
 use RZP\Models\Feature;
 use RZP\Models\Base\PublicCollection;
@@ -1800,7 +1801,7 @@ class Service extends Base\Service
             ]);
         }
 
-        if ($virtualAccount->isDueToBeClosed())
+        if ($virtualAccount->isDueToBeClosed() === True)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CHALLAN_EXPIRED,
