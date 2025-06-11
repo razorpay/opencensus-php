@@ -1265,6 +1265,7 @@ class Core extends Base\Core
         try {
             if (preg_match('/^' . preg_quote(Constants\Entity::AMAZON_PAYOUT, '/') . '/', $name_upper)) {
                 // only applicable for amazon merchant
+                $this->app['basicauth']->setMerchant($this->merchant);
                 (new \RZP\Models\Merchant\Core)->addFeatureFlagForMerchant($this->merchant, Feature\Constants::CB_SKIP_B2B_EXPORT_INVOICE);
                 (new \RZP\Models\Merchant\Core)->addFeatureFlagForMerchant($this->merchant, Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B);
                 $addressPayload = $this->getAmazonBillingAddressByWallet($payment->getWallet());
@@ -1466,7 +1467,7 @@ class Core extends Base\Core
             }
 
             $paymentsCount = $this->repo->payment->fetchIntlBankTransferPaymentsCount($queryInput, $statuses, Gateway::CURRENCY_CLOUD);
-            
+
             //Returning false if already payments exists, since we need to trigger segment for first auth and captured payment of a merchant.
             if ($paymentsCount > 0) {
                 return false;
