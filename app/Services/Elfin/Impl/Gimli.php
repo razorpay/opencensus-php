@@ -103,6 +103,23 @@ class Gimli extends Base
         return $body['hash'];
     }
 
+    public function UpdateLongUrlByHash(string $hash, string $longUrl)
+    {
+        $gimliUpdateUrl = "{$this->apiBaseUrl}/hashes/{$hash}/url_update";
+        
+        $requestBody = json_encode(['url' => $longUrl], JSON_UNESCAPED_UNICODE);
+        $headers = $this->getHeaders($requestBody);
+
+        $response = Requests::patch($gimliUpdateUrl, $headers, $requestBody);
+        $body = json_decode($response->body, true);
+        
+        if ($response->status_code !== 200 || !isset($body['url']) || $body['url'] !== $longUrl) {
+            throw new BadRequestException("Unexpected response from Gimli service", ErrorCode::SERVER_ERROR);
+        }
+
+        return $body;
+    }
+
     /**
      * Returns gimli api url with query parameters applied
      * @param  array  $query

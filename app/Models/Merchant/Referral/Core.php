@@ -394,14 +394,15 @@ class Core extends Base\Core
 
                 $oldHash =  (new ElfinWrapper(ElfinService::GIMLI))->getHashFromUrl($oldUrl);
 
-                $updatedHash = (new ElfinWrapper(ElfinService::GIMLI))->update($oldHash, $productConfig[$product]);
-
+                if ($productConfig[$product] == Product::PRIMARY) {
+                $updatedHash = (new ElfinWrapper(ElfinService::GIMLI))->updateLongUrlByHash($oldHash, $productConfig[$product]["url"]);
+                
                 $referralData = [
                         'product' => $product,
                         'ref_code' => $refCode,
                     ];
                 $this->updateReferralLinkWithKycAccessConsent($merchant, $referralData);
-
+                }
 
                 $this->trace->info(
                     TraceCode::PARTNER_REFERRAL_LINK_REGENERATE,
