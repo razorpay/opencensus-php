@@ -9331,6 +9331,156 @@ class CoreTest extends TestCase
         $this->assertEquals('system', $statusChangedBy);
     }
 
+    public function testSegmentEventInUpdateActivationStatusFromEDDPendingToActivatedForCrossBorderOnboarding()
+    {
+        Mail::fake();
+
+        Queue::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'edd_pending',
+            'submitted'                 => true,
+            'business_Website'          => null,
+            'iec_code'                  => '1234567890'
+        ]);
+
+        $merchantUser = $this->fixtures->connection('live')->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->connection('live')->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service'       => 'pgos',
+                'workflow_type' => 'modular_onboarding',
+                "workflow_details" => [
+                    "cross_border_onboarding_workflow_type" =>"MODULAR_ONBOARDING"
+                ]
+            ]
+        ]);
+
+        $merchantAttribute = [
+            'purpose_code' => 'P0104',
+        ];
+        $this->fixtures->edit('merchant', $merchantDetails->getId(), $merchantAttribute);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $actionState = $this->getDbLastEntity('action_state', 'live');
+
+        $statusChangedBy = $actionState['updated_by'];
+
+        Queue::assertPushed(CrossBorderCommonUseCases::class, 2);
+
+        $this->assertEquals('activated', $merchantDetailData['activation_status']);
+
+        $this->assertEquals('system', $statusChangedBy);
+    }
+
+    public function testSegmentEventInUpdateActivationStatusFromEDDPendingToActivatedForNonCrossBorderOnboarding()
+    {
+        Mail::fake();
+
+        Queue::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'edd_pending',
+            'submitted'                 => true,
+            'business_Website'          => null,
+            'iec_code'                  => '1234567890'
+        ]);
+
+        $merchantUser = $this->fixtures->connection('live')->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->connection('live')->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service'       => 'pgos',
+                'workflow_type' => 'modular_onboarding',
+                "workflow_details" => [
+                    "pg_onboarding_workflow_type" =>"MODULAR_ONBOARDING"
+                ]
+            ]
+        ]);
+
+        $merchantAttribute = [
+            'purpose_code' => 'P0104',
+        ];
+        $this->fixtures->edit('merchant', $merchantDetails->getId(), $merchantAttribute);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $actionState = $this->getDbLastEntity('action_state', 'live');
+
+        $statusChangedBy = $actionState['updated_by'];
+
+        Queue::assertPushed(CrossBorderCommonUseCases::class, 0);
+
+        $this->assertEquals('activated', $merchantDetailData['activation_status']);
+
+        $this->assertEquals('system', $statusChangedBy);
+    }
+
     public function testUpdateActivationStatusFromKQUToActivatedByAdmin()
     {
         Mail::fake();
