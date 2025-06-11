@@ -95,7 +95,13 @@ const RevealApiKey = ({
   ];
 
   return (
-    <Modal isOpen onDismiss={onDismiss} snapPoints={[1, 1, 1]} zIndex={zIndicesMap.modal}>
+    <Modal
+      isOpen
+      onDismiss={onDismiss}
+      snapPoints={[1, 1, 1]}
+      zIndex={zIndicesMap.modal}
+      data-analytics-name="reveal-api-modal"
+    >
       <ModalHeader title="Key ID & Secret" subtitle="Integration Details" />
       <ModalBody>
         <Box
@@ -146,11 +152,13 @@ const RevealApiKey = ({
                 zIndex={zIndicesMap.dropdown}
               >
                 <Link
+                  variant="button"
                   size="large"
                   icon={copiedFields[testId] ? SettlementsIcon : CopyIcon}
                   color={copiedFields[testId] ? 'positive' : 'primary'}
                   onClick={() => handleCopy(testId, value || '')}
                   isDisabled={isFetching}
+                  data-analytics-name={testId}
                 />
               </Tooltip>
             </Box>
@@ -183,6 +191,7 @@ const RevealApiKey = ({
             color={downloadStatus === DownloadState.SUCCESS ? 'positive' : 'primary'}
             icon={downloadStatus === DownloadState.SUCCESS ? CheckCircleIcon : DownloadIcon}
             isDisabled={isFetching}
+            data-analytics-name="download-api-key"
           >
             {downloadStatus === DownloadState.SUCCESS ? 'Downloaded' : 'Download'}
           </Button>

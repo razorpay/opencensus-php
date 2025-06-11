@@ -55,6 +55,7 @@ const SharePaymentHandleModal = ({
       accessibilityLabel="Share Payment Handle"
       snapPoints={[0.7, 0.7, 0.7]}
       zIndex={zIndicesMap.modal}
+      data-analytics-name="share-payment-handle-modal"
     >
       <ModalHeader title="Share Payment Handle" subtitle="Enter amount and share" />
       <ModalBody>
@@ -104,6 +105,7 @@ const SharePaymentHandleModal = ({
             isLoading={isLoading}
             isDisabled={!paymentUrl}
             isFullWidth={isMobile ? true : false}
+            data-analytics-name="share-payment-handle-cta"
           >
             {shareButtonText}
           </Button>

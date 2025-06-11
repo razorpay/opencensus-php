@@ -73,16 +73,23 @@ describe('RevealApiKey Component', () => {
       />,
     );
 
-    // Find all copy icons (there should be two: one for ID, one for secret)
-    const copyButtons = screen.getAllByRole('link');
-    expect(copyButtons).toHaveLength(2);
+    // Find copy buttons by their data-analytics-name attribute instead of by role
+    const keyIdCopyButton = screen
+      .getByTestId('api-keys-modal-key-id')
+      .querySelector('button[data-analytics-name="api-keys-modal-key-id"]');
+    const keySecretCopyButton = screen
+      .getByTestId('api-keys-modal-key-secret')
+      .querySelector('button[data-analytics-name="api-keys-modal-key-secret"]');
+
+    expect(keyIdCopyButton).not.toBeNull();
+    expect(keySecretCopyButton).not.toBeNull();
 
     // Click on the Key ID copy button
-    fireEvent.click(copyButtons[0]);
+    fireEvent.click(keyIdCopyButton!);
     expect(copyToClipboard).toHaveBeenCalledWith(apiKeys.id);
 
     // Click on the Key Secret copy button
-    fireEvent.click(copyButtons[1]);
+    fireEvent.click(keySecretCopyButton!);
     expect(copyToClipboard).toHaveBeenCalledWith(apiKeys.secret);
   });
 

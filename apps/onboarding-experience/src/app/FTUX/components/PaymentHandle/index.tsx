@@ -14,7 +14,7 @@ const PaymentHandle = () => {
   const isMobile = isMobileDevice();
 
   return (
-    <Box>
+    <Box data-analytics-name="payment-handle-card">
       {/* Mobile-only payment handle image */}
       <Box
         display={{ base: 'block', l: 'none' }}
@@ -81,6 +81,7 @@ const PaymentHandle = () => {
               variant="button"
               size={isMobile ? 'xsmall' : 'small'}
               onClick={() => setIsSettlementsGuideModalOpen(true)}
+              data-analytics-name="payment-handle-settlement-schedule"
             >
               settlement schedule
             </Link>

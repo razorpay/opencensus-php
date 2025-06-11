@@ -48,16 +48,18 @@ const CollectPaymentsAccordion = ({
       variant="filled"
       maxWidth="auto"
       marginTop="spacing.4"
+      data-analytics-name="collect-payments-accordion"
     >
       {data.length > 0 ? (
         data.map((item, index) => (
-          <AccordionItem key={item.title}>
+          <AccordionItem key={item.title} data-analytics-name={item.title}>
             <AccordionItemHeader
               leading={
                 <img src={getIconForStep(index)} alt={`Step ${index + 1}`} width={24} height={24} />
               }
               title={item.title}
               titleSuffix={item.getTitleSuffix?.(expandedStep === index)}
+              data-analytics-name={`collect-payments-accordion-header-${index + 1}`}
             />
             <AccordionItemBody>
               <Box paddingLeft={{ base: 'spacing.1', m: 'spacing.8' }}>{item.content}</Box>

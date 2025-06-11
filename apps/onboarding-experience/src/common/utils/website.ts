@@ -103,12 +103,6 @@ export const getWebsiteWorkflowStatus = ({
     websiteVerificationPageStatus,
   } = websiteVerificationData ?? {};
 
-  // Compare Rejection time with websiteVerificationData, to make sure it was rejected recently
-  const isRejectedRecently =
-    rejectedAt && currentStatusUpdatedAt
-      ? new Date(rejectedAt) > new Date(currentStatusUpdatedAt)
-      : false;
-
   // Review state occurs when the workflow is either under active review
   // or business verification service (BVS) validation
   const hasReviewStatus =
@@ -176,9 +170,6 @@ export const getWebsiteWorkflowStatus = ({
   // Waiting for merchant to respond to clarification request
   else if (hasAwaitingCustomerResponseStatus) {
     status = WebsiteVerificationStatusEnum.WorkflowNeedsClarification;
-  } else if (hasRejectedStatus && isRejectedRecently) {
-    // Final rejection state
-    status = WebsiteVerificationStatusEnum.Rejected;
   } else if (
     currentStatus &&
     [
@@ -189,6 +180,9 @@ export const getWebsiteWorkflowStatus = ({
     status = WebsiteVerificationStatusEnum.WebsiteUpdateFailed;
   } else if (currentStatus === WebsiteVerificationAutomationStatus.WEBSITE_LIVENESS_FAILED) {
     status = WebsiteVerificationStatusEnum.WebsiteLivenessFailed;
+  } else if (hasRejectedStatus) {
+    // Final rejection state
+    status = WebsiteVerificationStatusEnum.Rejected;
   }
 
   return status;

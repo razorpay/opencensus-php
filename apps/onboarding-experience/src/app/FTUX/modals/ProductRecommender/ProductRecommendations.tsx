@@ -29,6 +29,7 @@ const ProductRecommendations = ({
       size="medium"
       snapPoints={[0.5, 0.7, 0.85]}
       zIndex={zIndicesMap.modal}
+      data-analytics-name="product-recommendations-modal"
     >
       <ModalHeader
         title="Recommendation for you"
@@ -63,10 +64,15 @@ const ProductRecommendations = ({
             onClick={onExploreAllProducts}
             isFullWidth={isMobile ? true : false}
             variant="tertiary"
+            data-analytics-name="explore-10-other-products"
           >
             Explore 10+ Other Products
           </Button>
-          <Button isFullWidth={isMobile ? true : false} onClick={onBackClick}>
+          <Button
+            isFullWidth={isMobile ? true : false}
+            onClick={onBackClick}
+            data-analytics-name="check-different-use-case"
+          >
             Check for a different use-case
           </Button>
         </Box>

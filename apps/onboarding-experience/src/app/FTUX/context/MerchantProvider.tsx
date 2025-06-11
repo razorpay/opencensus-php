@@ -1,4 +1,5 @@
 import React, { ReactNode, useReducer, useEffect } from 'react';
+import errorService from '@razorpay/universe-cli/errorService';
 import useMerchant from '@OnboardingExperienceCommons/hooks/useMerchant';
 import useMerchantOnboardingData from '@OnboardingExperienceCommons/hooks/useMerchantOnboardingData';
 import { ApiKeys, WORKFLOW_TYPES } from '@OnboardingExperienceCommons/types/merchant';
@@ -33,6 +34,8 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children, triggerTw
     isLoading: isLoadingMerchant,
     refetch: refetchMerchantData,
     isRefetching: isRefetchingMerchant,
+    isError: isMerchantError,
+    error: merchantError,
   } = useMerchant();
 
   // Fetch merchant onboarding data
@@ -41,11 +44,38 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children, triggerTw
     isLoading: isLoadingOnboardingData,
     refetch: refetchOnboardingData,
     isRefetching: isRefetchingOnboardingData,
+    isError: isOnboardingError,
+    error: onboardingError,
   } = useMerchantOnboardingData({
     defaultWorkflow: WORKFLOW_TYPES.BUSINESS_WEBSITE,
     defaultFeatureFlags: FTUX_FEATURE_FLAGS,
     requestedData: FTUX_REQUIRED_DATA_REQUEST,
   });
+
+  if (isMerchantError || merchantError) {
+    errorService.captureError(merchantError || new Error('Unable to fetch merchant data!'), {
+      tags: { module: 'FTUX_HOMEPAGE' },
+      // P2 error since, this will be catched by graphql also
+      rank: errorService.ErrorRank.P2,
+      extra: {
+        info: merchantError,
+      },
+    });
+  }
+
+  if (isOnboardingError || onboardingError) {
+    errorService.captureError(
+      onboardingError || new Error('Unable to fetch merchant onboarding data!'),
+      {
+        tags: { module: 'FTUX_HOMEPAGE' },
+        // P2 error since, this will be catched by graphql also
+        rank: errorService.ErrorRank.P2,
+        extra: {
+          info: onboardingError,
+        },
+      },
+    );
+  }
 
   // Add merchant plugin mutation
   const { mutateAsync: addMerchantPluginMutation } = useWebsitePlugin();

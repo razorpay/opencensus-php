@@ -31,6 +31,7 @@ export const DASHBOARD_TEAMS = {
   TERMINAL: 'Terminal',
   XPAYROLL: 'XPayroll',
   CROSS_SELL_EXPERIENCE: 'Cross Sell Experience',
+  ONBOARDING_EXPERIENCE: 'Onboarding Experience',
 } as const;
 
 export type DASHBOARD_TEAMS = (typeof DASHBOARD_TEAMS)[keyof typeof DASHBOARD_TEAMS];

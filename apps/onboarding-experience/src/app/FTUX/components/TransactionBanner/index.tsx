@@ -21,6 +21,7 @@ const TransactionBanner = () => {
         size={isMobile ? 'small' : 'medium'}
         icon={ArrowRightIcon}
         iconPosition="right"
+        data-analytics-name="proceed-transactions-cta"
       >
         Proceed to transactions and settlements
       </Button>

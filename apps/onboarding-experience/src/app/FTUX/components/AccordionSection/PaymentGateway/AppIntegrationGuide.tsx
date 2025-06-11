@@ -58,6 +58,7 @@ const AppIntegrationGuide = ({
           }
           subTitle={isMobile ? undefined : 'App integration'}
           cardImageUrl={websiteIntegratedIcon}
+          analyticsName="app-integration-guide-card"
         />
       </Box>
     </Box>

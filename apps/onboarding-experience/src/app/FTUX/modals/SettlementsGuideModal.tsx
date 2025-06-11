@@ -132,10 +132,15 @@ const SettlementsGuideModal = ({ onDismiss }: { onDismiss: () => void }) => {
             isFullWidth={!!isMobile}
             href={SETTLEMENTS_GUIDE_URL}
             target="_blank"
+            data-analytics-name="view-complete-guide"
           >
             View complete guide
           </Button>
-          <Button onClick={onDismiss} isFullWidth={!!isMobile}>
+          <Button
+            onClick={onDismiss}
+            isFullWidth={!!isMobile}
+            data-analytics-name="got-settlement-guide"
+          >
             Got it
           </Button>
         </Box>

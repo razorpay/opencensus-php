@@ -3,8 +3,8 @@ import SplitIncomingPaymentsIcon from '@OnboardingExperienceAssets/NoCodeProduct
 import StorefrontIcon from '@OnboardingExperienceAssets/NoCodeProducts/StorefrontIcon.svg';
 import InvoicesIcon from '@OnboardingExperienceAssets/NoCodeProducts/InvoicesIcon.svg';
 import CollectPaymentFromCustomerIcon from '@OnboardingExperienceAssets/NoCodeProducts/CollectPaymentFromCustomerIcon.svg';
-import PaymentLinksThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/PaymentLinksThumbnail.svg';
-import PaymentPagesThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/PaymentPagesThumbnail.svg';
+import PaymentLinksThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/PaymentLinksMWeb.svg';
+import PaymentPagesThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/PaymentPagesMWeb.svg';
 import InvoicesThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/InvoicesThumbnail.svg';
 import StorefrontThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/StorefrontThumbnail.svg';
 import PaymentButtonThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/PaymentButtonThumbnail.svg';
@@ -16,6 +16,7 @@ import RouteThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/RouteThum
 import CheckoutRewardsThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/CheckoutRewardsThumbnail.svg';
 import MagicCheckoutThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/MagicCheckoutThumbnail.svg';
 import OptimizerThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/OptimizerThumbnail.svg';
+import PaymentHandleThumbnail from '@OnboardingExperienceAssets/NoCodeProducts/PaymentHandleThumbnail.svg';
 
 export enum PRODUCT_TYPES {
   PAYMENT_LINKS = 'PAYMENT_LINKS',
@@ -178,7 +179,7 @@ export const AVAILABLE_PRODUCTS_MAP = {
     linkIcon: ArrowUpRightIcon,
   },
   [PRODUCT_TYPES.PAYMENT_HANDLE]: {
-    image: PaymentLinksThumbnail,
+    image: PaymentHandleThumbnail,
     tagIcon: SparklesIcon,
     tagText: 'Set up in 2 mins',
     title: 'Payment Handle',

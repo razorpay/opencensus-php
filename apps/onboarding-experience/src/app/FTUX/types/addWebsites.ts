@@ -1,10 +1,10 @@
 import { ReactElement } from 'react';
 
 export enum AddWebsiteBannerActions {
-  ResolveClarification = 'resolve-clarification',
-  ResolveBvsClarification = 'resolve-bvs-clarification',
-  AddWebsite = 'add-website',
-  UpdateWebsite = 'update-website',
+  RESOLVE_CLARIFICATION = 'resolve-clarification',
+  RESOLVE_BVS_CLARIFICATION = 'resolve-bvs-clarification',
+  ADD_WEBSITE = 'add-website',
+  UPDATE_WEBSITE = 'update-website',
 }
 
 export enum AddWebsiteBadgeContent {
@@ -15,7 +15,7 @@ export enum AddWebsiteBadgeContent {
   ERROR_OCCURED = 'Error Occured',
   LIVENESS_FAILED = 'Not an active website',
   REJECTED = 'Rejected',
-  KLA_ACTIVATED = 'Website not verified',
+  KLA_ACTIVATED = 'Not verified',
 }
 
 type BadgeColor = 'information' | 'negative' | 'neutral' | 'notice' | 'positive' | 'primary';
@@ -23,7 +23,7 @@ type ButtonVariant = 'primary' | 'secondary' | 'tertiary';
 
 export type WebsitePlatformData = {
   title: string;
-  content?: string;
+  content?: string | string[];
   badge?: {
     color: BadgeColor;
     content: AddWebsiteBadgeContent;

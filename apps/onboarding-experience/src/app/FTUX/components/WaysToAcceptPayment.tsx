@@ -23,7 +23,7 @@ const WaysToAcceptPayment = () => {
             <img src={mobileHeaderImg} alt="header-icon" width="85px" />
           </Box>
         ) : (
-          <Box paddingX="spacing.5" display="flex" alignItems="center" gap="spacing.4">
+          <Box paddingX="spacing.5" display="flex" alignItems="center" gap="spacing.5">
             <img src={desktopHeaderLeftImg} alt="header-icon-left" width="85px" />
             <Heading
               color="surface.text.gray.normal"

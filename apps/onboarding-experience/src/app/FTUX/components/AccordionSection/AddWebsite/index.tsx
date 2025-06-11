@@ -41,8 +41,8 @@ const AddWebsite = ({ handleAddLater }: { handleAddLater: () => void }) => {
     setWebsiteModalStatus(ModalStatus.LOADING);
 
     switch (action) {
-      case AddWebsiteBannerActions.AddWebsite:
-      case AddWebsiteBannerActions.UpdateWebsite:
+      case AddWebsiteBannerActions.ADD_WEBSITE:
+      case AddWebsiteBannerActions.UPDATE_WEBSITE:
         const twoFaSuccess = await initiateTwoFaAuth?.();
         if (!twoFaSuccess) {
           setActiveModalStep(null);
@@ -51,10 +51,10 @@ const AddWebsite = ({ handleAddLater }: { handleAddLater: () => void }) => {
         }
         setActiveModalStep(WebsiteSubmitModalSteps.ADD_MAIN_PAGE);
         break;
-      case AddWebsiteBannerActions.ResolveClarification:
+      case AddWebsiteBannerActions.RESOLVE_CLARIFICATION:
         setActiveModalStep(WebsiteSubmitModalSteps.WEBSITE_NC_RAISED);
         break;
-      case AddWebsiteBannerActions.ResolveBvsClarification:
+      case AddWebsiteBannerActions.RESOLVE_BVS_CLARIFICATION:
         setActiveModalStep(WebsiteSubmitModalSteps.ADD_MISSING_POLICY_PAGES);
         break;
       default:
@@ -81,9 +81,21 @@ const AddWebsite = ({ handleAddLater }: { handleAddLater: () => void }) => {
                 ) : null}
               </Box>
               {platform.customLabel}
-              <Text color="surface.text.gray.subtle" size={isMobile ? 'small' : 'medium'}>
-                {platform.content}
-              </Text>
+              {typeof platform.content === 'string' ? (
+                <Text color="surface.text.gray.subtle" size={isMobile ? 'small' : 'medium'}>
+                  {platform.content}
+                </Text>
+              ) : (
+                platform.content?.map((content, index) => (
+                  <Text
+                    key={`content-${index}`}
+                    color="surface.text.gray.subtle"
+                    size={isMobile ? 'small' : 'medium'}
+                  >
+                    {content}
+                  </Text>
+                ))
+              )}
               {platform.cta ? (
                 <Box display="flex" flexDirection={{ base: 'column', m: 'row' }} gap="spacing.5">
                   <Button
@@ -93,19 +105,21 @@ const AddWebsite = ({ handleAddLater }: { handleAddLater: () => void }) => {
                     isDisabled={websiteModalStatus === ModalStatus.LOADING}
                     isLoading={websiteModalStatus === ModalStatus.LOADING}
                     isFullWidth={isMobile}
+                    data-analytics-name="add-website-cta"
                   >
                     {platform.cta.label}
                   </Button>
                   {/* For Add Website CTAs, give option to add later */}
                   {[
-                    AddWebsiteBannerActions.AddWebsite,
-                    AddWebsiteBannerActions.UpdateWebsite,
+                    AddWebsiteBannerActions.ADD_WEBSITE,
+                    AddWebsiteBannerActions.UPDATE_WEBSITE,
                   ].includes(platform.cta?.action) && (
                     <Button
                       size={isMobile ? 'small' : 'medium'}
                       variant="secondary"
                       onClick={handleAddLater}
                       isFullWidth={isMobile}
+                      data-analytics-name="add-website-later"
                     >
                       I'll add this later
                     </Button>

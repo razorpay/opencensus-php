@@ -43,7 +43,10 @@ const useHomepageState = (): HOMEPAGE_ELEMENTS[] => {
   // Check website verification status
   const websiteStatus =
     onboardingData.merchantOnboardingData.websiteVerificationUpdateStatus?.verificationStatus;
-  const isWebsiteAddInProgress = !!websiteStatus?.currentStatus && !!websiteStatus.mainPageUrl;
+  const websiteWorkflowExists =
+    onboardingData.merchantOnboardingData.selfServeWorkflowStatus?.selfServeWorkflow
+      ?.isWorkflowExits;
+  const isWebsiteAddInProgress = !!websiteStatus?.currentStatus || !!websiteWorkflowExists;
 
   const pageElements = getLayoutByMerchantType({
     isPgMerchant,

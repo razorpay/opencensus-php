@@ -22,7 +22,13 @@ const DeactivateKeys = ({
   const [keyRollDelay, setKeyRollDelay] = useState<ApiKeyDelay | undefined>(undefined);
 
   return (
-    <Modal isOpen onDismiss={onDismiss} snapPoints={[1, 1, 1]} zIndex={zIndicesMap.modal}>
+    <Modal
+      isOpen
+      onDismiss={onDismiss}
+      snapPoints={[1, 1, 1]}
+      zIndex={zIndicesMap.modal}
+      data-analytics-name="regenerate-api-modal"
+    >
       <ModalHeader
         title="Confirm and deactivate keys?"
         subtitle="Your current keys will be deactivated since you are generating new ones"
@@ -65,7 +71,12 @@ const DeactivateKeys = ({
           testID="regenerate-api-key-modal-footer"
         >
           {!isMobile && (
-            <Button variant="tertiary" onClick={onDismiss} isDisabled={isLoading}>
+            <Button
+              variant="tertiary"
+              onClick={onDismiss}
+              isDisabled={isLoading}
+              data-analytics-name="regenerate-api-cancel"
+            >
               Cancel
             </Button>
           )}
@@ -76,6 +87,7 @@ const DeactivateKeys = ({
             isLoading={isLoading}
             isDisabled={keyRollDelay === undefined}
             isFullWidth={isMobile}
+            data-analytics-name="regenerate-api-confirm"
           >
             Confirm
           </Button>

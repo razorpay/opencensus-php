@@ -19,6 +19,7 @@ import WixLogo from '@OnboardingExperienceAssets/WixLogo.svg';
 import { useModalComponents } from '@libs/shared-ui';
 import { isMobileDevice } from '@libs/shared-utils';
 import { zIndicesMap } from '@OnboardingExperienceCommons/constants/config';
+import { useStore } from '@federated/apps/shell/commonStore';
 
 export const TOP_THREE_PLUGINS = [
   {
@@ -72,6 +73,7 @@ const SelectableHeroPlugin = ({
         onClick={() => onClick(pluginName)}
         accessibilityLabel="Payment Links Card"
         testID={`plugin-card-${pluginName}`}
+        data-analytics-name={`plugin-card-${pluginName}`}
       >
         <CardBody>
           <Box display="flex" justifyContent="center" alignItems="center">
@@ -92,20 +94,27 @@ const WebsitePluginModal = ({
   supportedPlugins?: { name: string; icon: string }[];
   handleAddPlugin: (newPlugin: string) => Promise<void>;
 }) => {
+  const showNotification = useStore((state) => state.showNotification);
   const isMobile = isMobileDevice();
   const { Modal, ModalHeader, ModalBody, ModalFooter } = useModalComponents(isMobile);
 
   const [selectedPlugin, setselectedPlugin] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // GQL mutation to add the plugin
+  // Mutation to add the plugin
   const handleUpdatePlugin = async () => {
     setIsSubmitting(true);
     try {
       await handleAddPlugin(selectedPlugin);
       onDismiss();
     } catch (error) {
-      console.error('Failed to add plugin:', error);
+      showNotification({
+        type: 'error',
+        message:
+          error instanceof Error && error.message
+            ? error.message
+            : 'An error occurred while selecting the plugin!',
+      });
     }
     setIsSubmitting(false);
   };
@@ -116,6 +125,7 @@ const WebsitePluginModal = ({
       isOpen={true}
       onDismiss={onDismiss}
       zIndex={zIndicesMap.modal}
+      data-analytics-name="website-plugin-modal"
     >
       <ModalHeader
         title="Select your website plugin"
@@ -187,6 +197,7 @@ const WebsitePluginModal = ({
             isDisabled={!selectedPlugin || isSubmitting}
             isLoading={isSubmitting}
             onClick={handleUpdatePlugin}
+            data-analytics-name="website-plugin-select"
           >
             Select
           </Button>

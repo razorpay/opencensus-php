@@ -41,6 +41,7 @@ const ImagePostCard = ({
       width="100%"
       elevation={elevateCard ? 'lowRaised' : undefined}
       padding={isMobile ? 'spacing.5' : 'spacing.7'}
+      data-analytics-name={title ? title.toLowerCase().replace(/ /g, '-') : 'image-post-card'}
     >
       <Box
         display="flex"
@@ -105,10 +106,12 @@ const ImagePostCard = ({
           )}
           {!isCtaLoading && handleClick && (
             <Link
+              variant="button"
               icon={linkIcon}
               iconPosition="right"
               onClick={handleClick}
               size={isMobile ? 'small' : 'medium'}
+              data-analytics-name="image-post-card-cta"
             >
               {linkText}
             </Link>

@@ -31,10 +31,9 @@ const PitchProducts = ({ title, subtitle, products }: PitchProductsProps) => {
         }}
         gap={{ base: 'spacing.7', m: 'spacing.4' }}
         marginTop="spacing.7"
-        justifyContent={{ base: 'none', l: 'space-between' }}
       >
         {products.map((product: ImagePostCardPropsType) => (
-          <Box key={product.title} maxWidth={{ base: 'auto', l: '295px' }} width="100%">
+          <Box key={product.title} maxWidth={{ base: 'auto', l: '288px' }} width="100%">
             <ImagePostCard {...product} />
           </Box>
         ))}

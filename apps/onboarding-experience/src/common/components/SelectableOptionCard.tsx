@@ -14,6 +14,8 @@ export type SelectableOptionCardProps = {
   imageHeight?: string;
   containerProps?: BoxProps;
   isSelected?: boolean;
+  analyticsName?: string;
+  imageFit?: string;
 };
 
 const SelectableOptionCard = ({
@@ -26,8 +28,10 @@ const SelectableOptionCard = ({
   link,
   imageWidth = '50px',
   imageHeight = '50px',
+  imageFit = 'contain',
   containerProps,
   isSelected,
+  analyticsName,
 }: SelectableOptionCardProps) => {
   const isMobile = isMobileDevice();
   return (
@@ -45,13 +49,14 @@ const SelectableOptionCard = ({
         isDisabled ? 'surface.background.gray.subtle' : 'surface.background.gray.intense'
       }
       isSelected={isSelected}
+      data-analytics-name={analyticsName || 'selectable-option-card'}
     >
       <Box display="flex" alignItems="center" gap="spacing.4" {...containerProps}>
         <img
           data-testid="card-image"
           src={cardImageUrl}
           alt="selectable option"
-          style={{ width: imageWidth, height: imageHeight, objectFit: 'contain' }}
+          style={{ width: imageWidth, height: imageHeight, objectFit: imageFit }}
         />
         <Box display="flex" flexDirection="column" alignItems="flex-start" gap="6px" flex="1 0 0">
           {title ? (

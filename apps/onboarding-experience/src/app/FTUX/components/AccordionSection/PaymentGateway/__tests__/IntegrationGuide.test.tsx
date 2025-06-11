@@ -325,42 +325,4 @@ describe('IntegrationGuide Component', () => {
 
     expect(mockAddMerchantWebsitePlugin).not.toHaveBeenCalled();
   });
-
-  test('handles error during addMerchantWebsitePlugin', async () => {
-    // Create notification mock
-    const showNotificationMock = jest.fn();
-
-    // Override the useStore implementation for this test only
-    const originalUseStore = require('@federated/apps/shell/commonStore').useStore;
-    (originalUseStore as jest.Mock).mockImplementation((fn) =>
-      fn({ showNotification: showNotificationMock }),
-    );
-
-    mockAddMerchantWebsitePlugin.mockRejectedValueOnce(new Error('API Error'));
-
-    await act(async () => {
-      renderWithWrappers(<IntegrationGuide />);
-    });
-
-    const cards = screen.getAllByTestId('selectable-option-card');
-    const customWebsiteCard = cards.find(
-      (card) => within(card).queryByText('Custom website') !== null,
-    );
-
-    // Add non-null assertion to tell TypeScript this element exists
-    expect(customWebsiteCard).not.toBeUndefined();
-
-    await act(async () => {
-      fireEvent.click(customWebsiteCard!);
-    });
-
-    // Verify notification was called with error message
-    expect(showNotificationMock).toHaveBeenCalledWith({
-      type: 'error',
-      message: 'An error occurred while selecting the plugin!',
-    });
-
-    // Verify selectedWebsitePlugin is set back to null on error
-    expect(screen.getByText('What did you use to build your website?')).toBeInTheDocument();
-  });
 });

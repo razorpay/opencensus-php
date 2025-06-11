@@ -15,6 +15,7 @@ import { PAYMENT_CHANNEL_OPTIONS } from '@OnboardingExperienceCommons/types/merc
 import { WebsiteVerificationStatusEnum } from '@OnboardingExperienceCommons/types/onboarding';
 import { getETAfromOffset } from '@OnboardingExperienceCommons/utils/dateAndTime';
 import { getWebsiteAdditionContent } from '@FTUX/utils/homepage';
+import { hasAcceptedAnyPaymentChannel } from '@OnboardingExperienceCommons/utils/merchant';
 
 /**
  * Hook that determines the verification status for all platform types (website, iOS, Android)
@@ -61,6 +62,28 @@ export const useWebsiteAdditionStatus = (): Array<WebsitePlatformData> => {
 
   if (hasApiKeyAccess) {
     // Handle verified platforms if user has api key access - these are URLs that already exist in merchant data
+    if (appstoreUrl) {
+      websitePlatforms.push({
+        title: 'iOS app',
+        badge: {
+          color: 'positive',
+          content: AddWebsiteBadgeContent.VERIFIED,
+        },
+        content: 'You can now access live keys to set up payments',
+      });
+    }
+
+    if (playstoreUrl) {
+      websitePlatforms.push({
+        title: 'Android app',
+        badge: {
+          color: 'positive',
+          content: AddWebsiteBadgeContent.VERIFIED,
+        },
+        content: 'You can now access live keys to set up payments',
+      });
+    }
+
     if (websiteUrl) {
       websitePlatforms.push({
         title: `Website link`,
@@ -72,37 +95,37 @@ export const useWebsiteAdditionStatus = (): Array<WebsitePlatformData> => {
       });
     }
 
-    if (appstoreUrl) {
-      websitePlatforms.push({
-        title: 'iOS app',
-        badge: {
-          color: 'positive',
-          content: AddWebsiteBadgeContent.VERIFIED,
-        },
-        content: 'Your app is verified and ready to accept payments.',
-      });
-    }
-
-    if (playstoreUrl) {
-      websitePlatforms.push({
-        title: 'Android app',
-        badge: {
-          color: 'positive',
-          content: AddWebsiteBadgeContent.VERIFIED,
-        },
-        content: 'Your app is verified and ready to accept payments.',
-      });
-    }
-
     // If the business URL was provided and verified during onboarding, we don't need to show the add website CTA
     if (addedBusinessURL) {
       return websitePlatforms;
     }
-  }
 
-  // Handle in-progress verification workflows for any platform
-  const mainPageUrl = websiteUpdateData?.mainPageUrl;
-  const platformType = getBusinessPlatformType(mainPageUrl || '');
+    /* These below conditions are to handle App edge cases:
+       Merchant only intended to add one of Android/ios in onboarding, and also added it
+       then we don't need to show the add website CTA
+    */
+    // Check if merchant intends to have Android or iOS apps
+    const hasAndroidAppIntent = hasAcceptedAnyPaymentChannel(paymentChannels, [
+      PAYMENT_CHANNEL_OPTIONS.Android,
+    ]);
+    const hasIOSAppIntent = hasAcceptedAnyPaymentChannel(paymentChannels, [
+      PAYMENT_CHANNEL_OPTIONS.IOS,
+    ]);
+    const hasWebsiteIntent = hasAcceptedAnyPaymentChannel(paymentChannels, [
+      PAYMENT_CHANNEL_OPTIONS.Websites,
+    ]);
+
+    // Determine if there are any platforms that the merchant wants but hasn't added yet
+    const hasMissingPlatforms =
+      (hasAndroidAppIntent && !playstoreUrl) ||
+      (hasIOSAppIntent && !appstoreUrl) ||
+      (hasWebsiteIntent && !addedBusinessURL);
+
+    // If there are no missing platforms, return the current list
+    if (!hasMissingPlatforms) {
+      return websitePlatforms;
+    }
+  }
 
   // Determine current workflow status by combining multiple data sources
   let status = getWebsiteWorkflowStatus({
@@ -111,22 +134,17 @@ export const useWebsiteAdditionStatus = (): Array<WebsitePlatformData> => {
   });
 
   // If the url has been submitted but there is no status progress and no api key access
-  if (addedBusinessURL && !status && !hasApiKeyAccess) {
+  if ((appstoreUrl || playstoreUrl || websiteUrl) && !status && !hasApiKeyAccess) {
     status = WebsiteVerificationStatusEnum.NeedsUpdate;
   } else if (!status) {
     // In case there is no status progress, we need to show Add CTA
     status = WebsiteVerificationStatusEnum.NoWebsite;
   }
 
-  // Initialize with platform-specific title before adding status-specific properties
-  let activePlatform: WebsitePlatformData = {
-    title:
-      platformType === AvailablePlatformTypesEnum.WEBSITE
-        ? 'Website link'
-        : platformType === AvailablePlatformTypesEnum.IOS
-        ? 'iOS app'
-        : 'Android app',
-  };
+  // Get platform content according to the payment channel intent
+  const platformContent = getWebsiteAdditionContent(paymentChannels);
+
+  let activePlatform: WebsitePlatformData = { title: platformContent.title };
 
   // Handle each verification status with appropriate messaging and action buttons
   switch (status) {
@@ -140,7 +158,7 @@ export const useWebsiteAdditionStatus = (): Array<WebsitePlatformData> => {
         },
         cta: {
           label: 'Resolve now',
-          action: AddWebsiteBannerActions.ResolveBvsClarification,
+          action: AddWebsiteBannerActions.RESOLVE_BVS_CLARIFICATION,
         },
         content: `Some policy details are missing on your website. Please update them or create policy pages using Razorpay.`,
       };
@@ -155,16 +173,22 @@ export const useWebsiteAdditionStatus = (): Array<WebsitePlatformData> => {
         },
         cta: {
           label: 'Resolve now',
-          action: AddWebsiteBannerActions.ResolveClarification,
+          action: AddWebsiteBannerActions.RESOLVE_CLARIFICATION,
         },
-        content: `Our team needs a few more details to verify your ${
-          activePlatform.title
-        } (${mainPageUrl}): ${
-          businessWebsiteWorkflow?.needsClarificationMessage || 'This link is not accepted!'
-        }. Please provide them to complete the process.`,
+        content: `Our team needs a few more details to verify your ${activePlatform.title}. Please provide them to complete the process.`,
       };
       break;
     case WebsiteVerificationStatusEnum.BvsInProgress:
+      // BVS Review in progress - no action needed from merchant
+      activePlatform = {
+        ...activePlatform,
+        badge: {
+          color: 'information',
+          content: AddWebsiteBadgeContent.UNDER_REVIEW,
+        },
+        content: `Your ${activePlatform.title} is under review. Expect an update within 10 minutes. In the meantime, set up payments in Test Mode in the next step.`,
+      };
+      break;
     case WebsiteVerificationStatusEnum.WorkflowInReview:
       // Review in progress - no action needed from merchant
       activePlatform = {
@@ -173,7 +197,9 @@ export const useWebsiteAdditionStatus = (): Array<WebsitePlatformData> => {
           color: 'information',
           content: AddWebsiteBadgeContent.UNDER_REVIEW,
         },
-        content: `You should receive an update about your website by ${getETAfromOffset()}. In the meantime, you can test the flow using Test mode. `,
+        content: `Your ${
+          activePlatform.title
+        } is under review. Expect an update by ${getETAfromOffset()}. In the meantime, set up payments in Test Mode in the next step.`,
       };
       break;
     case WebsiteVerificationStatusEnum.WebsiteUpdateFailed:
@@ -186,10 +212,9 @@ export const useWebsiteAdditionStatus = (): Array<WebsitePlatformData> => {
         },
         cta: {
           label: `Add ${activePlatform.title}`,
-          action: AddWebsiteBannerActions.AddWebsite,
+          action: AddWebsiteBannerActions.ADD_WEBSITE,
         },
-        content:
-          'Please try adding the website again. If the issue persists, reach out to our support team for assistance.',
+        content: `Please try adding the ${activePlatform.title} again. If the issue persists, reach out to our support team for assistance.`,
       };
       break;
     case WebsiteVerificationStatusEnum.WebsiteLivenessFailed:
@@ -202,10 +227,10 @@ export const useWebsiteAdditionStatus = (): Array<WebsitePlatformData> => {
         },
         cta: {
           label: `Update ${activePlatform.title}`,
-          action: AddWebsiteBannerActions.AddWebsite,
+          action: AddWebsiteBannerActions.ADD_WEBSITE,
         },
         content:
-          "Your website doesn't seem live. You can update the link with a live website or mark it is as live when it is ready.",
+          "Your website doesn't seem live. You can update the link with a live website when it is ready.",
       };
       break;
     case WebsiteVerificationStatusEnum.Rejected:
@@ -214,43 +239,41 @@ export const useWebsiteAdditionStatus = (): Array<WebsitePlatformData> => {
         ...activePlatform,
         cta: {
           label: `Update ${activePlatform.title}`,
-          action: AddWebsiteBannerActions.UpdateWebsite,
+          action: AddWebsiteBannerActions.UPDATE_WEBSITE,
         },
         customLabel: (
           <Text size="medium" weight="semibold" color="interactive.text.negative.normal">
             Rejected: {businessWebsiteWorkflow?.rejectionReason || 'This link is not approved!'}
           </Text>
         ),
-        content: `Please rectify this on your website and add again, or add a new website.`,
+        content: `Please rectify this on your ${activePlatform.title} and add again, or add a new ${activePlatform.title}.`,
       };
       break;
     case WebsiteVerificationStatusEnum.NeedsUpdate:
       activePlatform = {
-        title: `Website / App`,
+        ...activePlatform,
         badge: {
           color: 'negative',
           content: AddWebsiteBadgeContent.KLA_ACTIVATED,
         },
         cta: {
           label: 'Update details',
-          action: AddWebsiteBannerActions.UpdateWebsite,
+          action: AddWebsiteBannerActions.UPDATE_WEBSITE,
         },
-        content: `Website (${addedBusinessURL}) provided during onboarding could not be verified. Please edit your website details.`,
+        content: `${activePlatform.title}${
+          addedBusinessURL ? ` (${addedBusinessURL})` : ''
+        } provided during onboarding could not be verified. Please edit your ${
+          activePlatform.title
+        }.`,
       };
       break;
     case WebsiteVerificationStatusEnum.NoWebsite:
-      const newWebsiteAdditionContent = getWebsiteAdditionContent(paymentChannels);
       activePlatform = {
-        title: newWebsiteAdditionContent.title,
-        customLabel: newWebsiteAdditionContent.label ? (
-          <Text color="surface.text.gray.subtle" size="medium">
-            {newWebsiteAdditionContent.label}
-          </Text>
-        ) : undefined,
-        content: newWebsiteAdditionContent.content,
+        ...activePlatform,
+        content: platformContent.initialContent,
         cta: {
-          label: `Add ${newWebsiteAdditionContent.title}`,
-          action: AddWebsiteBannerActions.AddWebsite,
+          label: `Add ${activePlatform.title}`,
+          action: AddWebsiteBannerActions.ADD_WEBSITE,
         },
       };
       break;

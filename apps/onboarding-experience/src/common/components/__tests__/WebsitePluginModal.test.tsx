@@ -73,9 +73,19 @@ jest.mock('@libs/shared-ui', () => ({
   }),
 }));
 
+// Mock the Zustand store
+jest.mock('@federated/apps/shell/commonStore', () => ({
+  useStore: jest.fn().mockImplementation((selector) =>
+    selector({
+      showNotification: jest.fn(),
+    }),
+  ),
+}));
+
 describe('WebsitePluginModal', () => {
   const mockOnDismiss = jest.fn();
   const mockHandleAddPlugin = jest.fn().mockResolvedValue(undefined);
+  const mockShowNotification = jest.fn();
   const mockSupportedPlugins = [
     { name: 'Shopify', icon: 'shopify-icon.svg' },
     { name: 'WooCommerce', icon: 'woocommerce-icon.svg' },
@@ -88,6 +98,11 @@ describe('WebsitePluginModal', () => {
     jest.clearAllMocks();
     (isMobileDevice as jest.Mock).mockReturnValue(false);
     console.error = jest.fn();
+
+    // Mock useStore to return showNotification
+    require('@federated/apps/shell/commonStore').useStore.mockImplementation((selector: any) =>
+      selector({ showNotification: mockShowNotification }),
+    );
   });
 
   it('renders modal with correct title and subtitle', () => {
@@ -174,44 +189,6 @@ describe('WebsitePluginModal', () => {
     expect(mockOnDismiss).toHaveBeenCalled();
   });
 
-  it('handles error during plugin addition', async () => {
-    // Mock handleAddPlugin to reject
-    const mockError = new Error('Failed to add plugin');
-    const mockHandleAddPluginWithError = jest.fn().mockRejectedValue(mockError);
-
-    render(
-      <WebsitePluginModal
-        onDismiss={mockOnDismiss}
-        handleAddPlugin={mockHandleAddPluginWithError}
-        supportedPlugins={mockSupportedPlugins}
-      />,
-    );
-
-    // Select a plugin
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('plugin-card-Shopify'));
-    });
-
-    // Click the Select button
-    const selectButton = screen.getByRole('button', { name: 'Select' });
-    await act(async () => {
-      fireEvent.click(selectButton);
-    });
-
-    // Verify handleAddPlugin was called
-    await waitFor(() => {
-      expect(mockHandleAddPluginWithError).toHaveBeenCalledWith('Shopify');
-    });
-
-    // Verify error was logged
-    await waitFor(() => {
-      expect(console.error).toHaveBeenCalledWith('Failed to add plugin:', mockError);
-    });
-
-    // Verify modal was not dismissed on error
-    expect(mockOnDismiss).not.toHaveBeenCalled();
-  });
-
   it('renders mobile version correctly', async () => {
     // Mock mobile device
     (isMobileDevice as jest.Mock).mockReturnValue(true);
@@ -232,5 +209,75 @@ describe('WebsitePluginModal', () => {
     // Verify that the button has fullWidth attribute in mobile mode
     const selectButton = screen.getByRole('button', { name: 'Select' });
     expect(selectButton).toHaveAttribute('data-fullwidth', 'true');
+  });
+
+  it('shows error notification when plugin selection fails', async () => {
+    const errorMessage = 'Failed to select plugin';
+    mockHandleAddPlugin.mockRejectedValueOnce(new Error(errorMessage));
+
+    render(
+      <WebsitePluginModal
+        onDismiss={mockOnDismiss}
+        handleAddPlugin={mockHandleAddPlugin}
+        supportedPlugins={mockSupportedPlugins}
+      />,
+    );
+
+    // Select a plugin
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('plugin-card-Shopify'));
+    });
+
+    // Click the Select button
+    const selectButton = screen.getByRole('button', { name: 'Select' });
+    await act(async () => {
+      fireEvent.click(selectButton);
+    });
+
+    // Verify showNotification was called with the error message
+    await waitFor(() => {
+      expect(mockShowNotification).toHaveBeenCalledWith({
+        type: 'error',
+        message: errorMessage,
+      });
+    });
+
+    // Verify onDismiss was not called
+    expect(mockOnDismiss).not.toHaveBeenCalled();
+  });
+
+  it('shows generic error notification when no specific error message is provided', async () => {
+    // Reject with something that is not an Error object
+    mockHandleAddPlugin.mockRejectedValueOnce('Some error occurred');
+
+    render(
+      <WebsitePluginModal
+        onDismiss={mockOnDismiss}
+        handleAddPlugin={mockHandleAddPlugin}
+        supportedPlugins={mockSupportedPlugins}
+      />,
+    );
+
+    // Select a plugin
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('plugin-card-Shopify'));
+    });
+
+    // Click the Select button
+    const selectButton = screen.getByRole('button', { name: 'Select' });
+    await act(async () => {
+      fireEvent.click(selectButton);
+    });
+
+    // Verify showNotification was called with the generic error message
+    await waitFor(() => {
+      expect(mockShowNotification).toHaveBeenCalledWith({
+        type: 'error',
+        message: 'An error occurred while selecting the plugin!',
+      });
+    });
+
+    // Verify onDismiss was not called
+    expect(mockOnDismiss).not.toHaveBeenCalled();
   });
 });

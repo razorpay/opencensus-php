@@ -46,8 +46,6 @@ const FTUXHomepage = (): JSX.Element => {
           isFullWidth
           color="notice"
           isDismissible={false}
-          marginX={isMobile ? '-8px' : '-16px'}
-          marginTop={isMobile ? '-8px' : '-16px'}
         />
       )}
       <Box display="flex" justifyContent="center">

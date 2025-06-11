@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import errorService from '@razorpay/universe-cli/errorService';
 import { isMobileDevice } from '@libs/shared-utils';
-import { useStore } from '@federated/apps/shell/commonStore';
 import { Box, Link, Divider, Text, EditIcon, LayersIcon } from '@razorpay/blade/components';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
 import { INTEGRATION_GUIDE } from '@FTUX/constants/accordion';
@@ -8,12 +8,14 @@ import { PAYMENT_CHANNEL_OPTIONS } from '@OnboardingExperienceCommons/types/merc
 import SelectableOptionCard, {
   SelectableOptionCardProps,
 } from '@OnboardingExperienceCommons/components/SelectableOptionCard';
-import { hasAcceptedAnyPaymentChannel } from '@OnboardingExperienceCommons/utils/merchant';
+import {
+  hasAcceptedAnyPaymentChannel,
+  hasAddedWebsite,
+} from '@OnboardingExperienceCommons/utils/merchant';
 import {
   AvailablePlatformTypesEnum,
   getBusinessPlatformType,
 } from '@OnboardingExperienceCommons/utils/website';
-import { hasAddedWebsite } from '@OnboardingExperienceCommons/utils/merchant';
 import customWebsiteIntegrationIcon from '@OnboardingExperienceAssets/CustomWebsiteIntegrationIcon.svg';
 import websiteIntegratedIcon from '@OnboardingExperienceAssets/WebsiteIntegratedIcon.svg';
 import pluginWebsiteIntegrationIcon from '@OnboardingExperienceAssets/PluginWebsiteIntegrationIcon.svg';
@@ -22,7 +24,6 @@ import AppIntegrationGuide from './AppIntegrationGuide';
 
 const IntegrationGuide = () => {
   const isMobile = isMobileDevice();
-  const showNotification = useStore((state) => state.showNotification);
   const { merchantData, onboardingData, addMerchantWebsitePlugin } = useMerchantContext();
   const [selectedWebsitePlugin, setSelectedWebsitePlugin] = useState<string | null>(null);
   const [websitePluginModalVisible, setWebsitePluginModalVisible] = useState(false);
@@ -32,28 +33,46 @@ const IntegrationGuide = () => {
   // Check if the merchant has added a website, has API key access and is activated
   const hasApiKeyAccess = Boolean(merchantData?.merchantById?.hasApiKeyAccess);
 
-  // Check if the merchant has added a website, has API key access and is activated
-  const isWebsiteVerified =
-    Boolean(merchantData?.merchantById?.hasApiKeyAccess) &&
-    hasAddedWebsite(merchantData?.merchantById?.business?.paymentAcceptanceChannels);
-
   const websiteUrl =
     merchantData?.merchantById?.business?.paymentAcceptanceChannels?.[
       PAYMENT_CHANNEL_OPTIONS.Websites
     ]?.urls?.[0]?.value;
   const platformType = getBusinessPlatformType(websiteUrl);
 
-  const hasAndroidIntent =
+  const hasWebsiteIntent = hasAcceptedAnyPaymentChannel(paymentChannels, [
+    PAYMENT_CHANNEL_OPTIONS.Websites,
+  ]);
+  const hasAndroidIntent = hasAcceptedAnyPaymentChannel(paymentChannels, [
+    PAYMENT_CHANNEL_OPTIONS.Android,
+  ]);
+  const hasIOSIntent = hasAcceptedAnyPaymentChannel(paymentChannels, [PAYMENT_CHANNEL_OPTIONS.IOS]);
+
+  // Check if the merchant intends to use a website for payment acceptance
+  // Returns true if platform type is a website or if they've selected website payment channel
+  let showWebsiteGuide = websiteUrl && platformType === AvailablePlatformTypesEnum.WEBSITE;
+
+  // Determine whether to display the Android integration guide based on:
+  // 1. If platform type is Android, or
+  // 2. If they've specifically added an Android website, or
+  // 3. If no website guide and intent, show this guide atleast if they have Android intent
+  const showAndroidGuide =
     platformType === AvailablePlatformTypesEnum.ANDROID ||
-    hasAcceptedAnyPaymentChannel(paymentChannels, [PAYMENT_CHANNEL_OPTIONS.Android]);
+    hasAddedWebsite(paymentChannels, [PAYMENT_CHANNEL_OPTIONS.Android]) ||
+    (!showWebsiteGuide && !hasWebsiteIntent && hasAndroidIntent);
 
-  const hasIOSIntent =
+  // Determine whether to display the iOS integration guide based on:
+  // 1. If platform type is iOS, or
+  // 2. If they've specifically added an iOS website, or
+  // 3. If no website guide and intent, show this guide atleast if they have IOS intent
+  const showIOSGuide =
     platformType === AvailablePlatformTypesEnum.IOS ||
-    hasAcceptedAnyPaymentChannel(paymentChannels, [PAYMENT_CHANNEL_OPTIONS.IOS]);
+    hasAddedWebsite(paymentChannels, [PAYMENT_CHANNEL_OPTIONS.IOS]) ||
+    (!showWebsiteGuide && !hasWebsiteIntent && hasIOSIntent);
 
-  const hasWebsiteIntent =
-    platformType === AvailablePlatformTypesEnum.WEBSITE ||
-    hasAcceptedAnyPaymentChannel(paymentChannels, [PAYMENT_CHANNEL_OPTIONS.Websites]);
+  // In case of fallback, show website guide always
+  if (!showAndroidGuide && !showIOSGuide) {
+    showWebsiteGuide = true;
+  }
 
   const handleAddPlugin = async (newPlugin: string) => {
     // Find if there's a plugin used for this website
@@ -70,15 +89,21 @@ const IntegrationGuide = () => {
     } catch (error) {
       // Rollback to previous plugin in case of error
       setSelectedWebsitePlugin(previouslySelectedPlugin);
-      showNotification({
-        type: 'error',
-        message: 'An error occurred while selecting the plugin!',
+
+      errorService.captureError(error, {
+        tags: { module: 'FTUX_INTEGRATION_GUIDE' },
+        rank: errorService.ErrorRank.P0,
+        extra: {
+          info: error,
+        },
       });
+
+      throw new Error('An error occurred while selecting the plugin! Please try again later');
     }
   };
 
   const websiteIntegrationOptions: SelectableOptionCardProps[] = useMemo(() => {
-    if (!hasWebsiteIntent) {
+    if (!showWebsiteGuide) {
       return [];
     }
 
@@ -119,6 +144,7 @@ const IntegrationGuide = () => {
           handleClick: () => {
             window.open(integrationGuide, '_blank');
           },
+          analyticsName: 'web-integration-guide-card',
         },
       ];
     }
@@ -130,12 +156,14 @@ const IntegrationGuide = () => {
         subTitle: 'Built on my own',
         cardImageUrl: customWebsiteIntegrationIcon,
         handleClick: () => handleAddPlugin(''),
+        analyticsName: 'custom-website-integration-card',
       },
       {
         title: 'Used a web builder',
         subTitle: 'Like Shopify, WooCommerce, Wix.',
         cardImageUrl: pluginWebsiteIntegrationIcon,
         handleClick: () => setWebsitePluginModalVisible(true),
+        analyticsName: 'web-builder-integration-card',
       },
     ];
   }, [websiteUrl, platformType, selectedWebsitePlugin, isMobile]);
@@ -199,16 +227,17 @@ const IntegrationGuide = () => {
                 subTitle={option.subTitle}
                 cardImageUrl={option.cardImageUrl}
                 handleClick={option.handleClick}
+                analyticsName={option.analyticsName}
               />
             ))}
           </Box>
         </Box>
       )}
 
-      {(hasAndroidIntent || hasIOSIntent) && (
+      {(showAndroidGuide || showIOSGuide) && (
         <>
           {websiteIntegrationOptions?.length > 0 && <Divider />}
-          <AppIntegrationGuide hasAndroidIntent={hasAndroidIntent} hasIOSIntent={hasIOSIntent} />
+          <AppIntegrationGuide hasAndroidIntent={showAndroidGuide} hasIOSIntent={showIOSGuide} />
         </>
       )}
 

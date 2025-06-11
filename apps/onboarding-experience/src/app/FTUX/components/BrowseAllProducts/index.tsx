@@ -15,6 +15,7 @@ const BrowseAllProducts = () => {
       flexDirection={{ base: 'column', m: 'row' }}
       alignItems="center"
       gap="spacing.5"
+      data-analytics-name="browse-all-products-section"
     >
       <Box display="flex" flexDirection="row" alignItems="center" gap="spacing.5">
         <img width="24px" src={chatHelpIcon} alt="Help" />
@@ -29,6 +30,7 @@ const BrowseAllProducts = () => {
         }}
         marginLeft="auto"
         isFullWidth={isMobile ? true : false}
+        data-analytics-name="browse-all-payment-options"
       >
         Browse all products
       </Button>

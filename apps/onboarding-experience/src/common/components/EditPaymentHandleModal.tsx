@@ -160,7 +160,13 @@ const EditPaymentHandleModal = ({
   }, [paymentHandleUrl, suggestions]);
 
   return (
-    <Modal isOpen={true} onDismiss={onDismiss} snapPoints={[1, 1, 1]} zIndex={zIndicesMap.modal}>
+    <Modal
+      isOpen={true}
+      onDismiss={onDismiss}
+      snapPoints={[1, 1, 1]}
+      zIndex={zIndicesMap.modal}
+      data-analytics-name="edit-payment-handle-modal"
+    >
       <ModalHeader
         title="Edit your Razorpay.me link"
         subtitle="Change your handle to whatever you like"
@@ -201,6 +207,7 @@ const EditPaymentHandleModal = ({
                             `${HANDLE_PREFIX}${removePaymentHandleSlugPrefix(suggestion)}`,
                           )
                         }
+                        data-analytics-name="payment-handle-suggestion"
                       >
                         {suggestion}
                       </Link>
@@ -215,7 +222,12 @@ const EditPaymentHandleModal = ({
       </ModalBody>
       <ModalFooter>
         <Box display="flex" flexDirection="row" gap="spacing.3" justifyContent="flex-end">
-          <Button variant="tertiary" onClick={onDismiss} isFullWidth={isMobile ? true : false}>
+          <Button
+            variant="tertiary"
+            onClick={onDismiss}
+            isFullWidth={isMobile ? true : false}
+            data-analytics-name="edit-payment-handle-cancel"
+          >
             Cancel
           </Button>
           <Button
@@ -229,6 +241,7 @@ const EditPaymentHandleModal = ({
               paymentHandleValue.length < 3
             }
             isFullWidth={isMobile ? true : false}
+            data-analytics-name="edit-payment-handle-save"
           >
             Save Changes
           </Button>

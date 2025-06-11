@@ -3,6 +3,7 @@ import { Box, Heading, Badge } from '@razorpay/blade/components';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
 import useAccordionSectionData from '@FTUX/hooks/useAccordionSectionData';
 import collectPaymentsBannerImg from '@OnboardingExperienceAssets/CollectPaymentsBanner.svg';
+import collectPaymentsBannerAppsImg from '@OnboardingExperienceAssets/CollectPaymentsBannerApps.svg';
 import CollectPaymentsAccordion from './CollectPaymentsAccordion';
 
 const AccordionSection = () => {
@@ -52,7 +53,11 @@ const AccordionSection = () => {
             l: '360px',
           }}
         >
-          <img src={collectPaymentsBannerImg} alt="accordionHeader" width="100%" />
+          <img
+            src={isAppOnlyMerchant ? collectPaymentsBannerAppsImg : collectPaymentsBannerImg}
+            alt="accordionHeader"
+            width="100%"
+          />
         </Box>
       </Box>
       <CollectPaymentsAccordion

@@ -46,6 +46,7 @@ const index = () => {
         size={isMobile ? 'small' : 'medium'}
         icon={ArrowRightIcon}
         iconPosition="right"
+        data-analytics-name="complete-onboarding-cta"
       >
         Complete Onboarding
       </Button>
@@ -76,6 +77,7 @@ const index = () => {
         size={isMobile ? 'small' : 'medium'}
         icon={ArrowRightIcon}
         iconPosition="right"
+        data-analytics-name="resolve-nc-cta"
       >
         Resolve NC
       </Button>

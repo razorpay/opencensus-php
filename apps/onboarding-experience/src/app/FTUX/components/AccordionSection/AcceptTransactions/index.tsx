@@ -19,7 +19,12 @@ const AcceptTransactions = ({ mode }: { mode: DASHBOARD_MODE }) => {
       <Text size={textSize} weight="regular" color="surface.text.gray.subtle">
         Once you do a live transaction, we'll deposit the collected payments in your bank account as
         per your{' '}
-        <Link size={textSize} variant="button" onClick={() => setIsSettlementsGuideModalOpen(true)}>
+        <Link
+          size={textSize}
+          variant="button"
+          onClick={() => setIsSettlementsGuideModalOpen(true)}
+          data-analytics-name="transaction-settlement-cycle"
+        >
           settlement cycle
         </Link>
       </Text>

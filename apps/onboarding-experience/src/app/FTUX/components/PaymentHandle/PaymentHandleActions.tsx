@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import errorService from '@razorpay/universe-cli/errorService';
 import {
   Box,
   Text,
@@ -77,9 +78,7 @@ function PaymentHandleActions() {
           !resp?.merchantPaymentHandleEncryptedAmount?.success ||
           !resp?.merchantPaymentHandleEncryptedAmount?.encryptedAmount
         ) {
-          throw new Error(
-            'An error occured while generating payment share link - Please try again later!',
-          );
+          throw new Error(resp?.merchantPaymentHandleEncryptedAmount?.message);
         }
 
         const encryptedAmount = resp.merchantPaymentHandleEncryptedAmount.encryptedAmount;
@@ -87,6 +86,14 @@ function PaymentHandleActions() {
         encryptedAmountCache.current[amount] = encryptedAmount;
         shareLink = `${activeHandleUrl}?amount=${encryptedAmount}`;
       } catch (error) {
+        errorService.captureError(error, {
+          tags: { module: 'FTUX_PAYMENT_HANDLE' },
+          rank: errorService.ErrorRank.P0,
+          extra: {
+            info: error,
+          },
+        });
+
         throw new Error(
           'An error occured while generating payment share link - Please try again later!',
         );
@@ -121,7 +128,15 @@ function PaymentHandleActions() {
     try {
       const resp = await fetchHandleSuggestions();
       return resp?.merchantPaymentHandleSuggestions?.suggestions || [];
-    } catch (_) {
+    } catch (error) {
+      errorService.captureError(error, {
+        tags: { module: 'FTUX_PAYMENT_HANDLE' },
+        rank: errorService.ErrorRank.P0,
+        extra: {
+          info: error,
+        },
+      });
+
       return [];
     }
   };
@@ -145,6 +160,14 @@ function PaymentHandleActions() {
           : false,
       };
     } catch (err) {
+      errorService.captureError(err, {
+        tags: { module: 'FTUX_PAYMENT_HANDLE' },
+        rank: errorService.ErrorRank.P0,
+        extra: {
+          info: err,
+        },
+      });
+
       throw new Error('Error occured while checking handle availability!');
     }
   };
@@ -162,6 +185,13 @@ function PaymentHandleActions() {
         throw new Error('Unable to update payment handle!');
       }
     } catch (err) {
+      errorService.captureError(err, {
+        tags: { module: 'FTUX_PAYMENT_HANDLE' },
+        rank: errorService.ErrorRank.P0,
+        extra: {
+          info: err,
+        },
+      });
       throw new Error('Unexpected error while updating payment handle! - Please try again later!');
     }
   };
@@ -194,6 +224,7 @@ function PaymentHandleActions() {
       alignItems="center"
       gap="spacing.5"
       alignSelf="stretch"
+      data-analytics-name="payment-handle-actions"
     >
       {/* Payment handle display with copy action */}
       <Box
@@ -238,6 +269,7 @@ function PaymentHandleActions() {
             icon={isCopied ? CheckCircleIcon : CopyIcon}
             onClick={handleCopy}
             color={isCopied ? 'positive' : 'primary'}
+            data-analytics-name="copy-payment-handle-url"
           />
         </Tooltip>
       </Box>
@@ -253,6 +285,7 @@ function PaymentHandleActions() {
             color="neutral"
             variant="button"
             onClick={() => setIsEditModalOpen(true)}
+            data-analytics-name="edit-payment-handle-url"
           />
         </Tooltip>
         <Tooltip content="Share payment handle">
@@ -264,6 +297,7 @@ function PaymentHandleActions() {
             icon={ShareIcon}
             variant="button"
             color="neutral"
+            data-analytics-name="share-payment-handle-url"
           />
         </Tooltip>
       </Box>

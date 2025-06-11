@@ -184,8 +184,7 @@ export const getWebsiteAdditionContent = (
   paymentChannels?: PaymentAcceptanceChannelsType,
 ): {
   title: string;
-  content: string;
-  label?: string;
+  initialContent: string | string[];
 } => {
   // Check if merchant intends to accept payments through different channels
   const isWebsiteIntent = hasAcceptedAnyPaymentChannel(paymentChannels, [
@@ -196,50 +195,50 @@ export const getWebsiteAdditionContent = (
   ]);
   const isIosIntent = hasAcceptedAnyPaymentChannel(paymentChannels, [PAYMENT_CHANNEL_OPTIONS.IOS]);
 
+  const hasAndroidUrl = hasAddedWebsite(paymentChannels, [PAYMENT_CHANNEL_OPTIONS.Android]);
+  const hasIosUrl = hasAddedWebsite(paymentChannels, [PAYMENT_CHANNEL_OPTIONS.IOS]);
+
+  // THis will be defautl in case of any error
   let data = {
-    title: 'Website / App',
-    label: "To accept payments on your website, you'll need a ready website.",
-    content:
+    title: 'Website link',
+    initialContent: [
+      "To accept payments, you'll need a ready website.",
       "If you don't have one yet, you can try a test integration from step 2 or explore ready-to-use payment options below.",
+      'Turn on test mode (bottom left of the side navigation)',
+    ],
   };
 
   // Both website and at least one mobile platform
-  if (isWebsiteIntent && (isAndroidIntent || isIosIntent)) {
+  if (isWebsiteIntent) {
     return data;
   }
-  // Only mobile platforms (iOS and/or Android)
-  if (isWebsiteIntent && !(isAndroidIntent || isIosIntent)) {
-    return {
-      ...data,
-      title: 'Website link',
-    };
-  }
-  // Only mobile platforms (iOS and/or Android)
-  if (isAndroidIntent && isIosIntent) {
+
+  // Check if merchant has both Android and iOS apps but hasn't added links for either one
+  if (isAndroidIntent && isIosIntent && !hasAndroidUrl && !hasIosUrl) {
     return {
       title: 'App link',
-      content:
+      initialContent:
         "Add your Play Store / App Store link. If it's not ready, move to step two and set up payments in Test Mode.",
     };
   }
-  // Only Android platform
-  if (isAndroidIntent) {
+  // Check if merchant has an Android app but hasn't added the Play Store link yet
+  if (isAndroidIntent && !hasAndroidUrl) {
     return {
       title: 'Android app',
-      content:
+      initialContent:
         "Add your Play Store app link. If it's not ready, move to step two and set up payments in Test Mode.",
     };
   }
-  // Only iOS platform
-  if (isIosIntent) {
+  // Check if merchant has an iOS app but hasn't added the App Store link yet
+  if (isIosIntent && !hasIosUrl) {
     return {
       title: 'iOS app',
-      content:
+      initialContent:
         "Add your App Store app link. If it's not ready, move to step two and set up payments in Test Mode.",
     };
   }
 
-  // Default case: only website or no specific intent indicated
+  // Default case: For No Code intent merchants who added the website later
   return data;
 };
 

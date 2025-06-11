@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import errorService from '@razorpay/universe-cli/errorService';
 import { Box, Button, EyeIcon, RefreshIcon, Tooltip } from '@razorpay/blade/components';
 import { useStore } from '@federated/apps/shell/commonStore';
 import RevealApiKey from '@OnboardingExperienceCommons/components/ApiKeysModal/RevealApiKey';
@@ -49,13 +50,19 @@ const GenerateAPIKeys = () => {
   const isApiKeysAccessDisabled = mode === 'live' && (!isWebsiteVerified || isKeylessActivation);
 
   // Formats API keys into CSV and triggers browser download
-  const handleDownloadApiKeys = (apiKeys: ApiKeys) => {
-    return new Promise<void>((resolve) => {
-      const csvData = [apiKeys.id, apiKeys.secret];
-      const csvDataUrl = arrayToCsv([API_KEYS_CSV_HEADER, csvData]);
+  const handleDownloadApiKeys = async (apiKeys: ApiKeys) => {
+    const csvData = [apiKeys.id, apiKeys.secret];
+    const csvDataUrl = arrayToCsv([API_KEYS_CSV_HEADER, csvData]);
+    try {
       downloadFile(csvDataUrl, API_KEYS_CSV_FILENAME, API_KEYS_CSV_MIME_TYPE);
-      resolve();
-    });
+    } catch (err) {
+      errorService.captureError(err, {
+        tags: { module: 'FTUX_GENERATE_API_KEYS' },
+        rank: errorService.ErrorRank.P0,
+        extra: { info: err },
+      });
+      throw new Error('An error occurred while downloading API keys!');
+    }
   };
 
   // Regenerates API keys with specified roll delay (time before old keys expire)
@@ -72,6 +79,12 @@ const GenerateAPIKeys = () => {
 
       return response.merchantApiKeyRegenerate?.newApiKey;
     } catch (error: any) {
+      errorService.captureError(error, {
+        tags: { module: 'FTUX_GENERATE_API_KEYS' },
+        rank: errorService.ErrorRank.P0,
+        extra: { info: error },
+      });
+
       throw new Error(error?.errors?.[0] || error.message || 'Failed to regenerate API keys!');
     }
   };
@@ -94,13 +107,19 @@ const GenerateAPIKeys = () => {
       const errorMessage =
         error?.errors?.[0] || error.message || 'An error occurred while generating API keys!';
 
-      if (error?.errors && error?.errors?.length > 0) {
+      if (errorMessage) {
         showNotification({
           type: 'error',
           message: errorMessage,
         });
       }
       setActiveModal(null);
+
+      errorService.captureError(error, {
+        tags: { module: 'FTUX_GENERATE_API_KEYS' },
+        rank: errorService.ErrorRank.P0,
+        extra: { info: error },
+      });
     }
   };
 
@@ -139,8 +158,15 @@ const GenerateAPIKeys = () => {
           }
           placement="top"
         >
-          <Button variant="primary" size="medium" isDisabled isFullWidth={isMobile}>
-            Reveal/Regenerate API Keys
+          <Button
+            icon={EyeIcon}
+            variant="primary"
+            size={isMobile ? 'small' : 'medium'}
+            isDisabled
+            isFullWidth={isMobile}
+            data-analytics-name="reveal-kla-api-keys"
+          >
+            Reveal API Keys
           </Button>
         </Tooltip>
       ) : hasGeneratedApiKeys ? (
@@ -151,6 +177,7 @@ const GenerateAPIKeys = () => {
           isLoading={isLoading}
           onClick={() => openModal(ApiKeysModalScreens.REGEN)}
           isFullWidth={isMobile}
+          data-analytics-name="regenerate-api-keys"
         >
           Regenerate {activeMode} API Keys
         </Button>
@@ -162,6 +189,7 @@ const GenerateAPIKeys = () => {
           isLoading={isLoading}
           onClick={() => openModal(ApiKeysModalScreens.REVEAL)}
           isFullWidth={isMobile}
+          data-analytics-name="generate-api-keys"
         >
           Reveal {activeMode} API Keys
         </Button>

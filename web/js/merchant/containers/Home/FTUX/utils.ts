@@ -24,14 +24,14 @@ export const isEligibleForFtuxV2 = ({ user, abExperiments }: FTUXHomepageEnabled
       user.isCountryIndia &&
       !user.isSubMerchant &&
       !user?.isPartner?.() &&
-      !isPOSMerchant,
+      !isPOSMerchant &&
+      !user.isTransacted,
   );
 
   //TODO: @mohitagrawal1305 if isTransacted is true then also check 5 settlements
 
   return isEnabled;
 };
-
 
 export const useIsFtuxV2Enabled = (): boolean => {
   const user = useStore((state) => state.session.user) as unknown as User;

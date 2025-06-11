@@ -44,6 +44,8 @@ const WelcomeHeader = () => {
       alignItems="center"
       gap="spacing.6"
       alignSelf="stretch"
+      data-analytics-name="welcome-header-section"
+      id="ftux-welcome-header"
     >
       <Heading textAlign="center" size={isMobile ? 'large' : 'xlarge'}>
         {isMobile
@@ -91,11 +93,13 @@ const WelcomeHeader = () => {
             Explore other payment options anytime.
           </Text>
           <Link
+            variant="button"
             color="neutral"
             icon={ArrowRightIcon}
             iconPosition="right"
             onClick={handleScrollToWaysToCollect}
             size={isMobile ? 'small' : 'large'}
+            data-analytics-name="view-all-payment-options"
           >
             View all
           </Link>

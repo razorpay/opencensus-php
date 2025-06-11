@@ -22,6 +22,7 @@ const ExploreAllProducts = ({ onDismiss, handleMoveToCategories }: ExploreAllPro
       size="large"
       snapPoints={[0.5, 0.7, 0.85]}
       zIndex={zIndicesMap.modal}
+      data-analytics-name="explore-all-products-modal"
     >
       <ModalHeader title="Explore all products" subtitle="Select the product best for your needs" />
       <ModalBody>
@@ -38,16 +39,22 @@ const ExploreAllProducts = ({ onDismiss, handleMoveToCategories }: ExploreAllPro
               }}
               imageWidth={isMobile ? '60px' : '120px'}
               imageHeight={isMobile ? '60px' : '120px'}
+              imageFit="cover"
               containerProps={{
                 gap: 'spacing.5',
               }}
+              analyticsName="explore-product-card"
             />
           ))}
         </Box>
       </ModalBody>
       <ModalFooter>
         <Box display="flex" justifyContent="flex-end" width="100%">
-          <Button onClick={handleMoveToCategories} isFullWidth={isMobile ? true : false}>
+          <Button
+            onClick={handleMoveToCategories}
+            isFullWidth={isMobile ? true : false}
+            data-analytics-name="suggest-right-product"
+          >
             Suggest the right product
           </Button>
         </Box>

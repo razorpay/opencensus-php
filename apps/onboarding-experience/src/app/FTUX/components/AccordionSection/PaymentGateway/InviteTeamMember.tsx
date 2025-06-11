@@ -79,6 +79,7 @@ const InviteTeamMember = () => {
           variant="button"
           onClick={() => handleInviteTeamMember()}
           isDisabled={isLoading}
+          data-analytics-name="invite-team-member"
         >
           {isAnyMemberInvited ? 'Invite more team members' : 'Invite your developer as an admin'}
         </Link>

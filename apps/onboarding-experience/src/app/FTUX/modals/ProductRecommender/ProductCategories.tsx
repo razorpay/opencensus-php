@@ -27,6 +27,7 @@ const ProductCategories = ({
       size="medium"
       snapPoints={[0.5, 0.7, 0.85]}
       zIndex={zIndicesMap.modal}
+      data-analytics-name="product-categories-modal"
     >
       <ModalHeader
         title="Select your use-case"
@@ -48,6 +49,7 @@ const ProductCategories = ({
                 gap: 'spacing.5',
               }}
               isSelected={selectedProduct === index}
+              analyticsName="product-category-card"
             />
           ))}
         </Box>
@@ -64,6 +66,7 @@ const ProductCategories = ({
             onClick={onExploreAllProducts}
             isFullWidth={isMobile ? true : false}
             variant="tertiary"
+            data-analytics-name="explore-10-other-products"
           >
             Explore 10+ Other Products
           </Button>
@@ -71,6 +74,7 @@ const ProductCategories = ({
             isFullWidth={isMobile ? true : false}
             isDisabled={selectedProduct === null}
             onClick={() => makeSelection(selectedProduct ?? 0)}
+            data-analytics-name="suggest-right-product"
           >
             Suggest the right product
           </Button>
