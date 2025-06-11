@@ -2392,17 +2392,6 @@ class Processor
                     ]);
                     return false;
                 }
-
-                $cbRecurringRearchResult = $this->evaluateSplitzExperimentForIntlCardRecurringRearch($merchant, $currentRouteName);
-                if ($cbRecurringRearchResult === false) {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "cross_border_splitz_experiment",
-                        'merchant_id' => $merchant->getId(),
-                        'route_name' => $currentRouteName,
-                        'flow' => 'intl_card_recurring',
-                    ]);
-                    return false;
-                }
                 // Extract IIN information once for all checks
                 $card_number = str_replace(" ", "", $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
                 $iinId = substr($card_number, 0, 8);
@@ -2428,6 +2417,18 @@ class Processor
                     ]);
                     return false;
                 }
+
+                $cbRecurringRearchResult = $this->evaluateSplitzExperimentForIntlCardRecurringRearch($merchant, $currentRouteName);
+                if ($cbRecurringRearchResult === false && $isInternational) {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "cross_border_splitz_experiment",
+                        'merchant_id' => $merchant->getId(),
+                        'route_name' => $currentRouteName,
+                        'flow' => 'intl_card_recurring',
+                    ]);
+                    return false;
+                }
+
 
                 if (empty($input[Payment\Entity::TOKEN]) === false) {
                     $tokenId = $input[Payment\Entity::TOKEN];
@@ -2465,8 +2466,7 @@ class Processor
                     ];
                 }
 
-                if (self::isCardRecurringAutoRearchRoute($currentRouteName) && !empty($card)
-                    && $card->isInternational() === false) {
+                if (self::isCardRecurringAutoRearchRoute($currentRouteName) && !$isInternational) {
                     // Check card mandate created date and mandate hub for ramp up
                     $cardMandate = (new CardMandate\Repository())->findByCardMandateId($token->getCardMandateId());
 
@@ -2540,16 +2540,6 @@ class Processor
                         $token = (new Token\Core)->getByTokenIdAndMerchant($input[Payment\Entity::TOKEN], $merchant);
                         $card = $this->repo->card->fetchForToken($token);
 
-                        if ($card->isInternational() === true)
-                        {
-                            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                                'reason' => "international_card_initial_rupay",
-                                'merchant_id' => $merchant->getId(),
-                                'flow' => 'card_recurring',
-                            ]);
-                            return false;
-                        }
-
                         $iin = $card->getIin();
                         $app = App::getFacadeRoot();
                         if ($card->isRupay() && !$this->evaluateSplitzExperimentForCardRecurringRearchRupayInitial($merchant) ||
@@ -2583,7 +2573,7 @@ class Processor
                 if (!empty($card)) {
                     $input[Payment\Entity::API_VAULT] = $card->getVault();
                 }
-                if (!empty($input[Payment\Entity::TOKEN]) && !empty($token)) {
+                if (!empty($input[Payment\Entity::TOKEN])) {
                     $input[Payment\Entity::TOKEN] = $token->getId();
                 }
                 if (!empty($cardInput)) {
