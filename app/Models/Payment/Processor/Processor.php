@@ -2232,7 +2232,6 @@ class Processor
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         'reason' => "MOTO_Payment",
                         'merchant_id' => $merchant->getId(),
-                        'banking_org_id' => $merchant->getOrgId(),
                     ]);
                     return false;
                 }
