@@ -2738,9 +2738,6 @@ class Processor
                                 return false;
                             }
 
-                            $tokenRearchExperimentName = 'app.saved_card_token_payments_rearch';
-                            $tokenRearchResult = (new Payment\Service())->getSplitzExpResponseForTokenFetchFromTokenService($merchant->getId(), $card->getVault(), $tokenRearchExperimentName);
-
                             if ($card->getVault() === Card\Vault::PROVIDERS || $card->getVault() === Card\Vault::AXIS)
                             {
                                 if($this->mode!==MODE::LIVE && !app()->isEnvironmentProduction()){
@@ -2764,8 +2761,12 @@ class Processor
                                     Card\Entity::REWARD                 => $input['card']['reward']
                                 ];
 
+                                $tokenRearchIssuerExperimentName = 'app.saved_card_token_payments_rearch_issuer';
+                                $tokenRearchIssuerResult = (new Payment\Service())->getSplitzExpResponseForTokenFetchFromTokenService($merchant->getId(), $card->getVault(), $tokenRearchIssuerExperimentName);
+
+
                                 // Allowing CPS Cryptogram source on Domestic Payments and where Merchant is not RAAS enabled
-                                if($tokenRearchResult=='on'
+                                if($tokenRearchIssuerResult=='enable'
                                     && $this->merchant->isFeatureEnabled(FeatureConstants::RAAS) === false
                                     && $this->merchant->getCountry() == "IN"
                                 ){
@@ -2861,6 +2862,9 @@ class Processor
                                     // $token->card->trivia = '3' for mastercard scof payments
                                     $card->setTrivia('3');
                                 }
+
+                                $tokenRearchExperimentName = 'app.saved_card_token_payments_rearch';
+                                $tokenRearchResult = (new Payment\Service())->getSplitzExpResponseForTokenFetchFromTokenService($merchant->getId(), $card->getVault(), $tokenRearchExperimentName);
 
                                 if ($tokenRearchResult == 'enable'
                                     && (app()->isEnvironmentProduction() || $this->isDarkRequest())
