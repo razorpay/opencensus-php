@@ -5714,7 +5714,6 @@ class Route
         'update_submerchant_user_contact',
         'update_bucket_name_region',
 
-        'partner_referral_regenerate',
         'fetch_partner_sub_mtu',
 
         // webhooks for onboarding APIs
