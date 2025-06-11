@@ -604,7 +604,7 @@ trait Callback
             {
                 $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($this->payment->getId(), $this->payment->getMerchantId());
 
-                if ($canRetry === true)
+                if ($canRetry === true or $this->payment->localToken->upiMandate->getFrequency() === UpiMandate\Frequency::ONETIME)
                 {
                     $this->trace->info(
                         TraceCode::UPI_AUTOPAY_CALLBACK_FAILURE,

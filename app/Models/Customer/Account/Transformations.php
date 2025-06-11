@@ -76,5 +76,14 @@ class Transformations
         return $collection;
     }
 
+    public function convertEntityListToPublicCollection($list): PublicCollection
+    {
+        $collection = new PublicCollection();
+        foreach ($list as $entity)
+            $collection->push($entity);
+
+        return $collection;
+    }
+
 
 }

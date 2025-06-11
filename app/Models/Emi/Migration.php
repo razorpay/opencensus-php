@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
+use RZP\Services\AffordabilityService;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicCollection;
 
@@ -46,6 +47,44 @@ class Migration
         return true;
     }
 
+    public function isDualWriteEnabled(string $merchantId)
+    {
+        $mode = 'enable';
+
+        try
+        {
+            $experimentId = $this->app['config']->get('app.emi_plans_dual_write_experiment_id');
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $experimentId,
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::EMI_PLAN_DUAL_WRITE_SPLITZ_CALL, [
+                'splitz_output' => $variant,
+            ]);
+
+            return $variant === $mode;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $experimentId ?? null
+            ]);
+
+            return false;
+        }
+
+    }
+
     public function migrate($action, $plan)
     {
         if(((bool) Admin\ConfigKey::get(Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED, false) == false) or
@@ -65,6 +104,17 @@ class Migration
         }
 
         return $this->migrationRequestHandler($action, $plan);
+    }
+
+    public function handleDualWrite($action, Entity $emiPlan, $id = '', $input = [])
+    {
+
+        if ($this->isDualWriteEnabled($emiPlan->getMerchantId()) == true)
+        {
+            return $this->dualWriteHandler($action, $emiPlan, $id, $input);
+        }
+
+        return null;
     }
 
     public function handleMigration($action, $emiPlan, $id = '', $input = [])
@@ -104,7 +154,6 @@ class Migration
     {
         $response = [];
 
-
         try {
             switch ($action) {
                 case self::CREATE:
@@ -123,7 +172,6 @@ class Migration
                     break;
 
                 case self::QUERY:
-
                     $response = $this->app['card.payments']->query(self::EMI_PLANS, $input);
                     break;
 
@@ -131,7 +179,6 @@ class Migration
 
                     $response = $this->app['card.payments']->emiPlanQuery(self::EMI_PLANS, $input);
                     break;
-
             }
 
             if ((isset($response['success'])) and
@@ -184,6 +231,42 @@ class Migration
                 'merchant'  => ($emiPlan != null ) ? $emiPlan->getMerchantId() : '' ,
             ]);
     }
+
+    function dualWriteHandler($action, $emiPlan, $id = '', $input = [], $ignoreFailure = false)
+    {
+        $response = [];
+
+        try {
+            switch ($action) {
+                case self::CREATE:
+                    $input['id'] = $emiPlan->getId();
+                    $response =   $this->app['affordability']->addEmiPlan($input);
+                    break;
+
+                case self::DELETE:
+                    $response =  $this->app['affordability']->deleteEmiPlan($emiPlan->getId());
+                    break;
+            }
+
+            return $response;
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->error(TraceCode::CHECKOUT_AFFORDABILITY_SERVICE_RESPONSE_ERROR, [
+                'error' => $ex->getMessage(),
+                'message' => 'emi sync request response error',
+            ]);
+
+            if (!$ignoreFailure)
+            {
+                throw $ex;
+            }
+
+        }
+
+
+    }
+
 
     public function getPlansFromCps($input)
     {

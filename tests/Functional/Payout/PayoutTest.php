@@ -2480,6 +2480,86 @@ class PayoutTest extends OAuthTestCase
         }
     }
 
+    public function testCreatePayoutMYViaPayoutService($skipTxnChecks = false)
+    {
+        $this->ba->privateAuth();
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable',
+            RazorxTreatment::DUITNOW_MODE_PAYOUT_FILTER => 'enable']);
+
+
+        $this->prepareBankingAccountData();
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'country_code'             => 'MY',
+        ]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_SERVICE_ENABLED]);
+
+        $data = $this->testData['testCreatePayoutMY'];
+
+        $this->startTest($data);
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $fundAccount = $this->getLastEntity('fund_account', true);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // fund account entity
+        $this->assertEquals("10000000000000", $fundAccount['merchant_id']);
+        $this->assertEquals("RAZRB000000", $fundAccount['account']['bank_identifier']);
+        $this->assertArrayHasKey('identifier_type', $fundAccount['account']);
+        $this->assertArrayHasKey('bank_identifier', $fundAccount['account']);
+        $this->assertEquals("IN", $fundAccount['account']['beneficiary_country']);
+        $this->assertEquals("1121431121541121", $fundAccount['bank_account']['account_number']);
+
+
+        // bank account entity
+        $this->assertEquals("RAZRB000000", $bankAccount['bank_identifier']);
+        $this->assertEquals("bic", $bankAccount['identifier_type']);
+        $this->assertEquals("1121431121541121", $bankAccount['account_number']);
+        $this->assertEquals("IN", $bankAccount['beneficiary_country']);
+        $this->assertEquals("contact", $bankAccount['type']);
+        $this->assertEquals(null, $bankAccount['ifsc']);
+        $this->assertEquals(null, $bankAccount['ifsc_code']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Acme Corp Fund Transfer', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertNotNull($payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'ocbc');
+
+        // Verify transaction entity
+        if ($skipTxnChecks === false) {
+            $txn = $this->getLastEntity('transaction', true);
+            $txnId = str_after($txn['id'], 'txn_');
+
+            $this->assertEquals($payout['transaction_id'], $txn['id']);
+            $this->assertNotNull($txn['balance_id']);
+            $this->assertNotNull($txn['posted_at']);
+
+            $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+
+            $expectedBreakup = [
+                'name' => "payout",
+                'transaction_id' => $txnId,
+                'pricing_rule_id' => "Bbg7cl6t6I3XA5",
+                'percentage' => null,
+                'amount' => 500,
+            ];
+
+            $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+        }
+    }
+
     public function testCreatePayoutPassingBothIFSCAndBankIdentifierCode($skipTxnChecks = false)
     {
         $this->ba->privateAuth();

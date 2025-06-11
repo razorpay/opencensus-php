@@ -1453,7 +1453,7 @@ class Entity extends Base\PublicEntity
         // If we've already loaded features for the merchant object, return that
         if ($this->loadedFeatures !== null)
         {
-            app('trace')->info(
+            app('trace')->debug(
                 TraceCode::FEATURES_FETCH_FROM_CACHE,
                 [
                     "features" => $this->loadedFeatures,
@@ -1483,7 +1483,7 @@ class Entity extends Base\PublicEntity
                            ->pluck(Feature\Entity::NAME)
                            ->toArray();
 
-        app('trace')->info(
+        app('trace')->debug(
             TraceCode::FEATURES_FETCH_FROM_DATABASE_AND_DCS,
             [
                 "features"      => $this->loadedFeatures,

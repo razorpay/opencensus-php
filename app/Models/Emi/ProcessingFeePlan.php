@@ -252,21 +252,16 @@ class ProcessingFeePlan
         return self:: $plan[$issuer][$cardType][$duration];
     }
 
-    private function getIssuer(string $merchantId, string $issuer)
+    private function getIssuer(?string $merchantId, string $issuer)
     {
-        $experimentRequest = $this->fillExperimentData(
-            $merchantId,
-            'app.is_' . strtolower($issuer) . '_v2_emi_plans_experiment_id'
-        );
-
         if ($merchantId === null || $merchantId === '') {
             return $issuer;
         }
 
-        if($merchantId === null or $merchantId === '')
-        {
-            return $issuer;
-        }
+        $experimentRequest = $this->fillExperimentData(
+            $merchantId,
+            'app.is_' . strtolower($issuer) . '_v2_emi_plans_experiment_id'
+        );
 
         try
         {
