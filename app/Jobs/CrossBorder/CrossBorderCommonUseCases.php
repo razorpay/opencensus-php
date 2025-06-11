@@ -7,6 +7,7 @@ use Mail;
 use Request;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Jobs\Job;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
@@ -100,6 +101,8 @@ class CrossBorderCommonUseCases extends Job
     const ACTIVATE_CROSS_BORDER_MODULAR_ONBOARDING_MERCHANT = 'ACTIVATE_CROSS_BORDER_MODULAR_ONBOARDING_MERCHANT';
 
     const ACTIVATE_CROSS_BORDER_PRODUCTS_FOR_MODULAR_ONBOARDING = 'ACTIVATE_CROSS_BORDER_PRODUCTS_FOR_MODULAR_ONBOARDING';
+
+    const CROSS_BORDER_MERCHANT_ACTIVATION_STATUS_CHANGE = 'CROSS_BORDER_MERCHANT_ACTIVATION_STATUS_CHANGE';
 
     const EXPORT_PRODUCT_CARD = 'card';
 
@@ -220,6 +223,9 @@ class CrossBorderCommonUseCases extends Job
                     break;
                 case self::ACTIVATE_CROSS_BORDER_PRODUCTS_FOR_MODULAR_ONBOARDING:
                     $this->activateCrossBorderProductsForModularOnboardingMerchantsIfApplicable();
+                    break;
+                case self::CROSS_BORDER_MERCHANT_ACTIVATION_STATUS_CHANGE:
+                    $this->merchantActivationChangeSegmentEvent();
                     break;
                 default:
                     $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_INVALID_ACTION,[
@@ -808,7 +814,6 @@ class CrossBorderCommonUseCases extends Job
             ]);
 
             (new MerchantDetailService())->submitMerchantInternal($merchantID, $merchantActivationInput);
-            $this->sendActivatedSegmentEvent($merchant);
 
             $this->trace->info(TraceCode::ACTIVATE_CROSS_BORDER_MODULAR_MERCHANT_SUCCESS, [
                 'action' => 'Request',
@@ -1002,28 +1007,6 @@ class CrossBorderCommonUseCases extends Job
             );
 
             throw $ex;
-        }
-    }
-
-
-    protected function sendActivatedSegmentEvent($merchant)
-    {
-        try {
-            $merchantDetails = $this->repo->merchant_detail->findOrFail($merchant->getId());
-            $properties = [
-                "u_em" => $merchantDetails->getContactEmail(),
-                "u_mb" => $merchantDetails->getContactMobile(),
-                "first_name" => $merchantDetails->getContactName(),
-                "merchant_type" => "cross_border_money_saver",
-            ];
-            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
-                $merchant, $properties, "Merchant Activated");
-            $this->app['segment-analytics']->buildRequestAndSend();
-        } catch (\Throwable $ex) {
-            $this->trace->error(TraceCode::CROSS_BORDER_MODULAR_MERCHANT_SEGMENT_EVENT_FAILED, [
-                'merchant_id' => $merchant->getId(),
-                'segment_error' => $ex->getMessage()
-            ]);
         }
     }
 
@@ -1390,5 +1373,52 @@ class CrossBorderCommonUseCases extends Job
             );
         }
 
+    }
+
+    protected function merchantActivationChangeSegmentEvent()
+    {
+        $merchantID = $this->payload['merchant_id'];
+        $properties = $this->payload["properties"];
+        $this->trace->info(TraceCode::CROSS_BORDER_SEGMENT_EVENT_PUSH_REQUEST, [
+            'merchantID' => $merchantID,
+        ]);
+        try {
+            if(!isset($properties) || !isset($merchantID)) {
+                $this->trace->info(TraceCode::CROSS_BORDER_SEGMENT_EVENT_PUSH_INVALID_REQUEST, [
+                    'properties' => $properties,
+                    'merchantID' => $merchantID,
+                ]);
+                return;
+            }
+            $merchant = $this->repo->merchant->findOrFail($merchantID);
+
+            $additionalDetailsFromASV =  (new Merchant\Service())->getAdditionalDetailsFromASV($merchantID);
+            if (!isset($additionalDetailsFromASV['cross_border_onboarding'])) {
+                $this->trace->info(TraceCode::CROSS_BORDER_SEGMENT_EVENT_PUSH_INVALID_REQUEST, [
+                    'additionalDetailsFromASV' => $additionalDetailsFromASV,
+                ]);
+                return;
+            }
+            $selectedProduct = $additionalDetailsFromASV['cross_border_onboarding']['selected_product'];
+            $properties['product'] = !empty($selectedProduct) ? $selectedProduct : 'moneysaver';
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $properties, BankTransfer\Constants::CROSS_BORDER_ACTIVATION_STATUS_CHANGE);
+            $this->app['segment-analytics']->buildRequestAndSend();
+            $this->trace->info(TraceCode::CROSS_BORDER_SEGMENT_EVENT_PUSH_SUCCESS, [
+                'merchantID' => $merchantID,
+                'properties' => $properties,
+            ]);
+
+        }catch (\Throwable $ex) {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::CROSS_BORDER_SEGMENT_EVENT_PUSH_FAILED,
+                [
+                    'merchant_id' => $merchantID,
+                    'error_message' => $ex->getMessage(),
+                ]);
+        }
     }
 }
