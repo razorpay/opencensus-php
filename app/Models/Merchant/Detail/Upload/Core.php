@@ -135,8 +135,6 @@ class Core extends Base\Core
 
         $lockKey = $entry[Header::MIQ_CONTACT_EMAIL];
 
-        return $this->mutex->acquireAndRelease($lockKey, function () use ($entry)
-        {
             $parser = Factory::getInstance(Constants::BULK_UPLOAD_MIQ);
 
             $this->trace->info(TraceCode::BATCH_SERVICE_UPLOAD_MIQ_CREATE_REQUEST, [
@@ -149,7 +147,8 @@ class Core extends Base\Core
 
             $parser->preProcessMerchantEntry($processedEntry);
 
-            $createUserMerchantResponse = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($processedEntry, $parser, &$entry) {
+            $createUserMerchantResponse = $this->mutex->acquireAndRelease($lockKey, function () use ($processedEntry, $parser, &$entry) {
+                return $this->repo->transactionOnLiveAndTestAndAsv(function () use ($processedEntry, $parser, &$entry) {
 
                //Checking if the permission custom_invite_merchant_flow enabled for the org
                 $orgId = $processedEntry[Header::ORG_ID];
@@ -190,6 +189,11 @@ class Core extends Base\Core
 
                 return [$merchant, $user];
             });
+              }, 180,
+        ErrorCode::BAD_REQUEST_ADMIN_ANOTHER_USER_CREATION_IN_PROGRESS,
+        60,
+        1000,
+        2000);
 
             $merchant = $createUserMerchantResponse[0];
             $user = $createUserMerchantResponse[1];
@@ -580,7 +584,6 @@ class Core extends Base\Core
             );
 
             return $entry;
-        });
     }
 
     public function processUpdateMerchantEntry(array $entry): array
