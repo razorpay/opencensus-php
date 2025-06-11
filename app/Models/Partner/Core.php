@@ -1257,9 +1257,7 @@ class Core extends Detail\Core
             PartnerMigrationAuditJob::dispatch($merchantId, $actorDetails, $oldPartnerType);
 
             // Regenerate referral links after successful migration
-            $partners = new Base\PublicCollection();
-            $partners->push($merchant);
-            (new ReferralCore())->regenerate($partners);
+            (new ReferralCore())->regenerate($merchant);
             $this->trace->info(TraceCode::PARTNER_REFERRAL_LINK_REGENERATE, ['merchant_id' => $merchant->getId()]);
         }
         else

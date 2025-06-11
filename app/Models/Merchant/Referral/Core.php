@@ -355,7 +355,7 @@ class Core extends Base\Core
      * @return void
      * @throws Throwable
      */
-    public function regenerate(PublicCollection $partners): void
+    public function regenerate(Merchant\Entity $partner): void
     {
         $productConfig = $this->getReferralConfig();
 
@@ -369,11 +369,10 @@ class Core extends Base\Core
 
         $productConfig[Product::POS] = $productConfig[Product::PRIMARY];
 
-        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($partners, $productConfig) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($partner, $productConfig) {
 
-            $ids = $partners->pluck(Entity::ID)->toArray();
 
-            $oldReferrals = $this->repo->referrals->getReferralsByMerchantIds($ids);
+            $oldReferrals = $this->repo->referrals->getReferralByMerchantIdAndProduct($partner->getId(), Product::PRIMARY);
 
             foreach ($oldReferrals as $referral) {
                 $refCode = $referral->getReferralCode();
@@ -396,15 +395,13 @@ class Core extends Base\Core
 
                 $oldHash =  $elfinWrapper->getHashFromUrl($oldUrl);
 
-                if ($productConfig[$product] == Product::PRIMARY) {
                 $updatedHash = $elfinWrapper->updateLongUrlByHash($oldHash, $productConfig[$product]["url"]);
                 
                 $referralData = [
-                        'product' => $product,
-                        'ref_code' => $refCode,
-                    ];
+                    'product' => $product,
+                    'ref_code' => $refCode,
+                ];
                 $this->updateReferralLinkWithKycAccessConsent($merchant, $referralData);
-                }
 
                 $this->trace->info(
                     TraceCode::PARTNER_REFERRAL_LINK_REGENERATE,
