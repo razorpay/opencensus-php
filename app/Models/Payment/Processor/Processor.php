@@ -4835,7 +4835,7 @@ class Processor
         $customChecks = $this->performCustomChecksToRouteNbPlusINRWalletViaRearchFlow($input, $merchant, $currentRouteName);
         $isNbPlusDFB = $customCheckResults['is_dfb'] ?? false;
         $this->trace->info(TraceCode::NBPLUS_WALLET_ROUTING_CRITERIA, [
-                "payment_id"        => $this->payment->getId(),
+                "payment_id"        => $input[Payment\Entity::ID],
                 "merchant_id"       => $merchant->getId(),
                 "dimensions"        => $customChecks["dimensions"],
                 "route"             => $currentRouteName,
@@ -4856,7 +4856,7 @@ class Processor
         );
         if (!$isWalletEnabled) {
             $this->trace->info(TraceCode::NBPLUS_WALLET_NOT_SUPPORTED_ON_REARCH, [
-                "payment_id"        => $this->payment->getId(),
+                "payment_id"        => $input[Payment\Entity::ID],
                 'merchant_id'       => $merchant->getId(),
                 'wallet'            => $input[Payment\Entity::WALLET],
                 'route'             => $currentRouteName,
@@ -4872,7 +4872,7 @@ class Processor
         );
         if (!$isMerchantEnabled) {
             $this->trace->info(TraceCode::NBPLUS_WALLET_MERCHANT_NOT_SUPPORTED_ON_REARCH, [
-                "payment_id"        => $this->payment->getId(),
+                "payment_id"        => $input[Payment\Entity::ID],
                 'merchant_id'       => $merchant->getId(),
                 'wallet'            => $input[Payment\Entity::WALLET],
                 'route'             => $currentRouteName,
@@ -4885,7 +4885,7 @@ class Processor
         }
 
         $this->trace->info(TraceCode::NBPLUS_WALLET_ROUTING_VIA_REARCH, [
-            "payment_id"        => $this->payment->getId(),
+            "payment_id"        => $input[Payment\Entity::ID],
             'merchant_id'       => $merchant->getId(),
             'wallet'            => $input[Payment\Entity::WALLET],
             'route'             => $currentRouteName,
