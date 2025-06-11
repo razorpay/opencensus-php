@@ -2565,7 +2565,7 @@ class Processor
                     //Check hub, mhq and rupay not to be routed to rearch for now
                     if (empty($input[Payment\Entity::TOKEN]))
                     {
-                        $card_number = str_replace(" ", "", $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
+                        $card_number = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
                         $iinId = substr($card_number, 0, 8);
                         $iin = $this->repo->iin->find($iinId);
                         $isInternational = IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry());
@@ -2575,6 +2575,15 @@ class Processor
                                 "reason" => "domestic_non_inr_currency_blocked",
                                 "merchant_id" => $merchant->getId(),
                                 "flow" => "card_recurring",
+                            ]);
+                            return false;
+                        }
+                        if ($isInternational && !$this->evaluateSplitzExperimentForIntlCardRecurringRearch($merchant, $currentRouteName)) {
+                            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                                'reason' => "cross_border_splitz_experiment",
+                                'merchant_id' => $merchant->getId(),
+                                'route_name' => $currentRouteName,
+                                'flow' => 'intl_card_recurring',
                             ]);
                             return false;
                         }
