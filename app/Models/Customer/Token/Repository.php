@@ -26,6 +26,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\ServerErrorException;
 use Rzp\Wda_php\WDARegisterQueryRequestBuilder;
 use RZP\Models\Base\Traits\ExternalTokensRepo;
+use RZP\Constants\Country;
 
 class Repository extends Base\Repository
 {
@@ -69,40 +70,85 @@ class Repository extends Base\Repository
             return $this->getExternalTokensByCustomer($customer, $isPassUnusedRejectedTokensExperimentEnabled, $withVpas);
         }
 
+        $isIndianMerchant = Country::matches($this->merchant->getCountry(), Country::IN);
+
+        $tokenList = null;
         //this is required to fetch token with method card from token service.
-        if ((new Token\Service())->isSaveTokenViaTokenService())
+        $isSaveTokenViaTokenServiceAllowed = (new Token\Service())->isSaveTokenViaTokenService();
+        if ($isSaveTokenViaTokenServiceAllowed)
         {
             $tokenList = $this->getExternalTokensByCustomer($customer, $isPassUnusedRejectedTokensExperimentEnabled, $withVpas);
 
             if($tokenList != null)
             {
-                return $tokenList;
+                if ($isIndianMerchant) {
+                    // metrics for token service fetch for Indian merchants
+                    $this->trace->count(
+                        Token\Metric::TOKENS_FETCHED_FROM_TOKEN_SERVICE_FETCH_FOR_INDIAN_MERCHANT,
+                        [
+                            'token_count' => $tokenList->count()
+                        ]
+                    );
+                }
+                else {
+                    return $tokenList;
+                }
             }
         }
 
+        if ($isSaveTokenViaTokenServiceAllowed) {
+            $dbResults = $this->newQuery()
+                ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
+                ->where(function ($query) use ($isPassUnusedRejectedTokensExperimentEnabled) {
+                    if ($isPassUnusedRejectedTokensExperimentEnabled === true) {
+                        $query->whereNull(Token\Entity::USED_AT)
+                            ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::REJECTED);
+                    }
+                    $query->orwhereNull(Token\Entity::USED_AT)
+                        ->where(Token\Entity::FREQUENCY, '=', Token\Constants::ONE_TIME_FREQUENCY)
+                        ->where(Token\Entity::RECURRING_STATUS, '!=', Token\RecurringStatus::INITIATED);
+                    $query->orWhereNotNull(Token\Entity::USED_AT);
+                })
+                ->where(function ($query) {
+                    $query->whereNull(Token\Entity::EXPIRED_AT)
+                        ->orWhere(Token\Entity::EXPIRED_AT, '>', time());
+                })
+                ->withVpaTokens($withVpas)
+                ->orderBy(Token\Entity::CREATED_AT, 'desc')
+                ->orderBy(Token\Entity::ID, 'desc')
+                ->get();
+
+            if ($tokenList != null) {
+                $tokenList = $tokenList->merge($dbResults);
+            } else {
+                $tokenList = $dbResults;
+            }
+            return $tokenList;
+        }
+
         return $this->newQuery()
-                    ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
-                    ->where(function($query) use ($isPassUnusedRejectedTokensExperimentEnabled)
-                    {
-                        if ($isPassUnusedRejectedTokensExperimentEnabled === true)
-                        {
-                            $query->whereNull(Token\Entity::USED_AT)
-                                  ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::REJECTED);
-                        }
-                        $query->orwhereNull(Token\Entity::USED_AT)
-                            ->where(Token\Entity::FREQUENCY, '=', Token\Constants::ONE_TIME_FREQUENCY)
-                            ->where(Token\Entity::RECURRING_STATUS, '!=', Token\RecurringStatus::INITIATED);
-                        $query->orWhereNotNull(Token\Entity::USED_AT);
-                    })
-                    ->where(function($query)
-                    {
-                        $query->whereNull(Token\Entity::EXPIRED_AT)
-                              ->orWhere(Token\Entity::EXPIRED_AT, '>', time());
-                    })
-                    ->withVpaTokens($withVpas)
-                    ->orderBy(Token\Entity::CREATED_AT, 'desc')
-                    ->orderBy(Token\Entity::ID, 'desc')
-                    ->get();
+            ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
+            ->where(function($query) use ($isPassUnusedRejectedTokensExperimentEnabled)
+            {
+                if ($isPassUnusedRejectedTokensExperimentEnabled === true)
+                {
+                    $query->whereNull(Token\Entity::USED_AT)
+                        ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::REJECTED);
+                }
+                $query->orwhereNull(Token\Entity::USED_AT)
+                    ->where(Token\Entity::FREQUENCY, '=', Token\Constants::ONE_TIME_FREQUENCY)
+                    ->where(Token\Entity::RECURRING_STATUS, '!=', Token\RecurringStatus::INITIATED);
+                $query->orWhereNotNull(Token\Entity::USED_AT);
+            })
+            ->where(function($query)
+            {
+                $query->whereNull(Token\Entity::EXPIRED_AT)
+                    ->orWhere(Token\Entity::EXPIRED_AT, '>', time());
+            })
+            ->withVpaTokens($withVpas)
+            ->orderBy(Token\Entity::CREATED_AT, 'desc')
+            ->orderBy(Token\Entity::ID, 'desc')
+            ->get();
     }
 
     public function getGlobalOrLocalTokenEntityOfPayment($payment)
@@ -219,6 +265,19 @@ class Repository extends Base\Repository
             ->orderBy(Token\Entity::CREATED_AT, 'desc')
             ->first();
     }
+
+    public function getByGatewayTokenAndMerchantIdFromTidb(string $gatewayToken, string $merchantId, string $mode)
+    {
+        $query = $this->newQueryWithConnection(
+            $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));
+
+        return $query
+            ->where(Token\Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Token\Entity::GATEWAY_TOKEN, '=', $gatewayToken)
+            ->orderBy(Token\Entity::CREATED_AT, 'desc')
+            ->first();
+    }
+
 
     public function getByGatewayToken(string $gatewayToken)
     {
