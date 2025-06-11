@@ -203,7 +203,7 @@ class Core extends Base\Core
 
         if (empty($merchantUsers)) {
             $this->trace->error(TraceCode::MERCHANT_USER_DOES_NOT_EXISTS, [
-                'message' => "Error in createDeviceDetailForNonPgosMerchants()",
+                'message' => "Error in createDeviceDetailsForOmniMerchantsIfNotExist()",
             ]);
 
             throw new BadRequestException(
