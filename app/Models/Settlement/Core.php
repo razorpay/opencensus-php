@@ -1460,7 +1460,7 @@ class Core extends Base\Core
 
             $makerAdminId = env(SettlementConstants::SETTLEMENTS_WORKFLOW_ADMIN_ID);
 
-            $admin = $this->repo->admin->getAdminFromId("NKlyBViZAwq2hQ");
+            $admin = $this->repo->admin->getAdminFromId($makerAdminId);
 
             $workflowAction = $this->app['workflow']
                 ->setWorkflowMaker($admin)
