@@ -1510,6 +1510,8 @@ class Core extends Base\Core
         // note: sleep required because it can take upto 1 second for documents to become available for search in ES.
         sleep(1);
 
+        $status = SettlementConstants::EXECUTED;
+
         foreach ($openWorkflowActions as $action)
         {
             try
@@ -1529,7 +1531,7 @@ class Core extends Base\Core
             }
         }
 
-        $input['workflow_action_status'] = SettlementConstants::EXECUTED;
+        $input['workflow_action_status'] = $status;
 
         return $input;
     }
