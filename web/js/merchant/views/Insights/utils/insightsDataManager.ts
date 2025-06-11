@@ -1,5 +1,4 @@
 import { merchantFetch } from 'merchant/utils/ajax';
-import { showNotification } from '@libs/web-nexus/merchant/reducers/notifications';
 import { FALLBACK_INSIGHTS_DATA } from 'merchant/views/Insights/constants';
 import { queryClient } from 'merchant/ProductDashboard';
 
@@ -9,13 +8,6 @@ export type InsightsApiResponse = Record<string, InsightMetric[]>;
 interface MethodAggregateResponse {
   data: InsightsApiResponse;
 }
-
-const notifyError = (message: string) => {
-  showNotification({
-    type: 'error',
-    message: message,
-  });
-};
 
 export const fetchInsightsData = async (): Promise<InsightsApiResponse> => {
   try {
@@ -56,14 +48,14 @@ export const fetchInsightsData = async (): Promise<InsightsApiResponse> => {
         return data;
       }
       
-      notifyError('API response has invalid format');
+      console.error('API response has invalid format');
       throw new Error('API response has invalid format');
     } else {
-      notifyError('API returned empty or invalid data structure');
+      console.error('API returned empty or invalid data structure');
       throw new Error('API returned empty or invalid data structure');
     }
-  } catch (error) {
-    notifyError('Error fetching insights data');
+  } catch (error) {;
+    console.error('Error fetching insights data');
     throw new Error('Error fetching insights data');
   }
 };
@@ -74,7 +66,10 @@ export const prefetchInsightsData = async (): Promise<void> => {
       queryKey: ['insights_dashboard_data'],
       queryFn: fetchInsightsData,
       staleTime: 15 * 60 * 1000, 
-      cacheTime: 24 * 60 * 60 * 1000, 
+      cacheTime: 24 * 60 * 60 * 1000,
+      retry: 3,
+      retryOnMount: false, 
+      refetchOnWindowFocus: false, 
     });
   } catch (error) {
     console.error('Error prefetching insights data', error);
@@ -90,10 +85,7 @@ export const getInsightsDataFromCache = (): InsightsApiResponse => {
       }
     }
   } catch (error) {
-    showNotification({
-      type: 'error',
-      message: 'Error fetching insights data from cache',
-    });
+    console.error("Error fetching insights data from cache");
   }
   
   return FALLBACK_INSIGHTS_DATA;

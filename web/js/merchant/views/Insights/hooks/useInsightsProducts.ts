@@ -15,6 +15,9 @@ const useInsightsProducts = () => {
     queryFn: fetchInsightsData,
     staleTime: 15 * 60 * 1000,
     cacheTime: 24 * 60 * 60 * 1000,
+    retry: 3,
+    retryOnMount: false, 
+    refetchOnWindowFocus: false, 
   });
   const insightsData = isError || isLoading ? FALLBACK_INSIGHTS_DATA : actualData;
   const {
