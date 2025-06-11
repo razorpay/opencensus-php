@@ -103,7 +103,7 @@ class Gimli extends Base
         return $body['hash'];
     }
 
-    public function UpdateLongUrlByHash(string $hash, string $longUrl)
+    public function updateLongUrlByHash(string $hash, string $longUrl)
     {
         $gimliUpdateUrl = "{$this->apiBaseUrl}/hashes/{$hash}/url_update";
         

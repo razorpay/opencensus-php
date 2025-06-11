@@ -3,6 +3,8 @@
 namespace RZP\Models\Partner\KycAccessState;
 
 use RZP\Exception;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Services\Partnerships;
 use RZP\Error\PublicErrorDescription;
@@ -30,7 +32,7 @@ class Service extends Base\Service
 
     public function createRequestForSubMerchantKyc($input)
     {
-        // Inject partner id from auth 
+        // Inject partner id from auth
         $partner = $this->fetchPartner();
         $prtsInput = array_merge($input, [
             'partner_id' => $partner->getId()
@@ -55,6 +57,12 @@ class Service extends Base\Service
 
     public function confirmRequestForSubMerchantKyc($input)
     {
+        $this->trace->info(
+            TraceCode::APPROVE_REJECT_REQUEST,
+            [
+                'input' => $input,
+            ]
+        );
         $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
         (new Entity)->getValidator()->validateInput('token', $input);
         $partner = (new MerchantRepo())->getMerchant($input[Entity::PARTNER_ID]);

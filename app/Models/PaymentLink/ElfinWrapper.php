@@ -182,7 +182,7 @@ final class ElfinWrapper
             throw new \RZP\Exception\BadRequestValidationFailureException("Long URL cannot be empty");
         }
 
-        $gimliUpdateResponse = $this->elfin->UpdateLongUrlByHash($hash, $longUrl);
+        $gimliUpdateResponse = $this->elfin->updateLongUrlByHash($hash, $longUrl);
 
         // this will cache the response
         $this->expand($hash);

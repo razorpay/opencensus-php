@@ -392,10 +392,12 @@ class Core extends Base\Core
 
                 $productConfig[$product]["params"]["referral_code"] = $refCode;
 
-                $oldHash =  (new ElfinWrapper(ElfinService::GIMLI))->getHashFromUrl($oldUrl);
+                $elfinWrapper = new ElfinWrapper(ElfinService::GIMLI);
+
+                $oldHash =  $elfinWrapper->getHashFromUrl($oldUrl);
 
                 if ($productConfig[$product] == Product::PRIMARY) {
-                $updatedHash = (new ElfinWrapper(ElfinService::GIMLI))->updateLongUrlByHash($oldHash, $productConfig[$product]["url"]);
+                $updatedHash = $elfinWrapper->updateLongUrlByHash($oldHash, $productConfig[$product]["url"]);
                 
                 $referralData = [
                         'product' => $product,
