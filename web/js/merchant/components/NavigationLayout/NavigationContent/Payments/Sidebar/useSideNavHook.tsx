@@ -9,6 +9,7 @@ import {
   COMMON_PRODUCTS,
   ProductTypeProp,
   getL1ProductItems,
+  FTUX_COMMON_PRODUCTS,
 } from 'merchant/components/SidebarV2/utils/Products';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { useLocation } from 'react-router-dom';
@@ -18,7 +19,9 @@ import { useStore } from '@federated/apps/shell/commonStore';
 import { initializeRoutes, ROUTE_REG } from 'merchant/components/SidebarV2/utils/href';
 import SidebarFooter from './components/SidebarFooter';
 import ActivationProgress from './components/ActivationProgress';
+import { useIsFtuxV2Enabled } from '@dashboards/payments/containers/Home/FTUX/utils';
 import useInsightsProducts from 'merchant/views/Insights/hooks/useInsightsProducts';
+
 export const accountsAndSettingsIds = new Set(['settings', 'accountsettings', 'my_account']);
 
 const result = COMMON_PRODUCTS.reduce(
@@ -43,6 +46,12 @@ export const COMMON_SECTION = {
   section_name: '',
   section_id: 'common_products',
   product_options: result.COMMON_PRODUCTS,
+};
+
+export const FTUX_SECTION = {
+  section_name: '',
+  section_id: 'ftux_common_products',
+  product_options: FTUX_COMMON_PRODUCTS,
 };
 
 export const CUSTOMERS_PRODUCTS_SECTION = {
@@ -118,6 +127,8 @@ const useSideNavHook = () => {
   const { abExperiments } = useSplitzService();
   const { isConfigTagEnabled } = useI18Service();
 
+  const isFtuxV2Enabled = useIsFtuxV2Enabled();
+
   const [PAYMENTS_PRODUCTS_SECTION, BANKING_PRODUCTS_SECTION] =
     getFallbackProductsForConnectedNav(user); // v2 fallback products
 
@@ -127,10 +138,12 @@ const useSideNavHook = () => {
     LOYALTY_PRODUCTS_SECTION,
   ];
 
-  const sideNavListItems = useMemo(
-    () => [COMMON_SECTION, ...listItemsV2, CUSTOMERS_PRODUCTS_SECTION],
-    [],
-  );
+  const sideNavListItems = useMemo(() => {
+    if (isFtuxV2Enabled) {
+      return [FTUX_SECTION];
+    }
+    return [COMMON_SECTION, ...listItemsV2, CUSTOMERS_PRODUCTS_SECTION];
+  }, [isFtuxV2Enabled]);
 
   const sideNavFooterListItems = useMemo(() => [FOOTER_PRODUCTS_SECTION], []);
 

@@ -26,6 +26,7 @@ import { isExperimentEnabled } from 'common/splitz/utils';
 import { User } from 'common/typings';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import type { TabNavItemProps } from '@razorpay/blade/components';
+import { isEligibleForFtuxV2 } from 'merchant/containers/Home/FTUX/utils';
 
 export type Item = TabNavItemProps & {
   description?: string;
@@ -127,13 +128,16 @@ export const isConnectedNavigationEnabled = ({
 }: ConnectedNavigationEnabled): boolean | undefined => {
   const isActivated = user?.isAccepted;
   const { isPosSalesAgent, isPosEkycAgent } = checkIfPosSalesAgent({ user, abExperiments });
+  const isFTUXV2Enabled = isEligibleForFtuxV2({ user, abExperiments });
 
+  // Connected navigation will always be enabled for FTUX v2 enabled merchants
   return (
-    isActivated &&
-    user.isCountryIndia &&
-    user.isOrgRZP &&
-    !isPosSalesAgent &&
-    !isPosEkycAgent &&
-    isExperimentEnabled(abExperiments.connected_navigation)
+    isFTUXV2Enabled ||
+    (isActivated &&
+      user.isCountryIndia &&
+      user.isOrgRZP &&
+      !isPosSalesAgent &&
+      !isPosEkycAgent &&
+      isExperimentEnabled(abExperiments.connected_navigation))
   );
 };

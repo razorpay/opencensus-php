@@ -17,6 +17,7 @@ import {
   accountsAndSettingsIds,
   COMMON_SECTION,
   CUSTOMERS_PRODUCTS_SECTION,
+  FTUX_SECTION,
 } from '../NavigationContent/Payments/Sidebar/useSideNavHook';
 import useSideNavigation from './useSideNavigation';
 import { ANALYTICS_ONENAV } from '@libs/shared-utils';
@@ -68,6 +69,7 @@ const getSection = (section_id) => {
     [FALLBACK_PRODUCTS[0].section_id]: 'Offerings',
     [FALLBACK_PRODUCTS[1].section_id]: 'Offerings',
     [CUSTOMERS_PRODUCTS_SECTION.section_id]: 'Others',
+    [FTUX_SECTION.section_id]: 'Ftux Section',
   };
   if (accountsAndSettingsIds.has(section_id)) return 'Mode and Settings';
   return navItemsToSection[section_id] ?? '';

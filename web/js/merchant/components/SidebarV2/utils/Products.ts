@@ -560,6 +560,10 @@ export const CUSTOMERS_PRODUCTS = [
   },
 ];
 
+const FTUX_COMMON_PRODUCTS_IDS = new Set(['home', 'transactions', 'settlements', 'reports']);
+
+export const FTUX_COMMON_PRODUCTS: Array<ProductTypeProp> = COMMON_PRODUCTS.filter((product) => FTUX_COMMON_PRODUCTS_IDS.has(product.product_id));
+
 interface L1ProductItem {
   title: string;
   href: string;
