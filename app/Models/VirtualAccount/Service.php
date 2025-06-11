@@ -127,16 +127,7 @@ class Service extends Base\Service
 
                 // if variant is on, then sent request to pg-router and handle response
                 if ($variant === 'variant_on') {
-                    $data = [
-                        'amount' => $input['amount_expected'] ?? null,
-                        'currency' => $input['currency'] ?? 'INR',
-                        'order_id' => $order ? $order->getId() : null,
-                        'method' => 'bank_transfer',
-                        'merchant_id' => $this->merchant->getId(),
-                        'description' => 'Virtual Account Payment',
-                        'email' => $email,
-                        'contact' => $contact,
-                    ];
+                    $data = $this->getPgRouterRequest($input, $order, $email, $contact);
                     $paymentResponse = $this->app['pg_router']->validateAndCreatePayment($data, true);
 
                     $payment = $paymentResponse['data']['payment'];
@@ -147,31 +138,7 @@ class Service extends Base\Service
                         'bank_transfer' => $bankTransfer,
                     ]);
 
-                    $virtualAccount = [
-                        'id' => $payment['id'],
-                        'name' => 'Razorpay',
-                        'entity' => 'virtual_account',
-                        'status' => 'active',
-                        'description' => null,
-                        'amount_expected' => $payment['amount'],
-                        'notes' => [],
-                        'amount_paid' => 0,
-                        'customer_id' => null,
-                        'receivers' => [
-                            [
-                                'id' => $payment['id'],
-                                'entity' => 'bank_account',
-                                'ifsc' => $bankTransfer['beneficiary_ifsc'],
-                                'bank_name' => $bankTransfer['beneficiary_bank_name'],
-                                'name' => $bankTransfer['beneficiary_name'],
-                                'notes' => [],
-                                'account_number' => $bankTransfer['beneficiary_account_number'],
-                            ],
-                        ],
-                        'close_by' => null,
-                        'closed_at' => null,
-                        'created_at' => time()
-                    ];
+                    $virtualAccount = $this->getVirtualAccountFromPgRouterResponse($payment, $bankTransfer);
 
                     return $virtualAccount;
                 }
@@ -203,6 +170,53 @@ class Service extends Base\Service
         (new Metric())->pushCreateLatencyMetrics($input, $startTime);
 
         return $virtualAccount->toArrayPublic();
+    }
+
+    protected function getPgRouterRequest(array $input, Order\Entity $order, string $email, string $contact)
+    {
+        $data = [
+            'amount' => $input['amount_expected'] ?? null,
+            'currency' => $input['currency'] ?? 'INR',
+            'order_id' => $order ? $order->getId() : null,
+            'method' => 'bank_transfer',
+            'merchant_id' => $this->merchant->getId(),
+            'description' => 'Virtual Account Payment',
+            'email' => $email,
+            'contact' => $contact,
+        ];
+
+        return $data;
+    }
+
+    protected function getVirtualAccountFromPgRouterResponse(array $payment, array $bankTransfer)
+    {
+        $virtualAccount = [
+            'id' => $payment['id'],
+            'name' => 'Razorpay',
+            'entity' => 'virtual_account',
+            'status' => 'active',
+            'description' => null,
+            'amount_expected' => $payment['amount'],
+            'notes' => [],
+            'amount_paid' => 0,
+            'customer_id' => null,
+            'receivers' => [
+                [
+                    'id' => $payment['id'],
+                    'entity' => 'bank_account',
+                    'ifsc' => $bankTransfer['beneficiary_ifsc'],
+                    'bank_name' => $bankTransfer['beneficiary_bank_name'],
+                    'name' => $bankTransfer['beneficiary_name'],
+                    'notes' => [],
+                    'account_number' => $bankTransfer['beneficiary_account_number'],
+                ],
+            ],
+            'close_by' => null,
+            'closed_at' => null,
+            'created_at' => time()
+        ];
+
+        return $virtualAccount;
     }
 
     public function createForOrder(string $orderId, array $input)
