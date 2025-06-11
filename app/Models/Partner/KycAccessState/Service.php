@@ -60,7 +60,8 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::APPROVE_REJECT_REQUEST,
             [
-                'input' => $input,
+                'merchant_id' => $input[Entity::ENTITY_ID],
+                'partner_id' => $input[Entity::PARTNER_ID],
             ]
         );
         $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
