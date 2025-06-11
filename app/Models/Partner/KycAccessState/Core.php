@@ -93,7 +93,7 @@ class Core extends Base\Core
 
         if ($accessRequest->isEmpty() === false)
         {
-            $max_rejection_count = $partner->getPartnerType() === MerchantConstants::AGGREGATOR ? Constants::AGGREGATOR_MAX_REJECTION_COUNT : Constants::MAX_REJECTION_COUNT;
+            $max_rejection_count = $partner->isAggregatorPartner() ? Constants::AGGREGATOR_MAX_REJECTION_COUNT : Constants::MAX_REJECTION_COUNT;
             $subMerchantKycAccess = $this->accessRequestExistHandle($accessRequest, $max_rejection_count);
         }
         else

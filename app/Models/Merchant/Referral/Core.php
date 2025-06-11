@@ -354,10 +354,11 @@ class Core extends Base\Core
      *
      * @return void
      * @throws Throwable
+     * NOTE :  This method regenerates referral links only for aggregator partner
      */
     public function regenerate(Merchant\Entity $partner): void
     {
-        $productConfig = $this->getReferralConfig();
+        $productConfig = $this->getReferralConfig($partner);
 
         $productConfig[Product::CAPITAL] = [
             "url"    => Merchant\Constants::RAZORPAY_LINE_OF_CREDIT_SIGN_UP,
@@ -382,12 +383,6 @@ class Core extends Base\Core
 
                 // Get the merchant entity
                 $merchant = $this->repo->merchants->find($merchantId);
-                if ($merchant && $merchant->getPartnerType() === MerchantConstants::AGGREGATOR) {
-                    $merchantSpecificConfig = $this->getReferralConfig($merchant);
-                    if (isset($merchantSpecificConfig[$product])) {
-                        $productConfig[$product] = $merchantSpecificConfig[$product];
-                    }
-                }
 
                 $productConfig[$product]["params"]["referral_code"] = $refCode;
 

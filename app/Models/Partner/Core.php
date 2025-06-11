@@ -73,7 +73,6 @@ use RZP\Services\Dcs\Configurations\Constants as DcsConfigConst;
 use RZP\Models\Merchant\MerchantApplications\Repository as ApplicationRepo;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
 use RZP\Models\Merchant\Referral\Core as ReferralCore;
-use RZP\Models\Base;
 
 class Core extends Detail\Core
 {

@@ -114,7 +114,7 @@ class Gimli extends Base
         $body = json_decode($response->body, true);
         
         if ($response->status_code !== 200 || !isset($body['url']) || $body['url'] !== $longUrl) {
-            throw new BadRequestException("Unexpected response from Gimli service", ErrorCode::SERVER_ERROR);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR );
         }
 
         return $body;
