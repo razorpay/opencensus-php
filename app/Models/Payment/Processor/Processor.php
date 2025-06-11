@@ -10988,7 +10988,17 @@ class Processor
 
         $this->eventPaymentFailed($exception);
 
-        (new Notify($this->payment))->trigger(Payment\Event::CUSTOMER_FAILED);
+        $isUpiOtmPayment = false;
+
+        if(isset($this->payment->localToken->upiMandate) === true)
+        {
+            $isUpiOtmPayment = $this->isUpiOtmPayment($payment, $this->payment->localToken->upiMandate->toArray());
+        }
+
+        if($isUpiOtmPayment === false)
+        {
+            (new Notify($this->payment))->trigger(Payment\Event::CUSTOMER_FAILED);
+        }
 
         if ($this->merchant->isFeatureEnabled(Feature::PAYMENT_FAILURE_EMAIL) === true)
         {
