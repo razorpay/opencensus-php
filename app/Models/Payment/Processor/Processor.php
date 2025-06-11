@@ -2013,6 +2013,41 @@ class Processor
         return false;
     }
 
+    private function saveInternationalcardforIndianMerchantExperimentEnabled(): bool {
+
+        try
+        {
+            $experimentId = $this->app['config']->get('app.in_save_int_card_splitz_experiment_id');
+
+            $properties = [
+                'id' => $this->app['request']->getTaskId(),
+                'experiment_id' => $experimentId,
+                'request_data' => json_encode(['merchant_id' => $this->merchant->getId(), 'mode' => $this->mode]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::TOKENS_ENTITY_FETCH_SPLITZ_EXPERIMENT_RESPONSE_FOR_IN_MERCHANTS, [
+                'merchant_id' =>  $this->merchant->getId(),
+                'variant' => $variant,
+                'experiment_id' => $experimentId
+            ]);
+
+            return $variant === 'variant_on';
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::TOKENS_ENTITY_FETCH_SPLITZ_EXPERIMENT_FAILURE);
+        }
+        return false;
+    }
+
+
     private function canRouteThroughRearchFlow(array & $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
@@ -2026,6 +2061,21 @@ class Processor
             if ($merchant->getCountry() === 'MY')
             {
                 return $this->canRouteThroughRearchFlowForMY($input);
+            }
+
+            if ($merchant->getCountry() === 'IN' &&  isset($input[Payment\Entity::TOKEN]) === true && (empty($input[Payment\Entity::METHOD]) === false) && ($input[Payment\Entity::METHOD] === Payment\METHOD::CARD)&& (empty($input[Payment\Entity::RECURRING]) === true)) {
+                $tokenId = $input[Payment\Entity::TOKEN];
+                $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
+                $card = $this->repo->card->fetchForToken($token);
+                if ($card !== null && $card->getCountry() !== 'IN' && $this->saveInternationalcardforIndianMerchantExperimentEnabled()) {
+                    $this->trace->count(
+                        Token\Metric::ROUTING_VIA_REARCH_FOR_INDIAN_MERCHANT_INTERNATIONAL_TOKEN,
+                        [
+                            'card_country' => $card->getCountry()
+                        ]
+                    );
+                    return true;
+                }
             }
 
             // Merchants with both v1 and v2 QR codes have to do re-arch separately
@@ -5610,10 +5660,6 @@ class Processor
             }
             else
             {
-                // for non-rearch payments, user_risk_providers_token is not expected hence unsetting it
-                if(empty($input['user_risk_providers_token']) === false) {
-                    unset($input['user_risk_providers_token']);
-                }
                 // for non-rearch juspay payments, application_id is not expected in input hence unsetting it
                 if(empty($input['application_id']) === false) {
                     unset($input['application_id']);
