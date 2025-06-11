@@ -13,6 +13,11 @@ const MERCHANT_FRAGMENT = gql`
       registered
       display
     }
+    contactPerson {
+      name {
+        value
+      }
+    }
     createdAt
     activation {
       bddVerificationStatus

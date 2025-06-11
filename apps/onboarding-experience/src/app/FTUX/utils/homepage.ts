@@ -133,12 +133,22 @@ export const formatPlatformList = (platforms: string[]): string => {
  * Generates header data for a merchant based on their selected payment channels
  *
  * @param paymentChannels - Object containing merchant's payment acceptance channel preferences
- * @returns An object with icon and text to display in the merchant header
+ * @returns An object with icon arrays and formatted text to display in the merchant header
  */
 export const getMerchantHeaderData = (paymentChannels?: PaymentAcceptanceChannelsType) => {
-  // Default header data with fallback icon and empty text
+  // Default header data with empty arrays/values
   const addedPlatforms: string[] = [];
-  const headerIcons = [];
+  const headerIcons: string[] = [];
+
+  // Early return if no payment channels provided
+  if (!paymentChannels) {
+    headerIcons.push(NoCodeHeaderIcon);
+    addedPlatforms.push('Ready to use products');
+    return {
+      icons: headerIcons,
+      text: 'Ready to use products',
+    };
+  }
 
   // Determine merchant category based on their selected payment channels
   const isNoCodeMerchant = hasAcceptedAnyPaymentChannel(paymentChannels, NO_CODE_CHANNEL_OPTIONS);
@@ -150,7 +160,7 @@ export const getMerchantHeaderData = (paymentChannels?: PaymentAcceptanceChannel
     PAYMENT_CHANNEL_OPTIONS.Android,
   ]);
 
-  // Select the appropriate icon based on merchant category
+  // Add icons and platform names based on merchant categories
   if (isWebsiteMerchant) {
     headerIcons.push(WebsiteHeaderIcon);
     addedPlatforms.push('Website');
@@ -231,4 +241,60 @@ export const getWebsiteAdditionContent = (
 
   // Default case: only website or no specific intent indicated
   return data;
+};
+
+/**
+ * Formats a name to have a maximum of 14 characters.
+ * If the name is longer than 14 characters, it will try to include
+ * as many words as possible within the character limit.
+ * Also converts text to title case (first letter of each word capitalized, rest lowercase).
+ *
+ * @param name - The full name to format
+ * @returns Formatted name with maximum 14 characters and in title case
+ */
+export const formatName = (name: string): string => {
+  if (!name || typeof name !== 'string') {
+    return '';
+  }
+
+  // Trim whitespace and handle multiple spaces
+  const trimmedName = name.trim().replace(/\s+/g, ' ');
+
+  if (!trimmedName) {
+    return '';
+  }
+
+  // Convert to title case (first letter of each word capitalized, rest lowercase)
+  const titleCaseName = trimmedName
+    .toLowerCase()
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
+  // If already within limit, return as is
+  if (titleCaseName.length <= 14) {
+    return titleCaseName;
+  }
+
+  // Handle case where first word is already too long
+  const words = titleCaseName.split(' ');
+  if (words[0].length > 14) {
+    return words[0];
+  }
+
+  // Try to fit as many words as possible
+  let result = words[0];
+
+  for (let i = 1; i < words.length; i++) {
+    const potentialResult = `${result} ${words[i]}`;
+
+    if (potentialResult.length <= 14) {
+      result = potentialResult;
+    } else {
+      // No more words can fit
+      break;
+    }
+  }
+
+  return result;
 };

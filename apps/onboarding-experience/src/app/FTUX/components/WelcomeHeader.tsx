@@ -10,7 +10,7 @@ import {
   Avatar,
 } from '@razorpay/blade/components';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
-import { getMerchantHeaderData } from '@FTUX/utils/homepage';
+import { getMerchantHeaderData, formatName } from '@FTUX/utils/homepage';
 import { isMobileDevice } from '@libs/shared-utils';
 
 /**
@@ -19,7 +19,11 @@ import { isMobileDevice } from '@libs/shared-utils';
 const WelcomeHeader = () => {
   const isMobile = isMobileDevice();
   const { merchantData } = useMerchantContext();
-  const merchantName = merchantData?.merchantById?.name?.registered?.split(' ')[0] || '';
+  const submittedName =
+    merchantData?.merchantById?.contactPerson?.name?.value ||
+    merchantData?.merchantById?.name?.registered ||
+    '';
+  const merchantName = formatName(submittedName);
   const { icons: headerIcons, text: merchantPlatforms } = getMerchantHeaderData(
     merchantData?.merchantById?.business?.paymentAcceptanceChannels,
   );
@@ -42,7 +46,9 @@ const WelcomeHeader = () => {
       alignSelf="stretch"
     >
       <Heading textAlign="center" size={isMobile ? 'large' : 'xlarge'}>
-        {isMobile ? `Welcome, ${merchantName}!` : `Hey ${merchantName}, welcome to Razorpay.`}
+        {isMobile
+          ? `Welcome${merchantName ? `, ${merchantName}` : ''}!`
+          : `Hey${merchantName ? ` ${merchantName}` : ''},  welcome to Razorpay.`}
       </Heading>
       <Box
         display="flex"

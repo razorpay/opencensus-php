@@ -2,16 +2,24 @@ import React from 'react';
 import { screen, fireEvent } from '@testing-library/react';
 import WelcomeHeader from '../WelcomeHeader';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
-import { getMerchantHeaderData } from '@FTUX/utils/homepage';
+import { getMerchantHeaderData, formatName } from '@FTUX/utils/homepage';
+import { isMobileDevice } from '@libs/shared-utils';
 import renderWithWrappers from 'apps/onboarding-experience/src/services/test/renderWithWrappers';
 
 // Only mock the necessary dependencies
 jest.mock('@FTUX/context/MerchantContext');
-jest.mock('@FTUX/utils/homepage');
+jest.mock('@FTUX/utils/homepage', () => ({
+  getMerchantHeaderData: jest.fn(),
+  formatName: jest.fn((name) => name),
+}));
+jest.mock('@libs/shared-utils', () => ({
+  isMobileDevice: jest.fn().mockReturnValue(false),
+}));
 
 describe('WelcomeHeader', () => {
   // Mock data
   const mockMerchantName = 'Test';
+  const mockRegisteredName = 'Test Registered';
   const mockPaymentChannels = ['online', 'website'];
   const mockHeaderIcons = ['icon1.png', 'icon2.png'];
   const mockPlatformsText = 'online and website';
@@ -26,8 +34,13 @@ describe('WelcomeHeader', () => {
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
         merchantById: {
+          contactPerson: {
+            name: {
+              value: mockMerchantName,
+            },
+          },
           name: {
-            registered: mockMerchantName,
+            registered: mockRegisteredName,
           },
           business: {
             paymentAcceptanceChannels: mockPaymentChannels,
@@ -49,11 +62,9 @@ describe('WelcomeHeader', () => {
       }
       return null;
     });
-  });
 
-  it('renders the welcome message with merchant name', () => {
-    renderWithWrappers(<WelcomeHeader />);
-    expect(screen.getByText(`Hey ${mockMerchantName}, welcome to Razorpay.`)).toBeInTheDocument();
+    // Default to desktop view
+    (isMobileDevice as jest.Mock).mockReturnValue(false);
   });
 
   it('displays the selected payment platforms text', () => {
@@ -105,32 +116,94 @@ describe('WelcomeHeader', () => {
 
     renderWithWrappers(<WelcomeHeader />);
     // Should render welcome without merchant name
-    expect(screen.getByText('Hey , welcome to Razorpay.')).toBeInTheDocument();
+    expect(screen.getByText('Hey, welcome to Razorpay.')).toBeInTheDocument();
   });
 
-  it('handles missing payment channels gracefully', () => {
-    // Setup null payment channels
+  it('handles missing merchant data gracefully in mobile view', () => {
+    // Setup null merchant data
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: null,
+    });
+
+    // Set mobile view
+    (isMobileDevice as jest.Mock).mockReturnValue(true);
+
+    renderWithWrappers(<WelcomeHeader />);
+    // Should render welcome without merchant name
+    expect(screen.getByText('Welcome!')).toBeInTheDocument();
+  });
+
+  it('correctly uses contactPerson name when available', () => {
+    renderWithWrappers(<WelcomeHeader />);
+    expect(formatName).toHaveBeenCalledWith(mockMerchantName);
+    expect(screen.getByText(`Hey ${mockMerchantName}, welcome to Razorpay.`)).toBeInTheDocument();
+  });
+
+  it('falls back to registered name when contactPerson name is not available', () => {
     (useMerchantContext as jest.Mock).mockReturnValue({
       merchantData: {
         merchantById: {
+          contactPerson: {
+            name: {
+              value: null,
+            },
+          },
           name: {
-            registered: mockMerchantName,
+            registered: mockRegisteredName,
           },
           business: {
-            paymentAcceptanceChannels: null,
+            paymentAcceptanceChannels: mockPaymentChannels,
           },
         },
       },
     });
 
-    // Mock default return for getMerchantHeaderData
-    (getMerchantHeaderData as jest.Mock).mockReturnValue({
-      icons: [],
-      text: '',
+    renderWithWrappers(<WelcomeHeader />);
+    expect(formatName).toHaveBeenCalledWith(mockRegisteredName);
+    expect(screen.getByText(`Hey ${mockRegisteredName}, welcome to Razorpay.`)).toBeInTheDocument();
+  });
+
+  it('displays correct greeting when name is empty', () => {
+    (useMerchantContext as jest.Mock).mockReturnValue({
+      merchantData: {
+        merchantById: {
+          contactPerson: {
+            name: {
+              value: '',
+            },
+          },
+          name: {
+            registered: '',
+          },
+          business: {
+            paymentAcceptanceChannels: mockPaymentChannels,
+          },
+        },
+      },
     });
 
     renderWithWrappers(<WelcomeHeader />);
-    expect(screen.getByText(`Hey ${mockMerchantName}, welcome to Razorpay.`)).toBeInTheDocument();
-    expect(getMerchantHeaderData).toHaveBeenCalledWith(null);
+    expect(formatName).toHaveBeenCalledWith('');
+    expect(screen.getByText('Hey, welcome to Razorpay.')).toBeInTheDocument();
+  });
+
+  it('displays correct mobile greeting with merchant name', () => {
+    // Set mobile view
+    (isMobileDevice as jest.Mock).mockReturnValue(true);
+
+    renderWithWrappers(<WelcomeHeader />);
+    expect(screen.getByText(`Welcome, ${mockMerchantName}!`)).toBeInTheDocument();
+  });
+
+  it('handles case when element to scroll to is not found', () => {
+    // Mock getElementById to return null
+    global.document.getElementById = jest.fn().mockReturnValue(null);
+
+    renderWithWrappers(<WelcomeHeader />);
+    const viewHereLink = screen.getByText('View all');
+    fireEvent.click(viewHereLink);
+
+    expect(document.getElementById).toHaveBeenCalledWith('ways-to-accept-payments');
+    expect(mockScrollIntoView).not.toHaveBeenCalled();
   });
 });

@@ -45,6 +45,11 @@ export type MerchantActivationDataType = {
     registered: string;
     display: string;
   };
+  contactPerson: {
+    name: {
+      value: string;
+    };
+  };
   createdAt: string;
   activation?: {
     bddVerificationStatus: MerchantBddVerificationStatusEnum;
