@@ -19,6 +19,9 @@ class Validator extends Base\Validator
 
     const DEFAULT_CLOSE_BY_DIFF = 900;
 
+    // Default number of days for virtual account close by
+    const DEFAULT_CLOSE_BY_DAYS = 180;
+
     protected static $createRules = [
         Entity::NAME                            => 'filled|string|max:40',
         Entity::AMOUNT_EXPECTED                 => 'filled|integer|min:0',
@@ -291,7 +294,7 @@ class Validator extends Base\Validator
         $now = Carbon::now(Timezone::IST);
 
         $minCloseBy = $now->copy()->addSeconds(self::MIN_CLOSE_BY_DIFF);
-        $maxCloseBy = $now->copy()->addDays(config('virtual_account.global_max_close_by', 180));
+        $maxCloseBy = $now->copy()->addDays(config('virtual_account.global_max_close_by', self::DEFAULT_CLOSE_BY_DAYS));
 
         if ($closeBy < $minCloseBy->getTimestamp())
         {
@@ -301,7 +304,7 @@ class Validator extends Base\Validator
         }
         if ($closeBy > $maxCloseBy->getTimestamp())
         {
-            $message = 'close_by cannot be more than ' . config('virtual_account.global_max_close_by', 180) . ' days from current time';
+            $message = 'close_by cannot be more than ' . config('virtual_account.global_max_close_by', self::DEFAULT_CLOSE_BY_DAYS) . ' days from current time';
             throw new BadRequestValidationFailureException($message);
         }
     }

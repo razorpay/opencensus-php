@@ -1507,6 +1507,6 @@ return array(
     'emandate_fetch_token_from_tidb' => env('EMANDATE_FETCH_TOKEN_FROM_TIDB'),
 
     'virtual_account' => [
-        'global_max_close_by' => env('GLOBAL_MAX_LIMIT_CLOSE_BY', 180), // Default 180 days if not set in env
+        'global_max_close_by' => env('GLOBAL_MAX_LIMIT_CLOSE_BY', \RZP\Models\VirtualAccount\Validator::DEFAULT_CLOSE_BY_DAYS),
     ],
 );
