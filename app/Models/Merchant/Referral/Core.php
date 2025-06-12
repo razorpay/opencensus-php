@@ -23,6 +23,12 @@ class Core extends Base\Core
 
     const PARTNER_TYPE = "partner_type";
 
+    const PARTNER_ID = "partner_id";
+
+    const USER_TYPE = "user_type";
+
+    const SUBMERCHANT = "sub-merchant";
+
     /**
      * Elfin: Url shortening service
      */
@@ -182,6 +188,11 @@ class Core extends Base\Core
         $productConfig = $this->addPOSProductConfig($merchant, $productConfig);
 
         $this->addOptionalParams($productConfig, $merchant);
+
+        // setting params for FE analytics
+        $productConfig[Product::PRIMARY]["params"][self::PARTNER_TYPE] = $merchant->getPartnerType();
+        $productConfig[Product::PRIMARY]["params"][self::PARTNER_ID] = $merchant->getId();
+        $productConfig[Product::PRIMARY]["params"][self::USER_TYPE] = self::SUBMERCHANT;
 
         $referrals = Tracer::inspan(['name' => HyperTrace::CREATE_REFERRAL_CORE], function() use ($referrals, $merchant, $productConfig) {
 
@@ -370,16 +381,8 @@ class Core extends Base\Core
      */
     private function addOptionalParams(array &$productConfig, Merchant\Entity $merchant): void
     {
-        $isEnabled = false;
         if ($merchant->getPartnerType() === Merchant\Constants::RESELLER)
         {
-            $isEnabled = $this->isMKYCFlowEnabled($merchant->getId(), $this->app['config']->get('app.mkyc_reseller_experiment_id'));
-            if ($isEnabled)
-            {
-                $this->trace->info(TraceCode::MKYC_RESELLER_FLOW, ["partner_id" => $merchant->getId()]);
-                $productConfig[Product::PRIMARY]["params"][self::PARTNER_TYPE] = $merchant->getPartnerType();
-            }
-
             // setting easy type for easy redirection for on-boarding
             $productConfig[Product::PRIMARY]["params"][self::EASY_ONBOARDING_TYPE_PARAM] = "1";
 
@@ -388,23 +391,6 @@ class Core extends Base\Core
                 $productConfig[Product::POS]["params"][self::EASY_ONBOARDING_TYPE_PARAM] = "1";
             }
         }
-
-        if ($merchant->getPartnerType() === Merchant\Constants::AGGREGATOR)
-        {
-            $isEnabled = $this->isMKYCFlowEnabled($merchant->getId(), $this->app['config']->get('app.mkyc_aggregator_experiment_id'));
-            if ($isEnabled)
-            {
-                $this->trace->info(TraceCode::MKYC_AGGREGATOR_FLOW, ["partner_id" => $merchant->getId()]);
-                $productConfig[Product::PRIMARY]["params"][self::PARTNER_TYPE] = $merchant->getPartnerType();
-            }
-        }
-
-        $this->trace->count(Metric::MKYC_FLOW_TOTAL,
-            [
-                'type'  => $merchant->getPartnerType(),
-                'enabled' => $isEnabled
-            ]
-        );
     }
 
     private function addCapitalProductConfig(Merchant\Entity $merchant, array $productConfig): array
@@ -459,12 +445,12 @@ class Core extends Base\Core
         return $productConfig;
     }
 
-    public function isMKYCFlowEnabled(string $partnerId, string $expId): bool {
+    public function isMKYCFlowEnabled(string $partnerId, string $expId, string $variant = 'enable'): bool {
         $properties = [
             'id'            => $partnerId,
             'experiment_id' => $expId,
         ];
 
-        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, $variant);
     }
 }

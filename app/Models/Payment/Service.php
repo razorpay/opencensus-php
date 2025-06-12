@@ -24,6 +24,7 @@ use RZP\Models\QrPayment\Constants as QrConstants;
 use RZP\Models\Reminders\ReminderProcessor;
 use RZP\Http\Controllers\GatewayController;
 use RZP\Jobs\MerchantBalanceUpdateAfterCLSOnboarding;
+use RZP\Models\Transfer\Metric as TransferMetric;
 use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
 use RZP\Http\Request\Requests;
 use RZP\Models\Ledger\Constants as LedgerConstants;
@@ -119,6 +120,7 @@ use RZP\Models\GenericDocument\Constants as GenericDocumentConstants;
 use RZP\Models\Ledger\ReverseShadow as LedgerReverseShadow;
 use Symfony\Component\HttpFoundation;
 use RZP\Services\UfhService;
+use RZP\Services\Route as RouteService;
 
 class Service extends Base\Service
 {
@@ -1763,7 +1765,7 @@ class Service extends Base\Service
 
         try
         {
-            $transfers = $this->getNewProcessor()->transfer($paymentId, $input);
+            $transfers = $this->transfer($paymentId, $input);
         }
         catch (\Exception $ex)
         {
@@ -1784,19 +1786,14 @@ class Service extends Base\Service
 
         (new Transfer\Metric)->pushCreateSuccessMetrics(current($input['transfers']));
 
-        //
-        // Exactly 1 transfer is created in this flow.
-        //
-        $transfer = $transfers->pop();
-
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_VIA_BATCH_SUCCESSFUL,
             [
-                'transfer_id' => $transfer->getPublicId(),
+                'transfer_id' =>  $transfers['items'][0]['id'],
             ]
         );
 
-        return $transfer->toArrayPublic();
+        return $transfers['items'][0];
     }
 
     /**
@@ -1910,33 +1907,40 @@ class Service extends Base\Service
         // exp check
         $isExpEnabled = (new Transfer\Service())->isPaymentTransferRearchExpEnabled($id, $this->merchant->getId(), $input);
 
-        if (!$isRouteAppAuth && !$shouldProcessViaApi && ($shouldProcessViaRoute || $isExpEnabled))
-        {
-            $resp = $this->app['route']->createPaymentTransfer($id, $input);
+        $sendRequestToMicroservice = !$isRouteAppAuth && !$shouldProcessViaApi && ($shouldProcessViaRoute || $isExpEnabled);
 
-            $this->trace->info(
-                TraceCode::PAYMENT_TRANSFER_RESPONSE_VIA_ROUTE_SERVICE,
-                [
-                    'input'      => $input,
-                    'response'   => $resp,
-                ]
-            );
+        $response = $this->mutex->acquireAndReleaseStrict(
+            'rearch_trf' . $payment->getId(), function () use ($sendRequestToMicroservice, $id, $input) {
+                if ($sendRequestToMicroservice === true)
+                {
+                    $resp = $this->app['route']->createPaymentTransfer($id, $input);
 
-            return $resp;
-        }
+                    $this->trace->info(
+                        TraceCode::PAYMENT_TRANSFER_RESPONSE_VIA_ROUTE_SERVICE,
+                        [
+                            'input'      => $input,
+                            'response'   => $resp,
+                        ]
+                    );
 
-        try
-        {
-            $transfers = $this->getNewProcessor()->transfer($id, $input);
+                    return $resp;
+                }
 
-            return $transfers->toArrayPublic();
-        }
-        catch (\Exception $e)
-        {
-            (new Transfer\Metric)->pushCreateFailedMetrics($e);
+                try
+                {
+                    $transfers = $this->getNewProcessor()->transfer($id, $input);
 
-            throw $e;
-        }
+                    return $transfers->toArrayPublic();
+                }
+                catch (\Exception $e)
+                {
+                    (new Transfer\Metric)->pushCreateFailedMetrics($e);
+
+                    throw $e;
+                }
+        });
+
+        return $response;
     }
 
     public function fixTransferAmountTransferred(string $id, array $input) : array
@@ -2067,31 +2071,43 @@ class Service extends Base\Service
     {
         Payment\Entity::verifyIdAndStripSign($id);
 
-        $transfers = Tracer::inSpan(['name' => 'transfer.fetch_by_payment'], function() use ($id)
+        $merchantId = $this->merchant->getMerchantId() ?? '';
+
+        $routeFetchEnabled = (new Transfer\Service())->isRouteFetchExperimentEnabled($merchantId,'');
+
+        $routeConfig =  (new RouteService\Config())->isExternalQueryAndDiffEnabled(__FUNCTION__);
+
+        $isExternalFetchEnabled = $routeConfig['enabled'] ?? false;
+
+        $diffCheck = $routeConfig['diff_check'] ?? false;
+
+        if ($isExternalFetchEnabled === false || $routeFetchEnabled === false)
         {
-            return (new Transfer\Core())->getForPayment($id);
-        });
+            return $this->getTransfersFromAPI($id);
+        }
 
-        $payment = $this->repo
-                        ->payment
-                        ->findByIdAndMerchant($id, $this->merchant);
+        $routeTransfers = app('route')->fetchByPaymentID($id);
 
-        if ($payment->hasOrder() === true)
+        if ($diffCheck === true )
         {
-            $orderId = $payment->getApiOrderId();
+            $apiTransfers = $this->getTransfersFromAPI($id);
 
-            $transfersFromOrder = Tracer::inSpan(['name' => 'transfer.fetch_by_order'], function() use ($orderId)
-            {
-                return (new Transfer\Core())->getForOrder($orderId);
-            });
+            $success = (new Transfer\Service())->findDiffInTransferResponse($apiTransfers,$routeTransfers);
 
-            foreach ($transfersFromOrder as $transferFromOrder)
+            if ($success === false)
             {
-                $transfers->push($transferFromOrder);
+                return $apiTransfers;
             }
         }
 
-        return ((new Transfer\Service())->setPartnerDetailsForTransfers($transfers))->toArrayPublic();
+        $this->trace->info(
+            TraceCode::TRANSFER_FETCH_MULTIPLE_RESPONSE,
+            [
+                'routeTransfers' => $routeTransfers
+            ]
+        );
+
+        return $routeTransfers;
     }
 
     /**
@@ -2404,6 +2420,38 @@ class Service extends Base\Service
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
                 'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get($experimentName) ?? null
+            ]);
+        }
+
+        return $response['response']['variant']['name'] ?? '';
+    }
+
+    public function getSplitzExpResponseForTokenFetchFromTokenService(string $merchantId, string $vault, string $experimentName)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get($experimentName),
+                'request_data'  => json_encode(['mids' => $merchantId, 'vault' => $vault]),
+            ];
+            $experimentId = $this->app['config']->get($experimentName);
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::TOKEN_FETCH_FROM_TOKEN_SERVICE_EXPERIMENT_SPLITZ_RESPONSE, [
+                'merchant_id'   => $merchantId,
+                'vault'         => $vault,
+                'experiment_id' => $experimentId,
+                'result'        => $response,
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'vault'         => $vault,
                 'experiment_id' => $this->app['config']->get($experimentName) ?? null
             ]);
         }
@@ -2824,6 +2872,7 @@ class Service extends Base\Service
     {
         $id = Entity::stripSignWithoutValidation($id);
         $callbackPresent = false;
+        $authenticationEntityFetch = false;
 
         $showSettlementHoldStatus = false;
 
@@ -2922,6 +2971,7 @@ class Service extends Base\Service
           }
         if (isset($entity['card'])) {
             if (isset($authenticationData['cavv']) && $payment->card->network === Card\Network::$fullName[Card\Network::AMEX]){
+                $authenticationEntityFetch = true;
                 $authenticationData = (new Payment\Service)->getAuthenticationEntity3ds2($payment->getPublicId());
                 $entity['acquirer_data']['authentication_reference_number'] = $authenticationData['cavv'];
             }
@@ -2979,28 +3029,34 @@ class Service extends Base\Service
             $entity['transaction'] = null;
         }
 
+        $internalApp = $this->app['basicauth']->getInternalApp()?? "none";
+        $config  = $this->app['config']->get('applications.route');
+        $passport = $this->app['basicauth']->getPassportJwt($config['url']);
+
         $this->trace->count(Metric::PAYMENT_FETCH_BY_ID_DISTRIBUTION, [
-            'private'          => $this->app['basicauth']->isPrivateAuth(),
-            'app'              => $this->app['basicauth']->getInternalApp(),
-            'proxy'            => $this->app['basicauth']->isProxyAuth(),
-            'callbackPresent'  => $callbackPresent,
+            'private'                       => $this->app['basicauth']->isPrivateAuth(),
+            'app'                           => $this->app['basicauth']->getInternalApp(),
+            'proxy'                         => $this->app['basicauth']->isProxyAuth(),
+            'route'                         => $this->app['api.route']->getCurrentRouteName(),
+            "authentication_entity_fetch"   => $authenticationEntityFetch,
+            'callbackPresent'               => $callbackPresent,
+            'passport'                      => empty($passport)
         ]);
 
-        if ($this->checkSplitzForPaymentFetchByIdParity() === true)
+        if ($this->app['api.route']->getCurrentRouteName() === "payment_fetch_by_id"
+            && ($internalApp === "none")
+            && (empty($passport) === false)
+            && $this->checkSplitzForPaymentFetchByIdParity() === true)
         {
-            $config  = $this->app['config']->get('applications.route');
-            $passport = $this->app['basicauth']->getPassportJwt($config['url']);
-
             $input["payment_id"] = $id;
             $input["passport"] = $passport;
             $input["cps_route"] = $payment['cps_route'];
-            $input["callbackPresent"] = $callbackPresent;
+            $input["callback_present"] = $callbackPresent;
             $input["ip"] = $this->app['request']->getClientIp();
-            $input["isPrivate"] = $this->app['basicauth']->isPrivateAuth();
-            $input["isProxyAuth"] = $this->app['basicauth']->isProxyAuth();
-            $input["internalApp"] = $this->app['basicauth']->getInternalApp();
+            $input["task_id"] = $this->app['request']->getTaskId();
+            $input["authentication_entity_fetch"] = $authenticationEntityFetch;
 
-            $this->pushPaymentFetchByIdForParity($payment, $input);
+            $this->pushPaymentFetchByIdForParity($entity, $input);
         }
 
         return $entity;
@@ -3152,7 +3208,7 @@ class Service extends Base\Service
 
         if ($entity[Payment\Entity::EMI] != null && $entity[Payment\Entity::EMI]['issuer'] != null && $entity[Payment\Entity::EMI]['type'] != null)
         {
-            $processingFeePlan = (new ProcessingFeePlan())->getProcessingFeePlan($entity[Payment\Entity::EMI]['issuer'], $entity[Payment\Entity::EMI]['type'],$entity[Payment\Entity::EMI]['duration'],$payment->getAmount());
+            $processingFeePlan = (new ProcessingFeePlan())->getProcessingFeePlan($entity[Payment\Entity::EMI]['issuer'], $entity[Payment\Entity::EMI]['type'],$entity[Payment\Entity::EMI]['duration'],$payment->getAmount(),$paymentMerchantId);
             if (!empty($processingFeePlan))
             {
                 $percentageFee = 0;
@@ -9743,5 +9799,35 @@ class Service extends Base\Service
         $filteredStores = array_intersect($userStores, $storeIds);
 
         $input['store_ids'] = $filteredStores;
+    }
+
+    private function getTransfersFromAPI(string $id)
+    {
+        $transfers = Tracer::inSpan(['name' => 'transfer.fetch_by_payment'], function() use ($id)
+        {
+            return (new Transfer\Core())->getForPayment($id);
+        });
+
+        $payment = $this->repo
+            ->payment
+            ->findByIdAndMerchant($id, $this->merchant);
+
+        if ($payment->hasOrder() === true)
+        {
+            $orderId = $payment->getApiOrderId();
+
+            $transfersFromOrder = Tracer::inSpan(['name' => 'transfer.fetch_by_order'], function() use ($orderId)
+            {
+                return (new Transfer\Core())->getForOrder($orderId);
+            });
+
+            foreach ($transfersFromOrder as $transferFromOrder)
+            {
+                $transfers->push($transferFromOrder);
+            }
+        }
+
+        return ((new Transfer\Service())->setPartnerDetailsForTransfers($transfers))->toArrayPublic();
+
     }
 }

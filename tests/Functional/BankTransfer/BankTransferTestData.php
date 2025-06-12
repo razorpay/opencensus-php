@@ -3006,6 +3006,7 @@ return [
             ],
             'status_code' => 200,
         ],
+
     'testValidateBankTransferAxis' => [
         'request' => [
             'url'     => '/ecollect/validate/axis/test',

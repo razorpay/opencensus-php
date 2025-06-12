@@ -314,7 +314,7 @@ class Webhooks extends Base\Core
             return;
         }
 
-        $txn = $this->getPrepaidTransactionforRefund($txns['transactions']);
+        $txn = $this->getPrepaidTransaction($txns['transactions']);
         if (empty($txn) === true)
         {
             $this->trace->count(
@@ -362,7 +362,32 @@ class Webhooks extends Base\Core
                 ]);
             return;
         }
-        $refundFromWebhook = $refundFromTxn;
+
+        $refundtxn = $this->getPrepaidTransactionForRefund($txns['transactions']);
+
+        if (empty($refundtxn) === true)
+        {
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'not_applicable', 'reason' => 'refund_txn_not_found']);
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
+                [
+                    'type'         => 'refund_txn_not_found',
+                    'transactions' => $txns['transactions'],
+                ]);
+            return;
+        }
+
+        $refundFromWebhook = $this->formatAmountStringToPaise($refundtxn['amount']);
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_WEBHOOK_REFUND_DATA,
+            [
+                'refund_txn' => $refundtxn,
+                'refund_from_webhook' => $refundFromWebhook,
+            ]
+        );
         // As keyless auth is not properly supported we only support LIVE mode in production and ignore
         // any errors which occur when a refund is issued against a test payment via Shopify for 1cc orders.
         $mode = $this->app->environment(Environment::PRODUCTION) === true ? Mode::LIVE : Mode::TEST;
@@ -660,7 +685,7 @@ class Webhooks extends Base\Core
         return $txn;
     }
 
-    protected function getPrepaidTransactionforRefund(array $txns): array
+    protected function getPrepaidTransactionForRefund(array $txns): array
     {
         $txn = [];
         for ($i = 0; $i < count($txns); $i++)
@@ -673,7 +698,6 @@ class Webhooks extends Base\Core
         }
         return $txn;
     }
-
 
     protected function processFulfillmentUpdateEvent(array $data)
     {

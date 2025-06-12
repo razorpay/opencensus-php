@@ -3713,6 +3713,18 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateUpiInAppAutoPayPlanWithoutAmountRange()
+    {
+        // assertions and test is run as per the helper file PricingData.php
+        $this->startTest();
+    }
+
+    public function testCreateUpiInAppAutoPayPlanWithAmountRange()
+    {
+        // assertions and test is run as per the helper file PricingData.php
+        $this->startTest();
+    }
+
     public function testAddPricingPlanRuleForOfferPrefundingFee()
     {
         $this->ba->adminAuth();
@@ -3789,6 +3801,17 @@ class PricingTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         $testData['request']['url'] = '/pricing/' . $pricingPlan['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleWithInstalmentMethod()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/' . $content['id'] . '/rule';
 
         $this->startTest($testData);
     }

@@ -731,6 +731,33 @@ trait ExternalTokensRepo
         }
     }
 
+    public function getExternalTokensByIdsAndCustomerIds(array $ids, string $customerId): PublicCollection
+    {
+        try
+        {
+            /** @var Tokens $externalRepo */
+            $externalRepo = Entity::getExternalRepoSingleton($this->entity);
+            $resp = $externalRepo->fetchTokenByIdsInternal(
+                [
+                    'ids' => $ids,
+                    'customer_id' => $customerId
+                ],
+            );
+            if (!empty($resp['body']) && !empty($resp['body']['data']))
+            {
+                return $externalRepo->getPublicCollection($resp['body']['data']);
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->info(TraceCode::TOKEN_EXTERNAL_FETCH_TOKEN_BY_IDS,[
+                'error' => $ex->getMessage()
+            ]);
+        }
+
+        return new PublicCollection();
+    }
+
     public function fetchExternalTokens($params, $input=[])
     {
         $class = Entity::getExternalRepoSingleton($this->entity);

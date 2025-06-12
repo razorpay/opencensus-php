@@ -150,8 +150,14 @@ class Core extends Base\Core
 
         try {
             $pgosProxyController = new MerchantOnboardingProxyController();
+            $startTime = millitime();
             $pgosResponse = $pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::GET_MERCHANT_ONBOARDING_DETAILS, $payload, $merchant, true);
 
+            $this->trace->info(TraceCode::PGOS_ONBOARDING_DETAILS_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'response' => $pgosResponse,
+                'duration' => millitime() - $startTime,
+            ]);
             if (empty($pgosResponse)) {
                 throw new \Exception("PGOS response is empty");
             }

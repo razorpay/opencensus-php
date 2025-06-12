@@ -2,6 +2,7 @@
 
 namespace RZP\Services\PayoutService;
 
+use RZP\Constants\Metric;
 use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
 use Razorpay\Edge\Passport\Passport;
@@ -34,6 +35,7 @@ class Create extends Base
     const CREATE_RZP_FEES_PAYOUT_URI                 = '/payouts/rzp_fees_payout';
 
     const SET_PRICING_RULE_INFO_URI                  = '/payouts/set_pricing_rule_info';
+    const Virtual                                    = 'virtual';
 
     /**
      * @param array $input
@@ -194,7 +196,7 @@ class Create extends Base
 
         $fundAccountInfo = array_pull($extraInfo, Payout\Entity::FUND_ACCOUNT_INFO);
 
-        $this->addFundAccountExtraInfoInRequestBody($requestBody, $fundAccountInfo);
+        $this->addFundAccountExtraInfoInPayoutsServiceRequestBody($requestBody, $fundAccountInfo);
 
         $vaToVaInfo = array_pull($extraInfo, Payout\Entity::VA_TO_VA_INFO);
 
@@ -317,6 +319,158 @@ class Create extends Base
             ]
         ];
     }
+
+    /*
+     * Creating Separate Function For fetching Fund Account for Payouts Service as Duplicate
+     * Payout Evaluation and Prevention using same Flow
+     */
+
+    public function addFundAccountExtraInfoInPayoutsServiceRequestBody(array & $request, array $fundAccountInfo = [])
+    {
+        if ((empty($fundAccountInfo[Payout\Entity::FETCH_FUND_ACCOUNT_INFO_SUCCESS]) === true) or
+            (empty($fundAccountInfo[Payout\Entity::FUND_ACCOUNT]) === true))
+        {
+
+            return;
+        }
+
+        $fundAccountObject = $fundAccountInfo[Payout\Entity::FUND_ACCOUNT];
+
+        $fundAccountExtraInfoRequestBody = $this->generateFundAccountResponseForPayoutsService($fundAccountObject);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SERVICE_FUND_ACCOUNT_DETAILS,
+            [
+                'fund_account' => $fundAccountExtraInfoRequestBody
+            ]);
+
+        $request[Payout\Entity::EXTRA_INFO] += [
+            Payout\Entity::FUND_ACCOUNT_INFO => [
+                Payout\Entity::FUND_ACCOUNT => $fundAccountExtraInfoRequestBody
+            ]
+        ];
+    }
+
+    public function generateFundAccountResponseForPayoutsService (array $fundAccountObject)
+    {
+
+        $fundAccountExtraInfoRequestBody = [
+            FundAccount\Entity::ID            => 'fa_' . $fundAccountObject[FundAccount\Entity::ID],
+            FundAccount\Entity::ENTITY        => 'fund_account',
+            FundAccount\Entity::CONTACT_ID    => 'cont_' . $fundAccountObject[FundAccount\Entity::CONTACT][Contact\Entity::ID],
+            FundAccount\Entity::ACCOUNT_TYPE  => $fundAccountObject[FundAccount\Entity::ACCOUNT_TYPE],
+            FundAccount\Entity::ACTIVE        => $fundAccountObject[FundAccount\Entity::ACTIVE],
+            FundAccount\Entity::BATCH_ID      => $fundAccountObject[FundAccount\Entity::BATCH_ID],
+            FundAccount\Entity::CREATED_AT    => $fundAccountObject[FundAccount\Entity::CREATED_AT],
+        ];
+
+        if ($fundAccountObject[ FundAccount\Entity::ACCOUNT_TYPE] === FundAccount\Entity::BANK_ACCOUNT)
+        {
+            $this->addBeneficiaryBankAccountDetailsForPayoutsService($fundAccountExtraInfoRequestBody, $fundAccountObject);
+
+        }
+
+        if ($fundAccountObject[ FundAccount\Entity::ACCOUNT_TYPE] === FundAccount\Entity::CARD)
+        {
+
+            $this->addBeneficiaryCardAccountDetailsForPayoutsService($fundAccountExtraInfoRequestBody, $fundAccountObject);
+
+        }
+
+        if ($fundAccountObject[ FundAccount\Entity::ACCOUNT_TYPE] === FundAccount\Entity::VPA)
+        {
+            $this->addBeneficiaryVpaAccountDetailsForPayoutsService($fundAccountExtraInfoRequestBody, $fundAccountObject);
+
+        }
+
+
+        if (empty($fundAccountObject[FundAccount\Entity::CONTACT]) === false)
+        {
+            $this->addBeneficiaryContachDetailsForPayoutsService($fundAccountExtraInfoRequestBody, $fundAccountObject);
+
+        }
+
+        return $fundAccountExtraInfoRequestBody;
+    }
+    public function addBeneficiaryBankAccountDetailsForPayoutsService (array & $fundAccountExtraInfoRequestBody , array $fundAccountObject)
+    {
+        $bankAccountExtraInfo = $fundAccountObject[FundAccount\Entity::ACCOUNT];
+
+        $fundAccountExtraInfoRequestBody[FundAccount\Entity::BANK_ACCOUNT] = [
+            BankAccount\Entity::ID                  => 'ba_' . $bankAccountExtraInfo[BankAccount\Entity::ID],
+            BankAccount\Entity::NAME                => $bankAccountExtraInfo[BankAccount\Entity::NAME],
+            BankAccount\Entity::IFSC                => $bankAccountExtraInfo[BankAccount\Entity::IFSC],
+            BankAccount\Entity::ACCOUNT_NUMBER      => $bankAccountExtraInfo[BankAccount\Entity::ACCOUNT_NUMBER],
+            BankAccount\Entity::BANK_NAME           => $bankAccountExtraInfo[BankAccount\Entity::BANK_NAME],
+            BankAccount\Entity::BANK_IDENTIFIER     => $bankAccountExtraInfo[BankAccount\Entity::BANK_IDENTIFIER],
+            BankAccount\Entity::IFSC_CODE           => $bankAccountExtraInfo[BankAccount\Entity::IFSC_CODE],
+            BankAccount\Entity::ACCOUNT_TYPE        => $bankAccountExtraInfo[BankAccount\Entity::ACCOUNT_TYPE],
+            BankAccount\Entity::BENEFICIARY_NAME    =>$bankAccountExtraInfo[BankAccount\Entity::BENEFICIARY_NAME],
+            BankAccount\Entity::BENEFICIARY_CITY    => $bankAccountExtraInfo[BankAccount\Entity::BENEFICIARY_CITY],
+            BankAccount\Entity::BENEFICIARY_EMAIL   => $bankAccountExtraInfo[BankAccount\Entity::BENEFICIARY_EMAIL],
+            BankAccount\Entity::BENEFICIARY_STATE   => $bankAccountExtraInfo[BankAccount\Entity::BENEFICIARY_STATE],
+            BankAccount\Entity::BENEFICIARY_MOBILE  => $bankAccountExtraInfo[BankAccount\Entity::BENEFICIARY_MOBILE],
+            BankAccount\Entity::BENEFICIARY_ADDRESS1=> $bankAccountExtraInfo[BankAccount\Entity::BENEFICIARY_ADDRESS1],
+            BankAccount\Entity::BENEFICIARY_COUNTRY => $bankAccountExtraInfo[BankAccount\Entity::BENEFICIARY_COUNTRY],
+            BankAccount\Entity::IDENTIFIER_TYPE     => $bankAccountExtraInfo[BankAccount\Entity::IDENTIFIER_TYPE],
+            self::Virtual                           => $bankAccountExtraInfo[self::Virtual] ,
+        ];
+    }
+
+    public function addBeneficiaryVpaAccountDetailsForPayoutsService (array & $fundAccountExtraInfoRequestBody , array $fundAccountObject)
+    {
+        $vpaExtraInfo = $fundAccountObject[FundAccount\Entity::ACCOUNT];
+
+        $fundAccountExtraInfoRequestBody[FundAccount\Entity::VPA] = [
+            Vpa\Entity::ID        => 'vpa_' . $vpaExtraInfo[Vpa\Entity::ID],
+            Vpa\Entity::USERNAME  => $vpaExtraInfo[Vpa\Entity::USERNAME],
+            Vpa\Entity::HANDLE    => $vpaExtraInfo[Vpa\Entity::HANDLE],
+            Vpa\Entity::ADDRESS   => $vpaExtraInfo[Vpa\Entity::ADDRESS],
+        ];
+    }
+
+    public function addBeneficiaryCardAccountDetailsForPayoutsService (array & $fundAccountExtraInfoRequestBody , array $fundAccountObject)
+    {
+        $cardExtraInfo = $fundAccountObject[FundAccount\Entity::ACCOUNT];
+
+        $fundAccountExtraInfoRequestBody[FundAccount\Entity::CARD] = [
+            Card\Entity::ID            => 'card_'. $cardExtraInfo[Card\Entity::ID],
+            Card\Entity::TYPE          => $cardExtraInfo[Card\Entity::TYPE],
+            Card\Entity::LAST4         => $cardExtraInfo[Card\Entity::LAST4],
+            Card\Entity::ISSUER        => $cardExtraInfo[Card\Entity::ISSUER],
+            Card\Entity::SUBTYPE       => $cardExtraInfo[Card\Entity::SUBTYPE],
+            Card\Entity::NETWORK       => $cardExtraInfo[Card\Entity::NETWORK],
+            Card\Entity::TOKEN_IIN     => $cardExtraInfo[Card\Entity::TOKEN_IIN],
+            Card\Entity::TOKEN_LAST_4  => $cardExtraInfo[Card\Entity::TOKEN_LAST_4],
+            Card\Entity::VAULT_TOKEN   => $cardExtraInfo[Card\Entity::VAULT_TOKEN],
+            Card\Entity::VAULT         => $cardExtraInfo[Card\Entity::VAULT],
+            Card\Entity::TRIVIA        => $cardExtraInfo[Card\Entity::TRIVIA],
+        ];
+    }
+
+    public function addBeneficiaryContachDetailsForPayoutsService (array & $fundAccountExtraInfoRequestBody , array $fundAccountObject)
+    {
+        $contactExtraInfo = $fundAccountObject[FundAccount\Entity::CONTACT];
+
+        $fundAccountExtraInfoRequestBody[FundAccount\Entity::CONTACT] = [
+            Contact\Entity::ID            => 'cont_' . $contactExtraInfo[Contact\Entity::ID],
+            Contact\Entity::ENTITY        => 'contact',
+            Contact\Entity::NAME          => $contactExtraInfo[Contact\Entity::NAME],
+            Contact\Entity::CONTACT       => $contactExtraInfo[Contact\Entity::CONTACT],
+            Contact\Entity::EMAIL         => $contactExtraInfo[Contact\Entity::EMAIL],
+            Contact\Entity::TYPE          => $contactExtraInfo[Contact\Entity::TYPE],
+            Contact\Entity::REFERENCE_ID  => $contactExtraInfo[Contact\Entity::REFERENCE_ID],
+            Contact\Entity::BATCH_ID      => $contactExtraInfo[Contact\Entity::BATCH_ID],
+            Contact\Entity::ACTIVE        => $contactExtraInfo[Contact\Entity::ACTIVE],
+            Contact\Entity::CREATED_AT    => $contactExtraInfo[Contact\Entity::CREATED_AT],
+        ];
+    }
+
+
+
+
+
+
 
     /**
      * @param array $request

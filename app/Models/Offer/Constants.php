@@ -249,11 +249,16 @@ final class Constants
     const STATUS_ACTIVE = 'STATUS_ACTIVE';
 
     const APPS = "apps";
+
+    const PAYER_ACCOUNT_ISSUER = "payer_account_issuer";
+
     const ALL = "ALL";
 
     const UPI_APP = "UpiApp";
 
     const UPI_PAYER_ACCOUNT = "UpiPayerAccount";
+
+    const UPI_PAYER_ACCOUNT_ISSUER = "UpiPayerAccountIssuer";
 
     const PAYMENT_INSTRUMENT = "PaymentInstrument";
 

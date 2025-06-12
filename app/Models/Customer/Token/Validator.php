@@ -78,7 +78,7 @@ class Validator extends Base\Validator
 
     protected static $vcppTokenPushRules = [
         'clientInformation'             => 'required',
-        'clientInformation.phoneNumber' => 'required|numeric|digits:10',
+        'clientInformation.phoneNumber' => 'required|string',
         'merchants'                     => 'required|array',
         'merchants.*.vPanEnrollmentId'  => 'required|string',
         'merchants.*.merchantId'        => 'required|string',
@@ -193,6 +193,7 @@ class Validator extends Base\Validator
     protected static $createOptimizerRecurringTokenNotesRules = [
         'mandate_id'       => 'required',
         'source'       => 'required',
+        'migrated_reference_id'       => 'sometimes',
     ];
 
 
@@ -464,7 +465,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateDeleteTokensInput($input, $customerId)
+    public function validateDeleteTokensInput($input, $customerId, $externalCount = 0)
     {
         $app = App::getFacadeRoot();
 
@@ -473,6 +474,7 @@ class Validator extends Base\Validator
         (new static)->validateInput('delete_tokens', $input);
 
         $tokenCount = $this->repo->token->getCountOfExistingTokensByTokensAndCustomer($input['tokens'], $customerId);
+        $tokenCount += $externalCount;
 
         // check if tokens found in db are less than provided
         if ($tokenCount !== count($input['tokens']))

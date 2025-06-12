@@ -4722,6 +4722,7 @@ class Gateway
      * @todo: Add all static callback gateways here once migrated to new flow to handle static callback.
      */
     public static $staticCallbackGateways = [
+        Gateway::NETBANKING_CSB,
         Gateway::NETBANKING_KVB,
         Gateway::NETBANKING_CANARA,
         Gateway::ESIGNER_LEGALDESK,

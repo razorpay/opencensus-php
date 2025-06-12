@@ -31,6 +31,8 @@ class OAuthScopes
      */
     const RX_PARTNER_READ_WRITE = 'rx_partner_read_write';
 
+    const ANALYTICS = 'analytics';
+
     /**
      * Map of additional scopes for a route (identified by the route name alias)
      * If the token has any one of the scopes for that route, then request is allowed
@@ -125,7 +127,9 @@ class OAuthScopes
         'banking_accounts_list'                  => [self::APPLE_WATCH_READ_WRITE],
         'payouts_summary'                        => [self::APPLE_WATCH_READ_WRITE],
         'transaction_statement_fetch'            => [self::RX_PARTNER_READ_WRITE],
-        'transaction_statement_fetch_multiple'   => [self::RX_PARTNER_READ_WRITE]
+        'transaction_statement_fetch_multiple'   => [self::RX_PARTNER_READ_WRITE],
+
+        'merchant_analytics_private'             => [self::ANALYTICS],
     ];
 
     /**

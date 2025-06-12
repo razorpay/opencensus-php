@@ -116,6 +116,7 @@ class Constants
     const MERCHANT_AUTO_CAPTURE_LATE_AUTH_TRUE      = 'Merchant has auto capture late auth enabled.';
     const MERCHANT_AUTO_CAPTURE_LATE_AUTH_FALSE     = 'Merchant has auto capture late auth disabled.';
     const MERCHANT_SILENT_REFUND_LATE_AUTH_TRUE     = 'Mercant has silent refund late auth enabled.';
+    const SPLIT_PAYMENT_LATE_AUTH_FALSE             = 'Split Payment late auth disabled';
 
     const PAYMENT_METHOD_COD                        = 'Cannot auto capture cash on delivery payment.';
     const ORDER_PAYMENT_CAPTURE_TRUE                = 'Order payment capture flag is true.';

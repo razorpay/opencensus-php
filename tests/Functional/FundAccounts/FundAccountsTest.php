@@ -164,7 +164,6 @@ class FundAccountsTest extends TestCase
             Entity::TYPE,
             Entity::SUBTYPE,
             Entity::ISSUER,
-            Entity::INPUT_TYPE,
             Entity::VAULT_TOKEN,
             Entity::VAULT,
             Entity::TRIVIA,

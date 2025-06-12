@@ -7473,8 +7473,7 @@ class Core extends Base\Core
         // merchants for whom pgos is serving onboarding requests
         // merchants who are not completely activated
         if ($merchant->getService() === Merchant\Constants::PGOS and
-            empty($users) === false and
-            $merchant->merchantDetail->getActivationStatus() != Merchant\Detail\Status::ACTIVATED)
+            empty($users) === false)
             {
                 $user = $this->repo->user->find($users[0]);
 
