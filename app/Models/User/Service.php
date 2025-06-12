@@ -726,14 +726,12 @@ class Service extends Base\Service
         if($requestedProduct == DeviceDetailConstants::PRODUCT_BANKING_ONBOARDING) {
 
             $this->auth->setRequestOriginProduct(Product::BANKING);
-            $input[Entity::X_VERIFY_EMAIL]="true";
         }
 
         $this->trace->info(TraceCode::USER_REGISTER, [
             'signup_source'          =>$input[DeviceDetail\Entity::SIGNUP_SOURCE],
             'signup_campaign'        =>$input[DeviceDetail\Entity::SIGNUP_CAMPAIGN],
             'merchant_product'       =>$this->auth->getRequestOriginProduct(),
-            'x_verify_email'         =>$input[Entity::X_VERIFY_EMAIL] ?? null,
         ]);
 
         $merchantInputData = [
@@ -1879,12 +1877,37 @@ class Service extends Base\Service
         // Remove this when signup experiment for X is ramped up.
         $isRequestFromXVerifyEmail = $inputData['isRequestFromXVerifyEmail'] ?? false;
 
+        // Check whether business banking is enabled for the merchant to determine USL behavior on X platform
+        $isBbPlusEnabledOnUsl = false;
+        if ($merchant !== null)
+        {
+            try
+            {
+                $isBbPlusEnabledOnUsl = $merchant->isBusinessBankingEnabled();
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(TraceCode::BUSINESS_BANKING_CHECK_FAILED, [
+                    'error' => $e->getMessage(),
+                    'merchantId' => $merchant->getId(),
+                    'userId' => $user->getId()
+                ]);
+            }
+        }
+
+        $this->trace->info(TraceCode::BUSINESS_BANKING_STATUS_CHECK, [
+            'isBusinessBanking' => $isBbPlusEnabledOnUsl,
+            'isRequestFromXVerifyEmail' => $isRequestFromXVerifyEmail,
+            'merchantId' => $merchant?->getId(),
+        ]);
+
         // If User is New Signed up with new auth flow and
         // Already Not confirmed and product is PG.
         // Or if the request is coming from new signup flow for X (v2)
 
         if ((($requestOriginProduct !== Product::BANKING) or
-             ($isRequestFromXVerifyEmail === true)) and
+             ($isRequestFromXVerifyEmail === true) or
+             ($isBbPlusEnabledOnUsl === true)) and
               $sendOtpEmail and
              ($user->getConfirmedAttribute() === false))
         {
