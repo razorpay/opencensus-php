@@ -6870,6 +6870,10 @@ class Core extends Base\Core
             $response[DEConstants::ALLOWED_NEXT_REKYC_STATUSES]       = $this->getAllowedNextRekycStatus($rekycStatus);
             $response[DEConstants::MANUAL_REKYC]                      = $additionalDetailsFromASV[DEConstants::MANUAL_REKYC] ?? null;
 
+            $pgOnboardingAdditionalDetails = $additionalDetailsFromASV[DEConstants::PG_ONBOARDING] ?? [];
+            $response[DEConstants::SHOW_FTUX_DASHBOARD] = $pgOnboardingAdditionalDetails[DEConstants::SHOW_FTUX_DASHBOARD] ?? null;
+            $response[DEConstants::SHOW_TRANSACTION_TIMELINE] = $pgOnboardingAdditionalDetails[DEConstants::SHOW_TRANSACTION_TIMELINE] ?? null;
+
             if (empty($merchantDetails->getKycClarificationReasons()) === false)
             {
                 $response[Entity::KYC_CLARIFICATION_REASONS] = $this->getUpdatedKycClarificationReasons([], $merchantDetails->getMerchantId());

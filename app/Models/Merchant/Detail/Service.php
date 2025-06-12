@@ -479,16 +479,6 @@ class Service extends Base\Service
         {
             $response[DetailConstants::PAYMENT_GATEWAY_COMPETITORS] = $pgosFetchInternalResponse[DetailConstants::PAYMENT_GATEWAY_COMPETITORS];
         }
-
-        if (isset($pgosFetchInternalResponse[DetailConstants::SHOW_FTUX_DASHBOARD]) === true)
-        {
-            $response[DetailConstants::SHOW_FTUX_DASHBOARD] = $pgosFetchInternalResponse[DetailConstants::SHOW_FTUX_DASHBOARD];
-        }
-
-        if (isset($pgosFetchInternalResponse[DetailConstants::SHOW_TRANSACTION_TIMELINE]) === true)
-        {
-            $response[DetailConstants::SHOW_TRANSACTION_TIMELINE] = $pgosFetchInternalResponse[DetailConstants::SHOW_TRANSACTION_TIMELINE];
-        }
     }
 
     public function getMerchantMethodsCore()
