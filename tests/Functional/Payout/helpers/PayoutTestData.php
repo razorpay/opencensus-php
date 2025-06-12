@@ -26457,4 +26457,302 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
         ],
     ],
+
+    'testDirectPayoutWithCollectxMerchantAndPayment' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal_direct',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'content' => [
+                'payment_id' => 'pay_1234567890',
+                'amount' => 2000000,
+                'currency' => 'INR',
+                'mode' => 'IMPS',
+                'purpose' => 'refund',
+                'narration' => 'Test Direct Payout',
+                'reference_id' => 'ref_1234567890',
+                'account_number' => '2224440041626905',
+                'fund_account'   => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'name'           => 'Dummy Saha',
+                        'ifsc'           => 'HDFC0000077',
+                        'account_number' => '3434000111000'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Uptime Merchant',
+                        'email'   => 'test@razorpay.com',
+                        'contact' => '1234567890',
+                        'type'    => 'customer',
+                        'notes'   => [
+                            'note_key' => 'uptime test merchant'
+                        ],
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payout',
+                'amount' => 2000000,
+                'currency' => 'INR',
+                'narration' => 'Test Direct Payout',
+                'purpose' => 'refund',
+                'status' => 'processing',
+                'mode' => 'IMPS',
+                'notes' => [
+                    'abc' => 'xyz',
+                ],
+                'fees' => 1062,
+                'tax' => 162,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testDirectPayoutWithNonCollectxMerchantAndPayment' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal_direct',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'content' => [
+                'payment_id' => 'pay_1234567890',
+                'amount' => 2000000,
+                'currency' => 'INR',
+                'mode' => 'IMPS',
+                'purpose' => 'refund',
+                'narration' => 'Test Direct Payout',
+                'reference_id' => 'ref_1234567890',
+                'account_number' => '2224440041626905',
+                'fund_account'   => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'name'           => 'Dummy Saha',
+                        'ifsc'           => 'HDFC0000077',
+                        'account_number' => '3434000111000'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Uptime Merchant',
+                        'email'   => 'test@razorpay.com',
+                        'contact' => '1234567890',
+                        'type'    => 'customer',
+                        'notes'   => [
+                            'note_key' => 'uptime test merchant'
+                        ],
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_MERCHANT_NOT_COLLECTX',
+                    'description' => "Merchant doesn't belong to collectX"
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testDirectPayoutWithCollectxMerchantWithoutPayment' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal_direct',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'content' => [
+                'amount' => 2000000,
+                'currency' => 'INR',
+                'mode' => 'IMPS',
+                'purpose' => 'refund',
+                'narration' => 'Test Direct Payout',
+                'reference_id' => 'ref_1234567890',
+                'account_number' => '2224440041626905',
+                'fund_account'   => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'name'           => 'Dummy Saha',
+                        'ifsc'           => 'HDFC0000077',
+                        'account_number' => '3434000111000'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Uptime Merchant',
+                        'email'   => 'test@razorpay.com',
+                        'contact' => '1234567890',
+                        'type'    => 'customer',
+                        'notes'   => [
+                            'note_key' => 'uptime test merchant'
+                        ],
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_PAYMENT_ID_REQUIRED_FOR_COLLECTX_REFUND_PAYOUT',
+                    'description' => "Payment Id not found in internal direct payout"
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testDirectPayoutWithCollectxMerchantWithoutBalance' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal_direct',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'content' => [
+                'amount' => 2000000,
+                'currency' => 'INR',
+                'mode' => 'IMPS',
+                'purpose' => 'refund',
+                'narration' => 'Test Direct Payout',
+                'reference_id' => 'ref_1234567890',
+                'account_number' => '2224440041626905',
+                'fund_account'   => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'name'           => 'Dummy Saha',
+                        'ifsc'           => 'HDFC0000077',
+                        'account_number' => '3434000111000'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Uptime Merchant',
+                        'email'   => 'test@razorpay.com',
+                        'contact' => '1234567890',
+                        'type'    => 'customer',
+                        'notes'   => [
+                            'note_key' => 'uptime test merchant'
+                        ],
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_NO_DIRECT_ACCOUNT_FOUND',
+                    'description' => "No direct account was found to be linked with merchant"
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testDirectPayoutWithCollectxMerchantWithoutCollectxChannel' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal_direct',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'content' => [
+                'amount' => 2000000,
+                'currency' => 'INR',
+                'mode' => 'IMPS',
+                'purpose' => 'refund',
+                'narration' => 'Test Direct Payout',
+                'reference_id' => 'ref_1234567890',
+                'account_number' => '2224440041626905',
+                'fund_account'   => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'name'           => 'Dummy Saha',
+                        'ifsc'           => 'HDFC0000077',
+                        'account_number' => '3434000111000'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Uptime Merchant',
+                        'email'   => 'test@razorpay.com',
+                        'contact' => '1234567890',
+                        'type'    => 'customer',
+                        'notes'   => [
+                            'note_key' => 'uptime test merchant'
+                        ],
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_CHANNEL_NOT_FOUND_FOR_PAYMENT_ID',
+                    'description' => "Payment settled by channel doesn't belong to collectX"
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testDirectPayoutWithCollectxMerchantWithNonCollectXPayment' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal_direct',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'content' => [
+                'amount' => 2000000,
+                'currency' => 'INR',
+                'mode' => 'IMPS',
+                'purpose' => 'refund',
+                'narration' => 'Test Direct Payout',
+                'reference_id' => 'ref_1234567890',
+                'account_number' => '2224440041626905',
+                'fund_account'   => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'name'           => 'Dummy Saha',
+                        'ifsc'           => 'HDFC0000077',
+                        'account_number' => '3434000111000'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Uptime Merchant',
+                        'email'   => 'test@razorpay.com',
+                        'contact' => '1234567890',
+                        'type'    => 'customer',
+                        'notes'   => [
+                            'note_key' => 'uptime test merchant'
+                        ],
+                    ],
+                ],
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_PAYMENT_NOT_COLLECTX',
+                    'description' => "Reference14 is not collectx"
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
 ];
