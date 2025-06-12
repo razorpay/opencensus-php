@@ -4197,11 +4197,33 @@ EOT;
      */
     protected function addQueryParamVirtualAccountId($query, $params)
     {
+        $virtualAccountId = $params[Payment\Entity::VIRTUAL_ACCOUNT_ID];
+
+        try
+        {
+            $merchant = $this->merchant;
+            if($this->isOptimisedQueryVAPaymentFetchEnabled($merchant->getId())) //rearch experiment enabled
+            {
+                $virtualAccount = $this->repo->virtual_account->findByPublicIdAndMerchant('va_'.$virtualAccountId, $merchant);
+                $receiverIds = [$virtualAccount->getVpaId(), $virtualAccount->getBankAccountId(), $virtualAccount['qr_code_id'], $virtualAccount['bank_account_id_2']];
+
+                $filteredReceiverIds = array_values(array_filter($receiverIds, fn($v) => !is_null($v)));
+
+                $paymentReceiverId = $this->dbColumn(Payment\Entity::RECEIVER_ID);
+                $query->whereIn($paymentReceiverId, $filteredReceiverIds);
+                return;
+            }
+        }
+        catch(\Throwable $t)
+        {
+            $this->trace->traceException($t, Trace::ERROR, TraceCode::VIRTUAL_ACCOUNT_PAYMENT_FETCH_FAILURE, [
+                'virtual_account_id' => $virtualAccountId
+            ]);
+        }
+
         $this->joinQueryVaReceiver($query);
 
         $virtualAccountIdCol = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
-
-        $virtualAccountId = $params[Payment\Entity::VIRTUAL_ACCOUNT_ID];
 
         $query->where($virtualAccountIdCol, '=', $virtualAccountId);
     }
@@ -5992,5 +6014,46 @@ GROUP BY
             ->whereBetween(Entity::CREATED_AT, [$from, $to])
             ->get()
             ->toArray();
+    }
+    public function getPaymentsByReceiverIds($receiverIds, $merchantId)
+    {
+        $paymentReceiverId = $this->dbColumn(Payment\Entity::RECEIVER_ID);
+        $paymentMerchantId = $this->dbColumn(Payment\Entity::MERCHANT_ID);
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
+            ->where($paymentMerchantId, '=', $merchantId)
+            ->whereIn($paymentReceiverId, $receiverIds)
+            ->orderBy(Entity::ID, 'desc')
+            ->limit(11)
+            ->get();
+    }
+
+    protected function isOptimisedQueryVAPaymentFetchEnabled($merchantId): bool
+    {
+        try
+        {
+            $properties = [
+                'experiment_id' => 'virtual_account_payment_fetch',
+                'id' => $merchantId,
+                'request_data'  => json_encode(['id' => $merchantId]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            if ($variant === 'enable')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $id = $properties['id'] ?? null;
+
+            $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
+
+            $this->trace->traceException($e, Trace::ERROR, $traceCode, ['id' => $id, 'experiment_id' => $properties['experiment_id']]);
+        }
+
+        return false;
     }
 }
