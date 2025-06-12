@@ -26,11 +26,15 @@ class Repository extends Base\Repository
                     ->where(Entity::UNIQUE_IDENTIFIER, '=', $id)
                     ->firstOrFailPublic();
     }
-    public function fetchAdminIDByUniqueIdentifier(string $uniqueIdentifier)
+    public function fetchAdminIDByUniqueIdentifier(string $uniqueIdentifier): ?object
     {
-        return $this->newQuery()
-            ->where(Entity::UNIQUE_IDENTIFIER, '=', $uniqueIdentifier)
-            ->select(Entity::ADMIN_ID)->first();
+        return DB::table('admins_meta')
+            ->join('admins', 'admins_meta.admin_id', '=', 'admins.id')
+            ->where('admins_meta.unique_identifier', $uniqueIdentifier)
+            ->where('admins.disabled', 0)
+            ->whereNull('admins.deleted_at')
+            ->select('admins_meta.admin_id')
+            ->first();
     }
 
     public function updateUserDisabledAtField(string $uniqueIdentifier)
