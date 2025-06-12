@@ -28,6 +28,8 @@ export default [
         });
         this.sendErrorMessageToSegment(e, error);
       },
+      // Key is added to make the field visible to admin for activated merchant
+      isVisibleToAdminForActivatedMerchant: true,
     },
     {
       name: 'business_registered_pin',
@@ -44,6 +46,8 @@ export default [
           Mandatory: 'Yes',
         });
       },
+      // Key is added to make the field visible to admin for activated merchant
+      isVisibleToAdminForActivatedMerchant: true,
     },
     {
       name: 'business_registered_city',
@@ -58,6 +62,8 @@ export default [
           Mandatory: 'Yes',
         });
       },
+      // Key is added to make the field visible to admin for activated merchant
+      isVisibleToAdminForActivatedMerchant: true,
     },
     {
       name: 'business_registered_state',
@@ -74,6 +80,8 @@ export default [
           Mandatory: 'Yes',
         });
       },
+      // Key is added to make the field visible to admin for activated merchant
+      isVisibleToAdminForActivatedMerchant: true,
     },
   ],
   {

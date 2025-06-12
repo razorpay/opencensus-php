@@ -282,6 +282,13 @@ class ActivationWizard extends React.Component {
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
 
+      if (props.isAdminAsMerchant.data && props.data.activation_status === 'activated') {
+        FORM_TABS = FORM_TABS.slice(0, BANK_ACCOUNT_TAB);
+        FORM_TABS_CONTENT = FORM_TABS_CONTENT.slice(0, BANK_ACCOUNT_TAB);
+        FORM_TABS_NAMES = FORM_TABS_NAMES.slice(0, BANK_ACCOUNT_TAB);
+        DOCUMENT_UPLOAD_STEP = null;
+      }
+
       if (
         props.data.activation_status === 'needs_clarification' &&
         props.data.kyc_clarification_reasons
@@ -616,31 +623,31 @@ class ActivationWizard extends React.Component {
   }
 
   setInitialTab() {
+    if (this.props.isAdminAsMerchant.data) {
+      this.props.setCurrentTab({
+        tab_name: this.mainTabs[0],
+      });
+      return;
+    }
     let firstInValid = null;
     const isFormSubmitted = !!this.props.data.submitted; // Linked accounts form can still be seen after activation.
-
     for (let i = 0; i < FORM_TABS.length; i++) {
       const tabStatusValid = this.tabValidity(i);
-
       if (!tabStatusValid && firstInValid === null) {
         firstInValid = i;
       }
       this.state.tabs[i] = tabStatusValid; // Mark tabs as valid-invalid (IMPORTANT STEP)
     }
-
     // If main Form is not touched ever, then set initial tab = 0
     if (!this.isLinkedAccountForm && this.props.isFormTouched === false) {
       firstInValid = 0;
     }
-
     if (firstInValid === null) {
       firstInValid = FORM_TABS.length - 1; // In case all are filled then set last tab(which is actually filled)
-
       if (!isFormSubmitted && isL1Completed(this)) {
         this.state.showSubmitLayer = true;
       }
     }
-
     this.state.activeTab = firstInValid;
     this.props.setCurrentTab({
       tab_name: this.mainTabs[firstInValid],
@@ -2312,6 +2319,11 @@ class ActivationWizard extends React.Component {
     const isBusinessDetailsStep = activeTab === BUSINESS_DETAILS_STEP;
     const showSubmitLayer = this.state.showSubmitLayer;
 
+    if (this.isFormLocked && this.props.isAdminAsMerchant.data) {
+      footerButtons.push(FOOTER_BUTTONS.SAVE_AND_NEXT);
+      return footerButtons;
+    }
+
     if (this.isOnKYCTab()) {
       footerButtons.push(FOOTER_BUTTONS.SUBMIT_CLARIFICATIONS);
       return footerButtons;
@@ -2457,7 +2469,6 @@ class ActivationWizard extends React.Component {
 
     let activeTab = this.state.activeTab;
     activeTab = activeTab < 0 || !activeTab ? 0 : activeTab; // Graceful failure in case activeTab becomes negative. To handle non-reproducible weird error.
-
     const isCurrentTabValid = this.state.tabs[activeTab];
 
     const footerButtons = this.FooterButtons;
@@ -2734,7 +2745,6 @@ class ActivationWizard extends React.Component {
                   For your business type, we need a few more details for activation
                 </div>
               )}
-              {/* Active tab title */}
               <main-title className="main-title">
                 {activeTab != 0 && (
                   <Button
@@ -3243,6 +3253,14 @@ export function ActivationField(field) {
   const _Component = rest.customField ? CustomField : Component;
   const { user, websiteSectionDetailsData } = this.props;
 
+  if (
+    this.props.isAdminAsMerchant.data &&
+    this.props.data.activation_status === 'activated' &&
+    !rest.isVisibleToAdminForActivatedMerchant
+  ) {
+    return null;
+  }
+
   return (
     <>
       {this.isOnKYCTab() && rest.reasons && rest.reasons.length > 0 && (
@@ -3286,7 +3304,9 @@ export function ActivationField(field) {
         key={key}
         data-name={_name}
         defaultValue={defaultValue}
-        disabled={isComponentDisabled || isNCFlowComponentDisabled}
+        disabled={
+          (isComponentDisabled || isNCFlowComponentDisabled) && !this.props.isAdminAsMerchant.data
+        }
         autoRender={_autoRenderImpure}
         required={
           activation_status === 'needs_clarification'

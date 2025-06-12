@@ -25,7 +25,7 @@ describe('<Activation /> ', () => {
     const props = {
       data: {},
       formState: {},
-      NCFields: {},
+      NCFields: [],
       commentlist: [],
       setCommentlist: () => {},
       user: {},

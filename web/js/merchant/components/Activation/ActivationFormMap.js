@@ -142,6 +142,8 @@ const contactFields = [
         Mandatory: 'Yes',
       });
     },
+    // Key is added to make the field visible to admin for activated merchant
+    isVisibleToAdminForActivatedMerchant: true,
   },
   {
     label: 'Contact Number',
@@ -169,6 +171,8 @@ const contactFields = [
       });
       this.sendErrorMessageToSegment(e, error);
     },
+    // Key is added to make the field visible to admin for activated merchant
+    isVisibleToAdminForActivatedMerchant: true,
   },
   {
     label: 'Contact Email',
@@ -269,6 +273,8 @@ const businessModel = [
       });
       this.sendErrorMessageToSegment(e, error);
     },
+    // Key is added to make the field visible to admin for activated merchant
+    isVisibleToAdminForActivatedMerchant: true,
   },
   [
     {
@@ -841,6 +847,8 @@ const businessDetails = [
           Mandatory: 'Yes',
         });
       },
+      // Key is added to make the field visible to admin for activated merchant
+      isVisibleToAdminForActivatedMerchant: true,
     },
   ],
   [
@@ -917,6 +925,8 @@ const businessDetails = [
           Mandatory: 'Yes',
         });
       },
+      // Key is added to make the field visible to admin for activated merchant
+      isVisibleToAdminForActivatedMerchant: true,
     },
     {
       getLabel: (activation) => {
@@ -1097,6 +1107,8 @@ const businessDetails = [
         return 'Please enter billing label with at least 3 characters.';
       }
     },
+    // Key is added to make the field visible to admin for activated merchant
+    isVisibleToAdminForActivatedMerchant: true,
   },
   ...AddressFields, // check ./AddressFieldsMap.js for address fields
   [

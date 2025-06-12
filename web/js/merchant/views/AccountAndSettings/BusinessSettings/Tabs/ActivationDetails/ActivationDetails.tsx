@@ -100,6 +100,7 @@ const ActivationDetails = (props): JSX.Element => {
                         status: window.rzp_user.verification.status,
                       },
                     });
+                    if(isAdminAsMerchant.data && user.activation_status === 'activated') return;
                     if (
                       isNcEligibile &&
                       user.isFeEasyDashboardNCEnabled &&
