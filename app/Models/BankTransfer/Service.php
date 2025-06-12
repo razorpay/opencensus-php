@@ -1846,7 +1846,7 @@ class Service extends Base\Service
                 ]);
             }
 
-            $this->core->sendSegmentEventIfApplicable($merchantId, BankTransferConstants::MONEYSAVER_ACTIVATED);
+            $this->sendSegmentEventForMoneySaverAccountActivated($this->merchant);
 
             return (new InternationalIntegration\Core)->fetchIntlVirtualBankAccountsForGateway($merchantId, Constants\Entity::CURRENCY_CLOUD);
         } catch (\Exception $ex)
@@ -1861,6 +1861,40 @@ class Service extends Base\Service
             ]);
 
             throw $ex;
+        }
+    }
+
+    public function sendSegmentEventForMoneySaverAccountActivated($merchant)
+    {
+        $merchantID = $merchant->getId();
+        try {
+            $properties = [
+                "merchant_id" => $merchantID,
+                "merchant_type" => "cross_border_money_saver",
+                "event" => BankTransferConstants::MONEYSAVER_ACTIVATED,
+                "moneysaver_activation_timestamp" => time(),
+            ];
+
+
+            $this->trace->info(TraceCode::MONEYSAVER_SEGMENT_EVENT_REQUEST, [
+                'merchant_id' => $merchantID,
+                'properties' => $properties
+            ]);
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $properties, $properties['event']);
+            $this->app['segment-analytics']->buildRequestAndSend();
+
+            $this->trace->info(TraceCode::MONEYSAVER_SEGMENT_EVENT_SUCCESS, [
+                'merchant_id' => $merchantID,
+                'properties' => $properties,
+            ]);
+        } catch (\Exception $ex) {
+            $this->trace->info(TraceCode::MONEYSAVER_SEGMENT_EVENT_FAILED, [
+                'error_message' => $ex->getMessage(),
+                'merchant_id' => $merchantID,
+                'event_type' => BankTransferConstants::MONEYSAVER_ACTIVATED,
+            ]);
         }
     }
 
@@ -2092,16 +2126,16 @@ class Service extends Base\Service
         ]);
 
 
-        if ($this->app['env'] === Environment::BETA or
-            $this->app['env'] === Environment::AUTOMATION or
-            $this->app['env'] === Environment::TESTING
-        ) {
-            DefaultConnection::set(Mode::TEST);
-            $this->app['rzp.mode'] = Mode::TEST;
-        } else {
-            $this->app['rzp.mode'] = Mode::LIVE;
-        }
-
+       if ($this->app['env'] === Environment::BETA or
+           $this->app['env'] === Environment::AUTOMATION or
+           $this->app['env'] === Environment::TESTING
+       ) {
+           DefaultConnection::set(Mode::TEST);
+           $this->app['rzp.mode'] = Mode::TEST;
+       } else {
+           $this->app['rzp.mode'] = Mode::LIVE;
+       }
+       
         switch ($header) {
             case self::CASH_MANAGER_TRANSACTION_NOTIFICATION:
                 $this->fundsArrivedFlowFromCurrencyCloud($input);
@@ -2605,9 +2639,13 @@ class Service extends Base\Service
             ]);
         }
 
+        $shouldSendSegmentEvent = $this->core->canSendMoneySaverPaymentSegmentEvent($merchantId, Payment\status::AUTHORIZED);
+
         $payments = $this->core->createAndAuthorizePaymentForIntlBankTransfer($response['data'], $merchantId, $input);
 
-        $this->core->sendSegmentEventIfApplicable($merchantId, Payment\status::AUTHORIZED);
+        if ($shouldSendSegmentEvent === true) {
+            $this->core->sendPaymentSegmentEvent($merchantId, Payment\status::AUTHORIZED, $payments[0]);
+        }
 
         return [
             'success' => 'true',
@@ -2649,7 +2687,7 @@ class Service extends Base\Service
         // merchants should add customer billing addresses before payments can be captured
         $addresses = $this->repo->address->fetchAddressesForEntity($payment,
             ['type' => Address\Type::BILLING_ADDRESS]);
-        
+
         if ($addresses->isEmpty() === true) {
 
             $this->trace->info(TraceCode::B2B_TRANSFER_COMPLETED_NOTIFICATION_PROCESSING_FAILURE, [

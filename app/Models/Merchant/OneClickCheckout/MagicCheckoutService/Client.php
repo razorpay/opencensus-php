@@ -29,6 +29,7 @@ class Client
     const X_REQUEST_ID                     = 'X-Request-Id';
     const TIMEOUT                          = 'timeout';
     const X_PASSPORT_JWT_V1                = 'X-Passport-JWT-V1';
+    const X_MODE                           = 'X-Mode';
     const CONTENT_TYPE_MULTIPART           = "multipart/form-data";
     const FILE_KEY                         = "file";
 
@@ -170,6 +171,8 @@ class Client
             self::AUTHORIZATION => $this->getAuthorizationHeader(),
             self::X_REQUEST_ID  => $this->app['request']->getTaskId(),
             self::X_PASSPORT_JWT_V1 => $this->auth->getPassportJwt($this->getBaseUrl()),
+            self::X_MODE =>$this->app['rzp.mode'],
+            'X-User-Id' => optional($this->app['basicauth']->getUser())->getId() ?? '',
         ];
         if (empty($this->merchant) === false)
         {

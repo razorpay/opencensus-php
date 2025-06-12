@@ -5,7 +5,9 @@ namespace RZP\Models\Transfer;
 use App;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\Transfer\Metric as TransferMetric;
 use Throwable;
 use Carbon\Carbon;
 use Monolog\Logger;
@@ -43,6 +45,8 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
+use function PHPUnit\Framework\isEmpty;
+use RZP\Services\Route as RouteService;
 
 class Service extends Base\Service
 {
@@ -59,66 +63,50 @@ class Service extends Base\Service
 
     public function fetch(string $id, array $input): array
     {
-        $transferTypeFilter = $this->getTransferTypeFilter($input);
 
-        $txn = null;
+        $transferTypeFilter = $this->getTransferTypeFilter($input);
 
         $merchant = $this->app['basicauth']->getMerchant();
 
-        $isReverseShadowMerchant = empty($merchant) === false ? $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) : false;
+        $this->merchant = $merchant;
 
-        if($isReverseShadowMerchant === true)
+        $routeFetchEnabled = $this->isRouteFetchExperimentEnabled($this->merchant->getId(),$transferTypeFilter);
+
+        $routeConfig =  (new RouteService\Config())->isExternalQueryAndDiffEnabled(__FUNCTION__);
+
+        $isExternalFetchEnabled = $routeConfig['enabled'] ?? false;
+
+        $diffCheck = $routeConfig['diff_check'] ?? false;
+
+        if ($isExternalFetchEnabled === false || $routeFetchEnabled === false)
         {
-            if((empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === true)
-                and (in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true))
+            return $this->fetchTransferByIdFromAPI($id,$input,$transferTypeFilter);
+        }
+
+        $routeTransfer = App::getFacadeRoot()['route']->fetchTransferByIDExternal($id,$input);
+
+
+        if ($diffCheck === true)
+        {
+            $apiTransfer = $this->fetchTransferByIdFromAPI($id,$input,$transferTypeFilter);
+
+            $success = $this->findDiffInTransferResponse($apiTransfer,$routeTransfer);
+
+            if ($success === false)
             {
-                array_delete('transaction.settlement', $input['expand']);
-
-                //Doing this as strip sign uses pointer
-                $transferId = $id;
-
-                $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb(Entity::stripSignWithoutValidation($transferId));
-
-                if(empty($txn) === false and empty($txn->getSettlementId()) === false)
-                {
-                    $settlement = $this->repo->settlement->find($txn->getSettlementId());
-
-                    if (empty($settlement) === false)
-                    {
-                        $txn['settlement'] = $settlement->toArrayPublic();
-                    }
-                    else
-                    {
-                        $txn['settlement'] = null;
-                    }
-                }
+                return $apiTransfer;
             }
         }
 
-        $transfer = Tracer::inSpan(['name' => 'transfer.fetch'], function() use ($id, $input)
-        {
-            return $this->repo
-                        ->transfer
-                        ->findByPublicIdAndMerchant($id, $this->merchant, $input);
-        });
+        $this->trace->info(
+            TraceCode::TRANSFER_FETCH_RESPONSE,
+            [
+                'routeTransfer' => $routeTransfer
+            ]
+        );
 
-        $transfer = $transfer->toArrayPublicWithExpand();
+        return $routeTransfer;
 
-        if($transferTypeFilter === Constant::PLATFORM )
-        {
-            $transfer = $this->setPartnerDetailsForTransfer($transfer);
-        }
-
-        if ($txn != null)
-        {
-            $transfer['transaction'] = $txn->toArrayPublicWithExpand();
-        }
-        else if ($isReverseShadowMerchant === true and $readExp === true)
-        {
-            $transfer['transaction'] = null;
-        }
-
-        return $transfer;
     }
 
     public function fetchMultiple(array $input)
@@ -134,64 +122,62 @@ class Service extends Base\Service
 
         $transferTypeFilter = $this->getTransferTypeFilter($input);
 
-        $transfers = Tracer::inSpan(['name' => 'transfer.fetch_multiple'], function() use ($transferTypeFilter, $input, $merchantId)
+        $routeFetchEnabled = $this->isRouteFetchExperimentEnabled($merchantId,$transferTypeFilter);
+
+        $routeConfig =  (new RouteService\Config())->isExternalQueryAndDiffEnabled(__FUNCTION__);
+
+        $isExternalFetchEnabled = $routeConfig['enabled'] ?? false;
+
+        $diffCheck = $routeConfig['diff_check'] ?? false;
+
+        if ($isExternalFetchEnabled === false || $routeFetchEnabled === false)
         {
-            try
+            return $this->fetchMultipleTransferFromAPI($input,$transferTypeFilter);
+        }
+
+        $routeTransfers = App::getFacadeRoot()['route']->fetchMultipleTransfers($input);
+
+        if ($diffCheck === true)
+        {
+            $apiTransfers = $this->fetchMultipleTransferFromAPI($input,$transferTypeFilter);
+
+            $success = $this->findDiffInTransferResponse($apiTransfers,$routeTransfers);
+
+            if ($success === false)
             {
-                if ($transferTypeFilter === Constant::PLATFORM )
-                {
-                    $linkedAccountIds = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($this->merchant->getId());
-
-                    $input[Constant::EXCLUDED_LINKED_ACCOUNTS] = $linkedAccountIds;
-                }
-                else
-                {
-                    $result = (new Merchant\Service())->isFeatureEnabledForPartnerOfSubmerchant(Feature\Constants::ROUTE_PARTNERSHIPS, $this->merchant->getId());
-
-                    if( $result[Constant::FEATURE_ENABLED] === true)
-                    {
-                        $linkedAccountIds = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($this->merchant->getId());
-
-                        $input[Constant::INCLUDED_LINKED_ACCOUNTS] = $linkedAccountIds;
-                    }
-                }
-            }
-            catch (Throwable $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::TRANSFER_FILTER_SET_FAILED,
-                    [
-                        'merchant_id'       => $this->merchant->getId(),
-                        'filter_type'       => $transferTypeFilter,
-                        'filters'           => $input,
-                    ]
-                );
+                return $apiTransfers;
             }
 
-            if ($this->isRouteTidbFetchExpEnabled($merchantId))
-            {
-                return $this->repo
-                    ->transfer
-                    ->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
-            }
-            else
-            {
-                return $this->repo
-                    ->transfer
-                    ->fetch($input, $merchantId,);
-            }
-        });
+        }
 
         $this->trace->info(
-            TraceCode::TRANSFER_FETCH_MULTIPLE_RESPONSE,
-            [
-                'transfers' => $transfers->toArrayPublic(),
-            ]
-        );
+            TraceCode::TRANSFER_FETCH_MULTIPLE_RESPONSE, [
+                    'routeTransfers' => $routeTransfers
+                ]
+            );
 
-        return $transfers->toArrayPublic();
+       return $routeTransfers;
+    }
+
+  public function array_diff_recursive($array1, $array2) :array {
+        $result = [];
+
+        foreach ($array1 as $key => $value) {
+            if (array_key_exists($key, $array2)) {
+                if (is_array($value) && is_array($array2[$key])) {
+                    $diff = $this->array_diff_recursive($value, $array2[$key]);
+                    if (!empty($diff)) {
+                        $result[$key] = $diff;
+                    }
+                } elseif ($value !== $array2[$key]) {
+                    $result[$key] = $value;
+                }
+            } else {
+                $result[$key] = $value;
+            }
+        }
+
+        return $result;
     }
 
     public function fetchReversalsOfTransfer(string $id): array
@@ -203,7 +189,15 @@ class Service extends Base\Service
             Reversal\Entity::ENTITY_TYPE    => EntityConstant::TRANSFER
         ];
 
-        $reversals = $this->repo->reversal->fetch($options, $merchantId);
+
+        if ($this->isRouteTidbFetchExpEnabled($merchantId))
+        {
+            $reversals = $this->repo->reversal->fetch($options, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+        else
+        {
+            $reversals = $this->repo->reversal->fetch($options, $merchantId);
+        }
 
         return $reversals->toArrayPublic();
     }
@@ -385,7 +379,7 @@ class Service extends Base\Service
             if ($shouldSendToRouteService === true)
             {
                 // make request to micro service
-                $resp = App::getFacadeRoot()['route']->createTransferReversal($input);
+                $resp = App::getFacadeRoot()['route']->createTransferReversal($id, $input);
 
                 $this->trace->info(
                     TraceCode::TRANSFER_REVERSAL_RESPONSE_VIA_ROUTE_SERVICE,
@@ -482,53 +476,87 @@ class Service extends Base\Service
     {
         (new Merchant\Validator)->validateLinkedAccount($this->merchant);
 
-        $merchantId = $this->merchant->getId();
+        $merchantId = $this->merchant->getMerchantId() ?? '';
 
-        Transfer\Entity::verifyIdAndStripSign($id);
+        $routeFetchEnabled = (new Transfer\Service())->isRouteLinkedAccountFetchExperimentEnabled($merchantId);
 
-        $relations = ['transfer', 'transfer.recipientSettlement'];
+        $routeConfig =  (new RouteService\Config())->isExternalQueryAndDiffEnabled(__FUNCTION__);
 
-        $parentMerchant = $this->merchant->getParentId();
+        $isExternalFetchEnabled = $routeConfig['enabled'] ?? false;
 
-        if ($this->isRouteTidbFetchExpEnabled($parentMerchant))
+        $diffCheck = $routeConfig['diff_check'] ?? false;
+
+        if ($isExternalFetchEnabled === false || $routeFetchEnabled === false)
         {
-            $payment = $this->repo->payment->findByTransferIdAndMerchant(
-                $id, $merchantId, $relations, ConnectionType::DATA_WAREHOUSE_MERCHANT);
-        }
-        else
-        {
-            $payment = $this->repo->payment->findByTransferIdAndMerchant($id, $merchantId, $relations);
+            return $this->fetchLinkedAccountTransfersByIDFromAPI($id,$merchantId);
         }
 
-        return $this->createTransferResponseFromPayment($payment);
+        $routeTransfer = app('route')->fetchLinkedAccountTransfersByID($id);
+
+        if ($diffCheck === true )
+        {
+            $apiTransfer = $this->fetchLinkedAccountTransfersByIDFromAPI($id,$merchantId);
+
+            $success = $this->findDiffInTransferResponse($apiTransfer,$routeTransfer);
+
+            if ($success === false)
+            {
+                return $apiTransfer;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::TRANSFER_LA_FETCH_MULTIPLE_RESPONSE,
+            [
+                'routeTransfers' => $routeTransfer
+            ]
+        );
+
+        return $routeTransfer;
+
     }
 
     public function fetchLinkedAccountTransferByPaymentId(string $paymentId, array $input = []): array
     {
 
-        if ($this->merchant->isDisplayParentPaymentId() === true)
+        $merchantId = $this->merchant->getMerchantId() ?? '';
+
+        $routeFetchEnabled = (new Transfer\Service())->isRouteLinkedAccountFetchExperimentEnabled($merchantId);
+
+        $routeConfig =  (new RouteService\Config())->isExternalQueryAndDiffEnabled(__FUNCTION__);
+
+        $isExternalFetchEnabled = $routeConfig['enabled'] ?? false;
+
+        $diffCheck = $routeConfig['diff_check'] ?? false;
+
+        if ($isExternalFetchEnabled === false || $routeFetchEnabled === false)
         {
-            (new Merchant\Validator)->validateLinkedAccount($this->merchant);
-
-            Payment\Entity::verifyIdAndStripSign($paymentId);
-
-            $transferId = null;
-
-            if (isset($input["id"]))
-            {
-                $transferId = Transfer\Entity::verifyIdAndStripSign($input["id"]);
-
-            }
-
-            return $this->createTransferResponseFromParentPaymentAndTransfer($paymentId,$transferId);
-
+            return $this->fetchLinkedAccountTransfersByPaymentIDFromAPI($paymentId,$input);
         }
 
-        $response = [];
+        $routeTransfers = app('route')->fetchLinkedAccountTransfersByPaymentID($paymentId,$input);
 
-        $transfers =  new Base\PublicCollection($response);
+        if ($diffCheck === true )
+        {
+            $apiTransfers = $this->fetchLinkedAccountTransfersByPaymentIDFromAPI($paymentId,$input);
 
-        return $transfers->toArrayWithItems();
+            $success = $this->findDiffInTransferResponse($apiTransfers,$routeTransfers);
+
+            if ($success === false)
+            {
+                return $apiTransfers;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::TRANSFER_LA_FETCH_MULTIPLE_RESPONSE,
+            [
+                'routeTransfers' => $routeTransfers
+            ]
+        );
+
+        return $routeTransfers;
+
     }
 
 
@@ -537,25 +565,47 @@ class Service extends Base\Service
 
         if (isset($input["parent_payment_id"]))
         {
-
             return $this->fetchLinkedAccountTransferByPaymentId($input["parent_payment_id"],$input);
         }
-        else
+
+        $merchantId = $this->merchant->getMerchantId() ?? '';
+
+        $routeFetchEnabled = (new Transfer\Service())->isRouteLinkedAccountFetchExperimentEnabled($merchantId);
+
+        $routeConfig =  (new RouteService\Config())->isExternalQueryAndDiffEnabled(__FUNCTION__);
+
+        $isExternalFetchEnabled = $routeConfig['enabled'] ?? false;
+
+        $diffCheck = $routeConfig['diff_check'] ?? false;
+
+        if ($isExternalFetchEnabled === false || $routeFetchEnabled === false)
         {
-            (new Merchant\Validator)->validateLinkedAccount($this->merchant);
-
-            $merchantId = $this->merchant->getId();
-
-            $input['expand'] = ['transfer', 'transfer.recipient_settlement'];
-
-            $payments = $this->repo->payment->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
-            $transfers = $this->createResponse($payments);
-
-            $transfers = new Base\PublicCollection($transfers);
-
-            return $transfers->toArrayWithItems();
+            return $this->fetchLinkedAccountTransfersFromAPI($input);
         }
+
+        $routeTransfers = app('route')->fetchLinkedAccountTransfers($input);
+
+        if ($diffCheck === true )
+        {
+            $apiTransfers = $this->fetchLinkedAccountTransfersFromAPI($input);
+
+            $success = $this->findDiffInTransferResponse($apiTransfers,$routeTransfers);
+
+            if ($success === false)
+            {
+                return $apiTransfers;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::TRANSFER_LA_FETCH_MULTIPLE_RESPONSE,
+            [
+                'routeTransfers' => $routeTransfers
+            ]
+        );
+
+        return $routeTransfers;
+
     }
 
     private function createResponse($payments): array
@@ -1350,6 +1400,34 @@ class Service extends Base\Service
                 ]
             );
         }
+    }
+
+    public function findDiffInTransferResponse($transfersPublicResponse, $routeTransfers) : bool
+    {
+        $responseParityApi = $this->array_diff_recursive($transfersPublicResponse, $routeTransfers);
+
+        $responseParityRoute = $this->array_diff_recursive($routeTransfers, $transfersPublicResponse);
+
+        $success = empty($responseParityRoute) && empty($responseParityApi);
+
+        $this->trace->info(TraceCode::TRANSFER_FETCH_RESPONSE_PARITY, [
+            "ARRAY_DIFF_API_ROUTE" => $responseParityApi,
+            "ARRAY_DIFF_ROUTE_API" => $responseParityRoute,
+            "SAME_VALUE" => $success,
+        ]);
+
+        $this->trace->info(
+            TraceCode::TRANSFER_FETCH_MULTIPLE_RESPONSE,
+            [
+                'routeTransfers' => $routeTransfers,
+                'apiTransfers' => $transfersPublicResponse,
+            ]
+        );
+
+        (new TransferMetric)->pushRearchTransferFetchDiffMetric($success);
+
+        return $success;
+
     }
 
     protected function updateSingleTransferWithSettlementId(string $transactionId): array
@@ -3074,6 +3152,104 @@ class Service extends Base\Service
         }
     }
 
+    public function isRouteFetchExperimentEnabled(string $merchantId,$transferTypeFilter): bool
+    {
+        if ($this->mode === Mode::TEST && app()->runningUnitTests() === false)
+        {
+            return false;
+        }
+
+        try
+        {
+            if ($transferTypeFilter === Constant::PLATFORM )
+            {
+                return false;
+            }
+            else
+            {
+                $result = (new Merchant\Service())->isFeatureEnabledForPartnerOfSubmerchant(Feature\Constants::ROUTE_PARTNERSHIPS, $this->merchant->getId());
+
+                if( $result[Constant::FEATURE_ENABLED] === true)
+                {
+                    return false;
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            // If exception due to invalid input, process request via API
+            return false;
+        }
+
+        try
+        {
+            $splitzId = UniqueIdEntity::generateUniqueId();
+            $properties = [
+                'id'            => $splitzId,
+                'experiment_id' => $this->app['config']->get('app.route_transfer_rearch_fetch_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::TRANSFER_REARCH_FETCH_EXP_RESULT, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.route_transfer_rearch_fetch_experiment_id') ?? null
+            ]);
+
+            return false;
+        }
+    }
+
+    public function isRouteLinkedAccountFetchExperimentEnabled(string $merchantId): bool
+    {
+        if ($this->mode === Mode::TEST && app()->runningUnitTests() === false)
+        {
+            return false;
+        }
+
+        try
+        {
+            $splitzId = UniqueIdEntity::generateUniqueId();
+            $properties = [
+                'id'            => $splitzId,
+                'experiment_id' => $this->app['config']->get('app.route_la_transfer_rearch_fetch_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::LA_TRANSFER_REARCH_FETCH_EXP_RESULT, [
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.route_la_transfer_rearch_fetch_experiment_id') ?? null
+            ]);
+
+            return false;
+        }
+    }
+
     public function internalPricingFetch($input): array
     {
         $transfer = $this->buildTransferEntityForPricing($input["transfer"]);
@@ -3191,6 +3367,200 @@ class Service extends Base\Service
 
             return false;
         }
+    }
+
+    private function fetchTransferByIdFromAPI(string $id, $input,$transferTypeFilter)
+    {
+
+        $txn = null;
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $isReverseShadowMerchant = empty($merchant) === false ? $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) : false;
+
+        if($isReverseShadowMerchant === true)
+        {
+            if((empty($input) === false) and (isset($input[Base\Repository::EXPAND]) === true)
+                and (in_array('transaction.settlement', $input[Base\Repository::EXPAND]) === true))
+            {
+                array_delete('transaction.settlement', $input['expand']);
+
+                //Doing this as strip sign uses pointer
+                $transferId = $id;
+
+                $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb(Entity::stripSignWithoutValidation($transferId));
+
+                if(empty($txn) === false and empty($txn->getSettlementId()) === false)
+                {
+                    $settlement = $this->repo->settlement->find($txn->getSettlementId());
+
+                    if (empty($settlement) === false)
+                    {
+                        $txn['settlement'] = $settlement->toArrayPublic();
+                    }
+                    else
+                    {
+                        $txn['settlement'] = null;
+                    }
+                }
+            }
+        }
+
+        $transfer = Tracer::inSpan(['name' => 'transfer.fetch'], function() use ($id, $input)
+        {
+            return $this->repo
+                ->transfer
+                ->findByPublicIdAndMerchant($id, $this->merchant, $input);
+        });
+
+        $transfer = $transfer->toArrayPublicWithExpand();
+
+        if($transferTypeFilter === Constant::PLATFORM )
+        {
+            $transfer = $this->setPartnerDetailsForTransfer($transfer);
+        }
+
+        if ($txn != null)
+        {
+            $transfer['transaction'] = $txn->toArrayPublicWithExpand();
+        }
+        else if ($isReverseShadowMerchant === true and $readExp === true)
+        {
+            $transfer['transaction'] = null;
+        }
+
+        return $transfer;
+    }
+
+    private function fetchMultipleTransferFromAPI(array $input,$transferTypeFilter)
+    {
+        $merchantId = $this->merchant->getId();
+
+        $transfers = Tracer::inSpan(['name' => 'transfer.fetch_multiple'], function() use ($transferTypeFilter, $input, $merchantId)
+        {
+            try
+            {
+                if ($transferTypeFilter === Constant::PLATFORM )
+                {
+                    $linkedAccountIds = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($this->merchant->getId());
+
+                    $input[Constant::EXCLUDED_LINKED_ACCOUNTS] = $linkedAccountIds;
+                }
+                else
+                {
+                    $result = (new Merchant\Service())->isFeatureEnabledForPartnerOfSubmerchant(Feature\Constants::ROUTE_PARTNERSHIPS, $this->merchant->getId());
+
+                    if( $result[Constant::FEATURE_ENABLED] === true)
+                    {
+                        $linkedAccountIds = $this->repo->merchant->fetchLinkedAccountIdsForParentMerchant($this->merchant->getId());
+
+                        $input[Constant::INCLUDED_LINKED_ACCOUNTS] = $linkedAccountIds;
+                    }
+                }
+            }
+            catch (Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::TRANSFER_FILTER_SET_FAILED,
+                    [
+                        'merchant_id'       => $this->merchant->getId(),
+                        'filter_type'       => $transferTypeFilter,
+                        'filters'           => $input,
+                    ]
+                );
+            }
+
+            if ($this->isRouteTidbFetchExpEnabled($merchantId))
+            {
+                return $this->repo
+                    ->transfer
+                    ->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            }
+            else
+            {
+                return $this->repo
+                    ->transfer
+                    ->fetch($input, $merchantId,);
+            }
+        });
+
+        $this->trace->info(
+            TraceCode::TRANSFER_FETCH_MULTIPLE_RESPONSE,
+            [
+                'transfers' => $transfers->toArrayPublic(),
+            ]
+        );
+
+        return $transfers->toArrayPublic();
+
+    }
+
+    private  function fetchLinkedAccountTransfersFromAPI($input)
+    {
+            (new Merchant\Validator)->validateLinkedAccount($this->merchant);
+
+            $merchantId = $this->merchant->getId();
+
+            $input['expand'] = ['transfer', 'transfer.recipient_settlement'];
+
+            $payments = $this->repo->payment->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $transfers = $this->createResponse($payments);
+
+            $transfers = new Base\PublicCollection($transfers);
+
+            return $transfers->toArrayWithItems();
+
+    }
+
+    private function fetchLinkedAccountTransfersByPaymentIDFromAPI($paymentId,array $input)
+    {
+        if ($this->merchant->isDisplayParentPaymentId() === true)
+        {
+            (new Merchant\Validator)->validateLinkedAccount($this->merchant);
+
+            Payment\Entity::verifyIdAndStripSign($paymentId);
+
+            $transferId = null;
+
+            if (isset($input["id"]))
+            {
+                $transferId = Transfer\Entity::verifyIdAndStripSign($input["id"]);
+
+            }
+
+            return $this->createTransferResponseFromParentPaymentAndTransfer($paymentId,$transferId);
+
+        }
+
+        $response = [];
+
+        $transfers =  new Base\PublicCollection($response);
+
+        return $transfers->toArrayWithItems();
+    }
+
+    private function fetchLinkedAccountTransfersByIDFromAPI($id,$merchantId)
+    {
+        Transfer\Entity::verifyIdAndStripSign($id);
+
+        $relations = ['transfer', 'transfer.recipientSettlement'];
+
+        $parentMerchant = $this->merchant->getParentId();
+
+        if ($this->isRouteTidbFetchExpEnabled($parentMerchant))
+        {
+            $payment = $this->repo->payment->findByTransferIdAndMerchant(
+                $id, $merchantId, $relations, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        }
+        else
+        {
+            $payment = $this->repo->payment->findByTransferIdAndMerchant($id, $merchantId, $relations);
+        }
+
+        return $this->createTransferResponseFromPayment($payment);
     }
 
 }

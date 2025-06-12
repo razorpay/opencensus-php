@@ -2013,6 +2013,41 @@ class Processor
         return false;
     }
 
+    private function saveInternationalcardforIndianMerchantExperimentEnabled(): bool {
+
+        try
+        {
+            $experimentId = $this->app['config']->get('app.in_save_int_card_splitz_experiment_id');
+
+            $properties = [
+                'id' => $this->app['request']->getTaskId(),
+                'experiment_id' => $experimentId,
+                'request_data' => json_encode(['merchant_id' => $this->merchant->getId(), 'mode' => $this->mode]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::TOKENS_ENTITY_FETCH_SPLITZ_EXPERIMENT_RESPONSE_FOR_IN_MERCHANTS, [
+                'merchant_id' =>  $this->merchant->getId(),
+                'variant' => $variant,
+                'experiment_id' => $experimentId
+            ]);
+
+            return $variant === 'variant_on';
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::TOKENS_ENTITY_FETCH_SPLITZ_EXPERIMENT_FAILURE);
+        }
+        return false;
+    }
+
+
     private function canRouteThroughRearchFlow(array & $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
@@ -2026,6 +2061,21 @@ class Processor
             if ($merchant->getCountry() === 'MY')
             {
                 return $this->canRouteThroughRearchFlowForMY($input);
+            }
+
+            if ($merchant->getCountry() === 'IN' &&  isset($input[Payment\Entity::TOKEN]) === true && (empty($input[Payment\Entity::METHOD]) === false) && ($input[Payment\Entity::METHOD] === Payment\METHOD::CARD)&& (empty($input[Payment\Entity::RECURRING]) === true)) {
+                $tokenId = $input[Payment\Entity::TOKEN];
+                $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
+                $card = $this->repo->card->fetchForToken($token);
+                if ($card !== null && $card->getCountry() !== 'IN' && $this->saveInternationalcardforIndianMerchantExperimentEnabled()) {
+                    $this->trace->count(
+                        Token\Metric::ROUTING_VIA_REARCH_FOR_INDIAN_MERCHANT_INTERNATIONAL_TOKEN,
+                        [
+                            'card_country' => $card->getCountry()
+                        ]
+                    );
+                    return true;
+                }
             }
 
             // Merchants with both v1 and v2 QR codes have to do re-arch separately
@@ -2795,11 +2845,10 @@ class Processor
                                 }
 
                                 $tokenRearchExperimentName = 'app.saved_card_token_payments_rearch';
-                                $tokenRearchResult = (new Payment\Service())->getSplitzExpResponse($merchant->getId(),$tokenRearchExperimentName);
+                                $tokenRearchResult = (new Payment\Service())->getSplitzExpResponseForTokenFetchFromTokenService($merchant->getId(), $card->getVault(), $tokenRearchExperimentName);
 
-                                if ($tokenRearchResult == 'enable' && app()->isEnvironmentProduction() &&
-                                    ($card->getNetwork() == 'Visa' || $card->getNetwork() == 'MasterCard')
-                                    && ($card->getVault() === 'mastercard' || $card->getVault() === 'visa')
+                                if ($tokenRearchResult == 'enable'
+                                    && (app()->isEnvironmentProduction() || $this->isDarkRequest())
                                     && $this->inputCurrencyNotINR($input) === false
                                     && $this->merchant->isFeatureEnabled(FeatureConstants::RAAS) === false
                                     && $this->merchant->getCountry() == "IN")
@@ -3376,6 +3425,28 @@ class Processor
                 Card\Entity::CRYPTOGRAM_VALUE       => $cryptogram['cryptogram_value'] ?? null,
                 Card\Entity::GLOBAL_FINGERPRINT     => $card->getGlobalFingerPrint() ?? ""
             ];
+
+            // Only fetch additional card input data for Diners & Amex from API for cases where tokenRearchResult is not ON
+            // When it's ON, the data will be fetched from CPS
+
+            if ( $card->getVault() === Card\Vault::HDFC)
+            {
+                $input = $this->getAdditionalDinersCardInputForRearch($token,$input);
+
+                $this->trace->info(
+                    TraceCode::DINERS_TOKENISED_PAYMENT_TRACE,
+                    [
+                        'token_reference_number' => $input[E::TOKEN_REFERENCE_NUMBER],
+                        'token_requestor_id'     => $input[E::TOKEN_REFERENCE_ID],
+                    ]);
+
+            }
+
+            if(isset($cryptogram["cvv"]) === true && Card\Network::getFullName(Network::AMEX) === $card->getNetwork())
+            {
+                $input["cvv"] = $cryptogram["cvv"];
+            }
+
         } else {
             // Move this to CPS before enabling bypass
             $input += [
@@ -3383,26 +3454,8 @@ class Processor
             ];
         }
 
-        if ( $card->getVault() === Card\Vault::HDFC)
-        {
-            $input = $this->getAdditionalDinersCardInputForRearch($token,$input);
-
-             $this->trace->info(
-                    TraceCode::DINERS_TOKENISED_PAYMENT_TRACE,
-                    [
-                        'token_reference_number' => $input[E::TOKEN_REFERENCE_NUMBER],
-                        'token_requestor_id'     => $input[E::TOKEN_REFERENCE_ID],
-                    ]);
-
-        }
-
         if ($card->getVault() === Card\Vault::AXIS) {
             $input[Card\Entity::NUMBER] = Card\Entity::DUMMY_AXIS_TOKENHQ_CARD;
-        }
-
-        if(isset($cryptogram["cvv"]) === true && Card\Network::getFullName(Network::AMEX) === $card->getNetwork())
-        {
-            $input["cvv"] = $cryptogram["cvv"];
         }
 
         if (($this->merchant->isFeatureEnabled(Feature::RAAS)) === true )
@@ -5592,10 +5645,6 @@ class Processor
             }
             else
             {
-                // for non-rearch payments, user_risk_providers_token is not expected hence unsetting it
-                if(empty($input['user_risk_providers_token']) === false) {
-                    unset($input['user_risk_providers_token']);
-                }
                 // for non-rearch juspay payments, application_id is not expected in input hence unsetting it
                 if(empty($input['application_id']) === false) {
                     unset($input['application_id']);
@@ -13295,6 +13344,18 @@ class Processor
             return $response;
         }
 
+        // Do not capture late authorized payments when the payment is split payment because
+        // wallet payment status is unknown
+        if (($payment->isLateAuthorized() === true) and
+            ($payment->isSplitPayment() === true))
+        {
+            $response['should_auto_capture'] = false;
+
+            $response['reason'] = Constants::SPLIT_PAYMENT_LATE_AUTH_FALSE;
+
+            return $response;
+        }
+
         if ($captureConfig === true)
         {
             $response['should_auto_capture'] = true;
@@ -13626,13 +13687,6 @@ class Processor
         if ($payment->hasInvoiceOrProductTypeInvoice() === true)
         {
             return $this->shouldAutoCaptureLateAuthorizedInvoice($payment);
-        }
-
-        // Do not capture late authorized payments when the payment is split payment because
-        // wallet payment is already refunded on initial failed event. Hence, skip capture for this payment.
-        if ($payment->isSplitPayment() === true)
-        {
-            return false;
         }
 
         $merchant = $payment->merchant;

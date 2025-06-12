@@ -342,6 +342,13 @@ class Shield
             $payloadDetails[ShieldConstants::SEALED_FINGERPRINT_DATA] = isset($deviceFingerprint[ShieldConstants::FINGERPRINT_PAYLOAD]) ? $deviceFingerprint[ShieldConstants::FINGERPRINT_PAYLOAD] : null;
         }
 
+        if(isset($input[Payment\Entity::USER_RISK_PROVIDERS_TOKEN]) === true)
+        {
+            $userRiskProvidersToken = $input[Payment\Entity::USER_RISK_PROVIDERS_TOKEN];
+
+            $payloadDetails[ShieldConstants::USER_RISK_PROVIDERS_TOKEN] = $userRiskProvidersToken;
+        }
+
         switch ($payloadDetails[ShieldConstants::METHOD])
         {
             case Payment\Method::NETBANKING:

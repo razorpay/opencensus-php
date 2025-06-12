@@ -101,14 +101,14 @@
 
                         <td class="text-right">
                             <strong class="text-black-o-40">From:</strong><br />
-                            <span class="text-black-o-80 font-weight-600">Razorpay Software Pvt. Ltd. </span><br>
+                            <span class="text-black-o-80 font-weight-600">Razorpay Software Limited (formerly Razorpay Software Pvt. Ltd.) </span><br>
                             #22, 1st Floor, SJR Cyber,<br />
                             Laskar Hosur Road, Adugodi,<br />
                             Bangalore, Karnataka - 560 030<br />
                             State/UT Code: 29<br /><br />
                             <span class="font-weight-600 text-black-o-60">GSTIN</span> - 29AAGCR4375J1ZU<br />
                             <span class="font-weight-600 text-black-o-60">Pan No.</span> - AAGCR4375J<br />
-                            <span class="font-weight-600 text-black-o-60">CIN No.</span> - U72200KA2013PTC097389<br/>
+                            <span class="font-weight-600 text-black-o-60">CIN No.</span> - U72200KA2013PLC097389<br/>
                             <div style=“position:absolute;bottom:350px;“>
                                 @if (isset($e_invoice_details['QRCodeUrl']))
                                     <img style=“height:140px;width:140px;” src={{{$e_invoice_details['QRCodeUrl']}}}/>
@@ -220,7 +220,7 @@
             </div>
             <div>
                 <span class="font-weight-600">Account Name</span>
-                <span class="text-black-o-80 font-weight-600">Razorpay Software Private Limited</span>
+                <span class="text-black-o-80 font-weight-600">Razorpay Software Limited</span>
             </div>
             <div>
                 <span class="font-weight-600">Account No.</span>
