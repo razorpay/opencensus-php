@@ -1009,6 +1009,27 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals('Random Name', $card['name']);
     }
 
+    public function testGetVaPayments()
+    {
+        $this->createVirtualAccount();
+
+        $va = $this->getDbLastEntity('virtual_account');
+
+        $this->payVirtualAccount('va_'.$va['id'], ['amount' => 50]);
+
+        $dbPayment = $this->getDbLastPayment();
+
+        $this->ba->proxyAuth();
+        $request = [
+            'url' => '/virtual_accounts/va_'.$va->getId().'/payments',
+            'method' => 'get'
+        ];
+
+        $res = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('pay_'.$dbPayment->getId(), $res['items'][0]['id']);
+    }
+
     public function testPayVirtualAccountWithPastCloseBy()
     {
         $closeTimeStamp = Carbon::now()->timestamp + 1000;
@@ -4258,7 +4279,7 @@ class VirtualAccountTest extends TestCase
         ];
 
         $this->startTest();
-       
+
         $offlinePayment = $this->getDbLastEntityPublic('offline_payment');
 
         //Verifying the mock response of offline payment
