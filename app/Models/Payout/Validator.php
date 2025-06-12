@@ -59,12 +59,6 @@ class Validator extends Base\Validator
      */
     protected $payoutCore;
 
-    public function __construct()
-    {
-        parent::__construct();
-        $this->payoutCore = new PayoutCore();
-    }
-
     // We are increasing this from 200 to 400. Slack thread for reference:
     // https://razorpay.slack.com/archives/C013868TRK4/p1733080607565809?thread_ts=1732256137.940409&cid=C013868TRK4
     // TODO: Functionality for merchants to edit / delete existing purposes
@@ -777,6 +771,15 @@ class Validator extends Base\Validator
         'bank_transfer_request_id' => 'sometimes|string',
         'request_payload' => 'sometimes|array'
     ];
+
+    protected function getPayoutCore()
+    {
+        if ($this->payoutCore === null) {
+            $this->payoutCore = new PayoutCore();
+        }
+
+        return $this->payoutCore;
+    }
 
     protected function validateSourceAndDestination($input)
     {
@@ -1843,10 +1846,10 @@ class Validator extends Base\Validator
             try {
                 if (isset($app['basicauth']) && $app['basicauth']->getMerchant()) {
                     $merchantId = $app['basicauth']->getMerchant()->getId();
-                    $sanitizedData = $this->payoutCore->sanitizeDataForTracking([
+                    $sanitizedData = $this->getPayoutCore()->sanitizeDataForTracking([
                         FundAccount\Entity::MOBILE => $mobileNumber
                     ]);
-                    $this->payoutCore->trackPhoneNumberPayoutFailureEvents(
+                    $this->getPayoutCore()->trackPhoneNumberPayoutFailureEvents(
                         self::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID,
                         [
                             FundAccount\Entity::MOBILE      => $sanitizedData[FundAccount\Entity::MOBILE],

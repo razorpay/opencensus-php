@@ -14,6 +14,7 @@ use RZP\Jobs\EsSync;
 use RZP\Jobs\PayoutServiceDualWriteDirectPush;
 use RZP\Jobs\PayoutUsageEventProcessing;
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Services\Mock\DataLakePresto;
 use RZP\Services\Mock\Stork;
 use \WpOrg\Requests\Response;
@@ -47465,5 +47466,168 @@ class PayoutTest extends OAuthTestCase
         $payoutServiceMock->shouldReceive('isLiveTraffic')->andReturn(true);
         $this->app->instance(PayoutService::class, $payoutServiceMock);
     }
+
+    public function testDirectPayoutWithCollectxMerchantAndPayment()
+    {
+        //  Setup merchant with collectx feature enabled
+        $this->fixtures->merchant->edit('10000000000000', [
+            'activated' => 1
+        ]);
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::COLLECTX_ENABLED]);
+
+        $payment = $this->fixtures->create('payment:captured', [
+            'settled_by' => 'rbl',
+            'method'     => 'bank_transfer',
+            'gateway'    => 'bt_rbl',
+            'reference14' => 'collectx'
+        ]);
+
+        $balance = $this->fixtures->create('balance', [
+            'merchant_id' => '10000000000000',
+            'type' => 'banking',
+            'account_type' => 'direct',
+            'channel' => 'rbl',
+            'account_number' => '2224440041626905',
+            'balance' => 5000000
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['payment_id'] = $payment['id'];
+
+        $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+        $this->startTest();
+
+        // Verify the payout was created successfully
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('processing', $payout['status']);
+    }
+
+    public function testDirectPayoutWithNonCollectxMerchantAndPayment()
+    {
+        try {
+            $this->fixtures->merchant->edit('10000000000000', [
+                'activated' => 1
+            ]);
+
+            $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+            $resp = $this->startTest();
+        } catch (BadRequestException $exp) {
+            $this->assertEquals("Merchant doesn't belong to collectX", $exp->getMessage());
+            return;
+        }
+    }
+
+    public function testDirectPayoutWithCollectxMerchantWithoutPayment()
+    {
+        try {
+            $this->fixtures->merchant->edit('10000000000000', [
+                'activated' => 1
+            ]);
+
+            $this->fixtures->merchant->addFeatures([FeatureConstants::COLLECTX_ENABLED]);
+
+            $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+            $resp = $this->startTest();
+        } catch (BadRequestException $exp) {
+            $this->assertEquals("Payment Id not found in internal direct payout", $exp->getMessage());
+            return;
+        }
+    }
+
+    public function testDirectPayoutWithCollectxMerchantWithoutBalance()
+    {
+        try {
+            $this->fixtures->merchant->edit('10000000000000', [
+                'activated' => 1
+            ]);
+
+            $this->fixtures->merchant->addFeatures([FeatureConstants::COLLECTX_ENABLED]);
+
+            $payment = $this->fixtures->create('payment:captured', [
+                'settled_by' => 'rbl',
+                'method'     => 'bank_transfer',
+                'gateway'    => 'bt_rbl',
+                'reference14' => 'collectx'
+            ]);
+
+            $this->testData[__FUNCTION__]['request']['content']['payment_id'] = $payment['id'];
+
+            $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+            $resp = $this->startTest();
+        } catch (BadRequestException $exp) {
+            $this->assertEquals("No direct account was found to be linked with merchant", $exp->getMessage());
+            return;
+        }
+    }
+
+    public function testDirectPayoutWithCollectxMerchantWithoutCollectxChannel()
+    {
+        try {
+            $this->fixtures->merchant->edit('10000000000000', [
+                'activated' => 1
+            ]);
+
+            $this->fixtures->merchant->addFeatures([FeatureConstants::COLLECTX_ENABLED]);
+
+            $payment = $this->fixtures->create('payment:captured', [
+                'settled_by' => 'icici',
+                'method'     => 'bank_transfer',
+                'gateway'    => 'bt_rbl',
+                'reference14' => 'collectx'
+            ]);
+
+            $balance = $this->fixtures->create('balance', [
+                'merchant_id' => '10000000000000',
+                'type' => 'banking',
+                'account_type' => 'direct',
+                'channel' => 'rbl',
+                'account_number' => '2224440041626905',
+                'balance' => 5000000
+            ]);
+
+            $this->testData[__FUNCTION__]['request']['content']['payment_id'] = $payment['id'];
+
+            $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+            $resp = $this->startTest();
+        } catch (BadRequestException $exp) {
+            $this->assertEquals("Payment settled by channel doesn't belong to collectX", $exp->getMessage());
+            return;
+        }
+    }
+
+    public function testDirectPayoutWithCollectxMerchantWithNonCollectXPayment()
+    {
+        try {
+            $this->fixtures->merchant->edit('10000000000000', [
+                'activated' => 1
+            ]);
+
+            $this->fixtures->merchant->addFeatures([FeatureConstants::COLLECTX_ENABLED]);
+
+            $payment = $this->fixtures->create('payment:captured', [
+                'settled_by' => 'rbl',
+                'method'     => 'bank_transfer',
+                'gateway'    => 'bt_rbl',
+                'reference14' => 'wallet'
+            ]);
+
+            $this->testData[__FUNCTION__]['request']['content']['payment_id'] = $payment['id'];
+
+            $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+            $resp = $this->startTest();
+        } catch (BadRequestException $exp) {
+            $this->assertEquals("Reference14 is not collectx", $exp->getMessage());
+            return;
+        }
+    }
+
+
 }
 
