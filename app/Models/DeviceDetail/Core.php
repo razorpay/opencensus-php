@@ -187,4 +187,54 @@ class Core extends Base\Core
         ];
     }
 
+
+    public function createDeviceDetailsForOmniMerchantsIfNotExist(string $merchantId)
+    {
+        $merchantId = $this->app['basicauth']->getMerchant()->getId();
+
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
+
+        if (!empty($userDeviceDetail)) {
+            return;
+        }
+
+        // Case 1: If no device details, check if there is a primary user associated with the merchant
+        $merchantUsers = $this->repo->merchant_user->fetchPrimaryUserIdForMerchantIdAndRole($merchantId, 'owner');
+
+        if (empty($merchantUsers)) {
+            $this->trace->error(TraceCode::MERCHANT_USER_DOES_NOT_EXISTS, [
+                'message' => "Error in createDeviceDetailsForOmniMerchantsIfNotExist()",
+            ]);
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_USER_DOES_NOT_EXISTS
+            );
+        }
+
+        $userId = array_first($merchantUsers);
+
+        $input = [
+            Entity::MERCHANT_ID => $merchantId,
+            Entity::USER_ID => $userId,
+        ];
+
+        try {
+            $deviceDetail = $this->createDeviceDetail($input);
+
+            $this->trace->info(TraceCode::USER_DEVICE_CREATE_DETAIL_RESPONSE, [
+                'response' => $deviceDetail,
+            ]);
+
+        } catch (\Throwable $e) {
+            $this->trace->traceException($e);
+
+            $this->trace->info(
+                TraceCode::USER_DEVICE_DETAIL_CREATE_FAILED,
+                ['input' => $input]
+            );
+
+            throw $e;
+        }
+    }
+
 }
