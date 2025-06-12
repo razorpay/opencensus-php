@@ -123,6 +123,8 @@ class VirtualAccountForOrderTestBanking  extends TestCase
 
         $offlineData = DB::select('select * from offline_challans')[0];
 
+        $this->assertNotEmpty($offlineData, 'Offline challan data should not be empty');
+
         $this->assertEquals($offlineData->id, $virtualAccount['receivers'][0]['id']);
 
         $virtualAccountData = DB::select('select * from virtual_accounts')[0];
@@ -132,6 +134,7 @@ class VirtualAccountForOrderTestBanking  extends TestCase
         // Assert that close_by is correctly set
         $this->assertEquals($closeBy, $virtualAccountData->close_by);
     }
+
     protected function setUpOfflinePayment()
     {
         $this->fixtures->merchant->addFeatures(['offline_checkout']);
