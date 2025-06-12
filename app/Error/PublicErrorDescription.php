@@ -1892,4 +1892,14 @@ class PublicErrorDescription
     const GATEWAY_VA_DEACTIVATION_FAILURE = "Gateway Failure in closing virtual account";
 
     const BAD_REQUEST_REFUND_BLOCKED_FOR_SMART_COLLECT_PAYMENTS = 'Refund is currently blocked for Smart Collect 2.0 payments';
+
+    const BAD_REQUEST_MERCHANT_NOT_COLLECTX = "Merchant doesn't belong to collectX";
+
+    const BAD_REQUEST_PAYMENT_ID_REQUIRED_FOR_COLLECTX_REFUND_PAYOUT = 'Payment Id not found in internal direct payout';
+
+    const BAD_REQUEST_NO_DIRECT_ACCOUNT_FOUND = 'No direct account was found to be linked with merchant';
+
+    const BAD_REQUEST_CHANNEL_NOT_FOUND_FOR_PAYMENT_ID = "Payment settled by channel doesn't belong to collectX";
+
+    const BAD_REQUEST_PAYMENT_NOT_COLLECTX = "Reference14 is not collectx";
 }
