@@ -251,7 +251,7 @@ export const OWNER_REKYC_BANNER_INFO = {
   underReview: {
     heading: 'Your KYC is under review',
     description:
-      'We’ll notify you within 24 hours with a status update, or if we need any other details.',
+      'We’ll notify you within 2-3 business days with a status update, or if we need any other details.',
     IconComponent: ClockIcon,
     showChip: false,
     iconColor: COLOR_MAP.primaryIcon,
@@ -278,7 +278,7 @@ export const OWNER_REKYC_BANNER_INFO = {
   vkycUnderReview: {
     heading: 'Your Video KYC is under review',
     description:
-      "We'll notify you within 24 hours with a status update, or if we need any other details.",
+      "We'll notify you within 2-3 business days with a status update, or if we need any other details.",
     IconComponent: ClockIcon,
     showChip: false,
     iconColor: COLOR_MAP.primaryIcon,
@@ -414,6 +414,7 @@ export const NON_OWNER_REKYC_BANNER_INFO = {
       iconBackgroundColor: COLOR_MAP.primarySubtle,
       dynamicDate: false,
       hideActionables: true,
+      dynamicDescription: true,
     },
     thirtyToFifteenDays: {
       heading: (date: string) =>
@@ -573,7 +574,7 @@ export const NON_OWNER_REKYC_BANNER_INFO = {
   underReview: {
     heading: 'Your KYC is under review',
     description:
-      "We'll notify you within 24 hours with a status update, or if we need any other details.",
+      "We'll notify you within 2-3 business days with a status update, or if we need any other details.",
     IconComponent: ClockIcon,
     showChip: false,
     iconColor: COLOR_MAP.primaryIcon,
@@ -600,7 +601,7 @@ export const NON_OWNER_REKYC_BANNER_INFO = {
   vkycUnderReview: {
     heading: 'Your Video KYC is under review',
     description:
-      "We'll notify you within 24 hours with a status update, or if we need any other details.",
+      "We'll notify you within 2-3 business days with a status update, or if we need any other details.",
     IconComponent: ClockIcon,
     showChip: false,
     iconColor: COLOR_MAP.primaryIcon,
@@ -711,7 +712,7 @@ export const FINAL_STEPS_MAP = {
         headingColor: COLOR_MAP.grayMuted,
       },
       thirdStep: {
-        heading: 'Video KYC',
+        heading: 'KYC Completed',
         borderColor: COLOR_MAP.primaryNormal,
         textContent: 3,
         textColor: COLOR_MAP.onCloudSubtle,
@@ -737,7 +738,7 @@ export const FINAL_STEPS_MAP = {
         headingColor: COLOR_MAP.grayMuted,
       },
       thirdStep: {
-        heading: 'Video KYC',
+        heading: 'KYC Completed',
         borderColor: COLOR_MAP.primaryNormal,
         textContent: 3,
         textColor: COLOR_MAP.onCloudSubtle,
@@ -763,7 +764,7 @@ export const FINAL_STEPS_MAP = {
         headingColor: COLOR_MAP.grayMuted,
       },
       thirdStep: {
-        heading: 'Video KYC',
+        heading: 'KYC Completed',
         borderColor: COLOR_MAP.primaryNormal,
         textContent: 3,
         textColor: COLOR_MAP.onCloudSubtle,
@@ -789,7 +790,7 @@ export const FINAL_STEPS_MAP = {
         headingColor: COLOR_MAP.grayMuted,
       },
       thirdStep: {
-        heading: 'Video KYC',
+        heading: 'KYC Completed',
         borderColor: COLOR_MAP.primaryNormal,
         textContent: 3,
         textColor: COLOR_MAP.onCloudSubtle,
@@ -817,7 +818,7 @@ export const FINAL_STEPS_MAP = {
         headingColor: COLOR_MAP.grayMuted,
       },
       thirdStep: {
-        heading: 'Video KYC',
+        heading: 'KYC Completed',
         borderColor: COLOR_MAP.primaryNormal,
         textContent: 3,
         textColor: COLOR_MAP.onCloudSubtle,
@@ -869,7 +870,7 @@ export const FINAL_STEPS_MAP = {
         headingColor: COLOR_MAP.grayMuted,
       },
       thirdStep: {
-        heading: 'Video KYC',
+        heading: 'KYC Completed',
         borderColor: COLOR_MAP.primaryNormal,
         textContent: 3,
         textColor: COLOR_MAP.onCloudSubtle,
@@ -956,7 +957,7 @@ export const FINAL_STEPS_MAP = {
         headingColor: COLOR_MAP.grayNormal,
       },
       thirdStep: {
-        heading: 'Video KYC',
+        heading: 'KYC Completed',
         borderColor: COLOR_MAP.primaryNormal,
         textContent: 3,
         textColor: COLOR_MAP.onCloudSubtle,
@@ -1016,7 +1017,7 @@ export const FINAL_STEPS_MAP = {
         headingColor: COLOR_MAP.grayNormal,
       },
       thirdStep: {
-        heading: 'Video KYC',
+        heading: 'KYC Completed',
         borderColor: COLOR_MAP.primaryNormal,
         textContent: 3,
         textColor: COLOR_MAP.onCloudSubtle,
@@ -1079,7 +1080,7 @@ export const FINAL_STEPS_MAP = {
         headingColor: COLOR_MAP.grayMuted,
       },
       thirdStep: {
-        heading: 'Video KYC',
+        heading: 'KYC Completed',
         textContent: 3,
         textColor: COLOR_MAP.whiteNormal,
         headingColor: COLOR_MAP.grayNormal,
@@ -1111,7 +1112,7 @@ export const FINAL_STEPS_MAP = {
         headingColor: COLOR_MAP.grayMuted,
       },
       thirdStep: {
-        heading: 'Video KYC',
+        heading: 'KYC Completed',
         textContent: 3,
         textColor: COLOR_MAP.whiteNormal,
         headingColor: COLOR_MAP.grayNormal,
@@ -1143,7 +1144,7 @@ export const FINAL_STEPS_MAP = {
         headingColor: COLOR_MAP.grayMuted,
       },
       thirdStep: {
-        heading: 'Video KYC',
+        heading: 'KYC Completed',
         textContent: 3,
         textColor: COLOR_MAP.whiteNormal,
         headingColor: COLOR_MAP.grayNormal,
@@ -1176,7 +1177,7 @@ export const FINAL_STEPS_MAP = {
       headingColor: COLOR_MAP.grayNormal,
     },
     thirdStep: {
-      heading: 'Video KYC',
+      heading: 'KYC Completed',
       borderColor: COLOR_MAP.primaryNormal,
       textContent: 3,
       textColor: COLOR_MAP.onCloudSubtle,
@@ -1205,7 +1206,7 @@ export const FINAL_STEPS_MAP = {
       completed: true,
     },
     thirdStep: {
-      heading: 'Video KYC',
+      heading: 'KYC Completed',
       IconComponent: ClockIcon,
       iconColor: COLOR_MAP.whiteNormal,
       iconBackgroundColor: COLOR_MAP.primaryIntense,
@@ -1440,6 +1441,7 @@ export const NON_OWNER_MODAL_CONTENT = {
         `The account owner is currently updating the KYC details. Please ensure that they update all the details by ${date}.`,
       hideCta: true,
       badgeText: 'In Progress',
+      dynamicDescription: true,
     },
     thirtyToFifteenDays: {
       imageSrc: NoticeRekycBanner,

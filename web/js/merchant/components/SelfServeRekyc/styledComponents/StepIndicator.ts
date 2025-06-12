@@ -6,7 +6,7 @@ export const DividerWrapper = styled.span(({isMobile}: {isMobile: boolean}) => {
       transform: rotate(90deg);
       position: relative;
       top: -12px;
-      left: -28px;
+      left: -30px;
     `
   }
 

@@ -16,7 +16,7 @@ const Step = (props: RekycStepProps): JSX.Element => {
   const backgroundColor = (isCurrentStepOnMobile || isCompletedStep) ? stepInfo.iconBackgroundColor : (isCurrentStepOnDesktop ? 'surface.background.primary.intense' : "transparent");
   return (
     <>
-      <Box display="flex" flexDirection="column" alignItems={isMobile ? 'flex-start' : "center"} gap='spacing.3' width='88px'>
+      <Box display="flex" flexDirection="column" alignItems={isMobile ? 'flex-start' : "center"} gap='spacing.3' width='92px'>
         <Box
           display="flex"
           alignItems="center"
@@ -56,7 +56,7 @@ const Step = (props: RekycStepProps): JSX.Element => {
             orientation='vertical'
             dividerStyle="dashed"
             thickness='thin'
-            height="60px"
+            height="72px"
             marginX="spacing.4"
             variant='normal'
           />
