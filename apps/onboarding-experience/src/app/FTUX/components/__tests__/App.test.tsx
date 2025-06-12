@@ -10,6 +10,18 @@ jest.mock('@FTUX/hooks/useHomepageState', () => ({
   default: jest.fn(),
 }));
 
+// Mock the MerchantContext hook
+jest.mock('@FTUX/context/MerchantContext', () => ({
+  __esModule: true,
+  useMerchantContext: jest.fn(() => ({
+    merchantData: { merchantById: { activation: { status: 'active' } } },
+    refetchMerchantData: jest.fn(),
+    refetchOnboardingData: jest.fn(),
+    refetchAllData: jest.fn(),
+    isRefetchingAllData: false,
+  })),
+}));
+
 // Mock the lazy-loaded components
 jest.mock('../WelcomeHeader', () => ({
   __esModule: true,

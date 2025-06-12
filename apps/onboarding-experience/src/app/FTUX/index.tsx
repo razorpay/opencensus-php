@@ -6,6 +6,7 @@ import { Wrapper } from 'apps/onboarding-experience/src/container';
 import FTUXApp from '@FTUX/components/App';
 import MerchantProvider from '@FTUX/context/MerchantProvider';
 import { TwoFaAuthProps } from '@FTUX/types/common';
+import { setClarityTag } from '@FTUX/utils/analytics';
 
 const FTUX = ({ triggerTwoFaAuth }: { triggerTwoFaAuth: (params: TwoFaAuthProps) => void }) => {
   const user = useStore((state) => state.session.user);
@@ -15,6 +16,7 @@ const FTUX = ({ triggerTwoFaAuth }: { triggerTwoFaAuth: (params: TwoFaAuthProps)
       product: DASHBOARD_TEAMS.ONBOARDING_EXPERIENCE,
       user,
     });
+    setClarityTag('isFtuxV2', 'true');
 
     return () => {
       window.razorAnalytics?.disableTracking?.();

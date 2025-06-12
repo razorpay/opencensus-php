@@ -1,8 +1,11 @@
-import React, { ReactNode, Suspense, lazy } from 'react';
+import React, { ReactNode, Suspense, lazy, useEffect } from 'react';
 import { Box } from '@razorpay/blade/components';
 import useHomepageState from '@FTUX/hooks/useHomepageState';
 import { HOMEPAGE_ELEMENTS } from '@FTUX/types/homepage';
 import { PageLayoutLoader } from '@OnboardingExperienceCommons/components/PageLayoutLoader';
+import { useMerchantContext } from '@FTUX/context/MerchantContext';
+import { analyticsTrack, getCommonAnalyticsProperties } from '@libs/shared-utils';
+import { getFtuxAnalyticsProperties } from '@FTUX/utils/analytics';
 
 // Lazy load components
 const AccordionSection = lazy(
@@ -46,6 +49,23 @@ const ELEMENTS_MAP: Record<HOMEPAGE_ELEMENTS, ReactNode> = {
 const App = () => {
   // Get the current homepage state which determines which elements to show
   const homepageState = useHomepageState();
+  const { merchantData } = useMerchantContext();
+
+  const merchantActivationStatus = merchantData?.merchantById?.activation?.status;
+
+  useEffect(() => {
+    if (merchantActivationStatus) {
+      analyticsTrack({
+        objectName: 'FTUX Step',
+        actionName: 'Loaded',
+        screen: 'FTUX Homepage',
+        properties: {
+          ...getFtuxAnalyticsProperties(merchantData?.merchantById),
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
+  }, [merchantActivationStatus]);
 
   return (
     <Box paddingX="spacing.5" paddingY="spacing.1" paddingBottom="spacing.11">

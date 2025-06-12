@@ -54,6 +54,7 @@ export type MerchantActivationDataType = {
   activation?: {
     bddVerificationStatus: MerchantBddVerificationStatusEnum;
     status: MerchantActivationStatusEnum;
+    milestone?: MerchantActivationMilestoneEnum;
     isActivated: boolean;
     isTransacted: boolean;
   };
@@ -90,4 +91,16 @@ export enum MerchantBddVerificationStatusEnum {
   NEEDS_CLARIFICATION = 'NEEDS_CLARIFICATION',
   REJECTED = 'REJECTED',
   UNDER_REVIEW = 'UNDER_REVIEW',
+}
+
+export enum MerchantActivationMilestoneEnum {
+  ACTIVATION_FLOW_COMPLETED = 'ACTIVATION_FLOW_COMPLETED',
+  L1_COMPLETED = 'L1_COMPLETED',
+  L2_COMPLETED = 'L2_COMPLETED',
+  HARD_LIMIT_LEVEL_1 = 'HARD_LIMIT_LEVEL_1',
+  HARD_LIMIT_LEVEL_2 = 'HARD_LIMIT_LEVEL_2',
+  HARD_LIMIT_LEVEL_4 = 'HARD_LIMIT_LEVEL_4',
+  SOFT_LIMIT = 'SOFT_LIMIT',
+  SOFT_LIMIT_LEVEL_1 = 'SOFT_LIMIT_LEVEL_1',
+  FUNDS_ON_HOLD_REMINDER = 'FUNDS_ON_HOLD_REMINDER',
 }

@@ -24,6 +24,7 @@ const MERCHANT_FRAGMENT = gql`
       status
       isActivated
       isTransacted
+      milestone
     }
     hasApiKeyAccess
     apiKeys {
