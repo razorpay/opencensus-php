@@ -1902,4 +1902,6 @@ class PublicErrorDescription
     const BAD_REQUEST_CHANNEL_NOT_FOUND_FOR_PAYMENT_ID = "Payment settled by channel doesn't belong to collectX";
 
     const BAD_REQUEST_PAYMENT_NOT_COLLECTX = "Reference14 is not collectx";
+
+    const BAD_REQUEST_MERCHANT_USER_DOES_NOT_EXISTS  = 'Merchant User does not exits';
 }
