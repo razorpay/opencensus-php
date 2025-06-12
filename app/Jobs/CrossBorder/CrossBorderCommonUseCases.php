@@ -108,6 +108,8 @@ class CrossBorderCommonUseCases extends Job
 
     const EXPORT_PRODUCT_ALL = 'all'; // [cards, moneysaver]
 
+    const EXPORT_PRODUCT_MONEYSAVER = 'moneysaver';
+
     const SEND_OPGSP_INVOICES_ZIP = 'SEND_OPGSP_INVOICES_ZIP';
     /**
      * @var string
@@ -853,12 +855,12 @@ class CrossBorderCommonUseCases extends Job
             $selectedProduct = $existingAdditionalDetails['cross_border_onboarding']['selected_product'] ?? null;
 
             // If the selected product is null or "all" activate the money saver product
-            if(empty($selectedProduct) || $selectedProduct === self::EXPORT_PRODUCT_ALL) {
+            if(empty($selectedProduct) || $selectedProduct === self::EXPORT_PRODUCT_ALL || $selectedProduct === self::EXPORT_PRODUCT_MONEYSAVER) {
                     $this->activateMoneySaverProduct($merchantID);
             }
 
-            if ($selectedProduct) {
-                // Always activate international cards for any selected product
+            if ($selectedProduct && $selectedProduct !== self::EXPORT_PRODUCT_MONEYSAVER) {
+                // Always activate international cards for product other than moneysaver
                     $this->activateInternationalCards($merchantID);
             }
 
