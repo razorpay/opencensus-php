@@ -1162,6 +1162,15 @@ return [
         ],
     ],
 
+    'payouts_shadow_router' => [
+        'key'                       => env('PAYOUTS_SHADOW_ROUTER_KEY'),
+        'secret'                    => env('PAYOUTS_SHADOW_ROUTER_SECRET'),
+        'payouts_shadow_router_url' => env('PAYOUTS_SHADOW_ROUTER_URL'),
+        'timeout'                   => env('PAYOUTS_SHADOW_ROUTER_TIMEOUT', 60),
+        'connect_timeout'           => env('PAYOUTS_SHADOW_ROUTER_CONNECT_TIMEOUT', 60),
+        'kill_switch'               => env('PAYOUTS_SHADOW_ROUTER_KILL_SWITCH')
+    ],
+
     'relay' => [
         'mock'   => env('RELAY_MOCK', false),
         'secret' => env('APP_RELAY_SECRET'),
@@ -2208,7 +2217,7 @@ return [
             'test' => env('PAYMENTS_BANK_TRANSFER_SERVICE_TEST_URL'),
         ],
     ],
-    
+
     'identity_provider' => [
         'secret' => env('APP_IDP_SECRET'),
     ]

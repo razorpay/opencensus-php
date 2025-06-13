@@ -75,6 +75,15 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
+        // call shadow router to mirror the request
+        PayoutShadowService::mirrorRequest(
+            'POST',
+            Request::path(),
+            $input,
+            Request::header()
+        );
+
+
         $data = $this->service()->fundAccountPayout($input);
 
         return ApiResponse::json($data);

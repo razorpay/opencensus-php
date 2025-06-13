@@ -4,6 +4,7 @@ namespace RZP\Models\Payout\SourceRequestIDMapping;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Http\RequestHeader;
 use RZP\Models\Base\PublicEntity;
 use RZP\Trace\TraceCode;
 use RZP\lib\AwsTraceIdExtractor;
@@ -51,7 +52,7 @@ class Core extends Base
      */
     public function createSourceRequestIdMapping(string $sourceId, string $sourceType): void
     {
-            $requestId = $this->extractAWSTraceIDFromHeaders();
+        $requestId = $this->extractAWSTraceIDFromHeaders();
         if (empty($requestId)) {
             $this->trace->info(
                 'aws_trace_id.empty_error',
@@ -68,6 +69,7 @@ class Core extends Base
             Entity::ID          => PublicEntity::generateUniqueId(),
             Entity::SOURCE_TYPE => $sourceType,
             Entity::SOURCE_ID   => $sourceId,
+            Entity::REQUEST_ID  => $requestId,
             Entity::CREATED_AT  => Carbon::now(Timezone::IST)->getTimestamp(),
             Entity::UPDATED_AT  => Carbon::now(Timezone::IST)->getTimestamp(),
         ];
