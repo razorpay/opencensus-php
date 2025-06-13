@@ -11592,12 +11592,18 @@ class Core extends Base\Core
                 {
                     continue;
                 }
-                $isModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
-                
+                $isModularMerchant =false;
+                if (!empty($merchantId))
+                {
+                    $isModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
+                    
+                }
+               
                 if (empty($merchantId) ===  false and  in_array($businessType, [BusinessType::GOVERNMENT,BusinessType::JUDICAL_PERSON,BusinessType::LOCAL_AUTHORITY,BusinessType::SECTION_8_COMPANY]) and !$isModularMerchant)
                 {
                     $this->trace->info(TraceCode::REMOVE_NEW_BUSINESS_TYPE, [
-                        "merchant_id"       => $merchantId
+                        "merchant_id"       => $merchantId,
+                        "business_type"     => $businessType,
                     ]);
                     continue;
                 }
