@@ -25,6 +25,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Method;
 use RZP\Exception\LogicException;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\IIN\MandateHub;
 use RZP\Models\Payment\RecurringType;
 use RZP\Constants\Entity as EntityConstants;
@@ -743,6 +744,42 @@ class Core extends Base\Core
 
     public function createNotificationUsingOrder(array $input, $order, $token)
     {
+        $rearch = true;
+        if ($rearch and $this->mode === Mode::LIVE)
+        {
+            $payload = $input['notification'];
+            $payload[Entity::ORDER_ID] = $order->getId();
+            $payload[Entity::MERCHANT_ID] = $this->merchant->getMerchantId();
+            $payload[Entity::TOKEN_ID] = Entity::stripDefaultSign($payload['token_id']);
+            $payload[Entity::CARD_MANDATE_ID] = $token->getCardMandateId();
+            $payload[Entity::AMOUNT] = $order->getAmount();
+            $payload[Entity::CURRENCY] = $order->getCurrency() ?? 'INR';
+            $this->addDefaultsForNotificationInput($payload);
+            // Todo: add more parameters in the payload which are required
+
+            try
+            {
+                $queueName = $this->app['config']->get('queue.card_recurring_notification.' . $this->mode);
+                $this->app['queue']->connection('sqs')->pushRaw(json_encode($payload), $queueName);
+            }
+            catch (\Throwable $e)
+            {
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::CARD_RECURRING_NOTIFICATION_PUSH_FAILED);
+
+                throw $e;
+            }
+
+            return [
+                "token_id"          => 'token_'.$payload['token_id'],
+                "payment_after"     => $payload['payment_after'],
+                "id"                => 'notification_'.UniqueIdEntity::generateUniqueId(),
+            ];
+        }
+
         $notification = $this->createNotification($input, $order, $token);
 
         // pushing event to queue for pre-debit notification and delaying it for 60 sec
