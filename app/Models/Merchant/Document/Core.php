@@ -883,17 +883,11 @@ class Core extends Base\Core
     }
 
     public function shouldRouteToDocumentUploadV2(Merchant\Entity $merchant) : bool {
-        $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
-            [
-                'id' => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.migrate_mkyc_to_document_upload_v2')
-            ],
-            DetailConstants::ENABLE
-        );
+        
         $isMkycMerchant = $this->pgosProxyController->isIndiaPgModularMerchant($merchant);
 
-        $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['isExperimentEnabled' => $isExperimentEnabled,"isMkycMerchant"=>$isMkycMerchant]);
-        return true;
-       // return ($isExperimentEnabled and $isMkycMerchant);
+        $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ["isMkycMerchant"=>$isMkycMerchant]);
+        
+        return $isMkycMerchant;
     }
 }

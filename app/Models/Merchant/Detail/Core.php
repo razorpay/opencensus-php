@@ -5812,10 +5812,6 @@ class Core extends Base\Core
 
         $merchantId = $this->app['request']->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
         $merchant = $this->repo->merchant->find($merchantId);
-        $this->trace->info(TraceCode::NC_ADDITIONAL_DOCUMENTS,[
-            '$merchantId' => $merchantId,
-            "headers"=>$this->app['request']->headers,
-        ]);
         $isModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
         if(($merchant != null and $this->pgosProxyController->isCurlecModularMerchant($merchant)) || ($isModularMerchant)){
             $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::ACTIVATION_DOCUMENT_TYPES, [], $merchant);
