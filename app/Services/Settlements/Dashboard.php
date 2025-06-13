@@ -6,6 +6,7 @@ use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount\Type;
 use RZP\Exception\RuntimeException;
+use RZP\Http\RequestHeader;
 
 class Dashboard extends Base
 {
@@ -77,6 +78,12 @@ class Dashboard extends Base
     const SETTLEMENTS_FETCH_DETAILS = '/v1/settlements/fetch_details';
     const SETTLEMENTS_FETCH_SOURCE_DETAILS = '/v1/settlements/%s/transaction_source_details';
     const X_PASSPORT_JWT_V1 = 'X-Passport-JWT-V1';
+    Const X_ADMIN_EMAIL     = 'X-ADMIN-EMAIL';
+    Const X_USER_EMAIL      = 'X-USER-EMAIL';
+    Const X_IS_CRON         = 'X-IS-CRON';
+    Const X_IS_DASHBOARD    = 'X-IS-DASHBOARD';
+    Const ROUTE_NAME        = 'route-name';
+    Const IS_BATCH          = 'is-batch';
     const PASSPORT_AUD = 'settlements';
     const SETL_GET_DETAILS = '/details';
     const SETL_AMOUNT = '/v1/settlements/amount';
@@ -642,8 +649,18 @@ class Dashboard extends Base
     {
         $passportHeader = (empty($this->auth->getPassportFromJob()) === false) ? $this->auth->getPassportFromJob() : $this->auth->getPassportJwt(self::PASSPORT_AUD);
 
+        $isBatch = (($this->auth->isBatchFlow() === true) or ($this->auth->isBatchApp() === true));
+
         $customHeader = [
-            self::X_PASSPORT_JWT_V1 => $passportHeader,
+            self::X_PASSPORT_JWT_V1             => $passportHeader,
+            RequestHeader::X_Creator_Id         => $this->request->header(RequestHeader::X_Creator_Id) ?? null,
+            RequestHeader::X_Creator_Type       => $this->request->header(RequestHeader::X_Creator_Type) ?? null,
+            self::X_ADMIN_EMAIL                 => $this->getAdminEmail(),
+            self::X_USER_EMAIL                  => $this->getUserEmail(),
+            self::X_IS_CRON                     => $this->auth->isCron(),
+            self::X_IS_DASHBOARD                => $this->auth->isDashboardApp(),
+            self::ROUTE_NAME                    => $this->route->getCurrentRouteName(),
+            self::IS_BATCH                      => $isBatch,
         ];
 
         // set custom headers
@@ -693,5 +710,15 @@ class Dashboard extends Base
     {
         $this->addPassportToken();
         return $this->makeRequest(self::HOLD_REASON_CODE_MAPPING, $input, self::SERVICE_DASHBOARD, null, Requests::GET);
+    }
+
+    /**
+     * Gets the email of the current user
+     *
+     * @return string
+     */
+    protected function getUserEmail(): string
+    {
+        return $this->auth->getDashboardHeaders()[self::X_USER_EMAIL] ?? '';
     }
 }
