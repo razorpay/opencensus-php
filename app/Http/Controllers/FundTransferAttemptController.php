@@ -9,6 +9,7 @@ use RZP\Constants\Entity;
 use RZP\Models\FundTransfer\Attempt\Constants;
 use RZP\Services\FTS\Constants as FTSConstants;
 use RZP\Models\FundAccount\Validation\Service as FavService;
+use RZP\Services\PayoutService\PayoutShadowService;
 
 class FundTransferAttemptController extends Controller
 {
@@ -62,6 +63,15 @@ class FundTransferAttemptController extends Controller
     public function updateSource()
     {
         $input = Request::all();
+
+        // call shadow router to mirror the request
+        PayoutShadowService::mirrorRequest(
+            'POST',
+            Request::path(),
+            $input,
+            Request::header()
+        );
+
 
         // If the source type is FAV, then call the FAV service
         if ($input[FTSConstants::SOURCE_TYPE] === FTSConstants::FUND_ACCOUNT_VALIDATION)

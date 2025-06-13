@@ -14,22 +14,16 @@ class PayoutShadowService
      *
      * @return bool
      */
-    public static function shouldMirrorRequest($merchantID): bool
+    public static function shouldMirrorRequest($merchantID, $killSwitch): bool
     {
-        $config = self::getConfig();
-
         $trace = app('trace');
-        $trace->info(TraceCode::REQUESTS_MIRROR_CONFIG, [
-            'config' => $config,
-        ]);
 
-
-        if ($config['kill_switch'] === false) {
+        if (!$killSwitch) {
             return false;
         }
 
         // Check split experiment
-        return self::isSplitzExperimentEnable($merchantID) && co;
+        return self::isSplitzExperimentEnable($merchantID);
     }
 
     /**
@@ -43,15 +37,20 @@ class PayoutShadowService
      */
     public static function mirrorRequest(string $method, string $path, array $body, array $headers): void
     {
+        $app = \App::getFacadeRoot();
+        $config = $app['config']->get('applications.payouts_shadow_router');
+
         $requestId = app('request')->getTaskId();
         $startTime = microtime(true);
         $trace = app('trace');
         $url = null;
 
+        $merchantId = $body['merchant_id'];
+
         $redis = app('redis')->Connection('mutex_redis');
 
         try {
-            if (self::shouldMirrorRequest() === false) {
+            if (self::shouldMirrorRequest($merchantId, $config['kill_switch']) === false) {
                 return;
             }
 
@@ -61,8 +60,6 @@ class PayoutShadowService
             $cacheKey = 'payout_shadow_request:' . $requestId;
 
             $redis->set($cacheKey, $awsTraceId, 'EX', 60 * 10); // Store for 5 minutes
-
-            $config = self::getConfig();
 
             // Log request start with caller information
             $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -91,7 +88,7 @@ class PayoutShadowService
             $requestHeaders['X-Request-ID'] = $requestId;
             $requestHeaders['X-Amazon-Trace-Id'] = $awsTraceId;
 
-            $url = rtrim($config['shadow_service_url'], '/') . '/' . ltrim($path, '/');
+            $url = rtrim($config['payouts_shadow_router_url'], '/') . '/' . ltrim($path, '/');
 
             if ($config['debug']) {
                 $trace->info(
