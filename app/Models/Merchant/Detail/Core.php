@@ -11596,6 +11596,15 @@ class Core extends Base\Core
                 {
                     continue;
                 }
+                $isModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
+                
+                if (empty($merchantId) ===  false and  in_array($businessType, [BusinessType::GOVERNMENT,BusinessType::JUDICAL_PERSON,BusinessType::LOCAL_AUTHORITY,BusinessType::SECTION_8_COMPANY]) and !$isModularMerchant)
+                {
+                    $this->trace->info(TraceCode::REMOVE_NEW_BUSINESS_TYPE, [
+                        "merchant_id"       => $merchantId
+                    ]);
+                    continue;
+                }
 
 //              If the merchant is sales assisted skip adding individual or not_yet_registered as business type
                 if (empty($merchantId) ===  false and ($businessType === BusinessType::INDIVIDUAL or $businessType === BusinessType::NOT_YET_REGISTERED) and !empty($userDeviceDetails) and $userDeviceDetails->isAssistedOnboardedMerchant())
