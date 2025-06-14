@@ -6769,6 +6769,32 @@ class Core extends Base\Core
         ];
     }
 
+    public function getUserByEmail(array $input): array
+    {
+        $user = $this->repo
+            ->user
+            ->getUserFromEmailOrFail($input['email']);
+
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $merchantEntities = $user->getNonSuspendedMerchants(1000);
+        } else {
+            $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take(1000)->get();
+        }
+
+        $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
+
+        $merchantDetails = $this->getUnifiedMerchants($merchants);
+
+        return [
+            'id'                      => $user->getId(),
+            'name'                    => $user->getName(),
+            'email'                   => $user->getEmail(),
+            'contact_mobile'          => $user->getContactMobile(),
+            'contact_mobile_verified' => $user->isContactMobileVerified(),
+            'merchants'               => $merchantDetails,
+        ];
+    }
+
     public function getUserAllRoles($userID, $merchantID)
     {
         $products   = [Product::BANKING, Product::PRIMARY];
