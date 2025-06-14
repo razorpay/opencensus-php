@@ -5853,7 +5853,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
-        'user_fetch_by_email',
+        'user_internal_fetch_by_email',
         'fetch_user_details',
         'upsert_user_details',
         'delete_user_details',
@@ -18552,7 +18552,7 @@ class Route
         ],
 
         'pgos' => [
-            'user_fetch_by_email',
+            'user_internal_fetch_by_email',
             'pricing_fetch_plan_internal',
             'qr_code_merchant_create',
             'internal_fetch_merchant_users',
