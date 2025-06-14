@@ -6785,14 +6785,10 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getUnifiedMerchants($merchants);
 
-        return [
-            'id'                      => $user->getId(),
-            'name'                    => $user->getName(),
-            'email'                   => $user->getEmail(),
-            'contact_mobile'          => $user->getContactMobile(),
-            'contact_mobile_verified' => $user->isContactMobileVerified(),
-            'merchants'               => $merchantDetails,
-        ];
+        $response = $user->toArrayPublic();
+        $response['merchants'] = $merchantDetails;
+
+        return $response;
     }
 
     public function getUserAllRoles($userID, $merchantID)
