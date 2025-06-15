@@ -2767,6 +2767,7 @@ class Processor
                                 ){
                                     $cardInput += [
                                         "cryptogram_source" => "cps",
+                                        Card\Entity::TOKENISED              => true,
                                     ];
                                     $this->trace->info(TraceCode::MISC_TRACE_CODE,[
                                         'message'=>'Issuer Result is on',
