@@ -2755,10 +2755,8 @@ class Processor
 
                                 $cardInput = [];
 
-//                                $tokenRearchIssuerExperimentName = 'app.saved_card_token_payments_rearch_issuer';
-//                                $tokenRearchIssuerResult = (new Payment\Service())->getSplitzExpResponseForTokenFetchFromTokenService($merchant->getId(), $card->getVault(), $tokenRearchIssuerExperimentName);
-                                $tokenRearchIssuerResult = 'enable';
-
+                                $tokenRearchIssuerExperimentName = 'app.saved_card_token_payments_rearch_issuer';
+                                $tokenRearchIssuerResult = (new Payment\Service())->getSplitzExpResponseForTokenFetchFromTokenService($merchant->getId(), $card->getVault(), $tokenRearchIssuerExperimentName);
 
                                 // Allowing CPS Cryptogram source on Domestic Payments and where Merchant is not RAAS enabled
                                 if($tokenRearchIssuerResult=='enable'
@@ -2767,9 +2765,9 @@ class Processor
                                 ){
                                     $cardInput += [
                                         "cryptogram_source" => "cps",
-                                        Card\Entity::TOKENISED              => true,
+                                        Card\Entity::TOKENISED => true,
                                     ];
-                                    $this->trace->info(TraceCode::MISC_TRACE_CODE,[
+                                    $this->trace->info(TraceCode::TOKENISED_REARCH_STATUS,[
                                         'message'=>'Issuer Result is on',
                                     ]);
                                 } else {
@@ -2793,7 +2791,7 @@ class Processor
                                         Card\Entity::LAST4                  => $card->getLast4(),
                                     ];
 
-                                    $this->trace->info(TraceCode::MISC_TRACE_CODE,[
+                                    $this->trace->info(TraceCode::TOKENISED_REARCH_STATUS,[
                                         'message'=>'Issuer Result is off',
                                     ]);
 

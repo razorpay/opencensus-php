@@ -13355,6 +13355,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TNC_LOG_UPDATE_FAILED                                 = 'TNC_LOG_UPDATE_FAILED';
     const INVALID_PRODUCT_CONFIG_JSON                           = 'INVALID_PRODUCT_CONFIG_JSON';
     const MODIFY_CLOSE_BY_IF_APPLICABLE                         = 'MODIFY_CLOSE_BY_IF_APPLICABLE';
+    const TOKENISED_REARCH_STATUS = 'TOKENISED_REARCH_STATUS'
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
