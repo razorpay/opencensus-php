@@ -2753,10 +2753,7 @@ class Processor
                                     return false;
                                 }
 
-                                $cardInput = [
-                                    Card\Entity::TOKENISED              => true,
-                                    Card\Entity::REWARD                 => $input['card']['reward'],
-                                ];
+                                $cardInput = [];
 
                                 $tokenRearchIssuerExperimentName = 'app.saved_card_token_payments_rearch_issuer';
                                 $tokenRearchIssuerResult = (new Payment\Service())->getSplitzExpResponseForTokenFetchFromTokenService($merchant->getId(), $card->getVault(), $tokenRearchIssuerExperimentName);
@@ -2921,6 +2918,8 @@ class Processor
                         } else {
                             $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                                 'reason' => "saved_card_not_network_tokenized",
+                                'isLocal'=> $token->isLocal(),
+                                'isRecurring'=> $token->isRecurring(),
                                 'merchant_id' => $merchant->getId(),
                             ]);
                             return false;
