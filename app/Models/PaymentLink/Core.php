@@ -4903,5 +4903,38 @@ class Core extends Base\Core
             }
         }
     }
+    private function logTncInOtherDetails(string $paymentLinkId, string $priRefId): void
+    {
+        try
+        {
+            $paymentPageRecord = $this->repo->payment_page_record->findByPaymentPageAndPrimaryRefIdOrFail($paymentLinkId, $priRefId);
 
+            $existingOtherDetails = $paymentPageRecord['other_details'] ?? '[]';
+
+            $detailsArray = json_decode($existingOtherDetails, true);
+            if (!is_array($detailsArray)) {
+                $detailsArray = [];
+            }
+
+            $detailsArray['tnc_log'] = true;
+
+            $updatedOtherDetails = json_encode($detailsArray);
+
+            $paymentPageRecord->edit([
+                \RZP\Models\PaymentLink\PaymentPageRecord\Entity::OTHER_DETAILS => $updatedOtherDetails,
+            ]);
+
+            $this->repo->payment_page_record->save($paymentPageRecord);
+
+            $this->trace->info(TraceCode::TNC_LOG_UPDATED, [
+                "success" => "true",
+            ]);
+        }
+        catch (\Exception $e) {
+            $this->trace->error(TraceCode::TNC_LOG_UPDATE_FAILED, [
+                'error_message' => $e->getMessage(),
+                'stack_trace'   => $e->getTraceAsString(),
+            ]);
+        }
+    }
 }
