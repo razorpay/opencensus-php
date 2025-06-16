@@ -7,8 +7,10 @@ use RZP\Base;
 use RZP\Exception;
 use Lib\PhoneBook;
 use Razorpay\IFSC\IFSC;
+use RZP\Constants\Country;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Utility;
 use RZP\Models\Merchant\Product\Util;
 use RZP\Models\Merchant\Product\TncMap;
 use RZP\Models\Merchant\Account\Constants as AccountConstants;
@@ -16,6 +18,7 @@ use RZP\Models\Merchant\Account\Constants as AccountConstants;
 class Validator extends Base\Validator
 {
     const INVALID_IFSC_CODE_MESSAGE = 'Invalid IFSC Code';
+    const INVALID_BANK_BRANCH_CODE = 'Invalid Bank Branch Code';
 
     protected static $pgRules             = [
         Util\Constants::SETTLEMENTS     => 'sometimes|array',
@@ -70,7 +73,8 @@ class Validator extends Base\Validator
     protected static $settlementsRules = [
         Util\Constants::BENEFICIARY_NAME => 'sometimes|string|min:4|max:120',
         Util\Constants::IFSC_CODE        => 'sometimes|alpha_num|max:11|custom',
-        Util\Constants::ACCOUNT_NUMBER   => 'sometimes|regex:/^[a-zA-Z0-9]+$/|between:5,20|custom',
+        Util\Constants::ACCOUNT_NUMBER   => 'sometimes|regex:/^[a-zA-Z0-9]+$/|between:5,35|custom',
+        Util\Constants::BANK_BRANCH_CODE => 'sometimes|alpha_num|max:255|custom',
     ];
 
     protected static $otpRules = [
@@ -111,9 +115,39 @@ class Validator extends Base\Validator
 
     public function validateIfscCode($attribute, $value)
     {
+        $merchantCountry = strtolower($this->merchant != null ? $this->merchant->getCountry() : Country::IN);  
+        
+        if ($this->merchant === null)
+        {
+            $merchantCountry = Utility::getRowMerchantCountry();
+        }
+
+        if ($merchantCountry != Country::IN)
+        {
+            return;
+        }
+
         if (IFSC::validate($value) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_IFSC_CODE_MESSAGE, Util\Constants::IFSC_CODE);
+        }
+    }
+
+    public function validateBankBranchCode($attribute, $value)
+    {
+        $merchantCountry = strtolower($this->merchant != null ? $this->merchant->getCountry() : Country::IN);  
+        
+        if ($this->merchant === null)
+        {  
+            $merchantCountry = Utility::getRowMerchantCountry();
+        }
+
+        if ($merchantCountry != Country::MY){
+            return;
+        }
+        if (Utility::isValidMalaysianBIC($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_BANK_BRANCH_CODE, Util\Constants::BANK_BRANCH_CODE);
         }
     }
 

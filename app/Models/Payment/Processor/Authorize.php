@@ -225,6 +225,8 @@ trait Authorize
 
         $this->pushCardMetaDataEvent($input, $payment);
 
+        $this->pushOfferMetrics($input, $payment);
+
         $authPaymentData = $this->gatewayRelatedProcessing($payment, $input, $gatewayInput);
 
         // creating invoice entity for opgsp payment requires payment entity
@@ -1607,6 +1609,25 @@ trait Authorize
 
         $this->segment->trackPayment($payment, TraceCode::TERMINAL_FAILURE, $traceData);
 
+        if ($payment->getMethod() === Method::CARD &&
+            $payment->getRecurringType() === Payment\RecurringType::AUTO) {
+            $properties = [
+                "id" => $payment->getMerchantId(),
+                'experiment_name' => 'card_auto_recurring_retry',
+                'request_data' => json_encode(['merchant_id' => $payment->getMerchantId()])
+            ];
+            $splitzResponse = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable') === true ;
+
+            $this->trace->info(TraceCode::CARD_RECURRING_CASCADING_RETRY, [
+                'payment_id' => $payment->getId(),
+                'splitzResponse' => $splitzResponse,
+                'exception' =>$e->getDataAsString()
+            ]);
+            if($splitzResponse){
+               return true;
+            }
+        }
+
         // retry only if it is safe to do so
         return ((property_exists($e, 'safeRetry') === true) and
                 ($e->getSafeRetry() === true));
@@ -2345,20 +2366,7 @@ trait Authorize
                 $payment->merchant->isRazorpayOrgId() === true and
                 $payment->card->getNetwork() === Network::getFullName(Network::MC)))
         {
-            $variant = $this->app->razorx->getTreatment($this->request->getTaskId(), Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_MC, $this->mode);
-
-            $this->trace->info(TraceCode::GATEWAY_CAPTURE_RAZORX_VARIANT, [
-                'payment_id'     => $payment->getId(),
-                'merchant_id'    => $payment->getMerchantId(),
-                'razorx_variant' => $variant,
-            ]);
-
-            if (strtolower($variant) === 'on')
-            {
-                return true;
-            }
-
-            return false;
+            return true;
         }
 
         if(($payment->isGatewayCaptured() === false) and
@@ -2628,7 +2636,7 @@ trait Authorize
 
             $this->validatePaCBDataIfApplicable($payment);
 
-            $this->validateLRSTravelCitiDataIfApplicable($payment);
+            $this->validateCitiLrsImportFlowDataInCrossBorderImportService($payment);
 
             $this->validateImportFlowDataIfApplicable($payment);
 
@@ -5341,6 +5349,72 @@ trait Authorize
         }
     }
 
+    protected function validateCitiLrsImportFlowDataInCrossBorderImportService(Payment\Entity $payment){
+        if ($payment->merchant->isLRSTravelCitiFlowEnabled() === false)
+        {
+            return;
+        }
+        $apiLrsTravelCitiValidationResult = null;
+        $shadowExperimentResultCrossBorderImportService = null;
+        $shadowExperimentResult = $this->evaluateShadowSplitzExperimentforCrossBorderImportCitiLrsPayment($payment->merchant->getId());
+
+        if($shadowExperimentResult){
+            try {
+                $this->trace->info(
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_REQUEST, [
+                        'payment_id'  => $payment['id'],
+                        'merchant_id' => $payment['merchant_id'],
+                    ]
+                );
+                //call to import service
+                $response = $this->app['cross_border_import_service']->validateImportPayment($payment,'lrs_travel_citi_flow');
+                $this->trace->info(
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_RESPONSE, [
+                        'response' => $response,
+                    ]
+                );
+
+            } catch (\Throwable $e) {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::CROSS_BORDER_IMPORT_SERVICE_PAYMENT_VALIDATION_FAILED
+                );
+                $shadowExperimentResultCrossBorderImportService = $e->getMessage();
+            }
+        }
+        try
+        {
+            $this->validateLRSTravelCitiDataIfApplicable($payment);
+            $this->traceMismatchInResultForLrsCiti($apiLrsTravelCitiValidationResult,$shadowExperimentResultCrossBorderImportService);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::API_CITI_LRS_VALIDATION_ERROR,[
+                    'lrs_travel_citi_validation_response' => $e->getMessage()
+                ]
+            );
+            $apiLrsTravelCitiValidationResult = $e->getMessage();
+            $this->traceMismatchInResultForLrsCiti($apiLrsTravelCitiValidationResult,$shadowExperimentResultCrossBorderImportService);
+            throw $e;
+        }
+    }
+
+    protected function traceMismatchInResultForLrsCiti($apiResult, $crossBorderImportServiceResult)
+    {
+        if (is_null($apiResult) && is_null($crossBorderImportServiceResult)) {
+            return;
+        }
+        $this->trace->error(
+            TraceCode::CROSS_BORDER_IMPORT_API_CITI_LRS_VALIDATIONS_MISMATCH, [
+                'api_result' => $apiResult ?? 'success',
+                'cross_border_import_service_result' => $crossBorderImportServiceResult ?? 'success',
+            ]
+        );
+    }
 
     private function evaluateSplitzExperimentforCrossBorderImportRearch($merchantId)
     {
@@ -5411,6 +5485,42 @@ trait Authorize
             );
         }
 
+        return false;
+    }
+
+    private function evaluateShadowSplitzExperimentforCrossBorderImportCitiLrsPayment($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.cross_border_import_payment_shadow_citi_lrs'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::CROSS_BORDER_IMPORT_PAYMENT_CITI_SHADOW_EXPERIMENT_SPLITZ_ERROR
+            );
+        }
         return false;
     }
 
@@ -9606,8 +9716,8 @@ trait Authorize
         (new Payment\Metric)->pushAuthMetrics($this->payment);
 
         $this->eventPaymentAuthorized();
-
-        $this->publishMessageToSqsBarricade($this->payment);
+         //         Removing this as we are not using barricade anymore
+       // $this->publishMessageToSqsBarricade($this->payment);
 
         $this->notifyIfCardSaved();
 
@@ -9830,7 +9940,22 @@ trait Authorize
                 ($token->card->isRuPay()))
             {
                 $cardMandateId = $token->getCardMandateId();
-                $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($cardMandateId, $payment->merchant);
+
+                $cardMandate = null;
+
+                if(empty($cardMandateId) === false) {
+                    try {
+                        $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($cardMandateId, $payment->merchant);
+                    } catch (\Throwable $e) {
+                        // If card mandate not found by ID, try getting it from token fallback
+                        $cardMandate = $token->cardMandate;
+
+                        if ($cardMandate === null) {
+                            throw new Exception\BadRequestException(
+                                'Card mandate not found either by ID or from token relationship');
+                        }
+                    }
+                }
 
                 $mandate_end_date = $cardMandate->getEndAt();
 
@@ -10001,7 +10126,19 @@ trait Authorize
 
         $order = $payment->order;
 
-        $discountAmount = $this->offer->getDiscountAmountForPayment($order->getAmount(), $payment);
+        $oeBenefitsExpEnabled = (new Offer\Core())->shouldUseBenefitsFromOffersEngine($this->merchant->getMerchantId());
+
+        if ($oeBenefitsExpEnabled)
+        {
+            $discountAmount = $this->app["offers_engine"]->getTotalDiscountApplied(
+                $payment->getOffer()->getPublicId(), $payment->getPublicId(),$order->getPublicId());
+        }
+        else
+        {
+            $discountAmount = $this->offer->getDiscountAmountForPayment($order->getAmount(), $payment);
+
+        }
+
 
         $discountInput = [
             Discount\Entity::AMOUNT => $discountAmount,
@@ -12601,7 +12738,7 @@ trait Authorize
                     [
                         'payment_id'        => $payment->getId(),
                         'late_authorize'    => $wasFailed,
-                ]);
+                    ]);
 
                 $this->createLedgerEntriesForGatewayCaptureOnAuthorize($payment);
             }
@@ -14423,6 +14560,13 @@ trait Authorize
         else
         {
             (new Address\Core)->edit($tokenBillingAddress, $billingAddressToSave);
+        }
+    }
+    protected function pushOfferMetrics($input, Payment\Entity $payment)
+    {
+        if (empty($input['offer_id']) === false)
+        {
+            (new Payment\Metric)->pushOfferMetrics($payment,$input);
         }
     }
 

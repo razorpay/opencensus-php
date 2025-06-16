@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Batch;
 
+use DB;
 use Config;
 use RZP\Constants\Mode;
 use RZP\Models\Batch\Header;
@@ -299,6 +300,381 @@ class MerchantUploadMiqBatchTest extends TestCase
 
         $this->assertEquals('success', $response[Header::STATUS]);
     }
+
+    public function testCreateMerchantSuccessMultiAccountAlreadyExistingUser()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $this->fixtures->create('user', [
+            'email' =>  'banking-pod2969@razorpay.com',
+            'contact_mobile' => '9565656576'
+        ]);
+
+        $this->mockSplitzExperimentUploadMiq();
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_EMAIL] = 'banking-pod2969@razorpay.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_NUMBER] = '9565656576';
+        $this->testData[__FUNCTION__]['response']['content']= [];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('success', $response[Header::STATUS]);
+    }
+
+    public function testCreateMerchantSuccessMultiAccountNewUser()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $this->mockSplitzExperimentUploadMiq();
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_EMAIL] = 'banking-pod2969@razorpay.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_NUMBER] = '9565656576';
+        $this->testData[__FUNCTION__]['response']['content']= [];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('success', $response[Header::STATUS]);
+    }
+
+    public function testCreateMerchantFailureMultiAccountAlreadyExistingUserWithEmail()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $this->fixtures->create('user', [
+            'email' =>  'banking-pod2969@razorpay.com',
+            'contact_mobile' => '9565656222'
+        ]);
+
+        $this->mockSplitzExperimentUploadMiq();
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_EMAIL] = 'banking-pod2969@razorpay.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_NUMBER] = '9565656576';
+        $this->testData[__FUNCTION__]['response']['content']= [];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+
+        $this->assertEquals('Email ID already associated with another mobile number', $response[Header::ERROR_DESCRIPTION]);
+    }
+
+    public function testCreateMerchantFailureMultiAccountAlreadyExistingUserWithEmailWithCaseInsensitive()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $this->fixtures->create('user', [
+            'email' =>  'banking-pod2969@razorpay.com',
+            'contact_mobile' => '9565656222'
+        ]);
+
+        $this->mockSplitzExperimentUploadMiq();
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_EMAIL] = 'BANKING-POD2969@razorpay.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_NUMBER] = '9565656576';
+        $this->testData[__FUNCTION__]['response']['content']= [];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+
+        $this->assertEquals('Email ID already associated with another mobile number', $response[Header::ERROR_DESCRIPTION]);
+    }
+
+    public function testCreateMerchantFailureMultiAccountAlreadyExistingUserWithMobile()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+
+        $this->fixtures->create('user', [
+            'email' =>  'banking-pod22323@razorpay.com',
+            'contact_mobile' => '9565656575'
+        ]);
+
+        $this->mockSplitzExperimentUploadMiq();
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_EMAIL] = 'banking-pod2969@razorpay.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_NUMBER] = '9565656575';
+        $this->testData[__FUNCTION__]['response']['content']= [];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+
+        $this->assertStringContainsString('Mobile number already associated with another email ID', $response[Header::ERROR_DESCRIPTION]);
+    }
+
+    public function testCreateMerchantFailureMultiAccountAlreadyExistingUserWithMobileNumberWithCountryCodeWithPlusWithSpace()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+
+        $this->fixtures->create('user', [
+            'email' =>  'banking-pod22323@razorpay.com',
+            'contact_mobile' => '9565656575'
+        ]);
+
+        $this->mockSplitzExperimentUploadMiq();
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_EMAIL] = 'banking-pod2969@razorpay.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_NUMBER] = '+91 9565656575';
+        $this->testData[__FUNCTION__]['response']['content']= [];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+        
+        $this->assertStringContainsString('Mobile number already associated with another email ID', $response[Header::ERROR_DESCRIPTION]);
+    }
+
+    public function testCreateMerchantFailureMultiAccountAlreadyExistingUserWithMobileNumberWithCountryCodeWithoutSpace()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+
+        $this->fixtures->create('user', [
+            'email' =>  'banking-pod22323@razorpay.com',
+            'contact_mobile' => '9565656575'
+        ]);
+
+        $this->mockSplitzExperimentUploadMiq();
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_EMAIL] = 'banking-pod2969@razorpay.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_NUMBER] = '+919565656575';
+        $this->testData[__FUNCTION__]['response']['content']= [];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+        
+        $this->assertStringContainsString('Mobile number already associated with another email ID', $response[Header::ERROR_DESCRIPTION]);
+    }
+
+    public function testCreateMerchantFailureMultiAccountAlreadyExistingUserWithMobileNumberWithCountryCodeWithSpaceWithoutPlus()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+
+        $this->fixtures->create('user', [
+            'email' =>  'banking-pod22323@razorpay.com',
+            'contact_mobile' => '9565656575'
+        ]);
+
+        $this->mockSplitzExperimentUploadMiq();
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_EMAIL] = 'banking-pod2969@razorpay.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_NUMBER] = '91 9565656575';
+        $this->testData[__FUNCTION__]['response']['content']= [];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+        
+        $this->assertStringContainsString('Mobile number already associated with another email ID', $response[Header::ERROR_DESCRIPTION]);
+    }
+
+    public function testCreateMerchantFailureMultiAccountAlreadyExistingUserWithMobileNumberWithCountryCodeWithoutPlusWithoutSpace()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+
+        $this->fixtures->create('user', [
+            'email' =>  'banking-pod22323@razorpay.com',
+            'contact_mobile' => '9565656575'
+        ]);
+
+        $this->mockSplitzExperimentUploadMiq();
+        $this->testData[__FUNCTION__] = $this->testData['defaultSuccess'];
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_EMAIL] = 'banking-pod2969@razorpay.com';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CONTACT_NUMBER] = '919565656575';
+        $this->testData[__FUNCTION__]['response']['content']= [];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+        
+        $this->assertStringContainsString('Mobile number already associated with another email ID', $response[Header::ERROR_DESCRIPTION]);
+    }
+
     protected function getDefaultFileEntries(): array
     {
         return [
@@ -2283,6 +2659,60 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->assertNotEmpty($response[Header::ERROR_DESCRIPTION]);
 
         $this->assertEmpty($businessDetailMetadata['org_defined_merchant_fields']);
+    }
+
+    // Helper to prepare the test data and return a closure for startTest
+    public function getAsyncTestClosure()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->org->addFeatures([Feature::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $this->mockSplitzExperimentUploadMiq();
+        $testData = $this->testData['defaultSuccess'];
+        $testData['request']['content'][Header::MIQ_CONTACT_EMAIL] = 'banking-pod2969@razorpay.com';
+        $testData['request']['content'][Header::MIQ_CONTACT_NUMBER] = '9565656576';
+        $testData['response']['content'] = [];
+
+        return function() use ($testData) {
+            $this->testData[__FUNCTION__] = $testData;
+            return $this->startTest();
+        };
+    }
+
+    //This test function is designed to verify that different requests with the same email and contact number are executed in parallel, and that the response is successful due to a change in the mutex block scope in the multi-account upload MIQ process.
+    public function testUploadMiqForMultiAccountMutex()
+    {
+        $closure = $this->getAsyncTestClosure();
+        // Use Laravel's Bus to dispatch both closures in parallel
+        $promise1 = \Illuminate\Support\Facades\Bus::dispatch($closure);
+        $promise2 = \Illuminate\Support\Facades\Bus::dispatch($closure);
+        print_r($promise1);
+        print_r($promise2);
+
+        $response1 = $promise1;
+        $response2 = $promise2;
+
+        $this->assertEquals('success', $response1[Header::STATUS]);
+        $this->assertEquals('success', $response2[Header::STATUS]);
     }
 }
 

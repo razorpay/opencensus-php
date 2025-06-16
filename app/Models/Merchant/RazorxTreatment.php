@@ -79,6 +79,8 @@ final class RazorxTreatment
     //It is used to maintain backward compatibility for fav composite api response.
     const FAV_COMPOSITE_SERVICE_FORWARDING = 'fav_composite_service_forwarding';
 
+    const PAYOUT_LINKS_IP_WHITELIST = 'payout_links_ip_whitelist';
+
     // Decide whom to use k8s batch upload job instead of queue worker
     const K8S_BATCH_TREATMENT   = 'k8s-batch-upload';
 
@@ -192,6 +194,8 @@ final class RazorxTreatment
 
     // Expt to use transactions table if count is 1
     const LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE = 'ledger_reverse_shadow_latest_txn_balance';
+
+    const LEDGER_TRANSACTION_ASYNC_WEBHOOK_BT = 'ledger_transaction_async_webhook_bt';
 
     // Fetch balance from ledger TiDB
     const LEDGER_BALANCE_FETCH_FROM_TIDB = 'ledger_balance_fetch_from_tidb';
@@ -372,6 +376,8 @@ final class RazorxTreatment
 
     const COLLECTX_RBL_MERCHANTS_VA_CREATION_BLOCK = "collectx_rbl_merchants_va_creation_block";
     const COLLECTX_RBL_PAYMENT_TRANSFER_RAMP_UP = "collectx_rbl_payment_transfer_ramp_up";
+
+    const COLLECTX_IDFC_PAYMENT_TRANSFER_RAMP_UP = "collectx_idfc_payment_transfer_ramp_up";
 
     const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
 
@@ -1048,6 +1054,10 @@ final class RazorxTreatment
 
     const BANK_DATA_VIA_NPCI_API = 'bank_data_via_npci_api';
     const Axis_VA_MIGRATION = 'axis_va_migration';
+
+    // Experiment Variant for Bene Bank Downtime Webhook Notification
+    const DOWNTIME_V2_WEBHOOK_ENABLED = 'v2_webhook_enabled';
+    const DOWNTIME_V2_EXPERIMENT = 'downtime_v2_experiment';
 
     const COLLECTX_RBL_MERCHANTS_VA_CLOSE_BLOCK = "collectx_rbl_merchants_va_close_block";
 

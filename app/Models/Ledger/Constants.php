@@ -222,6 +222,7 @@ class Constants
     const REGISTER_EVENT_FOR_LEDGER_TRANSACTION                 = 'register_event_for_ledger_transaction';
     const REGISTER_EVENT_FOR_MULTI_MERCHANT_LEDGER_TRANSACTION  = 'register_event_for_multi_merchant_ledger_transaction';
     const ORDERS_PAYMENT_PARITY_EVENT                           = 'order_payments_parity_event';
+    const PAYMENT_FETCH_BY_ID_PARITY_EVENT                      = 'payment_fetch_by_id_parity_event';
     const KAFKA_MESSAGE_TASK_NAME                               = 'task_name';
     const KAFKA_MESSAGE_DATA                                    = 'data';
     const CREATE_LEDGER_JOURNAL_EVENT                           = 'create-ledger-journal-event';
@@ -267,6 +268,7 @@ class Constants
     const SHADOW                     = 'shadow';
     const REVERSE_SHADOW             = 'reverse-shadow';
     const LIABILITY                  = "liability";
+    const ACCOUNTDETAIL              = "AccountDetail";
 
     const ACCOUNT_DISCOVERY_CONFIG   = "account_discovery_config";
     const ACCOUNT_CATEGORY           = "account_category";

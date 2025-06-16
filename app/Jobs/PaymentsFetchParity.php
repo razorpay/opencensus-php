@@ -15,7 +15,7 @@ class PaymentsFetchParity extends Job
     const MAX_RETRY_ATTEMPT = 1;
     const TOPIC = LedgerConstants::CREATE_LEDGER_JOURNAL_EVENT;
 
-    const PAYMENTS_FETCH_MULTIPLE_PARITY_TASK = 'payments_fetch_multiple_parity_event';
+    const PAYMENTS_FETCH_MULTIPLE_PARITY_EVENT = 'payments_fetch_multiple_parity_event';
 
     protected $requestInput;
     protected $responseBody;
@@ -70,7 +70,7 @@ class PaymentsFetchParity extends Job
             ],
         ];
 
-        $message[LedgerConstants::KAFKA_MESSAGE_TASK_NAME] = self::PAYMENTS_FETCH_MULTIPLE_PARITY_TASK;
+        $message[LedgerConstants::KAFKA_MESSAGE_TASK_NAME] = self::PAYMENTS_FETCH_MULTIPLE_PARITY_EVENT;
 
         $topic = env('CREATE_LEDGER_JOURNAL_EVENT', LedgerConstants::CREATE_LEDGER_JOURNAL_EVENT);
 

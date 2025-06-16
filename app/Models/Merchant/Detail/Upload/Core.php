@@ -3,7 +3,10 @@
 
 namespace RZP\Models\Merchant\Detail\Upload;
 
+use Lib\PhoneBook;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\Entity as MDEntity;
@@ -24,6 +27,7 @@ use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Pricing\Service as PricingService;
 use RZP\Models\Merchant\Service as MerchantService;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Core as MDetailCore;
 use RZP\Models\Merchant\Website\Core as MWebsiteCore;
@@ -131,8 +135,6 @@ class Core extends Base\Core
 
         $lockKey = $entry[Header::MIQ_CONTACT_EMAIL];
 
-        return $this->mutex->acquireAndRelease($lockKey, function () use ($entry)
-        {
             $parser = Factory::getInstance(Constants::BULK_UPLOAD_MIQ);
 
             $this->trace->info(TraceCode::BATCH_SERVICE_UPLOAD_MIQ_CREATE_REQUEST, [
@@ -145,12 +147,40 @@ class Core extends Base\Core
 
             $parser->preProcessMerchantEntry($processedEntry);
 
-            $createUserMerchantResponse = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($processedEntry, $parser, &$entry) {
-                $user = $this->createUser($processedEntry[Header::MIQ_CONTACT_EMAIL], $processedEntry[Header::MIQ_MERCHANT_NAME],
-                    $processedEntry[UConstants::IS_DS_MERCHANT], $processedEntry[Header::MIQ_CONTACT_NUMBER]);
+            $createUserMerchantResponse = $this->mutex->acquireAndRelease($lockKey, function () use ($processedEntry, $parser, &$entry) {
+                return $this->repo->transactionOnLiveAndTestAndAsv(function () use ($processedEntry, $parser, &$entry) {
+
+               //Checking if the permission custom_invite_merchant_flow enabled for the org
+                $orgId = $processedEntry[Header::ORG_ID];
+
+                $orgId = Org\Entity::silentlyStripSign($orgId);
+
+                $org = $this->repo->org->findOrFailPublic($orgId);
+
+                $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+                $vasOrgFeatureEnabled = $org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER);
+
+                $skipEmailUniquenessCheck = false;
+
+                // If permission is enabled, fetch an existing user or create a new one.
+                // This uses the provided email, merchant name, DS merchant flag, and contact number.
+                // The `skipEmailUniquenessCheck` is set to true to bypass email uniqueness validation for merchant.
+                if (($permissionEnabled === true) and ($vasOrgFeatureEnabled === true)) {
+                    // Fetch OR Create user
+                    $user = $this->fetchOrCreateUser($processedEntry[Header::MIQ_CONTACT_EMAIL], $processedEntry[Header::MIQ_MERCHANT_NAME],
+                        $processedEntry[UConstants::IS_DS_MERCHANT], $processedEntry[Header::MIQ_CONTACT_NUMBER]);
+
+                    $skipEmailUniquenessCheck = true;
+                }
+                else {
+                    // Create user or fail
+                    $user = $this->createUser($processedEntry[Header::MIQ_CONTACT_EMAIL], $processedEntry[Header::MIQ_MERCHANT_NAME],
+                        $processedEntry[UConstants::IS_DS_MERCHANT], $processedEntry[Header::MIQ_CONTACT_NUMBER]);
+                }
 
                 $merchant = $this->createMerchant($user, $processedEntry[Header::MIQ_CONTACT_EMAIL], $processedEntry[Header::MIQ_MERCHANT_NAME],
-                    $processedEntry[MerchantEntity::ORG_ID], $processedEntry[UConstants::IS_DS_MERCHANT]);
+                    $processedEntry[MerchantEntity::ORG_ID], $processedEntry[UConstants::IS_DS_MERCHANT], $skipEmailUniquenessCheck);
 
                 if (empty($merchant) === true) {
                     throw new Exception\RuntimeException("Failed to create merchant", null,
@@ -159,6 +189,11 @@ class Core extends Base\Core
 
                 return [$merchant, $user];
             });
+              }, 180,
+        ErrorCode::BAD_REQUEST_ADMIN_ANOTHER_USER_CREATION_IN_PROGRESS,
+        60,
+        1000,
+        2000);
 
             $merchant = $createUserMerchantResponse[0];
             $user = $createUserMerchantResponse[1];
@@ -549,7 +584,6 @@ class Core extends Base\Core
             );
 
             return $entry;
-        });
     }
 
     public function processUpdateMerchantEntry(array $entry): array
@@ -864,7 +898,7 @@ class Core extends Base\Core
         return $this->userService->create($userInput);
     }
 
-    protected function createMerchant($user, string $email, string $businessName, string $orgId = null, string $onlyDs = null)
+    protected function createMerchant($user, string $email, string $businessName, string $orgId = null, string $onlyDs = null, $skipEmailUniqueCheck = false)
     {
         $merchantInput = [
             'name'  => $businessName,
@@ -879,7 +913,14 @@ class Core extends Base\Core
             $merchantInput[UConstants::ONLY_DS_UPLOAD_MIQ] = true;
         }
 
-        $merchantData = $this->userService->createMerchantFromUser($merchantInput, $user, '', false, [], false);
+        //In case of vas upload miq, we are skipping email uniqueness check
+        //if the vas org has custom_invite_merchant_flow permission enabled
+        $inputData = [];
+        if($skipEmailUniqueCheck) {
+            $inputData[Merchant\Entity::SKIP_EMAIL_UNIQUENESS_CHECK] = true;
+        }
+
+        $merchantData = $this->userService->createMerchantFromUser($merchantInput, $user, '', false, $inputData, false);
 
         return $this->repo->merchant->findOrFailPublic($merchantData[MerchantEntity::ID]);
     }
@@ -934,5 +975,100 @@ class Core extends Base\Core
         ];
 
         (new Feature\Service)->addFeatures($featureParams);
+    }
+
+    /**
+     * Fetch user from email and mobile number, if not found create a new one.
+     *
+     * 1. Email exists and matches mobile: Returns user data.
+     * 2. Email exists but mismatched mobile: Throws an exception.
+     * 3. Mobile exists but mismatched email: Throws an exception.
+     * 4. Neither email nor mobile exists: Creates and returns a new user.
+     * @param string $email
+     * @param string $businessName
+     * @param string|null $onlyDs
+     * @param string|null $contactMobile
+     * @return array
+     * @throws BadRequestValidationFailureException
+     */
+    protected function fetchOrCreateUser(string $email, string $businessName, string $onlyDs = null, string $contactMobile = null)
+    {
+        $emailUser = $this->repo->user->getUserFromEmailCaseInsensitive($email);
+
+        if ($emailUser !== null)
+        {
+            if($this->isContactMobileSame($emailUser->getContactMobile(), $contactMobile) === false) {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Email ID already associated with another mobile number');
+            }
+            return $emailUser->toArray();
+        }
+
+        // Check if the user exists with the provided mobile number.
+        $totalPhoneFormats = new PublicCollection();
+        $formats = (new PhoneBook($contactMobile))->getMobileNumberFormats();
+        foreach ($formats as $format) {
+            $totalPhoneFormats->push($format);
+        }
+
+        $contactUser = $this->repo->user->getUserFromMobile($totalPhoneFormats->toArray());
+
+        if($contactUser !== null) {
+            throw new Exception\BadRequestValidationFailureException(
+                'Mobile number already associated with another email ID ' . $contactUser['id'] );
+        }
+
+        $contactMobile = $this->getStandardContactNumber($contactMobile);
+
+        // If the user is not found, create a new one.
+        return $this->createUser($email, $businessName, $onlyDs, $contactMobile);
+    }
+
+    public function isContactMobileSame(string $userContact, string $contactMobile): bool
+    {
+        return $this->normalizeMobileNumber($userContact) === $this->normalizeMobileNumber($contactMobile);
+    }
+
+    /**
+     * Normalizes a mobile number to its 10-digit format.
+     *
+     * Handles inputs like:
+     * - '9876543210'                     → returns '9876543210'
+     * - '+919876543210' or '919876543210' → returns '9876543210'
+     * - '91 98765 43210' or '98-765-43210' → returns '9876543210'
+     *
+     * Removes all non-digit characters and extracts the last 10 digits,
+     * assuming they represent the actual mobile number.
+     */
+    private function normalizeMobileNumber(string $number): string
+    {
+        // Remove all non-digit characters
+        $digits = preg_replace('/\D+/', '', $number);
+
+        // Normalize to last 10 digits (common for Indian numbers)
+        if (strlen($digits) > 10 && preg_match('/^(91)?(\d{10})$/', $digits, $matches)) {
+            return $matches[2]; // Return just the 10-digit mobile number
+        }
+
+        // Fallback: return last 10 digits (assumes valid input)
+        return substr($digits, -10);
+    }
+
+    private function getStandardContactNumber(string $number): string
+    {
+        // Remove all non-digit characters
+        $digits = preg_replace('/\D+/', '', $number);
+
+        // If it has exactly 10 digits, assume it's a local number and add +91
+        if (strlen($digits) === 10) {
+            return '+91' . $digits;
+        }
+
+        // If it's a 12- to 15-digit number (with country code), prefix with +
+        if (strlen($digits) >= 11 && strlen($digits) <= 15) {
+            return '+' . $digits;
+        }
+
+        return $number ;// Fallback: Default number
     }
 }

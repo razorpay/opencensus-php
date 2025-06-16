@@ -71,6 +71,8 @@ class Constant
     const ACCOUNT_NUMBER           = 'account_number';
     const IFSC                     = 'ifsc';
     const BENEFICIARY_NAME         = 'beneficiary_name';
+    const CREDITOR_NAME            = 'creditor_name';
+    const BIC_CODE                 = 'bic_code';
     const ACCOUNT_HOLDER_NAMES     = 'account_holder_names';
     const SHOP_REGISTRATION_NUMBER = 'registration_number';
     const SHOP_AREA_CODE           = 'area_code';
@@ -120,6 +122,7 @@ class Constant
     const CANCELLED_CHEQUE_OCR_BUSINESS_OR_PROMOTER_PAN = 'cancelled_cheque_ocr_business_or_promoter_pan';
     const SHOP_ESTABLISHMENT_AUTH                       = 'shop_establishment_auth';
     const BANK_ACCOUNT_WITH_PERSONAL_PAN                = "bank_account_with_personal_pan";
+    const BANK_ACCOUNT_MY                               = "bank_account_my";
     const BANK_ACCOUNT_WITH_BUSINESS_PAN                = "bank_account_with_business_pan";
     const BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN    = "bank_account_with_business_or_promoter_pan";
     const AADHAR_BACK                                   = "aadhar_back";

@@ -236,13 +236,14 @@ class FeatureAccess
 
         $merchantFeatures = $this->addPartnerFeaturesToMerchantIfApplicable($merchantFeatures);
 
-//        $this->trace->info(
-//            TraceCode::MERCHANT_FEATURE_ACCESS_DB,
-//            [
-//                "merchant_features" => $merchantFeatures,
-//                "route_features"    => $routeFeatures,
-//            ]
-//        );
+        $this->trace->info(
+            TraceCode::MERCHANT_FEATURE_ACCESS_DATABASE,
+            [
+                "merchant_features" => $merchantFeatures,
+                "route_features"    => $routeFeatures,
+                "merchantID"        => $this->merchant->getId(),
+            ]
+        );
 
         return array_intersect($routeFeatures, $merchantFeatures);
     }
@@ -379,6 +380,23 @@ class FeatureAccess
         if (($isCompetitorApplication === true) and ($this->route->isS2SPaymentRoute() === true))
         {
             $isAllowed = $this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_S2S_APPS);
+
+            // if isAllowed is true, then check if we need to block the request based on the experiment
+            // Experiment is controlled at the merchant level
+            if ($isAllowed === true)
+            {
+                if ($this->shouldBlockRequestsFromCompetitor($this->merchant->getId()) === true)
+                {
+                    $this->trace->info(
+                        TraceCode::BLOCK_REQUESTS_FROM_COMPETITOR_APPLICATION,
+                        [
+                            'merchant_id' => $this->merchant->getId(),
+                            'app_id'      => $this->ba->getOAuthApplicationId(),
+                        ]
+                    );
+                    return false;
+                }
+            }
 
             // Allow if the feature is enabled on the merchant account, block otherwise.
             return $isAllowed;
@@ -557,5 +575,23 @@ class FeatureAccess
         ];
 
         return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    /**
+     * @param String $merchantId
+     * @return bool
+     *
+     * This function checks if the requests from competitor applications should be blocked
+     * based on the merchant ID using splitz.
+     */
+    private function shouldBlockRequestsFromCompetitor(String $merchantId) : bool
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.block_competitor_application'),
+            'request_data'  => json_encode(['merchantId' => $merchantId, 'flow' => 'oauth']),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'disable');
     }
 }

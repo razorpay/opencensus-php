@@ -2,6 +2,9 @@
 
 namespace RZP\Mail\Invoice;
 
+use Razorpay\Trace\Logger as Trace;
+use RZP\Http\Request\Requests;
+use RZP\Mail\Base\Stork;
 use RZP\Models\Merchant;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
@@ -138,18 +141,43 @@ class MerchantIssued extends Mailable
     {
         $app = \App::getFacadeRoot();
 
-        $isStorkEmailVIAEnabled = $this->isSendingPaymentLinkMailsSupported($this->data['merchant']['id'],$this->view);
-
         $traceData = [
             'merchant_id' => $this->data['merchant']['id'],
             'view' => $this->view,
             'data' => $this->data,
-            'isStorkEmailVIAEnabled' => $isStorkEmailVIAEnabled
+            'isStorkEmailVIAEnabled' => true
         ];
 
         $app['trace']->info(TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_VIA_SPLITZ_MERCHANT_ISSUED , $traceData);
 
-        return $isStorkEmailVIAEnabled;
+        if ($this->fileData !== null && $this->fileData['path'] !== null )
+        {
+            try
+            {
+                $params = $this->getParamsForFile();
+                $path = $this->fileData['path'];
+                $file_id = (new Stork($this->mode, $this->originProduct))->getFileId($params,$path);
+
+                if (!empty($file_id))
+                {
+                    $this->fileData['file_id'] = $file_id;
+
+                    return true;
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $app['trace']->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::GET_FILE_ID_EXCEPTION,
+                    ['file_data' => $this->fileData]
+                );
+                return false;
+            }
+        }
+
+        return false;
     }
 
     protected function getParamsForStork(): array
@@ -158,34 +186,23 @@ class MerchantIssued extends Mailable
             'template_name' => $this->view,
             'template_namespace' => 'payments_payment_links',
             'org_id' => $this->data['org']['id'],
-            'params' => $this->data
+            'params' => $this->data,
+            'attachments' => [
+                [
+                    "file_id" => $this->fileData['file_id'],
+                    "display_name" => $this->fileData['name'],
+                    "extension" => "pdf"
+                ]
+            ]
         ];
     }
-
-    public function isSendingPaymentLinkMailsSupported($merchantId,$view) : bool {
-        $traceCode = TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK_MERCHANT_ISSUED;
-
-        $experimentId = 'app.send_payment_link_emails_via_stork_merchant_issued';
-
-        try {
-            $app = \App::getFacadeRoot();
-            $properties = [
-                'id'            => $merchantId,
-                'experiment_id' => $app['config']->get($experimentId),
-                'request_data'  => json_encode(['merchant_id' => $merchantId , 'template_name' => $view])
-            ];
-            $response = $app['splitzService']->evaluateRequest($properties);
-            $variant = $response['response']['variant']['name'] ?? '';
-
-            $app['trace']->info($traceCode, [
-                'splitzUserResult' => $response,
-            ]);
-
-            return  $variant == "enable";
-
-        } catch (\Exception $e) {
-            $app['trace']->traceException($e, null, $traceCode);
-        }
-        return false;
+    protected function getParamsForFile(): array
+    {
+        return [
+            'channel'            => 'email',
+            'owner_id'           => $this->mid,
+            'owner_type'         => 'merchant',
+            'url_count'          => '1'
+        ];
     }
 }

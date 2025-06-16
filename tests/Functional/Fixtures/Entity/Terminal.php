@@ -2416,7 +2416,7 @@ class Terminal extends Base
         $defaultValues = [
             'id'                        => $termId,
             'merchant_id'               => 'LiveAccountMer',
-            'gateway'                   => Gateway::UPI_HDFCMINTOAK,
+            'gateway'                   => Gateway::HDFC_MINTOAK,
             'gateway_merchant_id'       => '222333',
             'gateway_merchant_id2'      => '001122',
             'card'                      => 0,
@@ -2427,7 +2427,7 @@ class Terminal extends Base
                 Type::OFFLINE           => '1',
                 Type::COLLECT           => '1',
             ],
-            'vpa'                       => 'test@hdfcbank'
+            'vpa'                       => 'test@mintoak'
         ];
         $attributes = array_merge($defaultValues, $attributes);
 

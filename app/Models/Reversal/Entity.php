@@ -3,6 +3,7 @@
 namespace RZP\Models\Reversal;
 
 use RZP\Models\Base;
+use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Payout;
 use RZP\Models\Merchant;
 use RZP\Models\Transfer;
@@ -16,14 +17,16 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
 use RZP\Constants\Entity as ConstantsEntity;
 
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait, AsvGetAttribute;
+    use NotesTrait, AsvGetAttribute, CmsGetAttribute;
     use HasBalance;
     use LinkedAccountNotesTrait;
+    use ExternalOwner;
 
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';

@@ -86,6 +86,8 @@ class Entity extends Base\PublicEntity
     const INSTANT  = 'instant';
     const DEFERRED = 'deferred';
 
+    const CLUBBED = 'clubbed';
+
     //Attribute lengths
     const NAME_LENGTH               = 50;
     const PAYMENT_METHOD_LENGTH     = 30;
@@ -112,6 +114,8 @@ class Entity extends Base\PublicEntity
     const UPI = 'upi';
 
     const INSTRUMENTS = 'instruments';
+
+    const RULES = 'rules';
 
     // This denotes `multiple` payment methods for an offer entity
     const MULTIPLE = 'multiple';
@@ -219,6 +223,7 @@ class Entity extends Base\PublicEntity
         self::PRODUCT_TYPE,
         self::UPI,
         self::INSTRUMENTS,
+        self::RULES,
 
         SubscriptionOfferEntity::APPLICABLE_ON,
         SubscriptionOfferEntity::NO_OF_CYCLES,
@@ -262,6 +267,7 @@ class Entity extends Base\PublicEntity
         self::PRODUCT_TYPE,
         self::UPI,
         self::INSTRUMENTS,
+        self::RULES,
         SubscriptionOfferEntity::APPLICABLE_ON,
         SubscriptionOfferEntity::NO_OF_CYCLES,
         SubscriptionOfferEntity::REDEMPTION_TYPE,
@@ -649,6 +655,11 @@ class Entity extends Base\PublicEntity
         $this->mergeCustomAttribute(self::UPI, [\RZP\Models\Upi\Turbo\Constants::PAYER_ACCOUNT_TYPE => $PayerAccountType]);
     }
 
+    public function setPayerAccountIssuer(array $PayerAccountIssuer)
+    {
+        $this->mergeCustomAttribute(self::UPI, [Constants::PAYER_ACCOUNT_ISSUER => $PayerAccountIssuer]);
+    }
+
     // Method to merge custom attributes
     protected function mergeCustomAttribute($key, array $values)
     {
@@ -682,6 +693,15 @@ class Entity extends Base\PublicEntity
         return $this->getDiscountedAmount($amount, $percentDiscount);
     }
 
+    public function calculateDiscountedAmountFromCalculatedBenefits($orderAmount, $calculatedBenefits)
+    {
+        if (isset($calculatedBenefits[Constants::TOTAL_DISCOUNT]))
+        {
+            $orderAmount = $orderAmount - $calculatedBenefits[Constants::TOTAL_DISCOUNT];
+        }
+        return $orderAmount;
+
+    }
     public function checkDiscountMismatch($apiDiscount, $oeBenefits): bool
     {
         $stringDisc = strval($apiDiscount);
@@ -868,6 +888,11 @@ class Entity extends Base\PublicEntity
     public function setInstruments($instruments)
     {
         $this->setAttribute(self::INSTRUMENTS, $instruments);
+    }
+
+    public function setRules($rules)
+    {
+        $this->setAttribute(self::RULES, $rules);
     }
 
     protected function setLinkedOfferIdsAttribute(array $linkedOfferIds)

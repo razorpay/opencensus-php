@@ -27,6 +27,8 @@ use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use Illuminate\Support\Facades\Request;
+use RZP\Models\User\Product;
+use RZP\Models\User\Role;
 
 class UserTest extends TestCase
 {
@@ -3230,6 +3232,123 @@ class UserTest extends TestCase
         $response = $r->invoke($this->coreMock, $merchants);
 
         $this->assertEquals($response[0]['banking_role'], 'owner');
+    }
+
+    public function testSelectMerchantsToLogin()
+    {
+        $core = new Core();
+
+        // Test data: array of merchants with different roles for different products
+        $userMerchants = [
+            [
+                'id' => '100001Razorpay',
+                'role' => 'owner',
+                'banking_role' => 'employee',
+                'product' => 'primary'
+            ],
+            [
+                'id' => '100002Razorpay',
+                'role' => 'owner',
+                'banking_role' => 'employee',
+                'product' => 'primary'
+            ],
+            [
+                'id' => '100003Razorpay',
+                'role' => 'employee',
+                'banking_role' => 'owner',
+                'product' => 'banking'
+            ],
+            [
+                'id' => '100004Razorpay',
+                'role' => 'employee',
+                'banking_role' => 'support',
+                'product' => 'banking'
+            ],
+            [
+                'id' => '100005Razorpay',
+                'role' => 'employee',
+                'banking_role' => 'support',
+                'product' => 'primary'
+            ]
+        ];
+
+        // Test case 1: Select merchants for primary product
+        $selectedMerchants = $core->selectMerchantsToLogin($userMerchants, 'primary');
+
+        // Should select the merchant where user has owner role for primary product
+        $this->assertCount(2, $selectedMerchants);
+        $this->assertEquals('100001Razorpay', $selectedMerchants[0]['id']);
+        $this->assertEquals('owner', $selectedMerchants[0]['role']);
+
+        // Test case 2: Select merchants for banking product
+        $selectedMerchants = $core->selectMerchantsToLogin($userMerchants, 'banking');
+
+        // Should select the merchant where user has owner role for banking product
+        $this->assertCount(1, $selectedMerchants);
+        $this->assertEquals('100003Razorpay', $selectedMerchants[0]['id']);
+        $this->assertEquals('owner', $selectedMerchants[0]['banking_role']);
+
+        // Test data: array of merchants with different roles for different products
+        $userMerchants = [
+            [
+                'id' => '100001Razorpay',
+                'role' => 'support',
+                'banking_role' => 'employee',
+                'product' => 'primary'
+            ],
+            [
+                'id' => '100002Razorpay',
+                'role' => 'operation',
+                'banking_role' => 'employee',
+                'product' => 'primary'
+            ],
+            [
+                'id' => '100003Razorpay',
+                'role' => 'employee',
+                'banking_role' => 'owner',
+                'product' => 'banking'
+            ]
+        ];
+        // Test case 3: Select merchants when product is not provided
+        $selectedMerchants = $core->selectMerchantsToLogin($userMerchants, '');
+        $this->assertCount(1, $selectedMerchants);
+        $this->assertEquals('100003Razorpay', $selectedMerchants[0]['id']);
+        $this->assertEquals('owner', $selectedMerchants[0]['banking_role']);
+
+
+        // Test data: array of merchants with different roles for different products
+        $userMerchants = [
+            [
+                'id' => '100001Razorpay',
+                'role' => 'support',
+                'banking_role' => 'employee',
+                'product' => 'primary'
+            ],
+            [
+                'id' => '100002Razorpay',
+                'role' => 'operation',
+                'banking_role' => 'employee',
+                'product' => 'primary'
+            ],
+            [
+                'id' => '100003Razorpay',
+                'role' => null,
+                'banking_role' => 'owner',
+                'product' => 'banking'
+            ],
+            [
+                'id' => '100003Razorpay',
+                'role' => '',
+                'banking_role' => 'owner',
+                'product' => 'banking'
+            ]
+        ];
+
+        // Test case 4: Select merchants when product is provided no owner
+        $selectedMerchants = $core->selectMerchantsToLogin($userMerchants, 'primary');
+        $this->assertCount(2, $selectedMerchants);
+        $this->assertEquals('100001Razorpay', $selectedMerchants[0]['id']);
+        $this->assertEquals('support', $selectedMerchants[0]['role']);
     }
 
     public function testSendOtpViaSmsAndEmail()

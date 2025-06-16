@@ -47,6 +47,11 @@ class Service extends Base\Service
         // validating input for create request
         (new Validator())->validateInput('org_admin_create', $input);
 
+        if (str_ends_with($input[Constant::UNIQUE_IDENTIFIER], Constant::AXIS_BANK_EMAIL_DOMAIN) === false)
+        {
+            $input[Constant::UNIQUE_IDENTIFIER] .= Constant::AXIS_BANK_EMAIL_DOMAIN;
+        }
+
         // transform input data since bank sending in diff format
         $transformedInput = $this->transformInputData($input);
 
@@ -65,7 +70,7 @@ class Service extends Base\Service
         }
 
         // verify roles and strip sign from roles
-        if (empty($input[Entity::ROLES]) === false) {
+        if (empty($transformedInput[Entity::ROLES]) === false) {
             Role\Entity::verifyIdAndStripSignMultiple($transformedInput[Entity::ROLES]);
         }
 
@@ -102,6 +107,11 @@ class Service extends Base\Service
         (new Validator())->validateInput('get_update_admins', $input);
 
         try {
+
+            if (str_ends_with($uniqueIdentifier, Constant::AXIS_BANK_EMAIL_DOMAIN) === false)
+            {
+                $uniqueIdentifier .= Constant::AXIS_BANK_EMAIL_DOMAIN;
+            }
 
             $adminsMeta = $this->repo->admins_meta->fetchByUniqueIdentifierOrFail($uniqueIdentifier);
 
@@ -177,6 +187,12 @@ class Service extends Base\Service
                 'method_name'       => __FUNCTION__,
                 'route_name'        => $this->app['api.route']->getCurrentRouteName(),
             ]);
+
+            // Append @axisbank.com to unique_identifier as that is the format of unique_identifier in admins_meta table
+            if (str_ends_with($id, Constant::AXIS_BANK_EMAIL_DOMAIN) === false)
+            {
+                $id .= Constant::AXIS_BANK_EMAIL_DOMAIN;
+            }
 
             // fetch admin meta by unique identifier
             $adminsMeta = $this->repo->admins_meta->fetchByUniqueIdentifierOrFail($id);

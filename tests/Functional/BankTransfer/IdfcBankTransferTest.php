@@ -8,6 +8,8 @@ use Mail;
 use Cache;
 use RZP\Http\Controllers\BankTransferController;
 use RZP\Models\Admin\Service;
+use RZP\Models\BankTransfer\Entity;
+use RZP\Models\BankTransfer\Processor;
 use RZP\Models\Feature;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Terminal\Type;
@@ -28,6 +30,7 @@ use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 use RZP\Models\BankTransfer\Service as BankTransferService;
+use RZP\Trace\TraceCode;
 
 
 class IdfcBankTransferTest extends TestCase
@@ -67,6 +70,31 @@ class IdfcBankTransferTest extends TestCase
         $this->fixtures->on('live')->merchant->edit('BankAccountMer', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
         $this->createTerminals();
         $this->bankAccount = $this->createVirtualAccount();
+
+        // Add the missing method to the xpayrollMock
+        $this->xpayrollMock = $this->getMockBuilder(\stdClass::class)
+            ->addMethods(['sendPayrollTpvRequestAndGetResponse'])
+            ->getMock();
+
+        $this->traceMock = $this->getMockBuilder(\stdClass::class)
+            ->addMethods(['info'])
+            ->getMock();
+
+        $this->processor = $this->getMockBuilder(Processor::class)
+            ->disableOriginalConstructor()
+            ->addMethods(['app'])
+            ->getMock();
+
+        // Use reflection to set protected properties
+        $reflection = new \ReflectionClass($this->processor);
+
+        $traceProperty = $reflection->getProperty('trace');
+        $traceProperty->setAccessible(true);
+        $traceProperty->setValue($this->processor, $this->traceMock);
+
+        $appProperty = $reflection->getProperty('app');
+        $appProperty->setAccessible(true);
+        $appProperty->setValue($this->processor, ['xpayroll' => $this->xpayrollMock]);
     }
 
     protected function createVirtualAccount($mode = 'test', $merchantId = '10000000000000', $additionalFields = [])
@@ -1071,6 +1099,538 @@ class IdfcBankTransferTest extends TestCase
         $this->assertEquals("INVALID_DATA", $response['errorDesc']);
     }
 
+    public function testHandlePayrollTpvValidationFlowValidResponse()
+    {
+        $bankTransfer = $this->createMock(Entity::class);
+        $merchantID = 'merchant123';
+        $balanceID = 'balance123';
+        $isValidationFlow = true;
+
+        $this->xpayrollMock->expects($this->once())
+            ->method('sendPayrollTpvRequestAndGetResponse')
+            ->with($bankTransfer, $this->anything())
+            ->willReturn(['is_valid' => true]);
+
+        $this->traceMock->expects($this->once())
+            ->method('info')
+            ->with(TraceCode::TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED);
+
+        $result = $this->processor->handlePayrollTpv($bankTransfer, $merchantID, $balanceID, $isValidationFlow);
+
+        $this->assertTrue($result);
+    }
+
+    public function testHandlePayrollTpvValidationFlowInvalidResponse()
+    {
+        $bankTransfer = $this->createMock(Entity::class);
+        $merchantID = 'merchant123';
+        $balanceID = 'balance123';
+        $isValidationFlow = true;
+
+        $this->xpayrollMock->expects($this->once())
+            ->method('sendPayrollTpvRequestAndGetResponse')
+            ->with($bankTransfer, $this->anything())
+            ->willReturn(['is_valid' => false]);
+
+        $this->traceMock->expects($this->once())
+            ->method('info')
+            ->with(TraceCode::NON_TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED);
+
+        $result = $this->processor->handlePayrollTpv($bankTransfer, $merchantID, $balanceID, $isValidationFlow);
+
+        $this->assertFalse($result);
+    }
+
+    public function testHandlePayrollTpvNonValidationFlow()
+    {
+        $bankTransfer = $this->createMock(Entity::class);
+        $merchantID = 'merchant123';
+        $balanceID = 'balance123';
+        $isValidationFlow = false;
+
+        $this->traceMock->expects($this->once())
+            ->method('info')
+            ->with(TraceCode::TPV_SKIP_FOR_PAYROLL_IN_NOTIFICATION_API);
+
+        $result = $this->processor->handlePayrollTpv($bankTransfer, $merchantID, $balanceID, $isValidationFlow);
+
+        $this->assertTrue($result);
+    }
+
+    public function testIdfcValidationCallbackForFundLoading_WithVANumberValidationFailure()
+    {
+        $testData = $this->testData['testValidateBankTransferIdfc'];
+        $accountNumber = $this->getIdfcVaBankAccount('2222'); //added random prefix for failure scenario
+        $testData['request']['content']['VANum'] = $accountNumber;
+        $testData['request']['content']['remitterBankifsc'] = "";
+        $balance1 = $this->getDbEntity('balance',
+            [
+                'merchant_id' => '10000000000000',
+            ], 'live');
+
+        // This makes sure that the refunds for failed fund loadings on X happen via X
+        (new Service)->setConfigKeys([ConfigKey::RX_FUND_LOADING_REFUNDS_VIA_X => true]);
+
+        $this->fixtures->on('test')->edit('balance', $balance1->getId(), [
+            'type'           => 'banking',
+            'account_number' => $accountNumber,
+        ]);
+
+        $ba = $this->fixtures->on('test')->create('bank_account',
+            [
+                'merchant_id'    => '10000000000000',
+                'entity_id'      => '100000000000va',
+                'type'           => 'virtual_account',
+                'ifsc_code'      => 'IDFB0020101',  //validate if its correct ifsc code
+                'account_number' => $accountNumber,
+            ]);
+
+        $this->fixtures->on('test')->create('virtual_account',
+            [
+                'id'              => '100000000000va',
+                'merchant_id'     => '10000000000000',
+                'status'          => 'active',
+                'bank_account_id' => $ba->getId(),
+                'balance_id'      => $balance1->getId(),
+            ]);
+
+        $this->fixtures->on('test')->create('banking_account_tpv',
+            [
+                'balance_id' => $balance1->getId(),
+                'status'     => 'approved',
+                'payer_ifsc' => 'HDFC0003981',
+                'payer_account_number' => '45612345678900987'
+            ]);
+
+        $bankTransferService = new BankTransferService();
+        $iv = random_string_special_chars(16);
+        $encryptedData = $bankTransferService->encryptIdfcBankCallbackData($testData['request']['content'], $iv);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url' => '/ecollect/validate/idfc/test',
+            'method' => 'POST',
+            'server' => $testData['request']['server'],
+            'raw' => $encryptedData, // Raw data goes here
+            'headers' => [
+                'Content-Type' => 'text/plain'
+            ],
+        ];
+
+        $encryptedFullResponse = $this->makeRequestAndGetRawContent($request);
+        $response = $bankTransferService->decryptIdfcBankCallbackData((string)$encryptedFullResponse->getContent());
+
+        $this->assertEquals('F' ,$response['status']);
+        $this->assertEquals('Failed' ,$response['statusDesc']);
+        $this->assertEquals('02' , $response['errorCode']);
+        $this->assertEquals('INVALID_DATA' , $response['errorDesc']);
+        $this->assertEquals($testData['request']['content']['VANum'] ,$response['vaNum']);
+        $this->assertEquals('HDFB201907090000000112' ,$response['bankRef']);
+    }
+
+    public function testIdfcNotificationCallbackForFundLoading_WithVANumberValidationFailure()
+    {
+        $testData = $this->testData['testProcessBankTransferIdfc'];
+
+        $accountNumber = $this->getIdfcVaBankAccount('2222'); //added random prefix for failure scenario
+        $testData['request']['content']['vaNumber'] = $accountNumber;
+        $testData['request']['content']['productCode'] = "IIMPS";
+        $current_time = new DateTime();
+        $formatted_time = $current_time->format('d-M-y h.i.s.u A');
+        $testData['request']['content']['creditGenerationTime'] = $formatted_time;
+        $testData['request']['content']['ifscCode'] = "";
+
+        $balance1 = $this->getDbEntity('balance',
+            [
+                'merchant_id' => '10000000000000',
+            ], 'live');
+
+        // This makes sure that the refunds for failed fund loadings on X happen via X
+        (new Service)->setConfigKeys([ConfigKey::RX_FUND_LOADING_REFUNDS_VIA_X => true]);
+
+        $this->fixtures->on('test')->edit('balance', $balance1->getId(), [
+            'type'           => 'banking',
+            'account_number' => $accountNumber,
+        ]);
+
+        $ba = $this->fixtures->on('test')->create('bank_account',
+            [
+                'merchant_id'    => '10000000000000',
+                'entity_id'      => '100000000000va',
+                'type'           => 'virtual_account',
+                'ifsc_code'      => 'IDFB0020101',  //validate if its correct ifsc code
+                'account_number' => $accountNumber,
+            ]);
+
+        $this->fixtures->on('test')->create('virtual_account',
+            [
+                'id'              => '100000000000va',
+                'merchant_id'     => '10000000000000',
+                'status'          => 'active',
+                'bank_account_id' => $ba->getId(),
+                'balance_id'      => $balance1->getId(),
+            ]);
+        $this->fixtures->on('test')->create('banking_account_tpv',
+            [
+                'balance_id' => $balance1->getId(),
+                'status'     => 'approved',
+                'payer_ifsc' => 'HDFC0003981',
+                'payer_account_number' => '45612345678900987'
+            ]);
+
+        $bankTransferService = new BankTransferService();
+        $iv = random_string_special_chars(16);
+        $encryptedData = $bankTransferService->encryptIdfcBankCallbackData($testData['request']['content'], $iv);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url' => '/ecollect/notify/idfc/test',
+            'method' => 'POST',
+            'server' => $testData['request']['server'],
+            'raw' => $encryptedData, // Raw data goes here
+            'headers' => [
+                'Content-Type' => 'text/plain'
+            ],
+        ];
+
+        $encryptedFullResponse = $this->makeRequestAndGetRawContent($request);
+        $response = $bankTransferService->decryptIdfcBankCallbackData((string)$encryptedFullResponse->getContent());
+
+        $this->assertEquals('F' ,$response['status']);
+        $this->assertEquals('Failure' ,$response['statusDesc']);
+        $this->assertEquals('1001' , $response['errorCode']);
+        $this->assertEquals('INVALID_DATA' , $response['errorDesc']);
+        $this->assertEquals($testData['request']['content']['vaNumber'] ,$response['corRefNo']);
+        $this->assertEquals('HDFB201907090000000112' ,$response['ReqrefNo']);
+    }
+
+    public function createCollectXVirtualAccount(
+        $mode = 'test',
+        $merchantID = '10000000000000',
+        $receivers = ['bank_account'],
+        $gateway = 'idfc')
+    {
+        // enabling collectx feature for the merchant
+        $this->fixtures->merchant->addFeatures([Feature\Constants::COLLECTX_ENABLED]);
+
+        (new AdminService())->setConfigKeys([ConfigKey::COLLECTX_SERIES_PREFIX => [
+            $merchantID => 'COLLECTX'
+        ]]);
+
+        // creating banking balance entity with type direct
+        $this->fixtures->create(
+            'balance',
+            [
+                'type'             => 'banking',
+                'merchant_id'      => $merchantID,
+                'balance'          => 0,
+                'account_type'     => 'direct'
+            ]);
+
+        // adding minimum fee credit balance for collectx payment check
+        $this->fixtures->create('credits', ['merchant_id' => $merchantID, 'value' => 500 , 'type' => 'fee']);
+
+        // creating terminal for the merchant
+        if (in_array('bank_account', $receivers)) {
+            $bankTransferTerminalAttributes = [
+                'id' => '10000000000001',
+                'gateway' => "bt_" . $gateway,
+                'merchant_id' => $merchantID,
+                'gateway_merchant_id' => 'COLLECTX',
+                'bank_transfer' => 1,
+                'enabled' => 1,
+                'type' => [
+                    Type::NON_RECURRING => '1',
+                    Type::NUMERIC_ACCOUNT => '1',
+                    Type::DIRECT_SETTLEMENT_WITH_REFUND => '1'
+                ],
+            ];
+
+            $this->fixtures->on('test')->create('terminal:bank_account_terminal', $bankTransferTerminalAttributes);
+        }
+
+        if (in_array('vpa', $receivers))
+        {
+            $upiTerminalAttributes = [
+                'id'                            => '10000000000002',
+                'gateway'                       => "upi_".$gateway,
+                'merchant_id'                   => $merchantID,
+                'gateway_merchant_id'           => 'CXTEST.',
+                'upi'                           => 1,
+                'virtual_upi_handle'            => $gateway."ltd",
+                'enabled'                       => 1,
+                'type'                          => [
+                    Type::NON_RECURRING                 => '1',
+                    Type::NUMERIC_ACCOUNT               => '1',
+                    Type::DIRECT_SETTLEMENT_WITH_REFUND => '1'
+                ],
+            ];
+
+            // creating virtual_vpa_prefix entity for vpa type VA use case
+            $this->fixtures->create('virtual_vpa_prefix', [
+                'merchant_id'   => $merchantID,
+                'prefix'        => 'cxtest.',
+                'terminal_id'   => '10000000000002']);
+
+            $this->fixtures->on('test')->create('terminal:bank_account_terminal', $upiTerminalAttributes);
+        }
+
+        $request = [
+            'url'     => '/virtual_accounts',
+            'method'  => 'post',
+            'content' => [
+                'receivers' => [
+                    'types' => $receivers
+                ],
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function enableSplitzExperiment($experimentName, $id, $variantName = 'enable', $requestData = null): void
+    {
+        $input = [
+            "id" => $id,
+            'experiment_name' => $experimentName
+        ];
+
+        if ($requestData != null) {
+            $input['request_data'] = json_encode($requestData);
+        }
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $variantName,
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+    }
+
+    public function testIdfcValidationCallbackForCollectx() {
+        $testData = $this->testData['testValidateBankTransferIdfc'];
+
+        $response = $this->createCollectXVirtualAccount(receivers: ['bank_account']);
+
+        $beneAccountNo = $response['receivers'][0]['account_number'];
+
+        $testData['request']['content']['VANum'] = $beneAccountNo;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $merchantID = '10000000000000';
+
+        $this->enableSplitzExperiment(
+            experimentName: RazorxTreatment::COLLECTX_IDFC_PAYMENT_TRANSFER_RAMP_UP,
+            id: $merchantID,
+            requestData: ['id' => $merchantID]);
+
+        $bankTransferService = new BankTransferService();
+        $iv = random_string_special_chars(16);
+        $encryptedData = $bankTransferService->encryptIdfcBankCallbackData($testData['request']['content'], $iv);
+
+        $request = [
+            'url' => '/ecollect/validate/idfc/test',
+            'method' => 'post',
+            'raw' => $encryptedData,
+            'server' => [
+                'HTTP_XorgToken' => 'RANDOM_IDFC_SECRET',
+            ]
+        ];
+
+        $this->ba->idfcAuth();
+
+        $encryptedFullResponse = $this->makeRequestAndGetRawContent($request);
+        $response = $bankTransferService->decryptIdfcBankCallbackData((string)$encryptedFullResponse->getContent());
+
+        $this->assertEquals('000', $response['status']);
+        $this->assertEquals('Success', $response['statusDesc']);
+        $this->assertEquals($testData['response']['content']['errorCode'], $response['errorCode']);
+        $this->assertEquals($testData['response']['content']['errorDesc'], $response['errorDesc']);
+        $this->assertEquals($testData['request']['content']['VANum'],$response['vANum']);
+        $this->assertEquals($testData['request']['content']['bankRef'],$response['bankRef']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertNotNull($bankTransferRequest);
+        $this->assertFalse($bankTransferRequest['is_created']);
+    }
+
+    public function testIdfcNotificationCallbackForCollectxForIMPSMode() {
+        $testData = $this->testData['testProcessBankTransferIdfc'];
+
+        $response = $this->createCollectXVirtualAccount(receivers: ['bank_account']);
+
+        $beneAccountNo = $response['receivers'][0]['account_number'];
+
+        $testData['request']['content']['vaNumber'] = $beneAccountNo;
+
+        $current_time = new DateTime();
+        $formatted_time = $current_time->format('d-M-y h.i.s.u A');
+        $testData['request']['content']['creditGenerationTime'] = $formatted_time;
+
+        $testData['request']['content']['ifscCode'] = "";
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $merchantID = '10000000000000';
+
+        $this->enableSplitzExperiment(
+            experimentName: RazorxTreatment::COLLECTX_IDFC_PAYMENT_TRANSFER_RAMP_UP,
+            id: $merchantID,
+            requestData: ['id' => $merchantID]);
+
+        $bankTransferService = new BankTransferService();
+        $iv = random_string_special_chars(16);
+        $encryptedData = $bankTransferService->encryptIdfcBankCallbackData($testData['request']['content'], $iv);
+
+        $request = [
+            'url' => '/ecollect/notify/idfc/test',
+            'method' => 'post',
+            'raw' => $encryptedData,
+            'server' => [
+                'HTTP_XorgToken' => 'RANDOM_IDFC_SECRET',
+            ]
+        ];
+
+        $this->ba->idfcAuth();
+
+        $encryptedFullResponse = $this->makeRequestAndGetRawContent($request);
+        $response = $bankTransferService->decryptIdfcBankCallbackData((string)$encryptedFullResponse->getContent());
+
+        $this->assertEquals('S', $response['status']);
+        $this->assertEquals('Success', $response['statusDesc']);
+        $this->assertEquals($testData['response']['content']['errorCode'], $response['errorCode']);
+        $this->assertEquals($testData['response']['content']['errorDesc'], $response['errorDesc']);
+        $this->assertEquals($testData['request']['content']['vaNumber'], $response['corRefNo']);
+        $this->assertEquals('HDFB201907090000000112', $response['ReqrefNo']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertNotNull($bankTransferRequest);
+        $this->assertTrue($bankTransferRequest['is_created']);
+        $this->assertEquals('IMPS',  $bankTransferRequest['mode']);
+        $this->assertEquals('',  $bankTransferRequest['payer_ifsc']);
+        $this->assertEquals($beneAccountNo, $bankTransferRequest['payee_account']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['utr'], $testData['request']['content']['utrNo']);
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['utrNo']);
+        $this->assertEquals(50000, $bankTransfer['amount']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals($testData['request']['content']['remitterAccountNumber'], $payerBankAccount['account_number']);
+        $this->assertEquals("", $payerBankAccount['ifsc']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals('bt_idfc', $payment['gateway']);
+        $this->assertEquals('10000000000001', $payment['terminal_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('collectx', $payment['reference14']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertTrue($payment['auto_captured']);
+
+        $txn =  $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $txn['entity_id']);
+        $this->assertEquals(0, $txn['credit']);
+    }
+
+    public function testIdfcNotificationCallbackForCollectxForNEFTMode() {
+        $testData = $this->testData['testProcessBankTransferIdfc'];
+
+        $response = $this->createCollectXVirtualAccount(receivers: ['bank_account']);
+
+        $beneAccountNo = $response['receivers'][0]['account_number'];
+
+        $testData['request']['content']['vaNumber'] = $beneAccountNo;
+        $testData['request']['content']['productCode'] = "INEFT";
+
+        $current_time = new DateTime();
+        $formatted_time = $current_time->format('d-M-y h.i.s.u A');
+        $testData['request']['content']['creditGenerationTime'] = $formatted_time;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $merchantID = '10000000000000';
+
+        $this->enableSplitzExperiment(
+            experimentName: RazorxTreatment::COLLECTX_IDFC_PAYMENT_TRANSFER_RAMP_UP,
+            id: $merchantID,
+            requestData: ['id' => $merchantID]);
+
+        $bankTransferService = new BankTransferService();
+        $iv = random_string_special_chars(16);
+        $encryptedData = $bankTransferService->encryptIdfcBankCallbackData($testData['request']['content'], $iv);
+
+        $request = [
+            'url' => '/ecollect/notify/idfc/test',
+            'method' => 'post',
+            'raw' => $encryptedData,
+            'server' => [
+                'HTTP_XorgToken' => 'RANDOM_IDFC_SECRET',
+            ]
+        ];
+
+        $this->ba->idfcAuth();
+
+        $encryptedFullResponse = $this->makeRequestAndGetRawContent($request);
+        $response = $bankTransferService->decryptIdfcBankCallbackData((string)$encryptedFullResponse->getContent());
+
+        $this->assertEquals('S', $response['status']);
+        $this->assertEquals('Success', $response['statusDesc']);
+        $this->assertEquals($testData['response']['content']['errorCode'], $response['errorCode']);
+        $this->assertEquals($testData['response']['content']['errorDesc'], $response['errorDesc']);
+        $this->assertEquals($testData['request']['content']['vaNumber'], $response['corRefNo']);
+        $this->assertEquals('HDFB201907090000000112', $response['ReqrefNo']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertNotNull($bankTransferRequest);
+        $this->assertTrue($bankTransferRequest['is_created']);
+        $this->assertEquals('NEFT',  $bankTransferRequest['mode']);
+        $this->assertEquals('HDFC0003981',  $bankTransferRequest['payer_ifsc']);
+        $this->assertEquals($beneAccountNo, $bankTransferRequest['payee_account']);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['utr'], $testData['request']['content']['utrNo']);
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['utrNo']);
+        $this->assertEquals(50000, $bankTransfer['amount']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals($testData['request']['content']['remitterAccountNumber'], $payerBankAccount['account_number']);
+        $this->assertEquals('HDFC0003981' , $payerBankAccount['ifsc']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals('bt_idfc', $payment['gateway']);
+        $this->assertEquals('10000000000001', $payment['terminal_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('collectx', $payment['reference14']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertTrue($payment['auto_captured']);
+
+        $txn =  $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($payment['id'], $txn['entity_id']);
+        $this->assertEquals(0, $txn['credit']);
+    }
 }
 
 

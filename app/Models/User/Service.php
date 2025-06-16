@@ -8,6 +8,7 @@ use Cache;
 use Config;
 use Carbon\Carbon;
 use Lib\PhoneBook;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Jobs\LinkSubMerchant;
 use RZP\Jobs\NotifyRas;
@@ -47,6 +48,7 @@ use RZP\Models\Merchant\BusinessDetail as MBD;
 use RZP\Jobs\PartnerSubmerchantLinkingOauthJob;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\MerchantApplications\Repository as MerchantAppRepo;
 use RZP\Jobs\PartnerSubmerchantLinkingReferralJob;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -65,8 +67,10 @@ use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 use RZP\User\Constants as UserConstants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Environment;
+use RZP\Models\Base\PublicCollection;
 
 use function Clue\StreamFilter\append;
+use function GuzzleHttp\Promise\exception_for;
 
 class Service extends Base\Service
 {
@@ -204,7 +208,7 @@ class Service extends Base\Service
 
         unset($input[DeviceDetail\Entity::SIGNUP_CAMPAIGN]);
 
-        $heimdallTokenData = $this->handleHeimdallInvitation($input);
+        $heimdallTokenData = $this->handleHeimdallInvitation($input, $user);
 
         $countryCode = $input['country_code'] ?? 'IN';
 
@@ -552,7 +556,7 @@ class Service extends Base\Service
         return ['user' => $user, 'invitation' => $invitation, 'invitationToken' => $invitationToken];
     }
 
-    protected function handleHeimdallInvitation(array &$input)
+    protected function handleHeimdallInvitation(array &$input, &$user = null)
     {
         $heimdallInvitationToken = $input['merchant_invitation'] ?? null;
 
@@ -571,6 +575,8 @@ class Service extends Base\Service
 
                 (new AdminLead\Service)->editInvitation(
                     $heimdallTokenData[AdminLead\Entity::ORG_ID], $heimdallTokenData[AdminLead\Entity::ID], $tokenSignUpInput);
+
+                $this->isUserExistsForCustomInvite($heimdallTokenData, $user);
             }
 
             unset($input['merchant_invitation']);
@@ -713,6 +719,21 @@ class Service extends Base\Service
             $orgID = $input[Merchant\Entity::ORG_ID];
         }
 
+        $requestedProduct =$input['product']??null;
+
+        //For X on USL if requested product is banking_onboarding then setting the originproduct and
+        //x_verify_email flag(used at multiple places for X) to true
+        if($requestedProduct == DeviceDetailConstants::PRODUCT_BANKING_ONBOARDING) {
+
+            $this->auth->setRequestOriginProduct(Product::BANKING);
+        }
+
+        $this->trace->info(TraceCode::USER_REGISTER, [
+            'signup_source'          =>$input[DeviceDetail\Entity::SIGNUP_SOURCE],
+            'signup_campaign'        =>$input[DeviceDetail\Entity::SIGNUP_CAMPAIGN],
+            'merchant_product'       =>$this->auth->getRequestOriginProduct(),
+        ]);
+
         $merchantInputData = [
             Merchant\Entity::NAME          => $businessName,
             Merchant\Entity::SIGNUP_SOURCE => $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
@@ -759,6 +780,8 @@ class Service extends Base\Service
         $isRequestFromXVerifyEmail = $this->isRequestFromXVerifyEmail($input);
 
         $inputData = ["isRequestFromXVerifyEmail" => $isRequestFromXVerifyEmail];
+
+        $this->skipEmailUniquenessCheckForCustomInvite($user ,$merchantInputData, $inputData);
 
         return $this->createMerchantFromUser(
             $merchantInputData,
@@ -1073,29 +1096,23 @@ class Service extends Base\Service
         return in_array($product, [DeviceDetailConstants::PRODUCT_PG_ONBOARDING, DeviceDetailConstants::CROSS_BORDER_ONBOARDING, DeviceDetailConstants::SUBMERCHANT_ONBOARDING]);
     }
 
-    public function handlePGOSOnboarding(MerchantEntity $merchant, $signupCampaign, $countryCode, $input, $user)
+    private function shouldOnboardViaPGOSForNonOAuthMerchants(MerchantEntity $merchant, $signupCampaign, $countryCode): bool
     {
         $shouldOnboardViaPGOS = false;
 
+        if (in_array($signupCampaign, DeviceDetail\Constants::PGOS_ENABLED_SIGNUP_CAMPAIGNS))
+        {
+            return true;
+        }
+
         $merchantCore = new Merchant\Core();
 
-        $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? '';
-
-        $this->trace->info(TraceCode::PGOS_ONBOARDING, [
-            'merchant_id'    => $merchant->getId(),
-            'workflowType'   => $workflowType,
-            'signupCampaign' => $signupCampaign,
-            'countryCode'    => $countryCode,
-            'input'          => $input
-        ]);
-
-        //Determine whether onboarding should be done via PGOS or not
         if ($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING AND $countryCode === 'IN')
         {
 
             if ($merchantCore->isPOSSubMerchant($merchant))
             {
-                $shouldOnboardViaPGOS = true;
+                return true;
             }
             else
             {
@@ -1107,14 +1124,14 @@ class Service extends Base\Service
                 {
                     if ($merchantCore->isRegularMerchant($merchant))
                     {
-                        $shouldOnboardViaPGOS = true;
+                        return true;
                     }
                     else if (
                         $merchantCore->isRegularSubmerchant($merchant)
                         and $this->pgosProxyController->isPGOSEnabledForPGSubmerchant($merchant)
                     )
                     {
-                        $shouldOnboardViaPGOS = true;
+                        return true;
                     }
                 }
             }
@@ -1135,11 +1152,34 @@ class Service extends Base\Service
             }
         }
 
-        // TODO Phantom Onboarding should also go to PGOS
-        if (in_array($signupCampaign, DeviceDetail\Constants::PGOS_ENABLED_SIGNUP_CAMPAIGNS))
-        {
-            $shouldOnboardViaPGOS = true;
-        }
+        return $shouldOnboardViaPGOS;
+    }
+
+    private function shouldOnboardViaPGOSForOAuthMerchants($merchant, $input, $signupCampaign): bool
+    {
+        $countryCode = $input[Merchant\Entity::COUNTRY_CODE] ?? 'IN';
+
+        $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? '';
+
+        return (($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING
+            and (new Merchant\Core)->isRegularMerchant($merchant) === true
+            and $countryCode === 'IN') || ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING ||
+            $this->isAssistedOnboardingSignupCampaign($signupCampaign) ||
+            $signupCampaign === DeviceDetailConstants::RIZE_INCORPORATION));
+    }
+
+    public function handlePGOSOnboarding(MerchantEntity $merchant, $signupCampaign, $countryCode, $input, $user)
+    {
+        $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? '';
+
+        $this->trace->info(TraceCode::PGOS_ONBOARDING, [
+            'merchant_id'    => $merchant->getId(),
+            'workflowType'   => $workflowType,
+            'signupCampaign' => $signupCampaign,
+            'countryCode'    => $countryCode,
+            'input'          => $input
+        ]);
+
         if (empty(DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign]) === false)
         {
             $input[DeviceDetail\Constants::PRODUCT] = $input[DeviceDetail\Constants::PRODUCT] ?? (DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::PRODUCT] ?? '');
@@ -1147,11 +1187,11 @@ class Service extends Base\Service
             $workflowType = $input[DeviceDetail\Constants::WORKFLOW_TYPE] ?? (DeviceDetailConstants::SIGNUP_CAMPAIGN_ONBOARDING_MAPPING[$signupCampaign][DeviceDetailConstants::WORKFLOW_TYPE] ?? '');
         }
 
+        $shouldOnboardViaPGOS = $this->shouldOnboardViaPGOSForNonOAuthMerchants($merchant, $signupCampaign, $countryCode);
         if ($workflowType === DeviceDetail\Constants::MODULAR_ONBOARDING)
         {
             $shouldOnboardViaPGOS = true;
         }
-
         if ($shouldOnboardViaPGOS === false)
         {
             return;
@@ -1412,13 +1452,7 @@ class Service extends Base\Service
         //Determine whether onboarding should be done via PGOS or not
         //Not checking the experiment here because FE checks the experiment
         //All merchants who onboard via OAuth and FE sends signup campaign as EASY_ONBOARDING, needs to be onboarded via PGOS
-        if (($signupCampaign === DeviceDetail\Constants::EASY_ONBOARDING
-            and (new Merchant\Core)->isRegularMerchant($merchant) === true
-                and $countryCode === 'IN') ||
-            ($workflowType === DeviceDetailConstants::MODULAR_ONBOARDING ||
-            $this->isAssistedOnboardingSignupCampaign($signupCampaign) ||
-            $signupCampaign === DeviceDetailConstants::RIZE_INCORPORATION))
-
+        if ($this->shouldOnboardViaPGOSForOAuthMerchants($merchant, $input, $signupCampaign))
         {
             $shouldOnboardViaPGOS = true;
         }
@@ -1562,7 +1596,13 @@ class Service extends Base\Service
         return $existingDetails;
     }
 
-
+    /**
+     * Pushes the SUBMERCHANT_SIGNUP event to Segment.
+     *
+     * @param Merchant\Entity $partnerMerchant The partner merchant entity.
+     * @param string          $subMerchantId   The ID of the sub-merchant.
+     * @param string          $referralCode    The referral code used.
+     */
     public function processReferralCode(string $merchantId, string $referralCode, bool $withRetry = true): array
     {
         try
@@ -1594,12 +1634,13 @@ class Service extends Base\Service
             $merchant = $this->repo->merchant->findOrFail($merchantId);
 
             if ($withRetry) {
-                $detailService->applyReferralPartnerWithRetry($merchant, $referralInput, false);
+                $detailService->applyReferralPartnerWithRetry($merchant, $referralInput, true);
             } else {
-                $detailService->applyReferralPartner($merchant, $referralInput, false);
+                $detailService->applyReferralPartner($merchant, $referralInput, true);
             }
 
             $this->trace->count(Merchant\Metric::SUBMERCHANT_SIGNUP_LINKING_SUCCESS_TOTAL);
+
             return $referralInput;
         }
         catch (\Exception $e)
@@ -1836,12 +1877,37 @@ class Service extends Base\Service
         // Remove this when signup experiment for X is ramped up.
         $isRequestFromXVerifyEmail = $inputData['isRequestFromXVerifyEmail'] ?? false;
 
+        // Check whether business banking is enabled for the merchant to determine USL behavior on X platform
+        $isBbPlusEnabledOnUsl = false;
+        if ($merchant !== null)
+        {
+            try
+            {
+                $isBbPlusEnabledOnUsl = $merchant->isBusinessBankingEnabled();
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(TraceCode::BUSINESS_BANKING_CHECK_FAILED, [
+                    'error' => $e->getMessage(),
+                    'merchantId' => $merchant->getId(),
+                    'userId' => $user->getId()
+                ]);
+            }
+        }
+
+        $this->trace->info(TraceCode::BUSINESS_BANKING_STATUS_CHECK, [
+            'isBusinessBanking' => $isBbPlusEnabledOnUsl,
+            'isRequestFromXVerifyEmail' => $isRequestFromXVerifyEmail,
+            'merchantId' => $merchant?->getId(),
+        ]);
+
         // If User is New Signed up with new auth flow and
         // Already Not confirmed and product is PG.
         // Or if the request is coming from new signup flow for X (v2)
 
         if ((($requestOriginProduct !== Product::BANKING) or
-             ($isRequestFromXVerifyEmail === true)) and
+             ($isRequestFromXVerifyEmail === true) or
+             ($isBbPlusEnabledOnUsl === true)) and
               $sendOtpEmail and
              ($user->getConfirmedAttribute() === false))
         {
@@ -2509,6 +2575,11 @@ class Service extends Base\Service
      */
     public function createMerchantForUser(array $input, bool $isInternal=false): array
     {
+        // if skip_workflow_create is true then don't create
+        // workflow return after merchant is created
+        $skipWorkflowCreate = $input['skip_workflow_create'];
+        unset($input['skip_workflow_create']);
+
         if ($isInternal)
         {
             $this->validator->validateInput('createMerchantInternal', $input);
@@ -2577,8 +2648,35 @@ class Service extends Base\Service
                 DeviceDetail\Entity::USER_ID            => $user['id'],
                 DeviceDetail\Entity::SIGNUP_CAMPAIGN    => $signupCampaign,
             ];
-
+            $merchantCore = new Merchant\Core();
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.workflow_segregation_store_user_signup_state'),
+            ];
+            $shouldStoreUserSignupState = $merchantCore->isSplitzExperimentEnable($properties,'enable');
+            if ($skipWorkflowCreate && $shouldStoreUserSignupState) {
+                // preserving user_signup_state inorder to identify the merchant state in usl, if user_signup_state is
+                // mid_created and FE doesn't receive workflow_details_v2 in onboarding Meta then FE will redirect merchants
+                // to Payment channel screen to create workflow.
+                $ddInput[DeviceDetail\Entity::METADATA] = [
+                    DeviceDetailConstants::USER_SIGNUP_STATE => 'mid_created'
+                ];
+            }
             (new DeviceDetail\Core)->createDeviceDetail($ddInput);
+        }
+
+        if ($user[Entity::SIGNUP_VIA_EMAIL] === 1)
+        {
+            $this->signUpSuccess($user, false, Constants::PASSWORD, null, $merchantId);
+        }
+        else if (empty($user[Entity::OAUTH_PROVIDER]) === true)
+        {
+            $this->signUpSuccess($user, false, Constants::OTP, null, $merchantId);
+        }
+
+        if ($skipWorkflowCreate)
+        {
+            return $data;
         }
 
         // Start the onboarding of merchant via PGOS
@@ -2598,9 +2696,6 @@ class Service extends Base\Service
                     'error_message' => $exception->getMessage()
                 ]);
             }
-
-            $signupMethod = Constants::PASSWORD;
-            $this->signUpSuccess($user, false, $signupMethod, null, $merchantId);
         } else if (empty($user[Entity::OAUTH_PROVIDER]) === true) {
             $input[Entity::CONTACT_MOBILE] = $user[Entity::CONTACT_MOBILE];
             if (!$this->isAssistedOnboardingSignupCampaign($signupCampaign)) {
@@ -2616,12 +2711,31 @@ class Service extends Base\Service
                     ]);
                 }
             }
-
-            $signupMethod = Constants::OTP;
-            $this->signUpSuccess($user, false, $signupMethod, null, $merchantId);
         }
 
         return $data;
+    }
+
+    public function getOnboardingService($input): array {
+        $this->validator->validateInput('getOnboardingService', $input);
+        $userId = $input[Entity::USER_ID];
+        $merchantId = $input[Entity::MERCHANT_ID];
+
+        $user = $this->repo->user->findOrFail($userId);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        $shouldOnboardViaPGOS = false;
+
+        if ($user[Entity::SIGNUP_VIA_EMAIL] === 1)
+        {
+            $shouldOnboardViaPGOS = $this->shouldOnboardViaPGOSForOAuthMerchants($merchant, $input, $input[DeviceDetail\Entity::SIGNUP_CAMPAIGN]);
+        }
+        else if (empty($user[Entity::OAUTH_PROVIDER]) === true)
+        {
+            $shouldOnboardViaPGOS = $this->shouldOnboardViaPGOSForNonOAuthMerchants($merchant, $input[DeviceDetail\Entity::SIGNUP_CAMPAIGN], $input[Merchant\Entity::COUNTRY_CODE]);
+        }
+
+        $service = $shouldOnboardViaPGOS === true ? "pgos" : "api";
+        return ['service' => $service];
     }
 
     public function get(string $id, array $input = []): array
@@ -2722,6 +2836,14 @@ class Service extends Base\Service
                 {
                     $response[DeviceDetail\Entity::SIGNUP_CAMPAIGN] = null;
                 }
+            }
+        }
+
+        if ($this->auth->getInternalApp() === 'pgos')
+        {
+            if (empty($user[Entity::OAUTH_PROVIDER]) === false)
+            {
+                $response[Entity::OAUTH_PROVIDER] = json_decode($user[Entity::OAUTH_PROVIDER]);
             }
         }
 
@@ -4618,19 +4740,45 @@ class Service extends Base\Service
 
         if (isset($input['user_ids']) === true and empty($input['user_ids']) === false)
         {
-            $users = $this->repo->user->getMultipleUsersByIDs($input['user_ids']);
+            $users = $this->repo->user->getMultipleUsersByIDsV2($input['user_ids']);
 
             foreach ($users as $user) {
-                $userMapping[$user['id']] = $user;
+                $userMapping[$user['id']] = $user->toArray();
+                $userMapping[$user['id']]['is_password_set'] = $user->getPassword() !== null;
             }
         }
 
         if (isset($input['user_emails']) === true and empty($input['user_emails']) === false)
         {
-            $users = $this->repo->user->getMultipleUsersByEmails($input['user_emails']);
+            $users = $this->repo->user->getMultipleUsersByEmailsV2($input['user_emails']);
 
             foreach ($users as $user) {
-                $userMapping[$user['email']] = $user;
+                $userMapping[$user['email']] = $user->toArray();
+                $userMapping[$user['email']]['is_password_set'] = $user->getPassword() !== null;
+            }
+        }
+
+        // Fetch users by mobile numbers if provided
+        if (isset($input['user_contacts']) === true and empty($input['user_contacts']) === false)
+        {
+            $mobiles = $input['user_contacts'];
+            $phoneMap = [];
+            $totalPhoneFormats = new PublicCollection();
+            foreach ($mobiles as $mobile)
+            {
+                $formats = (new PhoneBook($mobile))->getMobileNumberFormats();
+                foreach ($formats as $format) {
+                    $totalPhoneFormats->push($format);
+                    $phoneMap[$format] = $mobile;
+                }
+            }
+            $users = $this->repo->user->getMultipleUsersByMobilesV2($totalPhoneFormats->toArray());
+
+            foreach ($users as $user)
+            {
+                $phone = $phoneMap[$user[Entity::CONTACT_MOBILE]];
+                $userMapping[$phone] = $user->toArray();
+                $userMapping[$phone]['is_password_set'] = $user->getPassword() !== null;
             }
         }
 
@@ -4708,4 +4856,353 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * Get the user details for the given input
+     *
+     * @param array $input The input data containing the user_id/email/contact_mobile.
+     * @return array Response with users, merchant_users, user_device_details, and invitations.
+     * @throws Exception\BadRequestValidationFailureException If the input is invalid
+     */
+    public function getUserDetailsWithRelations(array $input): array
+    {
+        try {
+            $this->validator->validateInput(Validator::GET_USERS_WITH_RELATIONS, $input);
+
+            $users = [];
+
+            $response = [
+                'users' => [],
+                'merchant_users' => [],
+                'user_device_details' => [],
+                'invitations' => []
+            ];
+
+            if (isset($input['user_id']) === true || isset($input['email']) === true || isset($input['contact_mobile']) === true) {
+                if (isset($input['user_id']) === true) {
+                    $user = $this->repo->user->getUserFromId($input['user_id']);
+                    if ($user !== null) {
+                        $users[] = $user;
+                    }
+                } else if (isset($input['email']) === true) {
+                    $users = $this->repo->user->getMultipleUsersByEmails([$input['email']]);
+                } else if (isset($input['contact_mobile']) === true) {
+                    $users = $this->repo->user->getMultipleUsersByPhone($input['contact_mobile']);
+                }
+
+                if (empty($users) === false) {
+                    foreach ($users as $user) {
+                        $response['users'][] = $user;
+
+                        $merchantUsers = $this->repo->merchant_user->getMerchantUsersForUserId(array_get($user, 'id'));
+                        if (empty($merchantUsers) === false) {
+                            $response['merchant_users'] = array_merge($response['merchant_users'], $merchantUsers);
+                        }
+
+                        $deviceDetails = $this->repo->user_device_detail->getDeviceDetailsForUserId(array_get($user, 'id'));
+                        if (empty($deviceDetails) === false) {
+                            $response['user_device_details'] = array_merge($response['user_device_details'], $deviceDetails);
+                        }
+                    }
+                }
+            } else if (isset($input['merchant_id']) === true) {
+                $invitations = $this->repo->invitation->getInvitationsForMerchantId($input['merchant_id']);
+                foreach ($invitations as $invitation) {
+                    $invitation->id = intval($invitation->id);
+                }
+                if (isset($invitations) === true and empty($invitations) === false) {
+                    $response['invitations'] = array_merge($response['invitations'], $invitations);
+                }
+            }
+
+            return $response;
+
+        } catch (\Throwable $exception) {
+
+            throw new Exception\BadRequestValidationFailureException($exception->getMessage());
+
+        }
+    }
+
+    /**
+     * Upsert user details and their relations
+     *
+     * @param array $input The input data containing user details and relations
+     * @return array Response with the upserted data
+     * @throws Exception\BadRequestValidationFailureException If the input is invalid
+     */
+    public function upsertUserDetailsWithRelations(array $input): array
+    {
+        try {
+            $this->validator->validateInput(Validator::UPSERT_USER_DETAILS, $input);
+
+            $response = [
+                'user' => [],
+                'merchant_users' => [],
+                'user_device_details' => [],
+                'invitations' => []
+            ];
+
+            if (isset($input['user']) === true)
+            {
+                $userInput = $input['user'];
+
+                $userId = array_get($userInput, 'id');
+
+                if (empty($userId) === false)
+                {
+
+                    $user = $this->repo->user->getUsersById($userId);
+
+                    if (empty($user) === false)
+                    {
+                        if (empty($userInput['name']) === false)
+                        {
+                            $user->setName($userInput['name']);
+                        }
+
+                        $this->repo->saveOrFail($user);
+
+                    }
+
+                    $response['user'] = $user->toArrayPublic();
+
+                }
+            }
+
+            if (isset($input['merchant_users']) === true and is_array($input['merchant_users']) === true)
+            {
+                foreach ($input['merchant_users'] as $merchantUserInput)
+                {
+                    $merchantId = array_get($merchantUserInput, 'merchant_id');
+                    $userId = array_get($merchantUserInput, 'user_id');
+                    $product = array_get($merchantUserInput, 'product');
+                    $role = array_get($merchantUserInput, 'role');
+
+                    $merchantUser = $this->repo->merchant_user->getMerchantUsersForIdAndMerchantIdAndProduct(
+                        $userId,
+                        $merchantId,
+                        $product
+                    );
+
+                    if (empty($merchantUser) === false)
+                    {
+                        $merchantUser = $this->repo->merchant_user->updateMerchantUser($userId, $merchantId, $product, $role);
+                    }
+                    else
+                    {
+                        $merchantUser = $this->repo->merchant_user->createMerchantUserMappingforUser($userId, $merchantId, $role, $product);
+                    }
+
+                    $response['merchant_users'][] = $merchantUser;
+                }
+            }
+
+            if (isset($input['user_device_details']) === true and is_array($input['user_device_details']) === true)
+            {
+                foreach ($input['user_device_details'] as $deviceDetailData)
+                {
+                    $userId = array_get($deviceDetailData, 'user_id');
+                    $merchantId = array_get($deviceDetailData, 'merchant_id');
+
+                    $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserId($merchantId, $userId);
+
+                    if (empty($deviceDetail) === false)
+                    {
+                        $deviceDetail = $this->repo->user_device_detail->updateDeviceDetailForUser($deviceDetailData);
+                    }
+                    else
+                    {
+                        $deviceDetail = $this->repo->user_device_detail->createDeviceDetailForUser($deviceDetailData);
+                    }
+
+                    $response['user_device_details'][] = $deviceDetail;
+                }
+            }
+
+            if (isset($input['invitations']) === true and is_array($input['invitations']) === true)
+            {
+                foreach ($input['invitations'] as $invitationData)
+                {
+                    $id = array_get($invitationData, 'id');
+
+                    $invitation = $this->repo->invitation->getInvitationById($id);
+
+                    if (empty($invitation) === false)
+                    {
+                        $invitation = $this->repo->invitation->updateInvitation($invitationData);
+                    }
+                    else
+                    {
+                        $invitation = $this->repo->invitation->createInvitation($invitationData);
+                    }
+
+                    $response['invitations'][] = $invitation;
+                }
+            }
+
+            return $response;
+
+        } catch (\Throwable $exception) {
+            throw new Exception\BadRequestValidationFailureException($exception->getMessage());
+        }
+    }
+
+    /**
+     * @param array{
+     *     id: int,
+     *     product: string,
+     *     product_restricted: bool,
+     *     DEFAULT_MERCHANT_ID : string
+     * } $input Associative array with specific fields
+     *
+     * @return array
+     * @throws BadRequestException
+     */
+    public function getMerchantsOfUser(string $id,array $input) : array
+    {
+            (new Validator)->validateInput('get_users_merchants', $input);
+
+            $user = $this->repo->user->findOrFail($id);
+
+            if (empty($user)){
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
+            }
+
+            // core->get gets list of merchants using using following params in the input
+            // DEFAULT_MERCHANT_ID - parsed and handled in side the core->get
+            // X-ORG-HOSTNAME - added to context from basic auth middleware and used inside core->get
+            $userMerchants = $this->core->get($user,true,$input);
+
+            if( empty($userMerchants['merchants']) || count($userMerchants['merchants']) == 0 ){
+                $userMerchants['merchants'] = [];
+                return $userMerchants;
+            }
+
+            //if intent is auth/login, select the merchants with which user can login
+            if ($input['intent'] == 'auth') {
+
+                $product = empty($input['product']) ? "" : $input['product'];
+                $merchants = $this->core->selectMerchantsToLogin($userMerchants['merchants'], $product);
+                $userMerchants['merchants'] = $merchants;
+                return $userMerchants;
+            }
+
+            $userMerchants['merchants'] = $userMerchants[Entity::MERCHANTS];
+
+            return $userMerchants;
+    }
+
+    public function isUserExistsForCustomInvite($heimdallTokenData, &$user): void
+    {
+        $orgID = $heimdallTokenData[AdminLead\Entity::ORG_ID];
+
+        Org\Entity::verifyIdAndSilentlyStripSign($orgID);
+
+        $org = $this->repo->org->findOrFailPublic($orgID);
+
+        $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgID, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+        $vasOrgFeatureEnabled = $org->isFeatureEnabled(FeatureConstant::VAS_ORG_IDENTIFIER);
+
+        if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true) and (empty($user) === true))
+        {
+            $user = optional($this->repo->user->getUserFromEmail(strtolower($heimdallTokenData[AdminLead\Entity::EMAIL])))->toArray();
+        }
+    }
+
+   public function skipEmailUniquenessCheckForCustomInvite($user, $merchantInputData, &$inputData): void
+   {
+       $merchantOrgId = $merchantInputData[Merchant\Entity::ORG_ID];
+
+       Org\Entity::verifyIdAndSilentlyStripSign($merchantOrgId);
+
+       $org = $this->repo->org->findOrFailPublic($merchantOrgId);
+
+       $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($merchantOrgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+       $vasOrgFeatureEnabled = $org->isFeatureEnabled(FeatureConstant::VAS_ORG_IDENTIFIER);
+
+       if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true))
+       {
+           $this->user = $this->repo->user->find($user[Entity::ID]);
+
+           // Set the user verified to skip email verification for customized invite flow.
+           if($this->user->getConfirmedAttribute() === false)
+           {
+               $this->confirm($this->user->id);
+           }
+
+           // Skip the uniqueness check for merchant email
+           $inputData [Merchant\Entity::SKIP_EMAIL_UNIQUENESS_CHECK ] = true;
+       }
+   }
+
+    /**
+     * Delete user details and their relations
+     *
+     * @param array $input The input data containing user details and relations to delete
+     * @return array Response with the deleted data
+     * @throws Exception\BadRequestValidationFailureException If the input is invalid
+     */
+    public function deleteUserDetailsWithRelations(array $input): array
+    {
+        try {
+            $this->validator->validateInput(Validator::DELETE_USER_DETAILS, $input);
+
+            $response = [
+                'merchant_users' => 0,
+                'user_device_details' => 0,
+                'invitations' => 0
+            ];
+
+            if (isset($input['merchant_users']) === true and is_array($input['merchant_users']) === true)
+            {
+                foreach ($input['merchant_users'] as $merchantUserInput)
+                {
+                    $merchantId = array_get($merchantUserInput, 'merchant_id');
+                    $userId = array_get($merchantUserInput, 'user_id');
+                    $product = array_get($merchantUserInput, 'product');
+
+                    $merchantUserDeleted = $this->repo->merchant_user->deleteMerchantUsersForUserIdAndMerchantIdAndProduct(
+                        $userId,
+                        $merchantId,
+                        $product
+                    );
+
+                    $response['merchant_users'] += $merchantUserDeleted;
+                }
+            }
+
+            if (isset($input['user_device_details']) === true and is_array($input['user_device_details']) === true)
+            {
+                foreach ($input['user_device_details'] as $deviceDetailData)
+                {
+                    $userId = array_get($deviceDetailData, 'user_id');
+                    $merchantId = array_get($deviceDetailData, 'merchant_id');
+
+                    $deviceDetailDeleted = $this->repo->user_device_detail->deleteByMerchantIdAndUserId($merchantId, $userId);
+
+                    $response['user_device_details'] += $deviceDetailDeleted;
+
+                }
+            }
+
+            if (isset($input['invitations']) === true and is_array($input['invitations']) === true)
+            {
+                foreach ($input['invitations'] as $invitationData)
+                {
+                    $id = array_get($invitationData, 'id');
+
+                    $invitationDeleted = $this->repo->invitation->deleteInvitationById($id);
+
+                    $response['invitations'] += $invitationDeleted;
+                }
+            }
+
+            return $response;
+
+        } catch (\Throwable $exception) {
+            throw new Exception\BadRequestValidationFailureException($exception->getMessage());
+        }
+    }
 }

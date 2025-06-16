@@ -1237,7 +1237,44 @@ class Core extends Base\Core
 
         return $fetchExperimentEnabled;
     }
+     //Offer Benefits can be used to modify final amount
+    public function shouldUseBenefitsFromOffersEngine($merchantId): bool
+    {
+        if (app()->runningUnitTests() === true)
+        {
+            return false;
+        }
 
+        if ($merchantId === "") {
+            return false;
+        }
+
+        try {
+
+            $properties = [
+                'id'            => $this->app['request']->getTaskId(),
+                'experiment_id' => $this->app['config']->get(Constants::OFFERS_ENGINE_BENEFITS_DECOMP_EXP),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            return ($variant === 'variant_on');
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::OFFERS_ENGINE_ROUTING_SPLITZ_ERROR,
+                [
+                    'msg' => $e->getMessage()
+                ]);
+        }
+        return false;
+    }
     public function shouldRouteToOffersEngineForCreation(string $merchantId, $experiment): bool
     {
         if (app()->runningUnitTests() === true)
@@ -1329,6 +1366,10 @@ class Core extends Base\Core
         $exception = null;
 
         $success = 0;
+        if($input[Entity::TYPE] == Entity::CLUBBED)
+        {
+            $input[Entity::TYPE] = Entity::INSTANT;
+        }
 
         // both no cost and low cost requests are empty
         if (empty($input[Entity::EMI_DURATIONS]) === true && empty($input[Entity::LOW_COST_EMI]) === true)
@@ -1539,6 +1580,43 @@ class Core extends Base\Core
                 'API_RESPONSE' => $apiResp,
                 'OE_RESPONSE' => $oeResp
             ]);
+        }
+    }
+
+    public function fetchAndValidateOfferForOrderOnOffersEngine(Order\Entity $order, Merchant\Entity $merchant, String $offerId)
+    {
+        $offer = new Entity();
+        try
+        {
+            $oeResp = $this->offersEngine->validateOfferForOrder(
+                $merchant->getId(),
+                $order,
+                $offerId);
+
+            $offer->setAttribute(Entity::ID, Entity::verifyIdAndStripSign($oeResp['offer_id']));
+
+            $isOfferValidAtOE = isset($oeResp) === true && isset($oeResp['calculated_benefits']) === true;
+
+            if ($isOfferValidAtOE === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
+                    null);
+            }
+
+            return [
+                Constants::VALIDATE_OFFER_RESPONSE => $oeResp,
+                Constants::VALIDATE_OFFER_CALLED => true,
+                Constants::OFFER => $offer  // Dummy entity only containing offer_id
+            ];
+        }
+        catch (\Throwable $e)
+        {
+            // do nothing
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
+                [
+                    'offer_id' => $offerId,
+                    'order_id' => $order->getPublicId(),
+                ]);
         }
     }
 

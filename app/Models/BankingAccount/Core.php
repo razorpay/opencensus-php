@@ -2317,9 +2317,9 @@ class Core extends Base\Core
 
         $balanceFetchMerchantBlacklist = (new AdminService)->getConfigKey(['key' => ConfigKey::BALANCE_FETCH_MERCHANTS_BLACKLIST]);
 
-        if (empty($balanceFetchMerchantBlacklist) === false)
+        if (empty($balanceFetchMerchantBlacklist[$channel]) === false)
         {
-            $blacklistedMerchantIds = array_merge($blacklistedMerchantIds, $balanceFetchMerchantBlacklist);
+            $blacklistedMerchantIds = array_merge($blacklistedMerchantIds, $balanceFetchMerchantBlacklist[$channel]);
         }
 
         $isPriorityBalanceUpdate = false;
@@ -3625,22 +3625,6 @@ class Core extends Base\Core
             'sub_status'            => array_get($bankingAccount, Entity::SUB_STATUS, ''),
         ];
 
-    }
-
-    public function checkRblOnBasExperimentEnabled(string $merchantId) : bool
-    {
-        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable([
-            'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.rbl_on_bas_exp_id')
-        ], Constants::ACTIVE,
-            TraceCode::BANKING_ACCOUNT_RBL_ON_BAS_EXPERIMENT_FAILED);
-
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_ON_BAS_EXPERIMENT_STATUS, [
-            'experiment_status' => $isExperimentEnabled,
-            'merchant_id'       => $merchantId,
-        ]);
-
-        return $isExperimentEnabled;
     }
 
     /**

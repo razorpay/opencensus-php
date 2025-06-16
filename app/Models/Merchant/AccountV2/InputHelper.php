@@ -1,8 +1,8 @@
 <?php
 
 namespace RZP\Models\Merchant\AccountV2;
-
-use RZP\Constants\IndianStates;
+use RZP\Constants\Country;
+use RZP\Constants\InternationalStates;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Entity;
@@ -348,6 +348,9 @@ class InputHelper
     private static function getAddressMapping(array $mapping, array $address, array $addresses): array
     {
         $registeredAddress = [];
+        $merchantCountry = strtolower($address[Constants::COUNTRY] ?? Country::IN);
+        $stateClasses = InternationalStates::$rowCountryStateMap;
+        $stateClass = $stateClasses[$merchantCountry] ?? \RZP\Constants\IndianStates::class;
 
         foreach ($mapping as $key => $value)
         {
@@ -355,12 +358,10 @@ class InputHelper
             {
                 if ($key === Constants::STATE)
                 {
-                    $stateCode = IndianStates::getStateCode($address[Constants::STATE]);
-
+                    $stateCode = $stateClass::getStateCode($address[Constants::STATE]);
                     $registeredAddress[$value] = $stateCode;
                 }
-                else
-                {
+                else {
                     $registeredAddress[$value] = $address[$key];
                 }
             }

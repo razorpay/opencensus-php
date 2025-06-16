@@ -238,7 +238,7 @@ class SettlementOndemandTest extends TestCase
         return $response;
     }
 
-    public function mockWebHook($settlementOndemandAttempt, $settlementOndemandTransfer, bool $isSinglePayout = false)
+    public function mockWebHook($settlementOndemandAttempt, $settlementOndemandTransfer, bool $isSinglePayout = false, $source = null)
     {
         $input = [
             'entity' => 'event',
@@ -280,6 +280,12 @@ class SettlementOndemandTest extends TestCase
             $input['payload']['payout']['entity']['failure_reason'] = 'dummy_reason';
         }
 
+        if ($source !== null) {
+            $input['payload']['payout']['entity']['notes'] = [
+                'source' => $source
+            ];
+        }
+
         $rawContent = 'dummy_raw_content';
 
         $key = Config::get('applications.razorpayx_client.live.ondemand_x_merchant.webhook_key');
@@ -288,7 +294,7 @@ class SettlementOndemandTest extends TestCase
 
         $headers =['x-razorpay-signature' => [$signature]];
 
-        (new OndemandPayout\Service)->statusUpdate($input, $headers, $rawContent);
+        return (new OndemandPayout\Service)->statusUpdate($input, $headers, $rawContent);
     }
 
     private function parseDate($date)
@@ -5864,6 +5870,288 @@ class SettlementOndemandTest extends TestCase
         $this->startTest();
     }
 
+    public function verifyTestCreateOnDemandInternalPgLedgerReverseShadow_CapitalESBalanceFetch($capitalResponse = null, $dataToReplace = null, $ledgerMockTimes = 2, $experimentValue = 'active', $mockBalanceFetch = true)
+    {
+        $this->ba->capitalEarlySettlementAuth();
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'pg_ledger_reverse_shadow']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 20030000]);
+
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'percentage_of_balance_limit' => 100,
+            'settlements_count_limit'     => 2,
+            'max_amount_limit'            => 750000,
+            'pricing_percent'             => 50,
+            'es_pricing_percent'          => 25,
+        ]);
+
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+        Carbon::setTestNow($bankingHour);
+
+        $mockLedger = Mockery::mock(Ledger::class)->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+        $mockLedger->expects('fetchAccountsByEntitiesAndMerchantID')
+                   ->times($ledgerMockTimes)
+                   ->andReturns([
+                                   "body" => [
+                                       "accounts"  => [
+                                           [
+                                               "id"                => "sampleAccountID",
+                                               "name"              => "test name",
+                                               "status"            => "ACTIVATED",
+                                               "balance"           => "10000.000000",
+                                               "min_balance"       => "0.000000",
+                                               "merchant_id"       => "sampleMerchant",
+                                               "created_at"        => "1634027277",
+                                               "updated_at"        => "1634027277",
+                                               "entities"          => [
+                                                   "account_type"      => ["payable"],
+                                                   "fund_account_type" => ["merchant_balance"]
+                                               ]
+                                           ]
+                                       ]
+                                   ]
+                               ]
+                   );
+
+        $this->mockGetFeatureConfigCallFromCapitalEs(false, $mockBalanceFetch, $capitalResponse);
+
+        $splitzMock = $this->getSplitzMock();
+
+        $splitzMock->shouldReceive('evaluateRequest')
+            ->withArgs(function ($request)
+            {
+                $this->assertEquals([
+                    'id'            => '10000000000000',
+                    'experiment_id' => env('IS_BALANCE_SEPARATION_EXPERIMENT_ID'),
+                    'request_data'  => json_encode([
+                        'mid'   => '10000000000000'
+                    ])
+                ],$request);
+
+                return true;
+            })
+            ->andReturn([
+                'response' => [
+                    'variant' => [
+                        'name' => $experimentValue,
+                    ]
+                ]
+            ]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreateOndemandInternalPgLedgerReverseShadow'];
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testCreateOndemandInternalPgLedgerReverseShadow_CapitalESBalanceExists_NoError()
+    {
+        /**
+         * Test scenario:
+         * If Capital ES balance exists, upto entire capital balance can be settled.
+         * Here we are trying to settle 10000, and 10000 can be settled.
+         */
+        $this->verifyTestCreateOnDemandInternalPgLedgerReverseShadow_CapitalESBalanceFetch(
+            [
+                'items' => [
+                    [
+                        'derived_balance' => 10000,
+                    ]
+                ]
+            ],
+            [
+                'request' => [
+                    'content' => [
+                        'settle_full_balance' => 0,
+                        'amount'              => 10000,
+                    ]
+                ],
+                'response' => [
+                    'content' => [
+                        'amount_requested'      => 10000,
+                        'fees'                  => 236,
+                        'tax'                   => 36,
+                        'amount_pending'        => 9764,
+                        'settle_full_balance'   => false
+                    ]
+                ]
+            ]);
+    }
+
+    public function testCreateOndemandInternalPgLedgerReverseShadow_CapitalESBalanceExists_Error()
+    {
+        /**
+         * Test scenario:
+         * If Capital ES balance exists, upto entire capital balance can be settled.
+         * Here we are trying to settle 20000, and 10000 can be settled.
+         */
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->verifyTestCreateOnDemandInternalPgLedgerReverseShadow_CapitalESBalanceFetch(
+            [
+                'items' => [
+                    [
+                        'derived_balance' => 10000,
+                    ]
+                ]
+            ],
+            [
+                'request' => [
+                    'content' => [
+                        'settle_full_balance' => 0,
+                        'amount'              => 20000,
+                    ]
+                ]
+            ], 1);
+    }
+
+    public function testCreateOndemandInternalPgLedgerReverseShadow_CapitalESBalanceOnHold()
+    {
+        /**
+         * Test scenario:
+         * If Capital ES balance is on hold, no settlement can be done. Here, the capital balance is on hold
+         */
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->verifyTestCreateOnDemandInternalPgLedgerReverseShadow_CapitalESBalanceFetch(
+            [
+                'items' => [
+                    [
+                        'derived_balance' => 20000,
+                        'on_hold' => true
+                    ]
+                ]
+            ],
+            [
+                'request' => [
+                    'content' => [
+                        'settle_full_balance' => 0,
+                        'amount'              => 1000,
+                    ]
+                ]
+            ], 1);
+    }
+
+    public function testCreateOndemandInternalPgLedgerReverseShadow_CapitalESBalanceNotFound_NoError()
+    {
+        /**
+         * Test scenario:
+         * If Capital ES balance does not exist, settlement can be done upto the Ledger Balance. Here,
+         * the ledger balance is 10000, and we are trying to settle 1000.
+         */
+        $this->verifyTestCreateOnDemandInternalPgLedgerReverseShadow_CapitalESBalanceFetch(
+            [],
+            [
+                'request' => [
+                    'content' => [
+                        'settle_full_balance' => 0,
+                        'amount'              => 1000,
+                    ]
+                ],
+                'response' => [
+                    'content' => [
+                        'amount_requested'      => 1000,
+                        'fees'                  => 24,
+                        'tax'                   => 4,
+                        'amount_pending'        => 976,
+                        'settle_full_balance'   => false
+                    ]
+                ]
+            ],
+            2, 'inactive', false
+        );
+    }
+
+    public function testCreateOndemandInternalPgLedgerReverseShadow_CapitalESBalanceNotFound_Error()
+    {
+        /**
+         * Test scenario:
+         * If Capital ES balance does not exist, settlement can be done upto the Ledger Balance. Here,
+         * the ledger balance is 10000, and we are trying to settle 20000.
+         */
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->verifyTestCreateOnDemandInternalPgLedgerReverseShadow_CapitalESBalanceFetch(
+            [],
+            [
+                'request' => [
+                    'content' => [
+                        'settle_full_balance' => 0,
+                        'amount'              => 20000,
+                    ]
+                ]
+            ], 1);
+    }
+
+    public function testCreateOndemandInternalPgLedgerReverseShadow_BalanceSeparationExperimentDisabled_NoError()
+    {
+        /**
+         * Test scenario:
+         * If Capital ES balance separation experiment is disabled, settlement can be done upto Ledger Balance.
+         * Here we are trying to settle 10000, and 10000 can be settled.
+         */
+        $this->verifyTestCreateOnDemandInternalPgLedgerReverseShadow_CapitalESBalanceFetch(
+            [],
+            [
+                'request' => [
+                    'content' => [
+                        'settle_full_balance' => 0,
+                        'amount'              => 10000,
+                    ]
+                ],
+                'response' => [
+                    'content' => [
+                        'amount_requested'      => 10000,
+                        'fees'                  => 236,
+                        'tax'                   => 36,
+                        'amount_pending'        => 9764,
+                        'settle_full_balance'   => false
+                    ]
+                ]
+            ], 2, 'inactive', false);
+    }
+
+    public function testCreateOndemandInternalPgLedgerReverseShadow_BalanceSeparationExperimentDisabled_Error()
+    {
+        /**
+         * Test scenario:
+         * If Capital ES balance separation experiment is disabled, settlement can be done upto Ledger Balance.
+         * Here we are trying to settle 20000, and 10000 can be settled.
+         */
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->verifyTestCreateOnDemandInternalPgLedgerReverseShadow_CapitalESBalanceFetch(
+            [],
+            [
+                'request' => [
+                    'content' => [
+                        'settle_full_balance' => 0,
+                        'amount'              => 20000,
+                    ]
+                ],
+                'response' => [
+                    'content' => [
+                        'amount_requested'      => 10000,
+                        'fees'                  => 236,
+                        'tax'                   => 36,
+                        'amount_pending'        => 9764,
+                        'settle_full_balance'   => false
+                    ]
+                ]
+            ], 1, 'inactive', false);
+    }
+
     public function testOndemandFeesPgLedgerReverseShadow()
     {
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
@@ -6199,6 +6487,62 @@ class SettlementOndemandTest extends TestCase
         $this->assertNull($fundAccount->fund_account_id);
     }
 
+    public function testCreateOdsViaMicroservice()
+    {
+        $this->ba->capitalEarlySettlementAuth(Mode::LIVE);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'ods_microservice']);
+
+        $capitalEsMock = Mockery::mock(CapitalEarlySettlementClient::class, [$this->app])->makePartial();
+        $this->app->instance('capital_early_settlements', $capitalEsMock);
+
+        $capitalEsMock->allows('createODS')
+            ->andReturns([
+                'id' => 'setlod_FNj7g2YS5J67Rz',
+            ]);
+
+        $result = (new \RZP\Models\Settlement\Ondemand\Service())->create([
+            'settle_full_balance' => false,
+            'scheduled' => true,
+            'amount' => 1000,
+            'description'=> 'debangan_test_1',
+        ], [
+            'scheduled' => true,
+            'mode' => Mode::LIVE,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->assertEquals('setlod_FNj7g2YS5J67Rz', $result['id']);
+    }
+
+    public function testHandlePayoutWebhookViaMicroservice()
+    {
+        $this->app['rzp.mode'] = Mode::LIVE;
+
+        $capitalEsMock = Mockery::mock(CapitalEarlySettlementClient::class, [$this->app])->makePartial();
+        $this->app->instance('capital_early_settlements', $capitalEsMock);
+
+        $capitalEsMock->allows('payoutsWebhook')
+            ->andReturns([]);
+
+        $response = $this->mockWebHook(
+            [
+                'payout_id' => 'pout_N76WDGIgvIvw4g',
+                'id' => 'N76WDBxgjuSuvH',
+                'settlement_ondemand_transfer_id' => 'N88gH0dXJepqQE'
+            ],
+            [
+                'amount' => 100000,
+                'mode' => 'NEFT'
+            ],
+            true,
+            'capital-es'
+        );
+
+        $this->assertEquals('success', $response['response']);
+    }
+
     public function testMakePayoutRequest()
     {
         $this->app['rzp.mode'] = Mode::LIVE;
@@ -6292,7 +6636,7 @@ class SettlementOndemandTest extends TestCase
         $this->assertEquals('pout_1234567890', $payoutId);
     }
 
-    private function mockGetFeatureConfigCallFromCapitalEs($enabled = true)
+    private function mockGetFeatureConfigCallFromCapitalEs($enabled = true, $mockBalanceFetch = false, $balanceFetchResponse = null)
     {
         $capitalEsMock = Mockery::mock(CapitalEarlySettlementClient::class, [$this->app])->makePartial();
         $this->app->instance('capital_early_settlements', $capitalEsMock);
@@ -6317,6 +6661,12 @@ class SettlementOndemandTest extends TestCase
                     ]
                 ]
             );
+
+        if ($mockBalanceFetch)
+        {
+            $capitalEsMock->allows('getMerchantBalanceByType')
+                ->andReturns($balanceFetchResponse);
+        }
     }
 
     private function createOndemandSettlement(bool $mockWebhhok)

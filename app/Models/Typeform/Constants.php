@@ -127,6 +127,9 @@ class Constants
     const WHATSAPP_INTL_ENABLEMENT_REMINDER_NAME = 'whatsapp_international_enablement_reminder2';
     const SMS_INTL_ENABLEMENT_REMINDER  =   'sms.dashboard.international_enablement_reminder';
 
+    const INTERNATIONAL_ENABLEMENT_SUBMIT_ROUTE_NAME = 'merchant_international_enablement_submit';
+    const INTERNATIONAL_ENABLEMENT_SUBMIT_CONTROLLER = 'RZP\Http\Controllers\MerchantInternationalEnablementController@submit';
+
     const WHATSAPP_INTERNATIONAL_ENABLEMENT_APPROVED_TPL = [
       self::EMAIL_SIGNUP        => self::WHATSAPP_INTL_ENABLEMENT_APPROVED_EMAIL_SIGNUP_TPL,
       self::MOBILE_SIGNUP       => self::WHATSAPP_INTL_ENABLEMENT_APPROVED_MOBILE_SIGNUP_TPL,

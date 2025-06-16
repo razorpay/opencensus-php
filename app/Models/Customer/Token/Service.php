@@ -1534,18 +1534,23 @@ class Service extends Base\Service
             Card\Entity::GLOBAL_FINGERPRINT     => $card->getGlobalFingerPrint() ?? "",
         ];
 
-        if ( $card->getVault() === Card\Vault::HDFC)
+        if ( $card->getVault() === Card\Vault::JUSPAY)
         {
-            $input = $this->getAdditionalDinersCardInputForRearch($token,$input);
-
-            $this->trace->info(
-                TraceCode::DINERS_TOKENISED_PAYMENT_TRACE,
-                [
-                    'token_reference_number' => $input[E::TOKEN_REFERENCE_NUMBER],
-                    'token_requestor_id'     => $input[E::TOKEN_REFERENCE_ID],
-                ]);
-
+            $input[Card\Entity::VAULT] = Card\Vault::JUSPAY;
         }
+
+        if ( $card->getVault() === Card\Vault::HDFC)
+                {
+                    $input = $this->getAdditionalDinersCardInputForRearch($token,$input);
+
+                    $this->trace->info(
+                        TraceCode::DINERS_TOKENISED_PAYMENT_TRACE,
+                        [
+                            'token_reference_number' => $input[E::TOKEN_REFERENCE_NUMBER],
+                            'token_requestor_id'     => $input[E::TOKEN_REFERENCE_ID],
+                        ]);
+
+                }
 
 
         if(isset($cryptogram["cvv"]) === true && Card\Network::getFullName(Network::AMEX) === $card->getNetwork())
@@ -1947,13 +1952,21 @@ class Service extends Base\Service
 
     public function updateTokenOnAuthorized($input) {
 
+        $oldRecurringStatus = null;
+
+        if ((empty($input['token_id']) === false) and
+            (empty($input['recurring_status']) === false))
+        {
+            $token = $this->repo->token->findOrFailPublic($input['token_id']);
+            $oldRecurringStatus = $token->getRecurringStatus();
+        }
+
         $token = $this->core->updateTokenOnAuthorized($input);
 
         $response = [
             'token_id' => $input['token_id'],
         ];
 
-        $oldRecurringStatus = $token->getRecurringStatus();
         (new Payment\Processor\Processor($token->merchant))->eventTokenStatus($token, $oldRecurringStatus);
 
         $response['vault_token'] = $token->card['vault_token'];
@@ -2729,12 +2742,14 @@ class Service extends Base\Service
 
         //For recurring, migrate the token in sync and store recurring details
         if(!empty($input['additional_data']) && !empty($input['additional_data']['card_mandate_id'])){
-
+            $token->setCardMandateId($input['additional_data']['card_mandate_id']);
             $payment->localToken()->associate($token);
 
             (new Payment\Processor\Processor($token->merchant))->migrateTokenIfApplicable($payment, $callbackData);
 
             $card = $this->repo->card->fetchForToken($token);
+
+            $oldRecurringStatus = $token->getRecurringStatus();
 
             if ($card->isRzpSavedCard() === true)
             {
@@ -2743,6 +2758,11 @@ class Service extends Base\Service
             }
             $token->setRecurringDetails($input['additional_data']);
             $this->repo->saveOrFail($token);
+
+            if($token->getRecurringStatus() === RecurringStatus::REJECTED)
+            {
+                (new Payment\Processor\Processor($token->merchant))->eventTokenStatus($token, $oldRecurringStatus);
+            }
 
             $createTokenResponse = $token->toArrayPublic();
 
@@ -3129,6 +3149,7 @@ class Service extends Base\Service
     public function isSaveTokenViaTokenService(): bool
     {
         $isMalaysianMerchant = Country::matches($this->merchant->getCountry(), Country::MY);
+        $isIndianMerchant = Country::matches($this->merchant->getCountry(), Country::IN);
 
         if ($isMalaysianMerchant )
         {
@@ -3162,11 +3183,47 @@ class Service extends Base\Service
                     TraceCode::TOKENS_ENTITY_FETCH_SPLITZ_EXPERIMENT_FAILURE);
             }
         }
+        else if ($isIndianMerchant)
+        {
+            try
+            {
+                $experimentId = $this->app['config']->get('app.in_save_int_card_splitz_experiment_id');
+
+                $properties = [
+                    'id' => $this->app['request']->getTaskId(),
+                    'experiment_id' => $experimentId,
+                    'request_data' => json_encode(['merchant_id' => $this->merchant->getId(), 'mode' => $this->mode]),
+                ];
+
+                $response = $this->app['splitzService']->evaluateRequest($properties);
+
+                $variant = $response['response']['variant']['name'] ?? 'control';
+
+                $this->trace->info(TraceCode::TOKENS_ENTITY_FETCH_SPLITZ_EXPERIMENT_RESPONSE_FOR_IN_MERCHANTS, [
+                    'merchant_id' =>  $this->merchant->getId(),
+                    'variant' => $variant,
+                    'experiment_id' => $experimentId
+                ]);
+
+                return $variant === 'variant_on';
+            }
+            catch (\Exception $e)
+            {
+                $this->app['trace']->traceException(
+                    $e,
+                    null,
+                    TraceCode::TOKENS_ENTITY_FETCH_SPLITZ_EXPERIMENT_FAILURE);
+            }
+        }
         return false;
     }
 
     public function createTokenOptimizerInternal($input)
     {
+        if (empty($input['optimizer_mandate_continuity']) === false && $input['optimizer_mandate_continuity'] === true)
+        {
+            return $this->createTokenForOptimizerMandateContinuityFlow($input);
+        }
 
         if (empty($input['payment_id']) === true)
         {
@@ -3210,6 +3267,7 @@ class Service extends Base\Service
                 "terminal_id" => $updateDetails['terminal_id'],
                 "max_amount" => $updateDetails['max_amount'],
                 "frequency" => $updateDetails['frequency'],
+                "expired_at" => $updateDetails['expire_at'],
             ];
 
             $clonedToken = $tokenCore->create($customer, $createInput, null, false);
@@ -3273,5 +3331,38 @@ class Service extends Base\Service
         );
 
         return $data;
+    }
+
+    public function createTokenForOptimizerMandateContinuityFlow($input)
+    {
+
+        (new Validator)->validateInput(Validator::CREATE_RECURRING_TOKEN_CONTINUITY_OPTIMIZER_MANDATE, $input);
+
+        (new Validator)->validateInput(Validator::CREATE_OPTIMIZER_TOKEN_CREATE_FIELDS, $input['fields']);
+
+        (new Validator)->validateInput(Validator::CREATE_OPTIMIZER_RECURRING_TOKEN_NOTES, $input['fields']['notes']);
+
+        $updateDetails = $input['fields'];
+
+        $tokenCore = (new Token\Core);
+
+        $customer = $this->repo->customer->findOrFail($input['customer_id']);
+
+        $createInput = [
+            "method" => $updateDetails['method'],
+            "terminal_id" => $updateDetails['terminal_id'],
+            "max_amount" => $updateDetails['max_amount'],
+            "frequency" => $updateDetails['frequency'],
+            "expired_at" => $updateDetails['expire_at'],
+            "start_time" => $updateDetails['start_time'],
+        ];
+
+        $clonedToken = $tokenCore->create($customer, $createInput, null, false);
+
+        $clonedToken->setOptimizerMandateDetails($updateDetails);
+
+        $this->repo->token->saveOrFail($clonedToken);
+
+        return $clonedToken->toArrayPublic();
     }
 }

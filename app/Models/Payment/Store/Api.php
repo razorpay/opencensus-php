@@ -17,7 +17,7 @@ class Api extends Base
         $baseUrl = $config['url'];
         $passport = $this->ba->getPassport();
 
-        if ($passport[self::CONSUMER][self::TYPE] ?? null === BasicAuth::PASSPORT_CONSUMER_TYPE_USER) {
+        if ($passport[self::CONSUMER][self::TYPE] === BasicAuth::PASSPORT_CONSUMER_TYPE_USER) {
             $stores = $this->sendRequest(Requests::GET, $baseUrl);
             return empty($stores) ? [] : $this->formatStores($stores);
         }

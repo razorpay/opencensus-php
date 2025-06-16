@@ -5,7 +5,9 @@ namespace RZP\Models\Admin\AdminLead;
 use Mail;
 
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Mail\Admin\PartnerInvitation as PartnerInvitationMail;
 use RZP\Mail\Admin\MerchantInvitation as MerchantInvitationMail;
@@ -37,9 +39,16 @@ class Core extends Base\Core
     {
         $org = $admin->org->toArrayPublic();
 
-        $permissionEnabled = (new \RZP\Models\Admin\Org\Service)->isRequiredPermissionEnabledforOrg($org->getId(), Permission::CUSTOM_INVITE_MERCHANT_FLOW);
-        
-        if ($permissionEnabled === true) {
+        $orgId = $org['id'];
+
+        $orgId = Org\Entity::silentlyStripSign($orgId);
+
+        $vasOrgFeatureEnabled = $admin->org->isFeatureEnabled(Feature\Constants::VAS_ORG_IDENTIFIER);
+
+        $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+        if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true))
+        {
             return;
         }
 

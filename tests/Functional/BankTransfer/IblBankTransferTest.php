@@ -336,4 +336,70 @@ class IblBankTransferTest extends TestCase
         $this->assertEquals('BAD_REQUEST_MERCHANT_NOT_FOUND', $response['message']);
     }
 
+    public function testSecondPaymentCreatesPaymentWithoutOrder()
+    {
+        $order = $this->fixtures->create('order');
+
+        $vaResponse = $this->createVirtualAccountForOrder($order, [
+            'customer' => ['contact' => '1234567890', 'email' => 'test@test.com']
+        ]);
+
+        $accountNumber = $vaResponse['receivers'][0]['account_number'];
+        $ifsc          = $vaResponse['receivers'][0]['ifsc'];
+
+
+        $firstResponse = $this->processBankTransfer($accountNumber, $ifsc, null, 10000);
+        $this->assertTrue($firstResponse['valid']);
+
+
+        $secondResponse = $this->processBankTransfer($accountNumber, $ifsc, null, 5000);
+        $this->assertTrue($secondResponse['valid']);
+
+        $payments = $this->getDbEntities('payment', ['email' => 'test@test.com']);
+        $paymentsArray = $payments->toArray();
+
+        $this->assertCount(2, $payments);
+
+
+        $withOrder = array_filter($paymentsArray, fn($p) => isset($p['order_id']));
+        $withoutOrder = array_filter($paymentsArray, fn($p) => !isset($p['order_id']));
+
+        $this->assertCount(1, $withOrder);
+        $this->assertCount(1, $withoutOrder);
+
+        $payment1 = array_values($withOrder)[0];
+        $payment2 = array_values($withoutOrder)[0];
+
+        $this->assertEquals($payment1['receiver_id'], $payment2['receiver_id']);
+        $this->assertEquals('captured', $payment1['status']);
+        $this->assertEquals('refunded', $payment2['status']);
+    }
+
+    public function testMismatchedPaymentAmountGetsRefunded()
+    {
+        $order = $this->fixtures->create('order', ['amount' => 10000]);
+
+        $vaResponse = $this->createVirtualAccountForOrder($order, [
+            'customer' => ['contact' => '1234567890', 'email' => 'test@test.com']
+        ]);
+
+        $accountNumber = $vaResponse['receivers'][0]['account_number'];
+        $ifsc          = $vaResponse['receivers'][0]['ifsc'];
+
+        $response = $this->processBankTransfer($accountNumber, $ifsc, null, 50); // order amount is 10000
+        $this->assertTrue($response['valid']);
+
+        $payments = $this->getDbEntities('payment', ['email' => 'test@test.com']);
+        $paymentsArray = $payments->toArray();
+
+        $this->assertCount(1, $paymentsArray);
+
+        $withoutOrder = array_filter($paymentsArray, fn($p) => !isset($p['order_id']));
+        $this->assertCount(1, $withoutOrder);
+
+        $payment = $paymentsArray[0];
+
+        $this->assertEquals('refunded', $payment['status']);
+    }
+
 }

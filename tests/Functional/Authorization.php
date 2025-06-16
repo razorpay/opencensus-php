@@ -261,6 +261,13 @@ class Authorization
         $this->proxy = false;
     }
 
+    public function idpInternalAuth($mode = 'test')
+    {
+        $this->appAuth('rzp_' . $mode, \Config::get('applications.identity_provider')['secret']);
+
+        $this->proxy = false;
+    }
+
     public function bankingAccountServiceAppAuth($user = 'rzp_test')
     {
         $this->appAuth($user, \Config::get('applications.banking_account_service')['secret']);
@@ -826,6 +833,15 @@ class Authorization
         $axisConfig = \Config::get('applications.axis');
 
         $pwd = $axisConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
+
+    public function idfcAuth($mode = 'test')
+    {
+        $idfcConfig = \Config::get('applications.idfc');
+
+        $pwd = $idfcConfig['secret'];
 
         $this->appAuth('rzp_'.$mode, $pwd);
     }

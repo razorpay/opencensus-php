@@ -20,6 +20,8 @@ use RZP\Models\BankAccount\Generator;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\IIN;
+use RZP\Models\Customer\Account\SplitzExperimentEvaluator;
+use RZP\Models\Customer\ImplicitJoinHelper;
 use RZP\Models\Discount;
 use RZP\Models\Notification;
 use RZP\Models\Order\ProductType;
@@ -81,6 +83,7 @@ use RZP\Models\QrCode\NonVirtualAccountQrCode\RequestSource;
 use RZP\Models\Partner\Commission\CommissionSourceInterface;
 use RZP\Models\PaymentsUpi;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Constants\Entity as ConstantsEntity;
 /**
@@ -107,7 +110,7 @@ use RZP\Constants\Entity as ConstantsEntity;
  */
 class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {
-    use NotesTrait, ExternalOwner, ExternalEntity, DualWrite, AsvGetAttribute;
+    use NotesTrait, ExternalOwner, ExternalEntity, DualWrite, AsvGetAttribute, CmsGetAttribute;
 
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
@@ -249,6 +252,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const BILLING_ADDRESS       = 'billing_address';
 
     const DEVICE_FINGERPRINT    = 'device_fingerprint';
+    const USER_RISK_PROVIDERS_TOKEN    = 'user_risk_providers_token';
 
     const RECEIVER              = 'receiver';
     const AADHAAR               = 'aadhaar';
@@ -469,7 +473,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::STORE_ID, // Added here to support store management feature for pos.
         self::SOURCE_CHANNEL,
         self::GST_QR, // Added here to support entry in dummy payment array for routing
-        self::FLOW,
     ];
 
     protected $visible = [
@@ -639,7 +642,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::REWARD,
         self::REWARD_ID,
         self::AMOUNT_CAPTURED,
-        self::FLOW,
     ];
 
     protected $webhook = [
@@ -3415,15 +3417,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return false;
     }
 
-    public function shouldPopulateFlowForMerchant(): bool
+    public function shouldPopulateFlowForMerchant(string $paymentId, string $merchantId): bool
     {
         $app = \App::getFacadeRoot();
 
         try
         {
-            $merchantId=$this->getMerchantId();
             $properties = [
-                'id'            => $merchantId,
+                'id'            => $paymentId,
                 'experiment_id' => $app['config']->get('app.flow_in_payment_response_id'),
                 'request_data'  => json_encode(['merchant_id' => $merchantId]),
             ];
@@ -3432,7 +3433,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
             $app['trace']->info(TraceCode::FLOW_IN_PAYMENT_RESPONSE_SPLITZ_RESPONSE, [
                 'properties'    => $properties,
-                'merchant_id'   => $merchantId,
+                'payment_id'    => $paymentId,
                 'variant'       => $variant,
             ]);
 
@@ -5379,6 +5380,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setSettledBy(null);
     }
 
+    public function getGlobalCustomerAttribute()
+    {
+        if ((new SplitzExperimentEvaluator())->isLazyReadOverrideToCmsEnabled($this->entity))
+        {
+            return (new ImplicitJoinHelper())->getCustomerAttributeByCustomerId($this, 'globalCustomer', 'getGlobalCustomerId');
+        }
+
+        return parent::getRelationValue('globalCustomer');
+    }
+
 // ----------------------- Getters Ends-----------------------------------------
 
     public function toArrayWithCard()
@@ -7314,6 +7325,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[self::GatewayTerminalId] = $this->getGatewayTerminalId();
             $data[self::GatewayMerchantId] = $this->getGatewayMerchantId();
             $data[self::DeviceId] = $this->getDeviceId();
+            $data[self::STORE_ID] = $this->getStoreId();
             $data[self::InternalStatus] = $this->getInternalStatus();
         }
     }
@@ -7345,7 +7357,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $app = App::getFacadeRoot();
 
-        if (($this->getCpsRoute() === Payment\Entity::API || $this->getCpsRoute() === Payment\Entity::UPI_PAYMENT_SERVICE) && $this->shouldPopulateFlowForMerchant() === true) {
+        if (($this->getCpsRoute() === Payment\Entity::API || $this->getCpsRoute() === Payment\Entity::UPI_PAYMENT_SERVICE) && $this->shouldPopulateFlowForMerchant($this->getId(), $this->getMerchantId()) === true) {
 
         // Allow populating Flow in UPI block for all payments
         $upiMetadata = $this->getUpiMetadata();
@@ -7353,6 +7365,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if (isset($upiMetadata) === true)
             {
                 $data[self::UPI][UpiMetadata\Entity::FLOW] = $upiMetadata->getFlow();
+            }
+        }
+        elseif ($this->getCpsRoute() === Payment\Entity::REARCH_UPI_PAYMENT_SERVICE)
+        {
+            if (empty($this->getFlow()) === false)
+            {
+                $data[self::UPI][UpiMetadata\Entity::FLOW] = $this->getFlow();
             }
         }
 
@@ -7373,6 +7392,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             {
                 return;
             }
+
+            $data[self::UPI][UpiMetadata\Entity::FLOW] = $upiMetadata->getFlow();
 
             $reference17 = json_decode($this->getReference17(), true) ?? [];
 
@@ -7953,6 +7974,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     // Slack: https://razorpay.slack.com/archives/C7WEGELHJ/p1677061101772369?thread_ts=1675832734.858449&cid=C7WEGELHJ
     public function getFeeInMcc()
     {
+        $app = \App::getFacadeRoot();
+
         $fee = 0;
 
         if ($this->getCurrency() === Currency\Currency::INR)
@@ -7966,15 +7989,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($this->getId());
+        $forexRate = 1;
 
         if ((isset($paymentMeta) === true) and
             (empty($paymentMeta->getMccForexRate()) === false))
         {
-            $fee = (float)$this->getFee() / $paymentMeta->getMccForexRate();
+            $forexRate = $paymentMeta->getMccForexRate();
         }
         else
         {
-            $app = \App::getFacadeRoot();
             try
             {
                 $param = [
@@ -7984,7 +8007,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 $pxbResponse = $app['payments-cross-border']->getForexRates([], $param);
                 if(isset($pxbResponse) && isset($pxbResponse['base_forex_rate']))
                 {
-                    $fee = (float)$this->getFee() / $pxbResponse['base_forex_rate'];
+                    $forexRate = $pxbResponse['base_forex_rate'];
                 }
             }
             catch (\Exception $e)
@@ -7997,7 +8020,20 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
         }
 
-        return (int)ceil($fee);
+        $denominationFactorFromCurrency = Currency\Currency::DENOMINATION_FACTOR[$this->merchant->getCurrency()];
+        $denominationFactorToCurrency = Currency\Currency::DENOMINATION_FACTOR[$this->getCurrency()];
+        $denominationFactor = $denominationFactorToCurrency / $denominationFactorFromCurrency;
+        $convertedFee = ((float)$this->getFee() / $forexRate) * $denominationFactor;
+
+        $app['trace']->info(TraceCode::PAYMENT_FEE_CONVERSION_FOR_MCC,
+            [
+                'payment_id'  => $this->getId(),
+                'fee' => $this->getFee(),
+                'forex_rate' => $forexRate,
+                'converted_fee' => $convertedFee,
+            ]);
+
+        return (int)ceil($convertedFee);
     }
 
     public function getMccMarkDownCommisionAmount()

@@ -184,8 +184,7 @@ class Core extends Base\Core
             // merchants who are not completely activated
 
             if (($merchant->getService() === MerchantConstants::PGOS or
-                 $websitePolicyV2SplitzResult === 'variables') and
-                $merchant->merchantDetail->getActivationStatus() != Detail\Status::ACTIVATED)
+                 $websitePolicyV2SplitzResult === 'variables'))
             {
                 $websiteDetails = (new Repository())->getWebsiteDetailsForMerchantId($data["merchant_id"]);
 

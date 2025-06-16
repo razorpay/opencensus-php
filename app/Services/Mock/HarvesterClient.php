@@ -89,7 +89,7 @@ class HarvesterClient extends BaseHarvesterClient
         return $response;
     }
 
-    public function getDataFromPinot($content, $timeout = 2)
+    public function getDataFromPinot($content, $timeout = 2, $flowType = self::DEFAULT_FLOW_TYPE)
     {
         $data = [
             'user_days_till_last_transaction' => 45,

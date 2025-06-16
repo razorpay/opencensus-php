@@ -22,6 +22,7 @@ use RZP\Mail\User\Otp;
 use RZP\Models\Feature;
 use RZP\Mail\User\Login;
 use RZP\Models\User\Constants;
+use RZP\Models\User\Entity;
 use RZP\Models\User\Role;
 use Razorpay\OAuth\Client;
 use RZP\Constants\Product;
@@ -29,7 +30,6 @@ use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
-use RZP\Models\User\Entity;
 use RZP\Mail\User\OtpSignup;
 use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
@@ -1163,6 +1163,124 @@ class UserTest extends TestCase
         $this->assertArrayHasKey('token', $response);
     }
 
+    public function testUserRegisterForNewUser()
+    {
+        Mail::fake();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 1
+        ]);
+
+        $adminId = Org::MAKER_ADMIN;
+
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', [
+            'admin_id'  => $adminId,
+            'form_data' => $formData,
+            'org_id'    => '100000razorpay',
+
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstant::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $response = $this->startTest();
+
+        $this->assertEquals("leademail@razorpay.com",$response[UserEntity::EMAIL]);
+    }
+
+    public function testUserRegisterForExistingUser()
+    {
+        Mail::fake();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 1
+        ]);
+
+        $adminId = Org::MAKER_ADMIN;
+
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"admin.lead@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', [
+            'admin_id'  => $adminId,
+            'form_data' => $formData,
+            'org_id'    => '100000razorpay',
+            'email'    => 'admin.lead@razorpay.com',
+        ]);
+
+        $user = $this->fixtures->create('user', [
+            UserEntity::EMAIL                   => "admin.lead@razorpay.com",
+            UserEntity::CONTACT_MOBILE          => "+912233776658",
+            UserEntity::NAME                    => "Ashok Kumar",
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstant::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $response = $this->startTest();
+
+        $this->assertEquals($user->getEmail(),$response[UserEntity::EMAIL]);
+    }
+
     public function testRegisterForSignUpFlowInX()
     {
         Mail::fake();
@@ -1237,6 +1355,306 @@ class UserTest extends TestCase
         });
     }
 
+    public function testRegisterForSignUpFlowInXViaUSL()
+    {
+        Mail::fake();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
+
+        $adminId = Org::MAKER_ADMIN;
+
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $response = $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $featuresArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => $merchant['id'],
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        $this->assertContains(Features::NEW_BANKING_ERROR, $featuresArray);
+
+        $row = DB::table('merchant_map')
+            ->where('merchant_id', '=', $merchant['id'])
+            ->where('entity_id', '=', $adminId)
+            ->where('entity_type', '=', 'admin')
+            ->first();
+
+        $this->assertNotNull($row);
+
+        //business_banking should be true and signup_source should be banking
+        $this->assertEquals(true, $merchant['business_banking']);
+
+        $this->assertEquals($merchant['signup_source'], "banking");
+
+
+        $this->assertArrayHasKey('token', $response);
+
+        Mail::assertQueued(Otp::class, function ($mail)
+        {
+            $this->assertEquals('verify_email', $mail->input['action']);
+
+            $this->assertNotEmpty($mail->user);
+
+            $this->assertNotEmpty($mail->otp);
+
+            $this->assertEquals('emails.user.otp_email_verify', $mail->view);
+
+            $mailSubject = "Razorpay | OTP to Verify Email";
+
+            $this->assertEquals($mailSubject, $mail->subject);
+
+            $this->assertEquals('support@razorpay.com', $mail->from[0]['address']);
+
+            return true;
+        });
+    }
+
+    public function testRegisterMultiAccountForNewUserWithoutPermission()
+    {
+        Mail::fake();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 1
+        ]);
+
+        $adminId = Org::MAKER_ADMIN;
+
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', [
+            'admin_id'  => $adminId,
+            'form_data' => $formData,
+            'org_id'    => '100000razorpay',
+            'email'    => 'leademail@razorpay.com',
+        ]);
+
+        $this->fixtures->create('merchant',[
+            MerchantEntity::NAME               => "Ashok Kumar",
+            MerchantEntity::ORG_ID             => '100000razorpay',
+            MerchantEntity::EMAIL              => 'leademail@razorpay.com',
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $this->startTest();
+    }
+
+    public function testRegisterMultiAccountForExistingUserWithPermission()
+    {
+        Mail::fake();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
+
+        $adminId = Org::MAKER_ADMIN;
+
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"admin.lead@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', [
+            'admin_id'  => $adminId,
+            'form_data' => $formData,
+            'org_id'    => '100000razorpay',
+            'email'    => 'admin.lead@razorpay.com',
+        ]);
+
+        $user = $this->fixtures->create('user', [
+            UserEntity::EMAIL                   => "admin.lead@razorpay.com",
+            UserEntity::CONTACT_MOBILE          => "+912233776658",
+            UserEntity::NAME                    => "Ashok Kumar",
+        ]);
+
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        // Deleting the newly create merchant details so that user appears as fresh signup
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $this->fixtures->org->addFeatures([FeatureConstant::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $response = $this->startTest();
+
+        $this->assertEquals($user->getEmail(),$response[UserEntity::EMAIL]);
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        // One created previously
+        $this->assertEquals(1, $merchantUsers->count());
+
+        $merchantUser = DB::table('merchant_users')->where('user_id', '=', $user['id'])->where('merchant_id', '!=', $firstMerchant->merchant_id)->first();
+        $merchant = DB::table('merchants')->where('id', '=', $merchantUser->merchant_id)->first();
+
+        $merchantDetails = DB::table('merchant_details')->where('merchant_id', '=', $merchantUser->merchant_id)->first();
+
+        // If user already has a merchant we copy the email to the merchant
+        $this->assertEquals($user[UserEntity::EMAIL], $merchant->email);
+
+        // If user already has a merchant we copy the mobile to the merchant
+        $this->assertEquals($user[UserEntity::CONTACT_MOBILE], $merchantDetails->contact_mobile);
+        $this->assertEquals($user[UserEntity::EMAIL], $merchantDetails->contact_email);
+
+        // Payload assertion
+        $this->assertEquals($response['user_id'], $user['id']);
+        $this->assertEquals($response['id'], $merchantUser->merchant_id);
+    }
+
+    public function testRegisterMultiAccountForNewUserWithPermission()
+    {
+        Mail::fake();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceEventTrackedWithMethodAndCount([
+            'sendUslCreateUserAndMerchantDetails' => 2
+        ]);
+
+        $adminId = Org::MAKER_ADMIN;
+
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"admin.lead@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', [
+            'admin_id'  => $adminId,
+            'form_data' => $formData,
+            'org_id'    => '100000razorpay',
+            'email'    => 'admin.lead@razorpay.com',
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstant::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $response = $this->startTest();
+
+        $featuresArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '100000razorpay',
+                'entity_type' => 'org'
+            ])->pluck('name')->toArray();
+
+        $this->assertContains(Features::VAS_ORG_IDENTIFIER, $featuresArray);
+
+        $this->assertEquals('admin.lead@razorpay.com',$response[UserEntity::EMAIL]);
+
+        $user = $this->getDbEntityById('user', $response['user_id'])->toArrayPublic();
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        // One user and its merchant is created
+        $this->assertEquals(1, $merchantUsers->count());
+
+        $merchantUser = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        $merchant = DB::table('merchants')->where('id', '=', $merchantUser->merchant_id)->first();
+        $merchantDetails = DB::table('merchant_details')->where('merchant_id', '=', $merchantUser->merchant_id)->first();
+
+        // If user doesn't have a merchant (considered fresh signup), we use the user's email to create the merchant
+
+        $this->assertEquals($user[UserEntity::EMAIL], $merchant->email);
+        $this->assertEquals($user[UserEntity::EMAIL], $merchantDetails->contact_email);
+
+        // Payload assertion
+        $this->assertEquals($response['user_id'], $user['id']);
+        $this->assertEquals($response['id'], $merchantUser->merchant_id);
+    }
+
     protected function mockDCS()
     {
         $dcsMock = $this->getMockBuilder(DCSService::class)
@@ -1275,6 +1693,96 @@ class UserTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
+    }
+
+    public function testGetMerchantsOfExistingUser()
+    {
+        $user = $this->fixtures->create('user', [
+            UserEntity::CONTACT_MOBILE          => "+912233776658",
+            UserEntity::EMAIL                   => "banking-pod2131@razorpay.com",
+            UserEntity::NAME                    => "Ashok Kumar",
+        ]);
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        // Deleting the newly create merchant details so that user appears as fresh signup
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $this->fixtures->org->addFeatures([FeatureConstant::VAS_ORG_IDENTIFIER],'100000razorpay');
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::CUSTOM_INVITE_MERCHANT_FLOW]);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => '100000razorpay',
+            'entity_type'     => 'org',
+            'enable_workflow' => false
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $currentTime = Carbon::now('Asia/Kolkata')->getTimestamp();
+
+        $count = 6;
+
+        $merchantIds= [];
+
+        do{
+            $merchant = $this->fixtures->create('merchant',[
+                MerchantEntity::CREATED_AT         => $currentTime,
+                MerchantEntity::UPDATED_AT         => $currentTime + 10,
+                MerchantEntity::ORG_ID             => '100000razorpay',
+                MerchantEntity::EMAIL              => "banking-pod2969@razorpay.com",
+            ]);
+
+            $currentTime += 123;
+
+            DB::connection('test')->table('merchant_users')
+                ->insert([
+                    'merchant_id' => $merchant->getId(),
+                    'user_id'     =>  $user['id'],
+                    'role'        => 'owner',
+                    'product'     => 'primary',
+                    'created_at'  => $currentTime,
+                    'updated_at'  => $currentTime + 10,
+                ]);
+
+            DB::connection('live')->table('merchant_users')
+                ->insert([
+                    'merchant_id' => $merchant->getId(),
+                    'user_id'     =>  $user['id'],
+                    'role'        => 'owner',
+                    'product'     => 'primary',
+                    'created_at'  => $currentTime,
+                    'updated_at'  => $currentTime + 10,
+                ]);
+
+            $merchantIds [] = $merchant->getId();
+
+            $count --;
+
+        }while($count > 0);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/' . $user['id'];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $merchantIds = array_reverse($merchantIds);
+
+        foreach (array_values($merchantIds) as $index => $merchantId)
+        {
+            $this->assertSame(
+                $merchantId,
+                $response[MerchantDetails::MERCHANTS][$index]['id']
+            );
+        }
     }
 
     public function testCreateMerchantForExistingUserWithEmail()
@@ -1382,6 +1890,207 @@ class UserTest extends TestCase
         // Payload assertion
         $this->assertEquals($response['user_id'], $user['id']);
         $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
+    }
+
+    public function testCreateMerchantWithoutWorkflowCreate()
+    {
+        $user = $this->fixtures->create('user');
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        // Deleting the newly create merchant details so that user appears as fresh signup
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+        $this->ba->dashboardGuestAppAuth();
+        $response = $this->startTest();
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        // No merchant associated previously
+        $this->assertEquals(1, $merchantUsers->count());
+
+        $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+        $merchant = DB::table('merchants')->where('id', '=', $merchantUserEntry->merchant_id)->first();
+
+        // If user doesn't have a merchant (considered fresh signup), we use the user's email to create the merchant
+        $this->assertEquals($user['email'], $merchant->email);
+
+        // Payload assertion
+        $this->assertEquals($response['user_id'], $user['id']);
+        $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
+
+        //workflow assertion
+        $userDeviceDetails = $this->getDbEntity('user_device_detail', ['merchant_id' => $merchantUserEntry->merchant_id]);
+        $this->assertEquals('pgos', $userDeviceDetails["metadata"]["service"]);
+        $this->assertEquals('MODULAR_ONBOARDING', $userDeviceDetails["metadata"]['workflow_type']);
+    }
+
+    public function testGetUserOnboardingServiceFailWithEmptyMerchantID()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithEmptyUserID()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithEmptyCountryCode()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithInvalidMerchantID()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithInvalidUserID()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithInvalidCountryCode()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithOAuthAPIMerchants()
+    {
+        $user = $this->fixtures->create('user', ['signup_via_email' => 1]);
+        $merchant = $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['user_id'] = $user['id'];
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithOAuthPGOSMerchants()
+    {
+        $user = $this->fixtures->create('user', ['signup_via_email' => 1]);
+        $merchant = $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['user_id'] = $user['id'];
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithNonOAuthAPIMerchants()
+    {
+        $user = $this->fixtures->create('user', ['signup_via_email' => 0]);
+        $merchant = $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['content']['user_id'] = $user['id'];
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetUserOnboardingServiceFailWithNonOAuthPGOSMerchants()
+    {
+        $user = $this->fixtures->create('user', ['signup_via_email' => 0]);
+        $merchant = $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['user_id'] = $user['id'];
+        $testData['request']['content']['merchant_id'] = $merchant['id'];
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantWithWorkflowCreate()
+    {
+        $user = $this->fixtures->create('user');
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        // Deleting the newly create merchant details so that user appears as fresh signup
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->mockAllSplitzTreatment();
+
+        $this->ba->dashboardGuestAppAuth();
+        $response = $this->startTest();
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        // No merchant associated previously
+        $this->assertEquals(1, $merchantUsers->count());
+
+        $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+        // Payload assertion
+        $this->assertEquals($response['user_id'], $user['id']);
+        $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
+
+        //workflow assertion
+        $userDeviceDetailsEntry = DB::table('user_device_details')->where('merchant_id', '=', $merchantUserEntry->merchant_id)->first();
+        $this->assertEquals('{"user_signup_state": "mid_created"}', $userDeviceDetailsEntry->metadata);
+    }
+
+    public function testCreateMerchantWithWorkflowCreateAndUserSingupStateExpTurnedOff()
+    {
+        $user = $this->fixtures->create('user');
+        $firstMerchant = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+
+        // Deleting the newly create merchant details so that user appears as fresh signup
+        DB::table('merchant_users')->where('merchant_id', '=', $firstMerchant->merchant_id)->delete();
+        DB::table('merchants')->where('id', '=', $firstMerchant->merchant_id)->delete();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->mockAllSplitzTreatment([
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ]);
+
+        $this->ba->dashboardGuestAppAuth();
+        $response = $this->startTest();
+
+        $merchantUsers = DB::table('merchant_users')->where('user_id', '=', $user['id'])->get();
+
+        // No merchant associated previously
+        $this->assertEquals(1, $merchantUsers->count());
+
+        $merchantUserEntry = DB::table('merchant_users')->where('user_id', '=', $user['id'])->first();
+        // Payload assertion
+        $this->assertEquals($response['user_id'], $user['id']);
+        $this->assertEquals($response['id'], $merchantUserEntry->merchant_id);
+
+        //workflow assertion
+        $userDeviceDetailsEntry = DB::table('user_device_details')->where('merchant_id', '=', $merchantUserEntry->merchant_id)->first();
+        $this->assertEquals('[]', $userDeviceDetailsEntry->metadata);
     }
 
     public function testCreateMerchantForNewUserWithMobileNumber()
@@ -3348,6 +4057,7 @@ class UserTest extends TestCase
 
         $content = [
             'contact_mobile'        => '9012345678',
+            'fingerprint'           => 'randomfingerprint',
         ];
 
         $testData['request']['content'] = $content;
@@ -3364,6 +4074,7 @@ class UserTest extends TestCase
 
         $content = [
             'contact_mobile'        => '9012347678',
+            'fingerprint'           => 'randomfingerprint',
         ];
 
         $testData['request']['content'] = $content;
@@ -3382,6 +4093,7 @@ class UserTest extends TestCase
 
         $content = [
             'email'        => 'hello123@gmail.com',
+            'fingerprint'  => 'randomfingerprint',
         ];
 
         $testData['request']['content'] = $content;
@@ -7025,8 +7737,81 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testFailedLogin2faNotSetupWithCustomInviteMerchantFlow()
-    {   
+    public function testSkipLogin2faNotSetupWithCustomInviteMerchantFlow()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $org = $this->fixtures->create('org', [
+            'id' => '100000yessbank',
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstant::VAS_ORG_IDENTIFIER],$org->getId());
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'   => $org->getId(),
+            'hostname' => 'yesbank.in'
+        ]);
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => $org->getId(),
+            'entity_type'     => 'org',
+            'enable_workflow' => true
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9949939921',
+            'contact_mobile_verified' => false,
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'org_id' => $org->getId(),
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ]);
+
+        $adminId   = Org::MAKER_ADMIN;
+        $formData  = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'merchant_invitation'   => $adminLead['token'],
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testLogin2faRequiredWithCustomInviteMerchantFlowIncorrectInviteToken()
+    {
         $this->enableRazorXTreatmentForRazorX();
 
         $org = $this->fixtures->create('org', [
@@ -7067,12 +7852,224 @@ class UserTest extends TestCase
             'role'        => 'owner',
         ]);
 
+        $adminId   = Org::MAKER_ADMIN;
+        $formData  = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $testData = & $this->testData[__FUNCTION__];
+
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'merchant_invitation'   => 'token',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testLogin2faRequiredWithCustomInviteMerchantFlowEmptyToken()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $org = $this->fixtures->create('org', [
+            'id' => '100000yessbank',
+        ]);
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'   => $org->getId(),
+            'hostname' => 'yesbank.in'
+        ]);
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => $org->getId(),
+            'entity_type'     => 'org',
+            'enable_workflow' => true
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9949939921',
+            'contact_mobile_verified' => false,
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'org_id' => $org->getId(),
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ]);
+
+        $adminId   = Org::MAKER_ADMIN;
+        $formData  = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $testData = & $this->testData[__FUNCTION__];
+
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'merchant_invitation'   => '',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testLogin2faRequiredWithCustomInviteMerchantFlowNoToken()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $org = $this->fixtures->create('org', [
+            'id' => '100000yessbank',
+        ]);
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'   => $org->getId(),
+            'hostname' => 'yesbank.in'
+        ]);
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => $org->getId(),
+            'entity_type'     => 'org',
+            'enable_workflow' => true
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9949939921',
+            'contact_mobile_verified' => false,
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'org_id' => $org->getId(),
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ]);
+
+        $adminId   = Org::MAKER_ADMIN;
+        $formData  = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $testData = & $this->testData[__FUNCTION__];
+
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+    public function testLogin2faRequiredSetupWithCustomInviteMerchantFlowNoPermission()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $org = $this->fixtures->create('org', [
+            'id' => '100000yessbank',
+        ]);
+
+        $this->fixtures->org->addFeatures([FeatureConstant::VAS_ORG_IDENTIFIER],$org->getId());
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'   => $org->getId(),
+            'hostname' => 'yesbank.in'
+        ]);
+
+        $user = $this->fixtures->create('user', [
+            'password'                => 'hello123',
+            'second_factor_auth'      => true,
+            'contact_mobile'          => '9949939921',
+            'contact_mobile_verified' => false,
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'org_id' => $org->getId(),
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchant['id'],
+            'role'        => 'owner',
+        ]);
+
+        $adminId   = Org::MAKER_ADMIN;
+        $formData  = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
+
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
             'email'                 => $user['email'],
             'password'              => 'hello123',
             'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'merchant_invitation'   => $adminLead['token'],
         ];
 
         $testData['request']['content'] = $content;
@@ -10380,26 +11377,6 @@ class UserTest extends TestCase
                 }));
     }
 
-    protected function enableRazorXTreatmentForBlockBankingRoutes()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function($mid, $feature, $mode) {
-                    if ($feature === 'block_banking_requests')
-                    {
-                        return 'on';
-                    }
-
-                    return 'off';
-                }));
-    }
 
     protected function enableRazorXTreatmentForRxAclDenyUnauthorized()
     {
@@ -15277,9 +16254,8 @@ class UserTest extends TestCase
         $this->assertEquals('deactivated', $mii['notes']['status']);
     }
 
-    public function testMerchantGetTagsRouteViaBankingProductWithBlockingFeatureEnabled()
+    public function testMerchantGetTagsRouteViaBankingProduct()
     {
-        $this->enableRazorXTreatmentForBlockBankingRoutes();
 
         $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
 
@@ -15290,9 +16266,8 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testCurrencyFetchAllProxyRouteViaBankingProductWithBlockingFeatureEnabled()
+    public function testCurrencyFetchAllProxyRouteViaBankingProduct()
     {
-        $this->enableRazorXTreatmentForBlockBankingRoutes();
 
         $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
 
@@ -15303,9 +16278,8 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testMerchantPartnerConfigsFetchProxyRouteViaBankingProductWithBlockingFeatureEnabled()
+    public function testMerchantPartnerConfigsFetchProxyRouteViaBankingProduct()
     {
-        $this->enableRazorXTreatmentForBlockBankingRoutes();
 
         $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
 
@@ -15316,9 +16290,8 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testSettlementHolidaysRouteViaBankingProductWithBlockingFeatureEnabled()
+    public function testSettlementHolidaysRouteViaBankingProduct()
     {
-        $this->enableRazorXTreatmentForBlockBankingRoutes();
 
         $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
 
@@ -15329,9 +16302,8 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testSettlementAmountRouteViaBankingProductWithBlockingFeatureEnabled()
+    public function testSettlementAmountRouteViaBankingProduct()
     {
-        $this->enableRazorXTreatmentForBlockBankingRoutes();
 
         $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
 
@@ -15342,9 +16314,8 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testUserFetchPurposeCodeRouteViaBankingProductWithBlockingFeatureEnabled()
+    public function testUserFetchPurposeCodeRouteViaBankingProduct()
     {
-        $this->enableRazorXTreatmentForBlockBankingRoutes();
 
         $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
 
@@ -16274,25 +17245,39 @@ class UserTest extends TestCase
             Entity::EMAIL => 'abc-3@example.com',
         ]);
 
+        $user4 = $this->fixtures->create('user', [
+            Entity::NAME => 'testUser4',
+            Entity::CONTACT_MOBILE => '9876543111',
+            Entity::PASSWORD => 'hello123',
+            ENTITY::CONTACT_MOBILE_VERIFIED => true
+        ]);
+
         $testData = &$this->testData[__FUNCTION__];
         $testData['request']['content']['user_ids'][0] = $user1->getId();
         $testData['request']['content']['user_ids'][1] = $user2->getId();
+        $testData['request']['content']['user_ids'][2] = $user4->getId();
 
         $response = $this->startTest();
 
         $this->assertNotEmpty($response[$user1->getId()]);
         $this->assertNotEmpty($response[$user2->getId()]);
+        $this->assertNotEmpty($response[$user4->getId()]);
         $this->assertEquals($response[$user1->getId()]['name'], $user1['name']);
         $this->assertEquals($response[$user2->getId()]['name'], $user2['name']);
+        $this->assertEquals($response[$user4->getId()]['name'], $user4['name']);
 
         $requestWithEmails = [
             'user_ids' => [
                 $user1->getId(),
                 $user2->getId(),
+                $user4->getId()
             ],
             'user_emails' => [
                 $user2->getEmail(),
                 $user3->getEmail(),
+            ],
+            'user_contacts' => [
+                $user4->getContactMobile()
             ]
         ];
 
@@ -16309,6 +17294,8 @@ class UserTest extends TestCase
 
         $this->assertEquals($user2->getName(), $response[$user2->getEmail()]['name']);
         $this->assertEquals($user3->getName(), $response[$user3->getEmail()]['name']);
+
+        $this->assertEquals($user4->getName(), $response[$user4->getContactMobile()]['name']);
 
         $requestWithOnlyEmails = [
             'user_emails' => [
@@ -16327,6 +17314,55 @@ class UserTest extends TestCase
 
         $this->assertEquals($user2->getName(), $response[$user2->getEmail()]['name']);
         $this->assertEquals($user3->getName(), $response[$user3->getEmail()]['name']);
+    }
+
+    public function testFetchMultipleUsersByContact(){
+        $this->ba->idpInternalAuth();
+
+        $user1 = $this->fixtures->create('user', [
+            Entity::NAME => 'testUserA',
+            Entity::CONTACT_MOBILE => '9876543210',
+            Entity::EMAIL => 'user1@razorpay.com',
+            Entity::PASSWORD => 'hello123',
+            ENTITY::CONTACT_MOBILE_VERIFIED => true
+        ]);
+
+        $user2 = $this->fixtures->create('user', [
+            Entity::NAME => 'testUserA',
+            Entity::CONTACT_MOBILE => '+919876543211',
+            Entity::EMAIL => 'user2@razorpay.com',
+            Entity::PASSWORD => 'hello123',
+            ENTITY::CONTACT_MOBILE_VERIFIED => true
+        ]);
+
+        $user3 = $this->fixtures->create('user', [
+            Entity::NAME => 'testUserA',
+            Entity::CONTACT_MOBILE => '+91 9876543212',
+            Entity::EMAIL => 'user3@razorpay.com',
+            Entity::PASSWORD => 'hello123',
+            ENTITY::CONTACT_MOBILE_VERIFIED => true
+        ]);
+
+        $contacts = ["+919876543210","+91 9876543211", "9876543212"];
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['content']['user_contacts'][0] = $contacts[0];
+        $testData['request']['content']['user_contacts'][1] = $contacts[1];
+        $testData['request']['content']['user_contacts'][2] = $contacts[2];
+
+
+        $response = $this->startTest($testData);
+
+        $this->assertEquals($user1->getName(), $response[$contacts[0]]['name']);
+        $this->assertEquals($user2->getName(), $response[$contacts[1]]['name']);
+        $this->assertEquals($user3->getName(), $response[$contacts[2]]['name']);
+
+        $this->assertEquals($user1->getEmail(), $response[$contacts[0]]['email']);
+        $this->assertEquals($user2->getEmail(), $response[$contacts[1]]['email']);
+        $this->assertEquals($user3->getEmail(), $response[$contacts[2]]['email']);
+
+        $this->assertEquals(true, $response[$contacts[0]]['is_password_set']);
+        $this->assertEquals(true, $response[$contacts[1]]['is_password_set']);
+        $this->assertEquals(true, $response[$contacts[2]]['is_password_set']);
     }
 
     public function testResellerPartnerMerchantRegister()

@@ -16,9 +16,10 @@ class Validator extends Base\Validator
 
     protected static $tokenRules = [
         Entity::ENTITY_ID     => 'required',
-        Entity::PARTNER_ID    => 'required',
+        Entity::PARTNER_ID    => 'required|string|size:14',
         Entity::APPROVE_TOKEN => 'required_without:reject_token',
         Entity::REJECT_TOKEN  => 'required_without:approve_token',
+        Entity::CREATE_CONSENT => 'sometimes|boolean',
     ];
 
     protected static $revokeAccessRules = [
@@ -44,9 +45,9 @@ class Validator extends Base\Validator
         Entity::ID            => 'required|string|size:14',
     ];
 
-    public function validateMerchantReferredByPartner($partnerId, $submerchantId)
+    public function validateMerchantReferredByPartner($partnerId, $submerchantId, $appType = 'referred')
     {
-        if ((new MerchantCore)->isMerchantReferredByPartner($submerchantId, $partnerId) === false)
+        if ((new MerchantCore)->isMerchantReferredByPartner($submerchantId, $partnerId, $appType) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);

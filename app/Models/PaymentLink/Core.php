@@ -1449,6 +1449,37 @@ class Core extends Base\Core
         return false;
     }
 
+    private function logTncAcceptance(array $input, Entity $paymentLink): void
+    {
+        try {
+            $tncLog = isset($input['notes']['terms__and__cond']) ? (bool) $input['notes']['terms__and__cond'] : false;
+
+            $this->trace->info(TraceCode::MERCHANT_TNC_GET_REQUEST, [
+                'tnc'        => $tncLog,
+                'payment_id' => $paymentLink->getId(),
+                'merchant_id'=> $paymentLink->getMerchantId(),
+                'input'      => $input,
+            ]);
+
+            if ($tncLog === true)
+            {
+                $priRefId = $input['notes'][PAYMENTLINK::PRI_REF_ID] ?? null;
+
+                if (!empty($priRefId))
+                {
+                    $this->logTncInOtherDetails($paymentLink->getId(), $priRefId);
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::TNC_LOG_UPDATE_FAILED, [
+                'message' => $e->getMessage(),
+                'input'   => $input,
+            ]);
+        }
+    }
+
 
     public function createOrder(Entity $paymentLink, array $input)
     {
@@ -1466,6 +1497,8 @@ class Core extends Base\Core
         {
             return $this->modifyAndValidateInputToCreateLineItems($input, $paymentLink);
         });
+
+        $this->logTncAcceptance($input, $paymentLink);
 
         $totalAmount = $this->getTotalAmountForOrder($input[Entity::LINE_ITEMS]);
 

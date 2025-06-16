@@ -112,6 +112,10 @@ class Base
         {
             $request['content'] = $data;
         }
+        else if ($method === Requests::PATCH) 
+        {
+            $request['content'] = json_encode($data);
+        }
 
         $this->traceRequest($request);
 
@@ -249,7 +253,6 @@ class Base
     {
         $code = $response[self::CODE];
         $body = $response[self::BODY];
-
 
         if ($code !== 200 && isset($body['details']))
         {

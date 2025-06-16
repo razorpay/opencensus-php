@@ -4,6 +4,7 @@ namespace RZP\Models\DeviceDetail;
 
 use RZP\Exception\LogicException;
 use Illuminate\Support\Facades\Cookie;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -131,4 +132,109 @@ class Core extends Base\Core
 
         return $deviceDetail;
     }
+
+    /**
+     * @throws \Throwable
+     */
+    public function fetchOnboardingWorkflowDataFromPGOS($merchantId): ?array
+    {
+        if (empty($merchantId)) {
+            return null;
+        }
+
+        $merchant = $this->repo->merchant->find($merchantId) ?? null;
+
+        $payload = [
+            'merchant_id' => $merchantId
+        ];
+
+        try {
+            $pgosProxyController = new MerchantOnboardingProxyController();
+            $startTime = millitime();
+            $pgosResponse = $pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::GET_MERCHANT_ONBOARDING_DETAILS, $payload, $merchant, true);
+
+            $this->trace->info(TraceCode::PGOS_ONBOARDING_DETAILS_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'response' => $pgosResponse,
+                'duration' => millitime() - $startTime,
+            ]);
+            if (empty($pgosResponse)) {
+                throw new \Exception("PGOS response is empty");
+            }
+
+        } catch (\Throwable $e) {
+
+            $this->trace->error(TraceCode::PGOS_ONBOARDING_DETAILS_FETCH_ERROR, [
+                'merchant_id' => $merchantId,
+                'error'       => $e->getMessage(),
+            ]);
+
+            $errorData = json_decode($e->getMessage(), true);
+            if (isset($errorData['code']) && $errorData['code'] === 'internal' &&
+                isset($errorData['msg']) && $errorData['msg'] === 'db_error: record_not_found') {
+                return null;
+            }
+
+            throw $e;
+        }
+
+        $workflowDetails = $pgosResponse[Constants::WORKFLOW_DETAILS] ?? [];
+        $service = $pgosResponse[Constants::WORKFLOW_DETAILS_OWNER_SERVICE] ?? null;
+
+        return [
+            Constants::WORKFLOW_DETAILS_OWNER_SERVICE => $service,
+            Constants::WORKFLOW_DETAILS => $workflowDetails
+        ];
+    }
+
+
+    public function createDeviceDetailsForOmniMerchantsIfNotExist(string $merchantId)
+    {
+        $merchantId = $this->app['basicauth']->getMerchant()->getId();
+
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
+
+        if (!empty($userDeviceDetail)) {
+            return;
+        }
+
+        // Case 1: If no device details, check if there is a primary user associated with the merchant
+        $merchantUsers = $this->repo->merchant_user->fetchPrimaryUserIdForMerchantIdAndRole($merchantId, 'owner');
+
+        if (empty($merchantUsers)) {
+            $this->trace->error(TraceCode::MERCHANT_USER_DOES_NOT_EXISTS, [
+                'message' => "Error in createDeviceDetailsForOmniMerchantsIfNotExist()",
+            ]);
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_USER_DOES_NOT_EXISTS
+            );
+        }
+
+        $userId = array_first($merchantUsers);
+
+        $input = [
+            Entity::MERCHANT_ID => $merchantId,
+            Entity::USER_ID => $userId,
+        ];
+
+        try {
+            $deviceDetail = $this->createDeviceDetail($input);
+
+            $this->trace->info(TraceCode::USER_DEVICE_CREATE_DETAIL_RESPONSE, [
+                'response' => $deviceDetail,
+            ]);
+
+        } catch (\Throwable $e) {
+            $this->trace->traceException($e);
+
+            $this->trace->info(
+                TraceCode::USER_DEVICE_DETAIL_CREATE_FAILED,
+                ['input' => $input]
+            );
+
+            throw $e;
+        }
+    }
+
 }

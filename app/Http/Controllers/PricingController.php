@@ -290,5 +290,13 @@ class PricingController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function createPlanReconJobSync()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createPlanReconJobSync($input);
+
+        return ApiResponse::json($data);
+    }
 
 }

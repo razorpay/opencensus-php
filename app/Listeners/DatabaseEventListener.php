@@ -7,6 +7,7 @@ use App;
 use Database\Connection;
 use RZP\Base\ConnectionType;
 use RZP\Base\Database\Metric;
+use RZP\Models\Customer\Account\SplitzExperimentEvaluator;
 use RZP\Trace\TraceCode;
 use Illuminate\Database\Events\QueryExecuted;
 
@@ -93,7 +94,22 @@ class DatabaseEventListener
                                 'time' => $event->time,
                             ]);
                     }
-
+                    if ($table == 'customers' and (new SplitzExperimentEvaluator())->isQueryLogEnabled())
+                    {
+                        $this->trace->info(
+                            TraceCode::DB_QUERY_FOR_CUSTOMERS_TABLE_EXECUTION_LOG,
+                            [
+                                'route' => $this->app['request.ctx']->getRoute() ?? $this->app['worker.ctx']->getJobName(),
+                                'connection' => $event->connectionName,
+                                'table' => $table,
+                                'operation' => $operation,
+                                'query' => $event->sql,
+                                'time' => $event->time,
+                                'bindings' => $event->bindings,
+                                'backtrace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 50),
+                            ]
+                        );
+                    }
                 }
             }
         } catch (\Throwable $e) {

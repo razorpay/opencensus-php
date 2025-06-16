@@ -259,7 +259,7 @@ class Validator extends Base\Validator
     protected static $editPreSignupRules = [
         Entity::NAME                        => 'required|min:4|string|max:200',
         Entity::WEBSITE                     => 'sometimes|custom:active_url|max:255|nullable',
-//        Entity::EMAIL                       => 'sometimes|email|unique:merchants',
+        Entity::EMAIL                       => 'sometimes|email|unique:merchants',
     ];
 
     protected static $editNameRules = [
@@ -448,6 +448,12 @@ class Validator extends Base\Validator
         Methods\Entity::SODEXO  => 'sometimes|bool',
         Methods\Entity::COD     => 'sometimes|bool',
         Methods\Entity::DUITNOW_PAY  => 'sometimes|bool',
+        Methods\Entity::EMI  => 'sometimes|array',
+        Methods\Entity::CARD_NETWORKS  => 'sometimes|array',
+        Methods\Entity::DEBIT_CARD  => 'sometimes|bool',
+        Methods\Entity::CREDIT_CARD  => 'sometimes|bool',
+        Methods\Entity::CARD_SUBTYPE  => 'sometimes|array',
+        Methods\Entity::CARD_SUBTYPE.'.*'  => 'sometimes|boolean'
     ];
 
     protected static $resetSettlementScheduleRules = [

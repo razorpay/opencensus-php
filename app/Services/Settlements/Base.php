@@ -85,6 +85,8 @@ class Base
 
     protected $request;
 
+    protected $route;
+
     const KEY                   = 'key';
     const SECRET                = 'secret';
 
@@ -121,6 +123,8 @@ class Base
         $this->auth    = $app['basicauth'];
 
         $this->request = $app['request'];
+
+        $this->route   = $app['api.route'];
 
         $this->setHeaders();
     }

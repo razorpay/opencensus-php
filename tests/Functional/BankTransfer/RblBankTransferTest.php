@@ -125,6 +125,7 @@ class RblBankTransferTest extends TestCase
                     )->once();
 
                 return $processorMock;
+
             });
     }
 
@@ -637,6 +638,17 @@ class RblBankTransferTest extends TestCase
         $data = $this->testData['ecollectRblBatchData'];
 
         $this->createExcelFile($data, 'filename', 'files/filestore');
+
+        $this->ba->h2hAuth();
+
+        $this->startTest();
+    }
+
+    public function testEcollectRblCollectxBatchCreate()
+    {
+        $data = $this->testData['ecollectRblCollectxBatchData'];
+
+        $this->createExcelFile($data, 'filename', 'files/filestore', extension: 'xls');
 
         $this->ba->h2hAuth();
 

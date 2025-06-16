@@ -5,6 +5,7 @@ namespace RZP\Models\Card;
 use Illuminate\Support\Str;
 use Route;
 
+use RZP\Constants\Country;
 use RZP\Exception;
 use RZP\Diag\EventCode;
 use RZP\Exception\BaseException;
@@ -89,7 +90,7 @@ class Core extends Base\Core
 
         $this->card = $card;
 
-        $iin = $this->fillNetworkDetails($card, $input);
+        $iin = $this->fillNetworkDetails($card, $input, $merchant);
 
         if (empty($iin) === false)
         {
@@ -445,7 +446,7 @@ class Core extends Base\Core
         // this is to update token iin incase of s2s merchants;
         $input[Card\Entity::TOKENISED] = true;
 
-        $iin = $this->fillNetworkDetails($card, $input);
+        $iin = $this->fillNetworkDetails($card, $input, $merchant);
 
         if (empty($iin) === false)
         {
@@ -502,7 +503,7 @@ class Core extends Base\Core
 
         $this->setVaultTokenAndFingerPrint($card, $input, $recurring);
 
-        $iin = $this->fillNetworkDetails($card, $input);
+        $iin = $this->fillNetworkDetails($card, $input, $merchant);
 
         $card->saveOrFail();
 
@@ -999,7 +1000,7 @@ class Core extends Base\Core
         return $card;
     }
 
-    public function fillNetworkDetails($card, $input)
+    public function fillNetworkDetails($card, $input, $merchant)
     {
         $iinNumber = $card->getAttributes()[Card\Entity::IIN];
 
@@ -1036,7 +1037,12 @@ class Core extends Base\Core
         $card->setNetwork($networkName);
 
         // Get details for this iin from card repository
-        $iin = $this->repo->card->retrieveIinDetails($iinNumber);
+        if(isset($merchant) && $merchant->getCountry() !== Country::IN){
+            $iin = $this->repo->card->retrieveApiIinEntityDetails($iinNumber);
+        }
+        else{
+            $iin = $this->repo->card->retrieveIinDetails($iinNumber);
+        }
 
         $type = null;
 

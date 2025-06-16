@@ -9,6 +9,7 @@ final class Constants
 {
     const INSTANT_OFFER = 'instant';
     const CASHBACK_OFFER = 'deferred';
+    const CLUBBED_OFFER = 'clubbed';
     const ALREADY_DISCOUNTED = 'already_discounted';
 
     const SUBSCRIPTION_TYPE_VALUE_TO_ENUM_MAP = [
@@ -127,6 +128,7 @@ final class Constants
 
     const RULE_GROUPS = 'rule_groups';
     const RULES = 'rules';
+    const FILTERS = 'filters';
     const INCLUDES = 'includes';
 
     const STAGE_DISCOVER = 'STAGE_DISCOVER';
@@ -140,6 +142,8 @@ final class Constants
     const PERCENTAGE_DISCOUNT = 'percent_discount';
     const FLAT_DISCOUNT = 'flat_discount';
     const MAX_DISCOUNT = 'max_discount';
+    const TOTAL_DISCOUNT = 'total_discount';
+    const BENEFIT_APPLIED = 'benefit_applied';
     const APPLICABLE_ON = 'applicable_on';
     const WHEN = 'when_expression';
     const THEN = 'then';
@@ -173,6 +177,8 @@ final class Constants
     const CREATE_OFFER_DUAL_WRITE_EXP = 'app.offers_engine_dual_write_experiment_id';
 
     const OFFERS_ENGINE_FETCH_EXP              = 'app.offers_engine_fetch_offers_exp_id';
+
+    const OE_VALIDATE_DUMMY_ORDER_EXP = 'app.oe_validate_dummy_order_exp_id';
     const OFFERS_ENGINE_ADMIN_FETCH_OFFERS_EXP = 'app.offers_engine_admin_fetch_offers_exp_id';
 
     const OFFERS_ENGINE_VALIDATE_OFFER_EXP = 'app.offers_engine_validate_offer_exp_id';
@@ -186,6 +192,8 @@ final class Constants
     const API_OFFERS_REPO_FALLBACK_IGNORE_EXP = 'app.api_offers_repo_fallback_ignore_exp';
 
     const OFFER_CREATE_READS_MIGRATION_EXP = 'app.offers_engine_create_read_migration_exp_id';
+
+    const OFFERS_ENGINE_BENEFITS_DECOMP_EXP = 'app.offers_engine_benefits_decomp_exp_id';
 
     const OFFER_MERCHANT_DASHBOARD_READS_MIGRATION_EXP = 'app.offers_engine_merchant_dashboard_read_migration_exp_id';
 
@@ -241,11 +249,16 @@ final class Constants
     const STATUS_ACTIVE = 'STATUS_ACTIVE';
 
     const APPS = "apps";
+
+    const PAYER_ACCOUNT_ISSUER = "payer_account_issuer";
+
     const ALL = "ALL";
 
     const UPI_APP = "UpiApp";
 
     const UPI_PAYER_ACCOUNT = "UpiPayerAccount";
+
+    const UPI_PAYER_ACCOUNT_ISSUER = "UpiPayerAccountIssuer";
 
     const PAYMENT_INSTRUMENT = "PaymentInstrument";
 
@@ -253,4 +266,7 @@ final class Constants
 
     const IS_CARD_SAVED = 'is_saved';
 
+    const PRODUCT = "product";
+
+    const ORDER_CREATED_AT = 'created_at';
 }

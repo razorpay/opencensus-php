@@ -3,6 +3,7 @@
 namespace RZP\Models\User;
 
 use DB;
+use Illuminate\Support\Collection;
 use Mail;
 use Hash;
 use Cache;
@@ -1534,19 +1535,7 @@ class Core extends Base\Core
             $orgId = Org\Entity::RAZORPAY_ORG_ID;
         }
 
-        // DISABLE_THE_CAPTCHA_YOU_SHALL if present in input means register flow if not early reject $input['captcha_disable'] === DISABLE_THE_CAPTCHA_YOU_SHALL
-        if (isset($input['captcha_disable']) === true && $input['captcha_disable'] === "DISABLE_THE_CAPTCHA_YOU_SHALL") 
-        {
-            $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
-
-            $permissionEnabled = (new \RZP\Models\Admin\Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
-
-            if ($permissionEnabled === false) {
-                $this->checkSecondFactorAuthAndSendOtp($user);
-            }
-
-        }
-        else
+        if ($this->shouldSkip2faForCustomMerchantInviteFlow($input, $orgId) === false)
         {
             $this->checkSecondFactorAuthAndSendOtp($user);
         }
@@ -1579,6 +1568,61 @@ class Core extends Base\Core
         }
 
         return $this->get($user, true, $input);
+    }
+
+
+    public function shouldSkip2faForCustomMerchantInviteFlow ($input, $orgId) : bool
+    {
+        $skip = false;
+
+        try
+        {
+            if (isset($input['merchant_invitation']) === true)
+            {
+
+                $token = $input['merchant_invitation'];
+
+                // verify if invitation is valid
+                $invitation = $this->repo->admin_lead->findByToken($token);
+
+                if (empty($invitation) === true)
+                {
+                    return false;
+                }
+
+                $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+                $org = $this->repo->org->findOrFailPublic($orgId);
+
+                $vasOrgFeatureEnabled = $org->isFeatureEnabled(FeatureConstant::VAS_ORG_IDENTIFIER);
+
+                $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+                if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true))
+                {
+                    $skip = true;
+                }
+
+            }
+        }
+        catch (\Throwable $ex ){
+
+            $this->trace->info(TraceCode::USER_LOGIN_2FA_SKIPPED,
+                [
+                    'org_id' => $orgId
+                ]);
+
+
+            return false;
+        }
+
+        $this->trace->info(TraceCode::USER_LOGIN_2FA_SKIPPED,
+            [
+                'org_id' => $orgId,
+                'skip'   => $skip
+            ]);
+
+        return $skip;
     }
 
     /**
@@ -4210,6 +4254,62 @@ class Core extends Base\Core
     }
 
     /**
+     * @param $userMerchants array - type of data returned from getUnifiedMerchants
+     * @prams $product string      - primary, banking
+     *
+     * below logic of selecting merchant to login for a given product sits in dashboard BE as of now.
+     * https://github.com/razorpay/dashboard/blob/67d589a9aac3f5b2332e68b18e80af3ec7732fda/app/User/Helper.php#L64
+     * Unifying it here so it will be directly moved to user service. And we have only one place which determines.
+     * with which merchant user should login with.
+     *
+     * if no product is passed, it will return the merchants with owner role for any products.
+     * if $product is passes it will return the merchants with any role for the given product.
+     *
+    */
+    public function selectMerchantsToLogin(array $userMerchants, string $product): array
+    {
+
+        //if product is passed, it will only try to select a merchant for the given product.
+        $restricted = empty($product) === false;
+
+        //if product is not passed, select default as primary.
+        $product    = empty($product) === true ? Product::PRIMARY : $product;
+
+        // which fileds of merchant entity to check for matching role
+        // if product is primary, check 'role' field else check 'banking_role' field
+        $productRole = $product === Product::PRIMARY ? Entity::ROLE : Entity::BANKING_ROLE;
+        $switchProductRole = $productRole === Entity::ROLE ? Entity::BANKING_ROLE : Entity::ROLE;
+
+        $userMerchants=collect($userMerchants);
+
+        // Select owner if it exists on given product
+        $merchants = $userMerchants->filter(function ($item) use ($productRole)
+        {
+            return $item[$productRole]  === Role::OWNER;
+        });
+
+        // we do not want to by default switch to another product unless specifically asked.
+        if (!$restricted && count($merchants->all()) == 0){
+            // If owner doesn't existing on product, check switch product, if it exists we'll allow switch-product
+                $merchants = $userMerchants->filter(function ($item) use ($switchProductRole)
+                {
+                    return $item[$switchProductRole] === Role::OWNER;
+                });
+        }
+
+        // If owner doesn't exist, check if user is associated to any merchant on given product
+        if (count($merchants->all()) == 0)
+        {
+            $merchants = $userMerchants->filter(function ($item) use ($productRole)
+            {
+                return !empty($item[$productRole]);
+            });
+        }
+
+        return array_values($merchants->all());
+    }
+
+    /**
      * Serializes user along with all the merchant it has access to, it's
      * settings etcetera. Primarily consumed by internal dashboard application.
      *
@@ -4311,6 +4411,35 @@ class Core extends Base\Core
                 if ($merchant->getOrgID() === $orgId or in_array($merchant->getId(), $merchantIdsWithCrossOrgFeature, true) === true)
                 {
                     $filteredMerchants->add($merchant);
+
+                    $ezetapMid = $this->app['config']->get('app.ezetap_merchant_id');
+
+                    if(!empty($merchant[Entity::PIVOT]) && !empty($merchant[Entity::PIVOT][Entity::ROLE]) && $merchant[Entity::PIVOT][Entity::ROLE] == ROLE::PARTNER_AGENT && $merchant->getId() == $ezetapMid) {
+                        $this->trace->info(TraceCode::PARTNER_AGENT_MERCHANT_FOUND, [
+                            'user_id' => $user->getUserId()
+                        ]);
+
+                        $partnerAgentMerchants = new Base\PublicCollection;
+
+                        $partnerAgentMerchants->add($merchant);
+
+                        $partnerMerchants = $partnerAgentMerchants->callOnEveryItem('toArrayUser');
+
+                        $partnerMerchantsUnique = $this->getUnifiedMerchants($partnerMerchants);
+
+                        $userId = $user->getUserId();
+
+                        $partnerMerchantsUnique = $this->appendBankingSpecificDetails($partnerMerchantsUnique, $userId);
+
+                        $partnerMerchantsUnique = $this->addProductSpecificDetails($partnerMerchantsUnique);
+
+                        $response['rzp_partner_agent'] = $partnerMerchantsUnique;
+
+                        $this->trace->info(TraceCode::PARTNER_AGENT_RESPONSE_UPDATED, [
+                            'merchant_id' => $merchant->getId(),
+                            'user_id' => $userId
+                        ]);
+                    }
                 }
             }
         }
@@ -4334,6 +4463,8 @@ class Core extends Base\Core
             $response[Entity::INVITATIONS] = $invitations;
             $response[Entity::SETTINGS]    = $settings;
         }
+
+        $this->getSortedMerchantsForCustomInvite($merchantsUnique, $orgId);
 
         $response[Entity::MERCHANTS]   = $merchantsUnique;
 
@@ -7342,8 +7473,7 @@ class Core extends Base\Core
         // merchants for whom pgos is serving onboarding requests
         // merchants who are not completely activated
         if ($merchant->getService() === Merchant\Constants::PGOS and
-            empty($users) === false and
-            $merchant->merchantDetail->getActivationStatus() != Merchant\Detail\Status::ACTIVATED)
+            empty($users) === false)
             {
                 $user = $this->repo->user->find($users[0]);
 
@@ -7386,5 +7516,21 @@ class Core extends Base\Core
     {
         // create merchant, merchant_user, merchant_attribute,
         $merchantData = $this->merchantService->create($merchantInputData, $merchantDetailInputData);
+    }
+
+    protected function getSortedMerchantsForCustomInvite(&$merchantsUnique, $orgId): void
+    {
+        $org = $this->repo->org->findOrFailPublic($orgId);
+
+        $permissionEnabled = (new Org\Service)->isRequiredPermissionEnabledforOrg($orgId, Permission::CUSTOM_INVITE_MERCHANT_FLOW);
+
+        $vasOrgFeatureEnabled = $org->isFeatureEnabled(FeatureConstant::VAS_ORG_IDENTIFIER);
+
+        if(($permissionEnabled === true) and ($vasOrgFeatureEnabled === true))
+        {
+            usort($merchantsUnique, function ($a, $b) {
+                return $b[Entity::CREATED_AT] <=> $a[Entity::CREATED_AT]; // Sorting merchant list to get newly created merchant first.
+            });
+        }
     }
 }

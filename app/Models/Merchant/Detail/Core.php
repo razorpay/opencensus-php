@@ -15,6 +15,7 @@ use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\SplitzConstant;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailsCore;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\Workflow\Service\Workflow\Service as MakerCheckerWorkflowService;
@@ -51,7 +52,6 @@ use RZP\Models\SalesforceConverge\SalesforceConvergeService;
 use RZP\Models\SalesforceConverge\SalesforceMerchantUpdatesRequest;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Factory;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Services\KafkaProducer;
@@ -332,7 +332,7 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateBusinessTypeForBankingMerchants($input, $merchant);
 
-        if ((new Detail\Core)->isIndianMerchant($merchant) === true)
+        if (((new Detail\Core)->isIndianMerchant($merchant) === true) && ($merchant->isLinkedAccount() === false))
         {
             $merchantDetails->getValidator()->validateMerchantFieldsForBankingCompliance($input, $merchant);
         }
@@ -387,36 +387,38 @@ class Core extends Base\Core
 
             $verificationStartTime = microtime(true);
             // do pan validation
-            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_PPAN_FOR_VAS] === false)
-            {
-                $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant, $input);
+            if ($this->isIndianMerchant($merchant)){
+                if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_PPAN_FOR_VAS] === false)
+                {
+                    $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant, $input);
+                }
+
+                $saveBusinessWebsite = $this->handleWebsiteInput($oldMerchantDetails, $merchantDetails, $input);
+
+                if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_CPAN_FOR_VAS] === false)
+                {
+                    $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
+                }
+
+                if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_GST_FOR_VAS] === false)
+                {
+                    $this->verifyGSTINIfApplicable($merchantDetails, $merchant, $input);
+                }
+
+                $this->verifyShopEstbNumberIfApplicable($merchantDetails, $merchant, $input);
+
+                if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_CIN_FOR_VAS] === false)
+                {
+                    $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
+                }
+
+                if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_BAN_FOR_VAS] === false)
+                {
+                    $this->attemptPennyTesting($merchantDetails, $merchant, false, $input);
+                }
+
+                $this->triggerSyncValidationRequests($merchant, $merchantDetails);
             }
-
-            $saveBusinessWebsite = $this->handleWebsiteInput($oldMerchantDetails, $merchantDetails, $input);
-
-            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_CPAN_FOR_VAS] === false)
-            {
-                $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
-            }
-
-            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_GST_FOR_VAS] === false)
-            {
-                $this->verifyGSTINIfApplicable($merchantDetails, $merchant, $input);
-            }
-
-            $this->verifyShopEstbNumberIfApplicable($merchantDetails, $merchant, $input);
-
-            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_CIN_FOR_VAS] === false)
-            {
-                $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
-            }
-
-            if ($kycBlockFeatureFlags[FeatureConstants::KYC_BLOCK_BAN_FOR_VAS] === false)
-            {
-                $this->attemptPennyTesting($merchantDetails, $merchant, false, $input);
-            }
-
-            $this->triggerSyncValidationRequests($merchant, $merchantDetails);
 
             $this->trace->info(TraceCode::MERCHANT_KYC_VERIFICATION_LATENCY, [
                 'merchant_id' => $merchant->getId(),
@@ -868,6 +870,63 @@ class Core extends Base\Core
         return $summaryData;
     }
 
+    public function updatePosActivatedOrKqsNotLiveMerchantsCron()
+    {
+        $merchantList = $this->repo->merchant->getPOSMerchantsWithActivatedOrKqsButNotLive();
+
+        $this->trace->info(TraceCode::POS_ACTIVATED_OR_KQS_LIVE_DATA_FIX_VIA_CRON, [
+            'merchantList'        => $merchantList
+        ]);
+
+        $succeededIds = [];
+        $failedIds = [];
+        $validator = new Validator();
+        foreach ($merchantList as $merchantId)
+        {
+            try {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $validator->validateRiskTagsForPos($merchant);
+                $merchant->LiveEnable();
+
+                $this->trace->info(Tracecode::POS_ACTIVATED_OR_KQS_LIVE_DATA_FIX_VIA_CRON, [
+                    'merchant_id' => $merchantId,
+                    'Live' => $merchant->isLive()
+                ]);
+
+                $this->repo->merchant->saveOrFail($merchant);
+
+                $succeededIds[$merchantId] = true;
+                $this->trace->count(Metric::POS_ACTIVATED_OR_KQS_NOT_LIVE, ['status' => 'success']);
+
+            }
+            catch(\Throwable $ex)
+            {
+                $this->trace->error(
+                    TraceCode::POS_ACTIVATED_OR_KQS_LIVE_DATA_FIX_VIA_CRON_FAILED,
+                    [
+                        'msg' => 'Failed',
+                        'error_message' => $ex->getMessage()
+                    ]
+                );
+
+                $failedIds[$merchantId] = false;
+                $this->trace->count(Metric::POS_ACTIVATED_OR_KQS_NOT_LIVE, ['status' => 'failed']);
+            }
+
+        }
+
+        $summaryData = [
+            "succeeded_ids" => $succeededIds,
+            "failed_ids" => $failedIds,
+            "success_count" => sizeof($succeededIds),
+            "failed_count" => sizeof($failedIds),
+        ];
+
+        $this->trace->info(Tracecode::POS_LIVE_DISABLED_DATA_FIX_CRON_SUMMARY_RESULT, $summaryData);
+
+        return $summaryData;
+    }
     public function updateActivationProgressPGOSInternal($merchantId, $input)
     {
         // this also sends the lumberjack events
@@ -1180,6 +1239,43 @@ class Core extends Base\Core
             return false;
         }
     }
+
+    public function shouldApplyMutexOnOnboardingSave(string $merchantId): bool
+    {
+        $mode = 'enable';
+        $routeName = $this->app['request.ctx']->getRoute() ?? 'NA';
+
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.apply_mutex_on_onboarding_save_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::APPLY_MUTEX_ON_ONBOARDING_SAVE_REQUEST, [
+                'splitz_output' => $variant,
+                'route'         => $routeName,
+                'merchant_id'   => $merchantId
+            ]);
+
+            return $variant === $mode;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'experiment_id' => $this->app['config']->get('app.apply_mutex_on_onboarding_save_experiment_id'),
+                'route'         => $routeName,
+                'merchant_id'   => $merchantId
+            ]);
+
+            return false;
+        }
+    }
+
 
     public function triggerOCRService($input, $ocrServiceName, $merchant)
     {
@@ -1528,6 +1624,11 @@ class Core extends Base\Core
             $workflowActionData = json_decode($e->getMessage(), true);
             $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
         }
+        catch (\Throwable $ex)
+        {
+            $this->trace->count(DetailMetric::NEEDS_CLARIFICATION_RESPONDED_WORKFLOW_FAILURE);
+            $this->trace->traceException($ex, Logger::ERROR, TraceCode::NEEDS_CLARIFICATION_RESPONDED_WORKFLOW_FAILURE);
+        }
     }
 
     /**
@@ -1798,8 +1899,20 @@ class Core extends Base\Core
         $this->verifyAadhaarWithPanIfApplicable($merchant, $merchantDetails);
 
         // if the merchant is eligible for fee based gating logic we would not update the activation status of the merchant
+        $isFeeBasedGatingEligible = false;
 
-        $isFeeBasedGatingEligible = $this->getUpdatedFeeBasedGatingResponse($merchant, $merchantDetails, $statusToBeUpdated);
+        if (isset($input[DEConstants::FEE_GATING_ELIGIBILITY_FROM_PGOS]) === true)
+        {
+            $this->trace->info(TraceCode::FEE_GATING_ELIGIBILITY_FETCHED_FROM_PGOS, [
+                'fee_gating_eligibility'      => $input[DEConstants::FEE_GATING_ELIGIBILITY_FROM_PGOS],
+            ]);
+
+            $isFeeBasedGatingEligible = $input[DEConstants::FEE_GATING_ELIGIBILITY_FROM_PGOS];
+        }
+        else
+        {
+            $isFeeBasedGatingEligible = $this->getUpdatedFeeBasedGatingResponse($merchant, $merchantDetails, $statusToBeUpdated);
+        }
 
         $this->trace->info(TraceCode::FEE_BASED_GATING_ELIGIBILITY, [
             'merchant_id'              => $merchant->getId(),
@@ -1894,7 +2007,7 @@ class Core extends Base\Core
         // - and new account status 'activated'.
         // - TODO:: Remove this check  once we migrate the Dasboard flows to this in future.
         //
-        if ($this->isSubmittedViaProductConfigApi() === false)
+        if ($this->isSubmittedViaProductConfigApi() === false || strtolower($this->merchant->getCountry()) === Country::MY)
         {
             $autoActivated = $this->autoActivateMerchantIfApplicable($merchant);
         }
@@ -4884,7 +4997,72 @@ class Core extends Base\Core
             'start_time'  => $startTime
         ]);
 
+        $fromActivationStatus = $oldMerchantDetails->getActivationStatus();
+        $toActivationStatus = $newMerchantDetails->getActivationStatus();
+        $this->pushMetricOnManualActivationStatusChangeForRegularIndiaPgMerchants($merchant, $fromActivationStatus, $toActivationStatus);
+        $this->pushCrossBorderSegmentEventIfApplicable($merchant, $properties);
+
         return $merchantDetails;
+    }
+
+    private function pushCrossBorderSegmentEventIfApplicable(MerchantEntity $merchant, $properties)
+    {
+        if((new MerchantOnboardingProxyController())->isCrossBorderIndiaModularMerchant($merchant) === false) {
+            return;
+        }
+        $payload = [
+            'action' => CrossBorderCommonUseCases::CROSS_BORDER_MERCHANT_ACTIVATION_STATUS_CHANGE,
+            'merchant_id' => $merchant->getId(),
+            'properties' => $properties,
+            'mode' =>  Mode::LIVE,
+        ];
+        CrossBorderCommonUseCases::dispatch($payload)->delay(rand(0, 5));
+    }
+
+    private function pushMetricOnManualActivationStatusChangeForRegularIndiaPgMerchants(MerchantEntity $merchant, $fromActivationStatus, $toActivationStatus) : void
+    {
+        $adminEmail = \Request::header(RequestHeader::X_DASHBOARD_ADMIN_EMAIL);
+
+        if ($this->isIndiaPgRegularMerchant($merchant) === false and empty($adminEmail) === true)
+        {
+            return;
+        }
+
+        $product = DetailConstants::PG_ONBOARDING;
+        $version = DetailConstants::NON_MODULAR_VERSION;
+        $countryCode = DetailConstants::INDIA_COUNTRY_CODE;
+
+        // TODO: Handle multiple versions for MODULAR flow
+        if ($this->pgosProxyController->isIndiaPgModularMerchant($merchant) === true)
+        {
+            $version = DetailConstants::MODULAR_VERSION_V1;
+        }
+
+        $this->trace->count(DetailMetric::MANUAL_ACTIVATION_STATUS_CHANGE_METRIC, [
+            'source'                 => 'admin',
+            'product'                => $product,
+            'version'                => $version,
+            'country_code'           => $countryCode,
+            'from_activation_status' => $fromActivationStatus,
+            'to_activation_status'   => $toActivationStatus,
+        ]);
+
+        $this->trace->info(TraceCode::MERCHANT_ACTIVATION_STATUS_CHANGE_BY_ADMIN, [
+            'merchant_id' => $merchant->getId(),
+        ]);
+    }
+
+    public function isIndiaPgRegularMerchant(MerchantEntity $merchant) : bool
+    {
+        $merchantDetails = $merchant->merchantDetail;
+        $merchantBusinessDetails = $merchantDetails->businessDetail;
+
+        return ($merchant->getOrgId() === ORG_ENTITY::RAZORPAY_ORG_ID and
+            strtolower($merchant->getCountry()) === Country::IN and
+            $this->isPGOSMerchant($merchant) === true and
+            $this->isPOSMerchant($merchantBusinessDetails) === false and
+            $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::PRODUCT] !== DetailConstants::CROSS_BORDER_ONBOARDING
+        );
     }
 
     /**
@@ -4959,12 +5137,32 @@ class Core extends Base\Core
 
     public function getActivationStatusMappingForModularMerchants(): array
     {
+        $merchant = $this->app['basicauth']->getMerchant();
+        if (empty($merchant) === false)
+        {
+            $merchantId = $merchant->getId();
+            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
+            $workflowDetails = $userDeviceDetail ? $userDeviceDetail->getValueFromMetadata(DDConstants::WORKFLOW_DETAILS) : [];
+        }
+
         $allowedNextActivationStatusMap = Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_EDD_PENDING;
 
         if ($this->app['basicauth']->isAdminAuth() === true)
         {
             $allowedNextActivationStatusMap[Status::EDD_PENDING] = [];
         }
+
+        if (empty($workflowDetails) === false and
+            isset($workflowDetails[DetailConstants::PG_ONBOARDING_WORKFLOW_VERSION]) and
+            $workflowDetails[DetailConstants::PG_ONBOARDING_WORKFLOW_VERSION] === DetailConstants::MODULAR_VERSION_V2
+        )
+        {
+            $allowedNextActivationStatusMap = Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_FOR_EO_TO_MO_MERCHANTS;
+        }
+
+        $this->app->trace->info(TraceCode::ALLOWABLE_ACITVATION_STATUS_MAP_FOR_MODULAR_MERCHANT, [
+            'allowed_next_activation_status_map' => $allowedNextActivationStatusMap,
+        ]);
 
         return $allowedNextActivationStatusMap;
     }
@@ -7377,7 +7575,7 @@ class Core extends Base\Core
     {
         $merchant = $merchantDetails->merchant;
 
-        if ($this->pgosProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($merchant) === true)
+        if (($this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false) === true)
         {
             // todo: the activation_status should be calculated by calling PGOS. This logic will be subsequently migrated.
             // we are hardcoding the activation_status as Under-Review for now for India PG modular merchants to avoid network calls
@@ -7445,9 +7643,9 @@ class Core extends Base\Core
     {
         $applicableActivationStatus = $this->getApplicableActivationStatusForMerchant($merchantDetails);
 
-        if ($applicableActivationStatus === Status::ACTIVATED_MCC_PENDING && $this->mcore->isRegularMerchant($merchantDetails->merchant) === false)
+        if ($applicableActivationStatus === Status::ACTIVATED_MCC_PENDING )
         {
-            $splitzVariant = $this->getSplitzResponse($merchantDetails->getId(), 'non_regular_merchant_to_under_review');
+            $splitzVariant = $this->getSplitzResponse($merchantDetails->getId(), 'amp_merchant_to_under_review');
 
             $this->trace->info(TraceCode::MERCHANT_GET_APPLICABLE_ACTIVATION_STATUS, [
                 'merchant_id'                   => $merchantDetails->getId(),
@@ -12446,8 +12644,7 @@ class Core extends Base\Core
         // merchants for whom pgos is serving onboarding requests
         // merchants who are not completely activated
         if (($merchant->getService() === Merchant\Constants::PGOS or
-            array_intersect_key(array_flip($skipPGOSCheckForFields), $data)) and
-            $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
+            array_intersect_key(array_flip($skipPGOSCheckForFields), $data)))
             {
                 $merchantDetails = $this->repo->merchant_detail->getByMerchantId($data['merchant_id']);
 
@@ -12776,7 +12973,7 @@ class Core extends Base\Core
         // Malaysian Merchants should not be eligible for fee based gating
         $isMalaySianMerchant = $this->isMalaysianMerchant($merchant);
 
-        $isIndiaPgOrCrossBorderIndiaModularMerchant = $this->pgosProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($merchant);
+        $isIndiaModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
 
         $splitzResultWebsiteMerchant = $this->getSplitzResponse($merchant->getId(), 'fee_based_gating_website_exp_id');
 
@@ -12788,7 +12985,7 @@ class Core extends Base\Core
             'signupCampaign'                => $signupCampaign,
             'malaysianMerchant'             => $isMalaySianMerchant,
             'splitzWebsiteMerchant'         => $splitzResultWebsiteMerchant,
-            'isIndiaPgModularMerchant'      => $isIndiaPgOrCrossBorderIndiaModularMerchant,
+            'isIndiaPgModularMerchant'      => $isIndiaModularMerchant,
         ]);
 
         if (($merchantOrg === Org\Entity::RAZORPAY_ORG_ID) and
@@ -12797,7 +12994,7 @@ class Core extends Base\Core
              (($splitzResultWebsiteMerchant === Constants::SPLITZ_TRUE) and $hasBusinessWebsiteOrAppUrls === true)) and
             ($activationFlow !== ActivationFlow::BLACKLIST) and
             ($isPgMerchant === true) and
-            ($isIndiaPgOrCrossBorderIndiaModularMerchant === false) and
+            ($isIndiaModularMerchant === false) and
             ($isMalaySianMerchant === false))
         {
             if (empty($signupCampaign) === false && $signupCampaign === DDConstants::EASY_ONBOARDING)
@@ -13145,18 +13342,28 @@ class Core extends Base\Core
 
         $paymentId = $body['payload']['payment']['entity']['id'];
 
+        $receivedSignature = $this->app['request']->headers->get('x-razorpay-signature');
+
         $isWhiteGloveOnboardingHook = $body['payload']['payment']['entity']['notes'][DetailConstants::WHITE_GLOVE_ONBOARDING_MANAGER_FEE] ?? null;
+        $feeCollectionOnboardingPaymentType = $body['payload']['payment']['entity']['notes'][DetailConstants::FEE_COLLECTION_PAYMENT_TYPE] ?? null;
 
         $body = [
-            'order_id'       => $orderId,
-            'payment_status' => $paymentStatus,
-            'amount'         => $amount,
-            'payment_id'     => $paymentId
+            'order_id'              => $orderId,
+            'payment_status'        => $paymentStatus,
+            'amount'                => $amount,
+            'payment_id'            => $paymentId,
+            'payment_signature'     => $receivedSignature,
+            'webhook_payload'       => json_encode($body),
         ];
 
         if (isset($isWhiteGloveOnboardingHook) === true)
         {
             $body['payment_type'] = DetailConstants::ONBOARDING_MANAGER;
+        }
+
+        if ((isset($feeCollectionOnboardingPaymentType) === true && $feeCollectionOnboardingPaymentType === DetailConstants::MO_FEE_COLLECTION_PAYMENT_TYPE))
+        {
+            $body['payment_type'] = DetailConstants::MO_FEE_COLLECTION_PAYMENT_TYPE;
         }
 
         $this->trace->info(TraceCode::FEE_BASED_GATING_WEBHOOK_PROCESSING, [
@@ -13179,13 +13386,15 @@ class Core extends Base\Core
         // If fee based description is set in the request , this means it is a gating request and return true, else false
         $feeBasedGatingHook = $body['payload']['payment']['entity']['notes'][DetailConstants::FEE_BASED_GATING_DESCRIPTION] ?? null;
         $whiteGloveOnboardingHook = $body['payload']['payment']['entity']['notes'][DetailConstants::WHITE_GLOVE_ONBOARDING_MANAGER_FEE] ?? null;
+        $feeCollectionOnboardingPaymentType = $body['payload']['payment']['entity']['notes'][DetailConstants::FEE_COLLECTION_PAYMENT_TYPE] ?? null;
 
         $this->trace->info(TraceCode::ONBOARDING_PAYMENT_WEBHOOK_PROCESSING, [
             'feeBasedGatingHook'       => $feeBasedGatingHook,
             'whiteGloveOnboardingHook' => $whiteGloveOnboardingHook,
+            'feeCollectionOnboardingPaymentType' => $feeCollectionOnboardingPaymentType,
         ]);
 
-        if (isset($feeBasedGatingHook) === true or isset($whiteGloveOnboardingHook) === true)
+        if (isset($feeBasedGatingHook) === true or isset($whiteGloveOnboardingHook) === true or (isset($feeCollectionOnboardingPaymentType) === true && $feeCollectionOnboardingPaymentType === DetailConstants::MO_FEE_COLLECTION_PAYMENT_TYPE))
         {
             return true;
         }
@@ -13737,7 +13946,7 @@ class Core extends Base\Core
             DetailConstants::ENABLE
         );
 
-        $isModularMerchant = $this->pgosProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($merchant);
+        $isModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
 
         return ($isExperimentEnabled and $isModularMerchant);
     }

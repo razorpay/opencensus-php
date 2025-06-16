@@ -48,7 +48,7 @@ class Service extends QrCode\Service
     ];
 
     public static $qrBharatQrStatusCheckGateways = [
-        Gateway::UPI_HDFCMINTOAK,
+        Gateway::HDFC_MINTOAK,
         Gateway::UPI_MINDGATE
     ];
 
@@ -89,6 +89,7 @@ class Service extends QrCode\Service
             $gateway = $qrCode->getGatewayFromQrString();
 
             $input[Entity::GATEWAY] = $gateway;
+
         }
         catch (\Exception $ex)
         {
@@ -408,17 +409,16 @@ class Service extends QrCode\Service
     protected function getInputForPartnerSqrCreate($input)
     {
 
-        if (isset($input['vpa']) === false)
+        if (isset($input['vpa']) === false and isset($input['tid']) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_VPA_DOESNT_EXIST);
         }
-
         $qrCreateReq = [
-                        'usage'        => 'multiple_use',
-                        'type'         => 'upi_qr',
-                        'fixed_amount' => false,
-                        'vpa'          => $input['vpa']
-         ];
+            'usage'        => 'multiple_use',
+            'type'         => 'upi_qr',
+            'fixed_amount' => false,
+            'vpa'          => $input['vpa'] ?? null,
+        ];
 
         $qrCreateReq[NonVAQrCodeEntity::REQUEST_SOURCE] = RequestSource::API;
 
@@ -726,6 +726,26 @@ class Service extends QrCode\Service
                 ]
             ];
         }
+        //check if the qr code is mapped to any device id and again trying to map to the same device id
+        if($qrCode->getDeviceId() !== null && $qrCode->getDeviceId() === $deviceId)
+        {
+            $this->trace->info(TraceCode::BAD_REQUEST_DUPLICATE_REQUEST, [
+                'message' => 'BAD_REQUEST_DUPLICATE_REQUEST',
+                'id'  => $id,
+            ]);
+
+            return [
+                "error"=>[
+                    "code"=>ErrorCode::BAD_REQUEST_DUPLICATE_REQUEST,
+                    "description"=>"QR Entity Mapping Device Duplicate Request",
+                    "source"=>"ezetap",
+                    "step"=>"qr_code_device_id_mapping",
+                    "reason"=>"entity_duplicate_request",
+                    "metadata"=>$input
+                ]
+            ];
+
+        }
 
         //check if the device id is already mapped to any qr code
         $qrCodeExists = (new Repository())->findByDeviceId($deviceId);
@@ -768,26 +788,6 @@ class Service extends QrCode\Service
             ];
         }
 
-        //check if the qr code is mapped to any device id and again trying to map to the same device id
-        if($qrCode->getDeviceId() === $deviceId)
-        {
-            $this->trace->info(TraceCode::BAD_REQUEST_DUPLICATE_REQUEST, [
-                'message' => 'BAD_REQUEST_DUPLICATE_REQUEST',
-                'id'  => $id,
-            ]);
-
-            return [
-                "error"=>[
-                    "code"=>ErrorCode::BAD_REQUEST_DUPLICATE_REQUEST,
-                    "description"=>"QR Entity Mapping Device Duplicate Request",
-                    "source"=>"ezetap",
-                    "step"=>"qr_code_device_id_mapping",
-                    "reason"=>"entity_duplicate_request",
-                    "metadata"=>$input
-                ]
-            ];
-
-        }
         return null;
     }
 
@@ -1770,6 +1770,11 @@ class Service extends QrCode\Service
             return;
         }
 
+        if (($qrCode->getRequestSource() !== RequestSource::EZETAP)){
+            $this->trace->info(TraceCode::QR_STATUS_CHECK_IGNORED_FOR_NON_EZETAP_QR_CODE, ['id' => $id]);
+            return;
+        }
+
         // If it has not yet been 3 minutes between QR Code create and now, don't dispatch for status check
         // for ezetap Request, we will skip below restriction, as ezetap will call fetch api after around 30 sec of QR Generation
         if (($qrCode->getRequestSource() !== RequestSource::EZETAP) and
@@ -1791,6 +1796,53 @@ class Service extends QrCode\Service
             // Since the dispatch step has a unique job check, we won't be dispatching multiple messages for the same
             // QR code at once.
             (new Core())->dispatchQrCodeToStatusCheckQueue($id, $qrCode->getRequestSource());
+        }
+    }
+
+    public function fetchQRFromDeviceId(array $input)
+    {
+        try {
+            $this->trace->info(TraceCode::QR_CODE_FETCH_FROM_DEVICE_REQUEST, $input);
+
+            // Validate input
+            if (empty($input['device_id'])) {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_REQUEST, "Missing or null device_id in input");
+            }
+
+            // Set the mode to LIVE and establish DB connection
+            $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+            $this->mode = Mode::LIVE;
+
+            // Fetch QR codes based on device ID
+            $qrCodes = $this->repo->qr_code->findByDeviceId($input['device_id']);
+
+            if ($qrCodes->isEmpty()) {
+                throw new BadRequestException( ErrorCode::BAD_REQUEST_QR_CODE_NOT_FOUND, "QR Entity Not Found for device_id: {$input['device_id']}");
+            }
+
+            if ($qrCodes->count() > 1) {
+                throw new BadRequestException( ErrorCode::MULTIPLE_QR_CODES_MAPPED_ERROR, "Multiple QR codes found for device_id: {$input['device_id']}");
+            }
+
+            return $qrCodes->first();
+
+        } catch (\Throwable $ex) {
+            $this->trace->error(
+                TraceCode::QR_CODE_FETCH_FROM_DEVICE_ERROR, [
+                'message'    => $ex->getMessage(),
+                'code'       => $ex->getCode(),
+                'trace'      => $ex->getTraceAsString(),
+                'input'      => $input,
+            ]);
+
+            return [
+                "error" => [
+                    "code"        => $ex->getCode() ,
+                    "description" => "Error fetching QR code: " . $ex->getMessage(),
+                    "source"      => "ezetap",
+                    "metadata"    => $input
+                ]
+            ];
         }
     }
 

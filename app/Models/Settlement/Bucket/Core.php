@@ -501,6 +501,9 @@ class Core extends Base\Core
                 $payload['created_at'] = $txn->getCreatedAt();
             }
 
+            // Adding created_at in payload for balance separation in capital-es
+            $payload['txn_created_at'] = $txn->getCreatedAt();
+
             try
             {
                 $this->app['sns']->publish(json_encode($payload), self::SETTLEMENT_TRANSACTION);

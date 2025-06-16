@@ -2861,7 +2861,7 @@ class Core extends Base\Core
         $this->addMerchantEmailToMailingList($merchant, [], [$newEmail]);
     }
 
-    public function createBalance($merchant, $mode)
+    public function createBalance($merchant, $mode, $balanceId = null)
     {
         $merchantBalance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), Type::PRIMARY, $mode);
 
@@ -2879,7 +2879,7 @@ class Core extends Base\Core
             return $merchantBalance;
         }
 
-        $merchantBalance = Merchant\Balance\Entity::buildFromMerchant($merchant);
+        $merchantBalance = Merchant\Balance\Entity::buildFromMerchant($merchant, $balanceId);
 
         $merchantBalance->setConnection($mode);
 
@@ -4603,10 +4603,12 @@ class Core extends Base\Core
         $properties = [
             'merchant_id'         => $partner->getId(),
             'is_managed_account'  => false,
+            'is_partner'           => true,
+            'partner_type'         => $partnerType,
         ];
 
-        $this->app['segment-analytics']->pushIdentifyEvent(
-            $merchant, $properties);
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant, $properties, SegmentEvent::PARTNER_SIGNUP);
 
         $this->trace->info(
             TraceCode::PARTNER_CREATION_SUCCESSFUL,
@@ -5719,9 +5721,9 @@ class Core extends Base\Core
         return $mapping->isNotEmpty();
     }
 
-    public function isMerchantReferredByPartner(string $merchantId, string $partnerId): bool
+    public function isMerchantReferredByPartner(string $merchantId, string $partnerId, string $appType): bool
     {
-        $mapping = (new AccessMap\Repository)->fetchSubMerchantReferredByPartner($merchantId, $partnerId);
+        $mapping = (new AccessMap\Repository)->fetchSubMerchantReferredByPartner($merchantId, $partnerId, $appType);
 
         return (empty($mapping) === false);
     }
@@ -6069,7 +6071,7 @@ class Core extends Base\Core
      * @param Entity $submerchant
      * @param null $appType
      */
-    protected function assignSubmerchantDashboardAccessIfApplicable(Entity $partner, Entity $submerchant, $appType = null, string $role = null)
+    public function assignSubmerchantDashboardAccessIfApplicable(Entity $partner, Entity $submerchant, $appType = null, string $role = null)
     {
         if ($partner->allowSubmerchantDashboardAccess($appType) === false)
         {
@@ -9564,7 +9566,7 @@ class Core extends Base\Core
         {
             return false;
         }
-        
+
         if ($merchant->isTagAddedBasedOnPrefix(Constants::POS_PARTNERSHIP_TAG_PREFIX) === false)
         {
             return false;
@@ -11148,8 +11150,7 @@ class Core extends Base\Core
         // dual write only for below merchants
         // merchants for whom pgos is serving onboarding requests
         // merchants who are not completely activated
-        if ($merchant->getService() === Merchant\Constants::PGOS and
-            $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
+        if ($merchant->getService() === Merchant\Constants::PGOS)
             {
                 unset($data[Entity::ID]);
 

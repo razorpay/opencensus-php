@@ -167,7 +167,7 @@ class Validator extends Base\Validator
         'authentication.provider_data.auth_type'                     => 'required_if:application,visasafeclick|string|max:10',
         'authentication.provider_data.product_transaction_id'        => 'sometimes_if:application,visasafeclick|max:60|string',
         'authentication.provider_data.product_merchant_reference_id' => 'sometimes_if:application,visasafeclick|max:48|string',
-        'authentication.authentication_channel'                      => 'sometimes_if:method,card|string|in:browser,app',
+        'authentication.authentication_channel'                      => 'sometimes_if:method,card,emi|string|in:browser,app',
         'browser'                                                    => 'sometimes|array',
         'browser.java_enabled'                                       => 'sometimes|boolean',
         'browser.language'                                           => 'sometimes|string',
@@ -180,6 +180,7 @@ class Validator extends Base\Validator
         'payer_account_type'                                         => 'sometimes_if:method,upi|nullable|string|max:20',
         'wallet_amount'                                              => 'sometimes|integer',
         'device_fingerprint'                                          => 'sometimes|array',
+        'user_risk_providers_token'                                  => 'sometimes|string',
         'split_amount'                                               => 'sometimes|integer',
         'device_id'                                                  => 'sometimes',
         'store_id'                                                   => 'sometimes',
@@ -496,7 +497,7 @@ class Validator extends Base\Validator
         'upi.merchant_reference'        => 'required',
         'upi.npci_txn_id'               => 'sometimes',
         'upi.vpa'                       => 'required',
-        'upi.gateway'                   => 'required|string|in:upi_sbi,upi_icici,upi_axis,upi_yesbank,upi_kotak,upi_axisolive,upi_juspay,upi_mindgate,upi_airtel,upi_rzpapb',
+        'upi.gateway'                   => 'required|string|in:upi_sbi,upi_icici,upi_axis,upi_yesbank,upi_kotak,upi_axisolive,upi_juspay,upi_mindgate,upi_airtel,upi_rzpapb,upi_rzpaxis',
         'meta'                          => 'required|array',
         'meta.force_auth_payment'       => 'required|boolean',
         'meta.art_request_id'           => 'required',
@@ -2179,7 +2180,7 @@ class Validator extends Base\Validator
     {
         if ($payment->isB2BExportCurrencyCloudPayment() === true)
         {
-            if (empty($payment->getReference2()) === true ||
+            if ((empty($payment->getReference2()) === true && $payment->merchant->isFeatureEnabled(Feature\Constants::CB_SKIP_B2B_EXPORT_INVOICE) === false )||
                 $payment->merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B) === false ||
                 empty($payment->getReference16()) === true)
             {

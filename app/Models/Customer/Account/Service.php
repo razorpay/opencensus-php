@@ -166,6 +166,11 @@ class Service extends Base\Service
         $shouldSortAddresses = (bool) ($input['one_cc_sort_addresses'] ?? false);
         unset($input['one_cc_sort_addresses']);
 
+        $usesCountryCode = str_starts_with($input[Entity::CONTACT], '+');
+        if($usesCountryCode === false && strlen($input[Entity::CONTACT]) === 10)
+        {
+            $input[Entity::CONTACT] = '+91' . $input[Entity::CONTACT];
+        }
         (new Validator())->validateInput('global_customer_create', $input);
 
         // Parse contact
@@ -493,7 +498,6 @@ class Service extends Base\Service
     public function fetch($id)
     {
         $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
-
         return $customer->toArrayPublic();
     }
 
@@ -1664,6 +1668,7 @@ class Service extends Base\Service
             'access_address_v9',
             'save_address_v9',
             'save_card_v9',
+            'mweb_club_checkout_login',
         ];
 
         return in_array($otpReason, $validReasons, true);

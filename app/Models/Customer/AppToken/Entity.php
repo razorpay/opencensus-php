@@ -5,6 +5,7 @@ namespace RZP\Models\Customer\AppToken;
 use RZP\Models\Base;
 use RZP\Constants\Entity as ConstantsEntity;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Models\Merchant\Acs\ImplicitJoinHelper;
 use RZP\Models\Customer\Entity as CustomerEntity;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
@@ -14,7 +15,7 @@ use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
  */
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes, AsvGetAttribute;
+    use SoftDeletes, AsvGetAttribute, CmsGetAttribute;
 
     const MERCHANT_ID           = 'merchant_id';
     const CUSTOMER_ID           = 'customer_id';

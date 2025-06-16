@@ -10,6 +10,8 @@ use Config;
 use Mockery;
 
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Base\EsDao;
@@ -18,6 +20,7 @@ use RZP\Services\KafkaMessageProcessor;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\Activate;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
@@ -67,6 +70,11 @@ use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstant;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 use RZP\Mail\Merchant\NeedsClarificationEmail as NeedsClarificationEmail;
 use RZP\Models\Merchant;
+use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Services\KafkaProducerClient;
+use RZP\Services\Mock\KafkaProducerClient as KafkaProducerClientMock;
+
 
 
 /**
@@ -7225,4 +7233,203 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals("122234555677", $bankAccount->getbankaccountnumber());
 
     }
+
+    public function testWithFeatureFlagUpiDmoForVas()
+    {
+        $orgId      = "100000Abhinavv";
+        $org = $this->fixtures->create('org', ['id' => $orgId]);
+        $this->fixtures->org->addFeatures([FeatureConstants::UPI_DMO_FOR_VAS], $orgId);
+
+        $planId = '1hDYlICobzOCYE';
+
+        $this->app['rzp.mode'] = 'test';
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'business_type'       => 4,
+            'business_website'    => 'https://razorpay.com',
+            'submitted'           => 1,
+            'bank_account_number' => "122234555677",
+            "bank_branch_ifsc"    =>   "HDFC0000001",
+            "bank_branch_code"     =>   "HDFC0000001",
+            "bank_branch_code_type" => "IFSC",
+            "bank_account_name" => "test",
+            "contact_mobile" => "12345678"
+        ]);
+
+        $merchant = $merchantDetail->merchant;
+        $merchant->org_id = $orgId;
+
+        $this->fixtures->edit('merchant', $merchant->getId(), [
+            'org_id' => $orgId,
+            'pricing_plan_id' => $planId,
+            "country_code" => "IN"
+        ]);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($output);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $this->fixtures->pricing->createStandardPricingPlanForDifferentOrg($planId, $orgId);
+
+        $kafkaProducerMock = $this->getMockBuilder(KafkaProducerClient::class)
+            ->onlyMethods(['produce'])
+            ->getMock();
+
+        $expectedMessage = [
+            "merchant_id" => $merchant->getId(),
+            "payment_method" => "UPI",
+            "action" => "create",
+            "merchant_genre" => "online",
+            "instrument" => "pg.upi.onboarding.online.upi",
+            "task_id" => $this->app['request']->getTaskId()
+        ];
+
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+        $kafkaProducerMock->expects($this->once())
+            ->method('produce')
+            ->with('prod-merchant-payments-enabled', stringify($expectedMessage));
+
+        (new Merchant\Activate)->activate($merchant);
+
+        $bankAccount = $this->getDbEntity('bank_account', ['merchant_id' => $merchant->getId()]);
+
+        $this->assertEquals("IFSC", $bankAccount->getIdentifierType());
+        $this->assertEquals("122234555677", $bankAccount->getAccountNumber());
+    }
+
+
+    public function testWithoutFeatureFlagUpiDmoForVas()
+    {
+        $orgId = "100000Abhinavv";
+        $org = $this->fixtures->create('org', ['id' => $orgId]);
+
+        $planId = '1hDYlICobzOCYE';
+
+        $this->app['rzp.mode'] = 'test';
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'business_type'       => 4,
+            'business_website'    => 'https://razorpay.com',
+            'submitted'           => 1,
+            'bank_account_number' => "122234555677",
+            "bank_branch_ifsc"    => "HDFC0000001",
+            "bank_branch_code"    => "HDFC0000001",
+            "bank_branch_code_type" => "IFSC",
+            "bank_account_name"   => "test",
+            "contact_mobile"      => "12345678"
+        ]);
+
+        $merchant = $merchantDetail->merchant;
+        $merchant->org_id = $orgId;
+
+        $this->fixtures->edit('merchant', $merchant->getId(), [
+            'org_id' => $orgId,
+            'pricing_plan_id' => $planId,
+            "country_code" => "IN"
+        ]);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($output);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $this->fixtures->pricing->createStandardPricingPlanForDifferentOrg($planId, $orgId);
+
+        $kafkaProducerMock = $this->getMockBuilder(KafkaProducerClient::class)
+            ->onlyMethods(['produce'])
+            ->getMock();
+
+
+        $kafkaProducerMock->expects($this->never())
+            ->method('produce');
+
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
+        (new Merchant\Activate)->activate($merchant);
+
+        $bankAccount = $this->getDbEntity('bank_account', ['merchant_id' => $merchant->getId()]);
+
+        $this->assertEquals("IFSC", $bankAccount->getIdentifierType());
+        $this->assertEquals("122234555677", $bankAccount->getAccountNumber());
+    }
+
+    public function testWithoutFeatureFlagUpiDmoForVasWith100000razorpay()
+    {
+        $orgId      = self::DEFAULT_MERCHANT_ID;
+        $org = $this->fixtures->create('org', ['id' => $orgId]);
+
+        $planId = '1hDYlICobzOCYE';
+
+        $this->app['rzp.mode'] = 'test';
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'business_type'       => 4,
+            'business_website'    => 'https://razorpay.com',
+            'submitted'           => 1,
+            'bank_account_number' => "122234555677",
+            "bank_branch_ifsc"    =>   "HDFC0000001",
+            "bank_branch_code"     =>   "HDFC0000001",
+            "bank_branch_code_type" => "IFSC",
+            "bank_account_name" => "test",
+            "contact_mobile" => "12345678"
+        ]);
+
+        $merchant = $merchantDetail->merchant;
+
+        $this->fixtures->edit('merchant', $merchant->getId(), [
+            'org_id' => $orgId,
+            'pricing_plan_id' => $planId,
+            "country_code" => "IN"
+        ]);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($output);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $this->fixtures->pricing->createStandardPricingPlanForDifferentOrg($planId, $orgId);
+
+        $kafkaProducerMock = $this->getMockBuilder(KafkaProducerClient::class)
+            ->onlyMethods(['produce'])
+            ->getMock();
+
+        $expectedMessage = [
+            "merchant_id" => $merchant->getId(),
+            "payment_method" => "UPI",
+            "action" => "create",
+            "merchant_genre" => "online",
+            "instrument" => "pg.upi.onboarding.online.upi",
+            "task_id" => $this->app['request']->getTaskId()
+        ];
+
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+        $kafkaProducerMock->expects($this->once())
+            ->method('produce')
+            ->with('prod-merchant-payments-enabled', stringify($expectedMessage));
+
+        (new Merchant\Activate)->activate($merchant);
+
+        $bankAccount = $this->getDbEntity('bank_account', ['merchant_id' => $merchant->getId()]);
+
+        $this->assertEquals("IFSC", $bankAccount->getIdentifierType());
+        $this->assertEquals("122234555677", $bankAccount->getAccountNumber());
+    }
+
 }

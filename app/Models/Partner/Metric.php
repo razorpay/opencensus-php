@@ -25,6 +25,7 @@ final class Metric
     const COMMISSION_INVOICE_GENERATE_RETRY_EXHAUSTED_TOTAL = 'commission_invoice_generate_retry_exhausted_total';
     const COMMISSION_TDS_SETTLEMENT_TOTAL = 'commission_tds_settlement_total';
     const COMMISSION_INVOICE_FINANCE_AUTO_APPROVAL_FAILURE_TOTAL  = 'commission_invoice_finance_auto_approval_failure_total';
+    const CONSENT_GENERATE_FAILURE_TOTAL = 'consent_generate_failure_total';
 
 
     const SUBMERCHANT_CREATE_TOTAL              = 'submerchant_create_total';

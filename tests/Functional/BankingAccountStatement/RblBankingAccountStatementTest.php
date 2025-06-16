@@ -6725,6 +6725,111 @@ class RblBankingAccountStatementTest extends TestCase
                                 'txnSrlNo' => ' 499',
                                 'valueDate' => '2015-12-29T00:00:00.000'
                             ],
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '1.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'NEFT/SFMS RTN/000311505157/MAGICBRICKS REALTY SERV',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '214.50'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429657',
+                                'txnSrlNo' => ' 500',
+                                'valueDate' => '2015-12-29T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '1.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'RTGS/000119662133/maYANK SHARMA',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '213.50'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429658',
+                                'txnSrlNo' => ' 501',
+                                'valueDate' => '2015-12-29T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '1.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => '209821868112-QCREDIT 234412',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '212.50'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429659',
+                                'txnSrlNo' => ' 502',
+                                'valueDate' => '2015-12-29T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '1.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'NEFT/000119662134/maYANK SHARMA',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '211.50'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429660',
+                                'txnSrlNo' => ' 503',
+                                'valueDate' => '2015-12-29T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '1.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'UPI/120310176379/Test transfer RAZORPAY/razorpayx',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '210.50'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429661',
+                                'txnSrlNo' => ' 504',
+                                'valueDate' => '2015-12-29T00:00:00.000'
+                            ],
                         ]
                     ],
                     'Header' => [
@@ -15192,6 +15297,11 @@ class RblBankingAccountStatementTest extends TestCase
         $utrsExpected = [
             '209821868111',
             '000311505156',
+            '000311505157',
+            '000119662134',
+            '000119662133',
+            '209821868112',
+            '120310176379'
         ];
 
         $utrsActual = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT)

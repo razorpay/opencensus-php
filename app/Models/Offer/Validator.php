@@ -45,12 +45,12 @@ class Validator extends Base\Validator
         Entity::IINS                => 'filled|array',
         Entity::PERCENT_RATE        => 'filled|integer|min:1|max:10000',
         Entity::MAX_CASHBACK        => 'filled|integer|min:0',
-        Entity::FLAT_CASHBACK       => 'filled|integer|min:0',
+        Entity::FLAT_CASHBACK       => 'filled|integer|min:100',
         Entity::MIN_AMOUNT          => 'filled|integer|min:0',
         Entity::MAX_PAYMENT_COUNT   => 'filled|integer|min:1',
         Entity::LINKED_OFFER_IDS    => 'filled|array',
         Entity::PROCESSING_TIME     => 'filled|integer',
-        Entity::TYPE                => 'required|filled|in:instant,deferred,already_discounted',
+        Entity::TYPE                => 'required|filled|in:instant,deferred,already_discounted,clubbed',
         Entity::CHECKOUT_DISPLAY    => 'filled|boolean',
         Entity::STARTS_AT           => 'filled|epoch',
         Entity::ENDS_AT             => 'required|epoch',
@@ -66,6 +66,7 @@ class Validator extends Base\Validator
         Entity::LOW_COST_EMI        => 'sometimes|array',
         Entity::UPI                 => 'sometimes|array',
         Entity::INSTRUMENTS         => 'sometimes|array',
+        Entity::RULES               => 'sometimes|array',
     ];
 
     protected static $adminFetchMultipleRules = [
@@ -115,9 +116,10 @@ class Validator extends Base\Validator
         Entity::MAX_OFFER_USAGE     => 'sometimes|filled|integer|min:1',
         Entity::DEFAULT_OFFER       => 'filled|boolean',
         Entity::MAX_ORDER_AMOUNT    => 'filled|integer|min:0',
-        Entity::TYPE                => 'required|in:instant,deferred,already_discounted',
+        Entity::TYPE                => 'required|in:instant,deferred,already_discounted,clubbed',
         Entity::PERCENT_RATE        => 'sometimes|filled|integer|min:1|max:10000',
         Entity::LOW_COST_EMI        => 'sometimes|array',
+        Entity::RULES              => 'sometimes|array',
     ];
 
     protected static $editRules = [
@@ -169,7 +171,7 @@ class Validator extends Base\Validator
         'card.number'                   => 'sometimes|min:6',
         'card.token'                    => 'sometimes',
         'offers'                        => 'required|array',
-        'order_id'                      => 'required|string',
+        'order_id'                      => 'sometimes|string',
     ];
 
     protected static $fetchOfferCreateInfoRules = [
@@ -493,9 +495,9 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Flat cashback cannot be greater than minimum amount', null, [
-                    Entity::FLAT_CASHBACK => $input[Entity::FLAT_CASHBACK],
-                    Entity::MIN_AMOUNT    => $input[Entity::MIN_AMOUNT],
-                ]);
+                Entity::FLAT_CASHBACK => $input[Entity::FLAT_CASHBACK],
+                Entity::MIN_AMOUNT    => $input[Entity::MIN_AMOUNT],
+            ]);
         }
     }
 
@@ -576,6 +578,13 @@ class Validator extends Base\Validator
         if (empty($input[Entity::ISSUER]))
         {
             return;
+        }
+
+        if ((empty($input[Entity::PAYMENT_METHOD]) === false) and
+            ($input[Entity::PAYMENT_METHOD] === Payment\Method::UPI))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Issuer should not be passed for payment method UPI');
         }
 
         if ((empty($input[Entity::PAYMENT_METHOD]) === false) and

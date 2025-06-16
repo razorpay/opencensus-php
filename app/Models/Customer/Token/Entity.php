@@ -25,6 +25,7 @@ use RZP\Models\Address;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
+use RZP\Models\Customer\Account\CmsGetAttribute;
 use RZP\Models\SubscriptionRegistration\SubscriptionRegistrationConstants;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -48,9 +49,10 @@ use RZP\Constants\Entity as ConstantsEntity;
  */
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes, NotesTrait, AsvGetAttribute, ExternalOwner;
-
-    use AsvLoad;
+    use SoftDeletes, NotesTrait, AsvGetAttribute, ExternalOwner, CmsGetAttribute;
+    use AsvLoad {
+        load as asvLoad;
+    }
 
     // This is used in the RZP\Models\Merchant\Acs\Traits\AsvLoad trait
     // to identify which relations are ASV relations
@@ -533,6 +535,25 @@ class Entity extends Base\PublicEntity
         self::TOKEN_EXPIRY_YEAR,
         self::TOKEN_REQUESTOR_ID,
     ];
+
+    public function load($relations)
+    {
+        if (in_array('customer', $relations))
+        {
+            $shouldReadViaCms = (new Customer\Account\SplitzExperimentEvaluator())->isLazyReadOverrideToCmsEnabled($this->entity);
+            if ($shouldReadViaCms)
+            {
+                parent::unsetRelation('customer');
+                // load relation again
+                $this->customer;
+
+                // remove customer relation from array as it's been already loaded
+                $relations = array_diff($relations, ['customer']);
+            }
+        }
+
+        return $this->asvLoad($relations);
+    }
 
     public function customer()
     {

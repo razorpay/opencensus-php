@@ -27,6 +27,7 @@ use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Utility;
 
 /**
  * Class Entity
@@ -154,6 +155,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const REFERRAL_CODE                      = 'referral_code';
     const FUND_ACCOUNT_VALIDATION_ID         = 'fund_account_validation_id';
     const GSTIN_VERIFICATION_STATUS          = 'gstin_verification_status';
+    const SELF_SERVE_REKYC_STATUS            = 'rekyc_status';
 
     const PERSONAL_PAN_DOC_VERIFICATION_STATUS = 'personal_pan_doc_verification_status';
     const COMPANY_PAN_DOC_VERIFICATION_STATUS  = 'company_pan_doc_verification_status';
@@ -737,7 +739,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
         $merchantOnboardingProxyController = new MerchantOnboardingProxyController();
 
-        if ($merchantOnboardingProxyController->isIndiaPgOrCrossBorderIndiaModularMerchant($this->merchant) === true)
+        if (($merchantOnboardingProxyController->getIndiaModularMerchantResult($this->merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false) === true)
         {
             $allowedNextActivationStatusMap = (new Core())->getActivationStatusMappingForModularMerchants();
             $allowedNextActivationStatuses = $allowedNextActivationStatusMap[$activationStatus];
@@ -1818,10 +1820,30 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     protected function modifyBankBranchInput(& $input)
     {
-        if (isset($input[Entity::BANK_BRANCH_IFSC]) === true)
-        {
-            $input[Entity::BANK_BRANCH_CODE] = $input[Entity::BANK_BRANCH_IFSC];
-            $input[Entity::BANK_BRANCH_CODE_TYPE] = BankBranchCodeType::IFSC;
+        $merchantCountry = strtolower($this->merchant != null ? $this->merchant->getCountry() : Country::IN); 
+
+        if ($this->merchant === null)
+        {    
+            $merchantCountry = Utility::getRowMerchantCountry();
+        }
+
+        if ($merchantCountry === Country::IN){
+            
+            if (isset($input[Entity::BANK_BRANCH_IFSC]) === true)
+            {
+                $input[Entity::BANK_BRANCH_CODE] = $input[Entity::BANK_BRANCH_IFSC];
+                $input[Entity::BANK_BRANCH_CODE_TYPE] = BankBranchCodeType::IFSC;
+            }
+
+        }
+
+        if ($merchantCountry === Country::MY){
+
+            if (isset($input[Entity::BANK_BRANCH_CODE]) === true)
+            {
+                $input[Entity::BANK_BRANCH_CODE_TYPE] = BankBranchCodeType::BIC;
+            }
+
         }
     }
 

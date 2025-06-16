@@ -125,7 +125,7 @@ class Gateway
     const PAYTM                  = 'paytm';
     const SEZZLE                 = 'sezzle';
     const SHARP                  = 'sharp';
-    const UPI_HDFCMINTOAK        = 'upi_hdfcmintoak';
+    const HDFC_MINTOAK           = 'hdfc_mintoak';
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_SBI                = 'upi_sbi';
     const UPI_AXIS               = 'upi_axis';
@@ -453,6 +453,7 @@ class Gateway
         self::UPI_ICICI             => self::ICICI,
         self::UPI_JKBANK            => self::JKBANK,
         self::UPI_MINDGATE          => self::HDFC,
+        self::HDFC_MINTOAK          => self::HDFC,
         self::WALLET_PAYPAL         => self::WALLET_PAYPAL,
         self::WORLDLINE             => [
             'default'           => self::AXIS,
@@ -4721,6 +4722,7 @@ class Gateway
      * @todo: Add all static callback gateways here once migrated to new flow to handle static callback.
      */
     public static $staticCallbackGateways = [
+        Gateway::NETBANKING_CSB,
         Gateway::NETBANKING_KVB,
         Gateway::NETBANKING_CANARA,
         Gateway::ESIGNER_LEGALDESK,
@@ -5287,6 +5289,7 @@ class Gateway
         CardlessEmi::LIQUILOANS,
         PayLater::AMAZONPAY,
         CardlessEmi::INSTANT_EMI,
+        CardlessEmi::SHOPSE,
     ];
 
     public static $verifyClientOnS2s = [
@@ -6505,6 +6508,7 @@ class Gateway
             ],
             Method::WALLET => [
                 self::WALLET_AMAZONPAY,
+                self::WALLET_PHONEPE,
                 self::WALLET_BAJAJ,
                 self::WALLET_PAYZAPP,
                 self::WALLET_PAYPAL,

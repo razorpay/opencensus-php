@@ -39,6 +39,7 @@ class AffordabilityMigrationService extends Base\Service
         CreditEmiProvider::SCBL => 1,
         CreditEmiProvider::YESB => 1,
         CreditEmiProvider::ONECARD => 1,
+        CreditEmiProvider::AUBL => 1,
 
     ];
     const defaultCardlessEmiProviders = [

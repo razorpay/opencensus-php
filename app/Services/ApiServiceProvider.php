@@ -7,6 +7,7 @@ use Illuminate\Cache\CacheManager;
 use RZP;
 use Cache;
 use RZP\Http\Controllers\NeedsClarificationProxyController;
+use RZP\Models\Merchant\Methods\PaymentMethodsService;
 use RZP\Services\WorkflowGuard;
 use RZP\Models\Base\DualWriteEntitiesUsageMetricObserver;
 use RZP\Trace\TraceCode;
@@ -349,6 +350,19 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
             return new CardPaymentService();
         });
+
+        $this->app->singleton('affordability', function($app)
+        {
+            $affordabilityMock = $app['config']->get('applications.affordability_service.mock');
+
+            if ($affordabilityMock === true)
+            {
+                return new Mock\AffordabilityService();
+            }
+
+            return new AffordabilityService(null,null);
+        });
+
 
         $this->app->singleton('bin.service', function($app)
         {
@@ -754,6 +768,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerTerminalsService();
 
+        $this->registerPaymentMethodsService();
+
         $this->registerStorkService();
 
         $this->registerWorkflowsService();
@@ -954,7 +970,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('pos.deviceservice', function($app)
         {
 
-            $ezetapDeviceMock = $app['config']->get('applications.ezetap-api.mock');
+            $ezetapDeviceMock = $app['config']->get('applications.ezetap_device_gatway.mock');
 
             if ($ezetapDeviceMock === true)
             {
@@ -1046,6 +1062,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'freshdesk_client',
             'token_service',
             'terminals_service',
+            'payment_methods_service',
             'nocodeappsservice',
             'paymentlinkservice',
             'credcase_http_client',
@@ -1982,6 +1999,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new TerminalsService($app);
         });
 
+    }
+
+    protected function registerPaymentMethodsService()
+    {
+        $this->app->singleton('payment_methods_service', function ($app)
+        {
+            return new PaymentMethodsService($app);
+        });
     }
 
     protected function registerStorkService()

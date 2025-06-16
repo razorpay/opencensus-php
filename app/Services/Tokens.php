@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Razorpay\Edge\Passport\Passport;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\RuntimeException;
 use RZP\Http\Request\Requests;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\UniqueIdEntity;
@@ -134,9 +135,13 @@ class Tokens
         return $tokens;
     }
 
-    public function fetchCustomerTokens($input)
+    public function fetchCustomerTokens($input, $skipUsedAt=false)
     {
-        $resp = $this->fetchCustomerTokensInternal($input);
+        if ($skipUsedAt){
+            $resp = $this->fetchCustomerTokensInternalWithoutUsedAtCheck($input);
+        } else {
+            $resp = $this->fetchCustomerTokensInternal($input);
+        }
 
         $tokens = new PublicCollection();
 
@@ -218,10 +223,46 @@ class Tokens
         return $resp;
     }
 
+    public function getPublicCollection($resp): PublicCollection
+    {
+        $tokens = new PublicCollection();
+
+        foreach ($resp as $tok)
+        {
+            $token = $this->forceFillTokensFromResponse($tok);
+
+            $token = $this->loadRelatedEntity($token);
+
+            $tokens->add($token);
+        }
+
+        return $tokens;
+    }
+
     public function fetchCustomerTokensInternal($input)
     {
         $resp = $this->sendRequest(
              'customers/'. $input['customer_id'].'/tokens',
+            Requests::GET,
+            $input,
+        );
+
+        if (in_array($resp['code'], [200, 201, "200", "201"]) == false)
+        {
+            return new Exception\RuntimeException(
+                'Unexpected response code received from Tokens service.',
+                [
+                    'customer_id'         => $input['customer_id'],
+                ]);
+        }
+
+        return $resp;
+    }
+
+    public function fetchCustomerTokensInternalWithoutUsedAtCheck($input)
+    {
+        $resp = $this->sendRequest(
+            'customers/'. $input['customer_id'].'/tokens?skip_used_at_check=true',
             Requests::GET,
             $input,
         );
@@ -259,6 +300,23 @@ class Tokens
         return $resp;
     }
 
+    /**
+     * @throws RuntimeException
+     */
+    public function deleteTokensInternal($tokenID)
+    {
+        $this->trace->info(TraceCode::TOKENS_DELETE_EXTERNAL, [
+            'token_id'      => $tokenID,
+        ]);
+
+        return $this->sendRequest(
+            self::TokensBaseURL . '/' . $tokenID,
+            Requests::DELETE,
+            (array)null,
+            true
+        );
+    }
+
     private function forceFillTokensFromResponse($response)
     {
         if (empty($response) === false)
@@ -277,6 +335,13 @@ class Tokens
                 elseif ($response['namespace'] == 'upi')
                 {
                     $response['vpa_id'] = $response['entity_id'];
+                }
+                elseif ($response['namespace'] == 'wallet')
+                {
+                    $response['gateway_token'] = $response['wallet']['access_token'];
+                    $response['gateway_token2'] = $response['wallet']['refresh_token'];
+                    $response['expired_at'] = $response['wallet']['expires_at'];
+                    $response['wallet'] = $response['wallet']['provider'];
                 }
 
                 unset($response['namespace']);
@@ -342,6 +407,11 @@ class Tokens
 
         //the token card is load early during the getCardAttribute which is happen when $token->forcefill() happen
         if (isset($token['card']))
+        {
+            return $token;
+        }
+
+        if (isset($token['wallet']))
         {
             return $token;
         }

@@ -32,7 +32,7 @@ class BharatQrCodeRefactorTest extends TestCase
     use DbEntityFetchTrait;
     use NonVirtualAccountQrCodeTrait;
 
-    public $mintoakBqrString = '0002010102120827ABCD0000000000000000000000026310010A0000005240113test@hdfcbank27320010A000000524OqMNUTAAi0WYeMqrv252045399530335654041.005802IN5903qui6009BANGALORE610656003062220518OqMNUTAAi0WYeMqrv263049A6E';
+    public $mintoakBqrString = '0002010102120827ABCD0000000000000000000000026310010A0000005240113test@hdfcbank27340010A000000524O116MNUTAAi0WYeMqrv252045399530335654041.005802IN5903qui6009BANGALORE610656003062220518OqMNUTAAi0WYeMqrv263049A6E';
 
     protected function setUp(): void
     {
@@ -61,8 +61,6 @@ class BharatQrCodeRefactorTest extends TestCase
         $this->config['applications.mozart.mock'] = false;
 
         $this->config['gateway.mock_upi_mozart'] = true;
-
-        $this->getDedicatedTerminalSplitzResponseForVariantON();
 
         $this->createPricingForOffline();
         $this->createPricingForOfflineUnexpected();
@@ -139,21 +137,44 @@ class BharatQrCodeRefactorTest extends TestCase
             );
     }
 
-    public function testUpiHdfcMintoakMultipleUseCreateBharatQrCode()
+    public function testUpiHdfcMintoakMultipleUseCreateUPIQrCode()
     {
         $this->fixtures->on('live')->create('terminal:dedicated_upi_hdfcmintoak_terminal');
         $count = 0;
-        $this->mockMozartResponse(
-             count: $count,
+        $this->mockUpiQrMozartResponse();
+        $this->createMerchantQrCode(
+            [
+                'merchant_id'    => 'LiveAccountMer',
+                'request_source' => 'ezetap',
+                'tid' => '222333'
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->assertEquals('LiveAccountMer', $qrCode->getMerchantId());
+        $this->assertEquals('upi_qr', $qrCode->getProvider());
+        $this->assertEquals('multiple_use', $qrCode->getUsageType());
+        $this->assertEquals('active', $qrCode->getStatus());
+
+    }
+    public function testHdfcMintoakSingleUseCreateBharatQrCode()
+    {
+        $this->fixtures->on('live')->create('terminal:dedicated_upi_hdfcmintoak_terminal');
+        $count = 0;
+        $this->mockUpiQrMozartResponse(
+            count: $count,
         );
 
         $this->createQrCode(
             [
-                'usage'          => 'multiple_use',
+                'usage'          => 'single_use',
                 'type'           => 'bharat_qr',
                 'fixed_amount'   => true,
                 'payment_amount' => 100,
-                'request_source' => 'ezetap'
+                'request_source' => 'ezetap',
             ],
             'live',
             'LiveAccountMer'
@@ -164,8 +185,10 @@ class BharatQrCodeRefactorTest extends TestCase
         $this->assertEquals(100, $qrCode->getAmount());
         $this->assertEquals('LiveAccountMer', $qrCode->getMerchantId());
         $this->assertEquals('bharat_qr', $qrCode->getProvider());
-        $this->assertEquals('multiple_use', $qrCode->getUsageType());
+        $this->assertEquals('single_use', $qrCode->getUsageType());
         $this->assertEquals('active', $qrCode->getStatus());
+        $this->assertEquals(['hdfc_mintoak_tid' => '222333'], $qrCode->getNotes()->toArray());
+
 
         // This asserts that we are actually using the response from Mozart
 
@@ -215,44 +238,7 @@ class BharatQrCodeRefactorTest extends TestCase
         );
     }
 
-    public function testHdfcMintoakSingleUseCreateBharatQrCode()
-    {
-        $this->fixtures->on('live')->create('terminal:dedicated_upi_hdfcmintoak_terminal');
-
-        $count = 0;
-        $this->mockMozartResponse(
-            count: $count,
-        );
-
-        $this->createQrCode(
-            [
-                'usage'          => 'single_use',
-                'type'           => 'bharat_qr',
-                'fixed_amount'   => true,
-                'payment_amount' => 100,
-                'request_source' => 'ezetap'
-            ],
-            'live',
-            'LiveAccountMer'
-        );
-
-        $qrCode = $this->getDbLastEntity('qr_code', 'live');
-
-        $this->assertEquals(100, $qrCode->getAmount());
-        $this->assertEquals('LiveAccountMer', $qrCode->getMerchantId());
-        $this->assertEquals('bharat_qr', $qrCode->getProvider());
-        $this->assertEquals('single_use', $qrCode->getUsageType());
-        $this->assertEquals('active', $qrCode->getStatus());
-
-        // This asserts that we are actually using the response from Mozart
-
-        $this->assertEquals( $this->mintoakBqrString, $qrCode->getQrString());
-
-        // This asserts that calls are going to the mock Mozart layer properly
-        $this->assertEquals(1, $count);
-    }
-
-    public function testUpiHdfcMindgateCreateBharatQrCodeMultipleUse()
+     public function testUpiHdfcMindgateCreateBharatQrCodeMultipleUse()
     {
         $this->fixtures->on('live')->create('terminal:dedicated_upi_mindgate_terminal');
 
@@ -328,6 +314,7 @@ class BharatQrCodeRefactorTest extends TestCase
 
     public function testCreateBqrPaymentViaRefactorFlowForHdfcMintoakMultipleUse()
     {
+        $this->markTestSkipped('We are not using refactor flow for mintoak sqr');
         $this->fixtures->on('live')->create('terminal:dedicated_upi_hdfcmintoak_terminal');
 
         // These are used during assertions at the end of the test
@@ -370,8 +357,8 @@ class BharatQrCodeRefactorTest extends TestCase
                         'payer_account_type' => 'bank_account',
                     ],
                     'terminal' => [
-                        'gateway'             => 'upi_hdfcmintoak',
-                        'vpa'                 => 'test@hdfcbank',
+                        'gateway'             => 'hdfc_mintoak',
+                        'vpa'                 => 'test@mintoak',
                     ],
                 ],
             ]
@@ -382,7 +369,7 @@ class BharatQrCodeRefactorTest extends TestCase
         $response = $this->makeRequestAndGetContent(
             [
                 'method' => 'POST',
-                'url' => '/callback/upi_hdfcmintoak',
+                'url' => '/callback/hdfc_mintoak',
                 'content' => [
                     'data' => 'RandomEncryptedUnPreProcessedDataForUpiAxisUpiOrQrPaymentCallback',
                 ]
@@ -407,7 +394,7 @@ class BharatQrCodeRefactorTest extends TestCase
         $this->assertTrue($qrPayment->expected);
         $this->assertEquals($qrCode->getId(), $qrPayment->qrCode->getId());
         $this->assertEquals('RndmNpciRefId', $qrPayment->getProviderReferenceId());
-        $this->assertEquals('upi_hdfcmintoak', $qrPayment->getGateway());
+        $this->assertEquals('hdfc_mintoak', $qrPayment->getGateway());
         $this->assertEquals($payment->getId(), $qrPayment->getPaymentId());
         $this->assertEquals(100, $qrPayment->getAmount());
         $this->assertEquals($qrCode->getId().'qrv2', $qrPayment->getMerchantReference());
@@ -419,13 +406,13 @@ class BharatQrCodeRefactorTest extends TestCase
         $this->assertEquals($qrCode->getId(), $payment->receiver->getId());
         $this->assertEquals('captured', $payment->getStatus());
         $this->assertEquals('payervpa@upi', $payment->getVpa());
-        $this->assertEquals('upi_hdfcmintoak', $payment->getGateway());
+        $this->assertEquals('hdfc_mintoak', $payment->getGateway());
         $this->assertEquals('100HdfcMtkTrmn', $payment->getTerminalId());
         $this->assertEquals('in_person', $payment->getReference13());
         $this->assertEquals('bank_account', $payment->getReference2());
         $this->assertEquals(100, $payment->getAmount());
 
-        $this->assertEquals('upi_hdfcmintoak', $upi->getGateway());
+        $this->assertEquals('hdfc_mintoak', $upi->getGateway());
         $this->assertEquals($payment->getId(), $upi->getPaymentId());
         $this->assertEquals('authorize', $upi->getAction());
         $this->assertEquals('pay', $upi->getType());
@@ -440,7 +427,56 @@ class BharatQrCodeRefactorTest extends TestCase
         $this->assertEquals(1, $qrCode->getAttribute('payments_received_count'));
     }
 
-    public function testCreateBQrPaymentViaRefactorFlowForHdfcMintoakSingleUse()
+    public function mockUpiQrMozartResponse(&$count = 0, $res = null)
+    {
+        $this->mozartMock = \Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('mozart', $this->mozartMock);
+
+        $this->mozartMock
+            ->shouldReceive('sendRawRequest')
+            ->andReturnUsing(
+                function ($request) use (&$count, $res) {
+                    ++$count;
+
+                    if (is_null($res) === false)
+                    {
+                        return json_encode($res);
+                    }
+
+                    $reqArray = json_decode($request['content'], true);
+
+                    return json_encode([
+                        'data' => [
+                            'payment' => [
+                                'currency' => 'INR',
+                            ],
+                            'qr_code' => [
+                                'qr_string' => $this->mintoakBqrString,
+                                'reference' => $reqArray['qr_code']['id'].'qrv2',
+                            ],
+                            'status' => 'intent_inititated',
+                            'terminal' => [
+                                'gateway' => 'hdfc_mintoak',
+                                'gateway_merchant_id' => 'LiveAccountMer',
+                                'vpa' => '',
+                            ],
+                            'upi' => [
+                                'gateway_status_code' => 'created',
+                                'merchant_reference' => $reqArray['qr_code']['id'].'qrv2',
+                            ],
+                        ],
+                        'error' => null,
+                        'next' => [
+                            'intent_url' => 'upi://pay?ver=01&mode=19&pa=222333@mintoak&pn=AnsonAntony2&tr=RZPQPFF8zCxIPZ26kqrv2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoAnsonAntony2',
+                        ],
+                        'success' => true,
+                    ]);
+                }
+            );
+    }
+
+    public function testCreateBQRPaymentViaRefactorFlowForHdfcMintoakSingleUse()
     {
         $this->fixtures->on('live')->create('terminal:dedicated_upi_hdfcmintoak_terminal');
 
@@ -451,6 +487,7 @@ class BharatQrCodeRefactorTest extends TestCase
             count: $count
         );
 
+        $this->mockUpiQrMozartResponse();
         $this->createQrCode(
             [
                 'usage'          => 'single_use',
@@ -473,10 +510,12 @@ class BharatQrCodeRefactorTest extends TestCase
                 'data'    => [
                     '_raw' => 'RandomRawData',
                     'upi'      => [
-                        'vpa'                => 'payervpa@upi',
+                        'vpa'                => '',
                         'merchant_reference' => $qrCode->getId().'qrv2',
                         'npci_reference_id'  => 'RndmNpciRefId',
                         'gateway_timestamp'  => 1722114963,
+                        'gateway_amount' => 100,
+                        'gateway_payment_id' => 'randompaymentid',
                     ],
                     'payment'  => [
                         'currency' => 'INR',
@@ -484,8 +523,8 @@ class BharatQrCodeRefactorTest extends TestCase
                         'payer_account_type' => 'bank_account',
                     ],
                     'terminal' => [
-                        'gateway'             => 'upi_hdfcmintoak',
-                        'vpa'                 => 'test@hdfcbank', //same as the one created during test setup
+                        'gateway'             => 'hdfc_mintoak',
+                        'gateway_merchant_id'                 => '222333',
                     ],
                 ],
             ]
@@ -496,9 +535,10 @@ class BharatQrCodeRefactorTest extends TestCase
         $response = $this->makeRequestAndGetContent(
             [
                 'method' => 'POST',
-                'url' => '/callback/upi_hdfcmintoak',
+                'url' => '/callback/hdfc_mintoak',
                 'content' => [
-                    'data' => 'RandomEncryptedUnPreProcessedDataForUpiAxisUpiOrQrPaymentCallback',
+                    'transactionDetail' => 'RandomEncryptedUnPreProcessedDataForUpiAxisUpiOrQrPaymentCallback',
+                    'terminalId' => '222333',
                 ]
             ]
         );
@@ -521,35 +561,147 @@ class BharatQrCodeRefactorTest extends TestCase
         $this->assertTrue($qrPayment->expected);
         $this->assertEquals($qrCode->getId(), $qrPayment->qrCode->getId());
         $this->assertEquals('RndmNpciRefId', $qrPayment->getProviderReferenceId());
-        $this->assertEquals('upi_hdfcmintoak', $qrPayment->getGateway());
+        $this->assertEquals('hdfc_mintoak', $qrPayment->getGateway());
         $this->assertEquals($payment->getId(), $qrPayment->getPaymentId());
         $this->assertEquals(100, $qrPayment->getAmount());
         $this->assertEquals($qrCode->getId().'qrv2', $qrPayment->getMerchantReference());
-        $this->assertEquals('payervpa@upi', $qrPayment->getAttribute('payer_vpa'));
+        $this->assertEquals('dummyhdfcmintoak@vpa', $qrPayment->getAttribute('payer_vpa'));
         $this->assertNotNull($qrPayment->getTransactionTime());
 
         $this->assertEquals('RndmNpciRefId', $payment->getReference16());
         $this->assertEquals('qr_code', $payment->getReceiverType());
         $this->assertEquals($qrCode->getId(), $payment->receiver->getId());
         $this->assertEquals('captured', $payment->getStatus());
-        $this->assertEquals('payervpa@upi', $payment->getVpa());
-        $this->assertEquals('upi_hdfcmintoak', $payment->getGateway());
+        $this->assertEquals('dummyhdfcmintoak@vpa', $payment->getVpa());
+        $this->assertEquals('hdfc_mintoak', $payment->getGateway());
         $this->assertEquals('100HdfcMtkTrmn', $payment->getTerminalId());
         $this->assertEquals('in_person', $payment->getReference13());
         $this->assertEquals('bank_account', $payment->getReference2());
         $this->assertEquals(100, $payment->getAmount());
 
-        $this->assertEquals('upi_hdfcmintoak', $upi->getGateway());
+        $this->assertEquals('hdfc_mintoak', $upi->getGateway());
         $this->assertEquals($payment->getId(), $upi->getPaymentId());
         $this->assertEquals('authorize', $upi->getAction());
         $this->assertEquals('pay', $upi->getType());
         $this->assertEquals(100, $upi->getAmount());
-        $this->assertEquals('payervpa@upi', $upi->getVpa());
+        $this->assertEquals('', $upi->getVpa());
         $this->assertEquals($qrCode->getId().'qrv2', $upi->getMerchantReference());
         $this->assertEquals('RndmNpciRefId', $upi->getNpciReferenceId());
         $this->assertEquals('mozart', $upi->getAttribute('acquirer'));
 
         $this->assertEquals('closed', $qrCode->getStatus());
+        $this->assertEquals(100, $qrCode->getAttribute('payments_amount_received'));
+        $this->assertEquals(1, $qrCode->getAttribute('payments_received_count'));
+    }
+
+    public function testCreateUPIQrPaymentForHdfcMintoakMultipleUse()
+    {
+        $this->fixtures->on('live')->create('terminal:dedicated_upi_hdfcmintoak_terminal');
+
+        // These are used during assertions at the end of the test
+        $count = 0;
+
+        $this->mockUpiQrMozartResponse();
+        $this->createMerchantQrCode(
+            [
+                'merchant_id'    => 'LiveAccountMer',
+                'request_source' => 'ezetap',
+                'tid' => '222333'
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->mockMozartResponse(
+            count: $count,
+            res  : [
+                'success' => true,
+                'error'   => null,
+                'data'    => [
+                    '_raw' => 'RandomRawData',
+                    'upi'      => [
+                        'vpa'                => '',
+                        'merchant_reference' => $qrCode->getId().'qrv2',
+                        'npci_reference_id'  => 'RndmNpciRefId',
+                        'gateway_timestamp'  => 1722114963,
+                        'gateway_amount' => 100,
+                        'gateway_payment_id' => 'randompaymentid',
+                    ],
+                    'payment'  => [
+                        'currency' => 'INR',
+                        'amount_authorized'  => 100,
+                        'payer_account_type' => 'bank_account',
+                    ],
+                    'terminal' => [
+                        'gateway'             => 'hdfc_mintoak',
+                        'gateway_merchant_id'                 => '222333',
+                    ],
+                ],
+            ]
+        );
+
+        $this->ba->directAuth();
+
+        $response = $this->makeRequestAndGetContent(
+            [
+                'method' => 'POST',
+                'url' => '/callback/hdfc_mintoak',
+                'content' => [
+                    'transactionDetail' => 'RandomEncryptedUnPreProcessedDataForUpiAxisUpiOrQrPaymentCallback',
+                    'terminalId' => '222333',
+                ]
+            ]
+        );
+
+        $this->assertEquals('SUCCESS', $response['status']);
+        $this->assertNull($response['error_message']);
+
+        $qrpRequest = $this->getDbLastEntity('qr_payment_request', 'live');
+        $qrPayment = $this->getDbLastEntity('qr_payment', 'live');
+        $payment = $this->getDbLastEntity('payment', 'live');
+        $qrCode = $this->getDbEntity('qr_code', ['id' => $qrCode->getId()], 'live');
+        $upi = $this->getDbLastEntity('upi', 'live');
+
+        $this->assertEquals(1, $qrpRequest->isCreated());
+        $this->assertEquals(1, $qrpRequest->expected);
+        $this->assertEquals($qrCode->getId(), $qrpRequest->getQrCodeId());
+        $this->assertEquals('RndmNpciRefId', $qrpRequest->getTransactionReference());
+        $this->assertEmpty($qrpRequest->getFailureReason());
+
+        $this->assertTrue($qrPayment->expected);
+        $this->assertEquals($qrCode->getId(), $qrPayment->qrCode->getId());
+        $this->assertEquals('RndmNpciRefId', $qrPayment->getProviderReferenceId());
+        $this->assertEquals('hdfc_mintoak', $qrPayment->getGateway());
+        $this->assertEquals($payment->getId(), $qrPayment->getPaymentId());
+        $this->assertEquals(100, $qrPayment->getAmount());
+        $this->assertEquals($qrCode->getId().'qrv2', $qrPayment->getMerchantReference());
+        $this->assertEquals('dummyhdfcmintoak@vpa', $qrPayment->getAttribute('payer_vpa'));
+        $this->assertNotNull($qrPayment->getTransactionTime());
+
+        $this->assertEquals('RndmNpciRefId', $payment->getReference16());
+        $this->assertEquals('qr_code', $payment->getReceiverType());
+        $this->assertEquals($qrCode->getId(), $payment->receiver->getId());
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('dummyhdfcmintoak@vpa', $payment->getVpa());
+        $this->assertEquals('hdfc_mintoak', $payment->getGateway());
+        $this->assertEquals('100HdfcMtkTrmn', $payment->getTerminalId());
+        $this->assertEquals('in_person', $payment->getReference13());
+        $this->assertEquals('bank_account', $payment->getReference2());
+        $this->assertEquals(100, $payment->getAmount());
+
+        $this->assertEquals('hdfc_mintoak', $upi->getGateway());
+        $this->assertEquals($payment->getId(), $upi->getPaymentId());
+        $this->assertEquals('authorize', $upi->getAction());
+        $this->assertEquals('pay', $upi->getType());
+        $this->assertEquals(100, $upi->getAmount());
+        $this->assertEquals('', $upi->getVpa());
+        $this->assertEquals($qrCode->getId().'qrv2', $upi->getMerchantReference());
+        $this->assertEquals('RndmNpciRefId', $upi->getNpciReferenceId());
+        $this->assertEquals('mozart', $upi->getAttribute('acquirer'));
+
+        $this->assertEquals('active', $qrCode->getStatus());
         $this->assertEquals(100, $qrCode->getAttribute('payments_amount_received'));
         $this->assertEquals(1, $qrCode->getAttribute('payments_received_count'));
     }
@@ -588,8 +740,8 @@ class BharatQrCodeRefactorTest extends TestCase
                         'payer_account_type' => 'bank_account',
                     ],
                     'terminal' => [
-                        'gateway'             => 'upi_hdfcmintoak',
-                        'vpa'                 => 'test@hdfcbank',
+                        'gateway'             => 'hdfc_mintoak',
+                        'gateway_merchant_id'                 => '222333',
                     ],
                 ],
             ]
@@ -600,9 +752,10 @@ class BharatQrCodeRefactorTest extends TestCase
         $response = $this->makeRequestAndGetContent(
             [
                 'method' => 'POST',
-                'url' => '/callback/upi_hdfcmintoak',
+                'url' => '/callback/hdfc_mintoak',
                 'content' => [
-                    'data' => 'RandomEncryptedUnPreProcessedDataForUpiAxisUpiOrQrPaymentCallback',
+                    'transactionDetail' => 'RandomEncryptedUnPreProcessedDataForUpiAxisUpiOrQrPaymentCallback',
+                    'terminalId' => '222333',
                 ]
             ]
         );
@@ -637,7 +790,7 @@ class BharatQrCodeRefactorTest extends TestCase
         // These are used during assertions at the end of the test
         $count = 0;
 
-        $this->mockMozartResponse(
+        $this->mockUpiQrMozartResponse(
             count: $count
         );
 
@@ -674,8 +827,8 @@ class BharatQrCodeRefactorTest extends TestCase
                         'payer_account_type' => 'bank_account',
                     ],
                     'terminal' => [
-                        'gateway'             => 'upi_hdfcmintoak',
-                        'vpa'                 => 'test@hdfcbank',
+                        'gateway'             => 'hdfc_mintoak',
+                        'gateway_merchant_id'                 => '222333',
                     ],
                 ],
             ]
@@ -686,9 +839,10 @@ class BharatQrCodeRefactorTest extends TestCase
         $response = $this->makeRequestAndGetContent(
             [
                 'method' => 'POST',
-                'url' => '/callback/upi_hdfcmintoak',
+                'url' => '/callback/hdfc_mintoak',
                 'content' => [
-                    'data' => 'RandomEncryptedUnPreProcessedDataForUpiAxisUpiOrQrPaymentCallback',
+                    'transactionDetail' => 'RandomEncryptedUnPreProcessedDataForUpiAxisUpiOrQrPaymentCallback',
+                    'terminalId' => '222333',
                 ]
             ]
         );
@@ -711,7 +865,7 @@ class BharatQrCodeRefactorTest extends TestCase
         $this->assertFalse($qrPayment->expected);
         $this->assertEquals($qrCode->getId(), $qrPayment->qrCode->getId());
         $this->assertEquals('RndmNpciRefId', $qrPayment->getProviderReferenceId());
-        $this->assertEquals('upi_hdfcmintoak', $qrPayment->getGateway());
+        $this->assertEquals('hdfc_mintoak', $qrPayment->getGateway());
         $this->assertEquals($payment->getId(), $qrPayment->getPaymentId());
         $this->assertEquals(150, $qrPayment->getAmount());
         $this->assertEquals($qrCode->getId() . 'qrv2', $qrPayment->getMerchantReference());
@@ -724,13 +878,13 @@ class BharatQrCodeRefactorTest extends TestCase
         $this->assertEquals($qrCode->getId(), $payment->receiver->getId());
         $this->assertEquals('refunded', $payment->getStatus());
         $this->assertEquals('payervpa@upi', $payment->getVpa());
-        $this->assertEquals('upi_hdfcmintoak', $payment->getGateway());
+        $this->assertEquals('hdfc_mintoak', $payment->getGateway());
         $this->assertEquals('100HdfcMtkTrmn', $payment->getTerminalId());
         $this->assertEquals('in_person', $payment->getReference13());
         $this->assertEquals('bank_account', $payment->getReference2());
         $this->assertEquals(150, $payment->getAmount());
 
-        $this->assertEquals('upi_hdfcmintoak', $upi->getGateway());
+        $this->assertEquals('hdfc_mintoak', $upi->getGateway());
         $this->assertEquals($payment->getId(), $upi->getPaymentId());
         $this->assertEquals('authorize', $upi->getAction());
         $this->assertEquals('pay', $upi->getType());
@@ -1024,8 +1178,8 @@ class BharatQrCodeRefactorTest extends TestCase
                         'payer_account_type' => 'bank_account',
                     ],
                     'terminal' => [
-                        'gateway'             => 'upi_hdfcmintoak',
-                        'vpa'                 => 'test@hdfcbank',
+                        'gateway'             => 'hdfc_mintoak',
+                        'gateway_merchant_id' => '222333',
                     ],
                 ],
             ]
@@ -1051,7 +1205,7 @@ class BharatQrCodeRefactorTest extends TestCase
         $this->assertTrue($qrPayment->expected);
         $this->assertEquals($qrCode->getId(), $qrPayment->qrCode->getId());
         $this->assertEquals('RndmNpciRefId', $qrPayment->getProviderReferenceId());
-        $this->assertEquals('upi_hdfcmintoak', $qrPayment->getGateway());
+        $this->assertEquals('hdfc_mintoak', $qrPayment->getGateway());
         $this->assertEquals($payment->getId(), $qrPayment->getPaymentId());
         $this->assertEquals(100, $qrPayment->getAmount());
         $this->assertEquals($qrCode->getId() . 'qrv2', $qrPayment->getMerchantReference());
@@ -1063,13 +1217,13 @@ class BharatQrCodeRefactorTest extends TestCase
         $this->assertEquals($qrCode->getId(), $payment->receiver->getId());
         $this->assertEquals('captured', $payment->getStatus());
         $this->assertEquals('payervpa@upi', $payment->getVpa());
-        $this->assertEquals('upi_hdfcmintoak', $payment->getGateway());
+        $this->assertEquals('hdfc_mintoak', $payment->getGateway());
         $this->assertEquals('100HdfcMtkTrmn', $payment->getTerminalId());
         $this->assertEquals('in_person', $payment->getReference13());
         $this->assertEquals('bank_account', $payment->getReference2());
         $this->assertEquals(100, $payment->getAmount());
 
-        $this->assertEquals('upi_hdfcmintoak', $upi->getGateway());
+        $this->assertEquals('hdfc_mintoak', $upi->getGateway());
         $this->assertEquals($payment->getId(), $upi->getPaymentId());
         $this->assertEquals('authorize', $upi->getAction());
         $this->assertEquals('pay', $upi->getType());

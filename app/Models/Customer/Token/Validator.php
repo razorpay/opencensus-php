@@ -23,6 +23,12 @@ class Validator extends Base\Validator
     const CREATE_NETWORK_TOKEN                          = 'create_network_token';
     const CREATE_NETWORK_TOKEN_CONTINUITY               = 'create_network_token_continuity';
     const CREATE_NETWORK_TOKEN_CONTINUITY_CARD          = 'create_network_token_continuity_card';
+
+    const CREATE_RECURRING_TOKEN_CONTINUITY_OPTIMIZER_MANDATE = 'create_recurring_token_continuity_optimizer_mandate';
+
+    const CREATE_OPTIMIZER_TOKEN_CREATE_FIELDS = 'create_optimizer_token_create_fields';
+
+    const CREATE_OPTIMIZER_RECURRING_TOKEN_NOTES = 'create_optimizer_recurring_token_notes';
     const CREATE_NETWORK_TOKEN_CONTINUITY_ADDITIONAL_DETAIL = 'create_network_token_continuity_additional_detail';
     const CREATE_NETWORK_TOKEN_RUPAY                    = 'create_network_token_rupay';
     const CREATE_NETWORK_TOKEN_AMEX                    = 'create_network_token_amex';
@@ -72,7 +78,7 @@ class Validator extends Base\Validator
 
     protected static $vcppTokenPushRules = [
         'clientInformation'             => 'required',
-        'clientInformation.phoneNumber' => 'required|numeric|digits:10',
+        'clientInformation.phoneNumber' => 'required|string',
         'merchants'                     => 'required|array',
         'merchants.*.vPanEnrollmentId'  => 'required|string',
         'merchants.*.merchantId'        => 'required|string',
@@ -163,6 +169,33 @@ class Validator extends Base\Validator
         'provider_reference_id1'       => 'required',
         'provider_reference_id2'       => 'required',
     ];
+
+    protected static $createRecurringTokenContinuityOptimizerMandateRules = [
+        'terminal_id'       => 'required',
+        'mandate_id'       => 'required',
+        'customer_id'       => 'required',
+        'optimizer_mandate_continuity'       => 'sometimes|boolean',
+        'fields'       => 'required',
+    ];
+
+    protected static $createOptimizerTokenCreateFieldsRules = [
+        'notes'       => 'required',
+        'recurring'       => 'required',
+        'terminal_id'       => 'required',
+        'max_amount'       => 'required',
+        'recurring_status'       => 'required',
+        'frequency'       => 'required',
+        'method'       => 'required',
+        'expire_at'       => 'required',
+        'status'       => 'required',
+    ];
+
+    protected static $createOptimizerRecurringTokenNotesRules = [
+        'mandate_id'       => 'required',
+        'source'       => 'required',
+        'migrated_reference_id'       => 'sometimes',
+    ];
+
 
     protected static $createNetworkTokenRupayRules = [
         Entity::CARD                 => 'required|array',
@@ -432,7 +465,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateDeleteTokensInput($input, $customerId)
+    public function validateDeleteTokensInput($input, $customerId, $externalCount = 0)
     {
         $app = App::getFacadeRoot();
 
@@ -441,6 +474,7 @@ class Validator extends Base\Validator
         (new static)->validateInput('delete_tokens', $input);
 
         $tokenCount = $this->repo->token->getCountOfExistingTokensByTokensAndCustomer($input['tokens'], $customerId);
+        $tokenCount += $externalCount;
 
         // check if tokens found in db are less than provided
         if ($tokenCount !== count($input['tokens']))

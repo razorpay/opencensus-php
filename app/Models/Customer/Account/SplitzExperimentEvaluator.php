@@ -29,6 +29,37 @@ class SplitzExperimentEvaluator extends Base\Core
         return $this->isOverrideToCmsEnabled($experimentId, $merchant);
     }
 
+    public function isLazyReadOverrideToCmsEnabled($entityName): bool
+    {
+        if ($this->app->runningUnitTests())
+            return true;
+        $experimentId = $this->mode == "test" ? "app.cms_lazy_read_override_test_experiment_id" : "app.cms_lazy_read_override_live_experiment_id";
+        $properties = [
+            'id'            => $this->merchant ? $this->merchant->getId() : 'unknown',
+            'experiment_id' => $this->app['config']->get($experimentId),
+            'request_data'  => json_encode([
+                'merchantId' => $this->merchant ? $this->merchant->getId() : 'unknown' ,
+                'entity_name' => $entityName ?? 'unknown',
+                'mode' => $this->mode,
+                'route_name'  => $this->app['api.route']->getCurrentRouteName() ?? 'unknown',
+                'country' => $this->merchant ? $this->merchant -> getCountry() : 'unknown'])
+        ];
+
+        return $this->isExperimentEnabled($properties);
+    }
+
+    public function isQueryLogEnabled(): bool {
+        $properties = [
+            'id'            => 'unknown',
+            'experiment_id' => $this->app['config']->get('app.cms_query_log_enable_experiment_id'),
+            'request_data'  => json_encode([
+                'route_name'  => $this->app['request.ctx']->getRoute() ?? ($this->app['worker.ctx']->getJobName() ?? 'unknown')
+                ])
+        ];
+
+        return $this->isExperimentEnabled($properties);
+    }
+
     protected function isOverrideToCmsEnabled($experimentId, $merchant): bool
     {
         $properties = [
@@ -41,6 +72,12 @@ class SplitzExperimentEvaluator extends Base\Core
                 'route_name'  => $this->app['api.route']->getCurrentRouteName() ?? 'unknown',
                 'country' => $merchant ? $merchant -> getCountry() : 'unknown'])
         ];
+
+        return $this->isExperimentEnabled($properties);
+    }
+
+    protected function isExperimentEnabled($properties)
+    {
         try
         {
             $response = $this->app['splitzService']->evaluateRequest($properties);
@@ -48,9 +85,10 @@ class SplitzExperimentEvaluator extends Base\Core
         catch(\Exception $e)
         {
             $this->trace->traceException($e, null, TraceCode::CMS_REQUEST_SPLITZ_ERROR);
+            return true; // if splitz request fails, we will assume experiment is enabled
         }
 
-        $variant = $response['response']['variant']['name'] ?? 'enabled';
+        $variant = $response['response']['variant']['name'] ?? 'disabled';
 
         return  $variant == "enabled";
     }

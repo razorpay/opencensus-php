@@ -89,16 +89,14 @@ class Authorized extends Base
             $data['merchant']['eligible_for_covid_relief'] === true) or
             isset($data['org']['id']) and in_array($data['org']['id'], $this->storkWhitelistedOrgs) === false)
         {
-            $isStorkEmailVIAEnabled = $this->isSendingPaymentLinkMailsSupported($this->data['merchant']['id'],$this->view);
-
             $app->trace->info(TraceCode::AUTHORIZE_MAIL, [
                 'data' => $this->data,
-                'shouldSendEmailViaStork' => $isStorkEmailVIAEnabled,
+                'shouldSendEmailViaStork' => true,
                 'view' => $this->view
             ]);
             if($this->view == "emails.mjml.customer.payment")
             {
-                return $isStorkEmailVIAEnabled;
+                return true;
             }
 
             return false;
@@ -203,40 +201,5 @@ class Authorized extends Base
         }
 
         return $storkParams;
-    }
-
-    public function isSendingPaymentLinkMailsSupported($merchantId,$view) : bool {
-
-        $traceCode = TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_VIA_SPLITZ_FAILED;
-
-        $experimentId = 'app.send_payment_link_emails_via_stork_failed';
-
-        try
-        {
-            $app = \App::getFacadeRoot();
-
-            $properties = [
-                'id'            => $merchantId,
-                'experiment_id' => $app['config']->get($experimentId),
-                'request_data'  => json_encode(['merchant_id' => $merchantId , 'template_name' => $view])
-            ];
-
-            $response = $app['splitzService']->evaluateRequest($properties);
-
-            $variant = $response['response']['variant']['name'] ?? '';
-
-            $app['trace']->info($traceCode, [
-                'splitzUserResult' => $response,
-                'template_name' => $view
-            ]);
-
-            return  $variant == "enable";
-        }
-        catch (\Exception $e)
-        {
-            $app['trace']->traceException($e, null, TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK_EXCEPTION);
-        }
-
-        return false;
     }
 }

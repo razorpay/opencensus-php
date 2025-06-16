@@ -7,7 +7,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Country;
-use RZP\Constants\IndianStates;
+use RZP\Models\Merchant\Utility;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -183,7 +183,16 @@ class Validator extends Base\Validator
 
     public function validateState($attribute, $value)
     {
-        $isValid = IndianStates::checkIfValidStateCodeOrName($value);
+        $merchantCountry = strtolower($this->merchant != null ? $this->merchant->getCountry() : Country::IN);  
+
+        if ($this->merchant === null)
+        {
+            $merchantCountry = Utility::getRowMerchantCountry();
+        }
+
+        $stateClass = Utility::getRowStateClass($merchantCountry);
+        
+        $isValid = $stateClass::checkIfValidStateCodeOrName($value);
 
         if ($isValid === false)
         {

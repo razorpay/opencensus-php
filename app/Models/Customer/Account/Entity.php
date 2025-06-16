@@ -5,6 +5,7 @@ namespace RZP\Models\Customer;
 use App;
 use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use RZP\Models\Customer\Account\SplitzExperimentEvaluator;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Address;
@@ -169,6 +170,21 @@ class Entity extends Base\PublicEntity
     public function hasGlobalCustomer(): bool
     {
         return $this->isAttributeNotNull(self::GLOBAL_CUSTOMER_ID);
+    }
+
+    public function getGlobalCustomerId()
+    {
+        return $this->getAttribute(self::GLOBAL_CUSTOMER_ID);
+    }
+
+    public function getGlobalCustomerAttribute()
+    {
+        if ((new SplitzExperimentEvaluator())->isLazyReadOverrideToCmsEnabled($this->entity))
+        {
+            return (new ImplicitJoinHelper())->getCustomerAttributeByCustomerId($this, 'globalCustomer', 'getGlobalCustomerId');
+        }
+
+        return parent::getRelationValue('globalCustomer');
     }
 
     // ----------------------------------- END GETTERS ------------------------

@@ -41,6 +41,8 @@ abstract class Processor extends Base\Core
 
     protected $accountNumber;
 
+    protected $merchantID;
+
     protected $ftsErrorCodesToPropagate = [
         ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_FUND_ACCOUNT_CREATION_VALIDATION_FAILED,
         ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_VALIDATION_FAILED,
@@ -71,6 +73,8 @@ abstract class Processor extends Base\Core
             $this->basResponse = $bas->fetchBankingCredentials($merchantId, $channel, $accountNumber);
 
             $this->accountNumber = $accountNumber;
+
+            $this->merchantID   = $merchantId;
         }
     }
 

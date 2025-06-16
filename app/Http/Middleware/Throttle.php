@@ -75,7 +75,7 @@ final class Throttle
         app('trace')->histogram(Metric::HTTP_REQUEST_SIZE, $reqSize, $importantDimensions);
         app('trace')->histogram(Metric::HTTP_RESPONSE_SIZE, $responseSize, $importantDimensions);
 
-        $this->pushMerchantMetric($request, $response, $duration);
+        //$this->pushMerchantMetric($request, $response, $duration);
     }
 
     /**

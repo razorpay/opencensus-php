@@ -2,13 +2,16 @@
 
 namespace RZP\Models\Card\IIN;
 
+use RZP\Base\ConnectionType;
 use RZP\Constants\Environment;
 use RZP\Models\Base;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Card;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\BinService;
 use RZP\Http\Request\Requests;
 use RZP\Models\Base\QueryCache\CacheQueries;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -50,6 +53,31 @@ class Repository extends Base\Repository
               ->orderBy(Entity::IIN, 'desc');
     }
 
+    public function fetch(array $params,
+                          string $merchantId = null,
+                          string $connectionType = null): PublicCollection
+    {
+        $iinService = (new Service());
+        $entities = null;
+
+        if(isset($params['iin']) && $iinService->shouldFetchDashboardIINFromBinService($params['iin']) === true)
+        {
+            $binService = (new BinService());
+
+            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($params['iin'], self::BIN_SERVICE_PRIMARY_READ_MODE);
+
+            if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
+            {
+                $entities = new PublicCollection([$this->fillIinEntity($binServiceIINEntity)]);
+            }
+        }
+        else
+        {
+            $entities = parent::fetch($params, null, ConnectionType::REPLICA);
+        }
+
+        return $entities;
+    }
     public function isMerchantIdRequiredForFetch()
     {
         return false;
@@ -126,19 +154,20 @@ class Repository extends Base\Repository
 
             if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
             {
+                $this->trace->info(TraceCode::FETCH_IIN_SOURCE, [
+                    'iin' => substr($iin, 0, 6),
+                    'source' => 'bin_service'
+                ]);
                 return $this->fillIinEntity($binServiceIINEntity);
             }
         }
-        else if(!empty($iin) && $iinService->shouldReadFromBinServiceInShadowMode() === true)
-        {
-            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin, self::BIN_SERVICE_SHADOW_READ_MODE);
 
-            if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
-            {
-                $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
-            }
+        if (isset($apiServiceIINEntity)) {
+            $this->trace->info(TraceCode::FETCH_IIN_SOURCE, [
+                'iin' => substr($iin, 0, 6),
+                'source' => 'api_db'
+            ]);
         }
-
         return $apiServiceIINEntity;
     }
 
@@ -174,15 +203,6 @@ class Repository extends Base\Repository
 
             return $iinEntity->forceFill($binServiceIINEntity);
         }
-        else if(!empty($iin) && $iinService->shouldReadFromBinServiceInShadowMode() === true)
-        {
-            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin, self::BIN_SERVICE_SHADOW_READ_MODE);
-
-            if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
-            {
-                $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
-            }
-        }
 
         return $apiServiceIINEntity;
     }
@@ -192,7 +212,6 @@ class Repository extends Base\Repository
         $iinService = (new Service());
         $binService = (new BinService());
 
-        $apiServiceIINEntity = parent::findOrFailPublic($iin, $columns, $connectionType);
 
         if (!empty($iin) && $iinService->shouldReadBinServiceInPrimaryMode($iin) === true)
         {
@@ -200,16 +219,23 @@ class Repository extends Base\Repository
 
             $iinEntity = new Entity();
 
-            return $iinEntity->forceFill($binServiceIINEntity);
-        }
-        else if(!empty($iin) && $iinService->shouldReadFromBinServiceInShadowMode() === true)
-        {
-            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($iin, self::BIN_SERVICE_SHADOW_READ_MODE);
-
             if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
             {
-                $iinService->compareBinServiceEntityAndApiServiceEntity($apiServiceIINEntity, $binServiceIINEntity, ['iin' => $iin, 'method_name' => __FUNCTION__]);
+                $this->trace->info(TraceCode::FETCH_IIN_SOURCE, [
+                    'iin' => substr($iin, 0, 6),
+                    'source' => 'bin_service'
+                ]);
+                return $this->fillIinEntity($binServiceIINEntity);
             }
+        }
+
+        $apiServiceIINEntity = parent::findOrFailPublic(substr($iin, 0, 6), $columns, $connectionType);
+
+        if (isset($apiServiceIINEntity)) {
+            $this->trace->info(TraceCode::FETCH_IIN_SOURCE, [
+                'iin' => substr($iin, 0, 6),
+                'source' => 'api_db'
+            ]);
         }
 
         return $apiServiceIINEntity;
@@ -219,5 +245,37 @@ class Repository extends Base\Repository
     public function findOrFailAPIEntity($iin, $columns = array('*'), string $connectionType = null)
     {
         return parent::find($iin, $columns, $connectionType);
+    }
+
+    public function findOrFailByPublicIdWithParams(
+        string $id,
+        array  $params,
+        string $connectionType = null
+    ) : Base\PublicEntity
+    {
+        $iinService = (new Service());
+        $binService = (new BinService());
+
+        if (!empty($id) && $iinService->shouldFetchDashboardIINFromBinService($id) === true)
+        {
+            $binServiceIINEntity = $binService->fetchEntityByIINFromBinService($id, self::BIN_SERVICE_PRIMARY_READ_MODE);
+
+            if (isset($binServiceIINEntity) && !empty($binServiceIINEntity))
+            {
+                $entity = $this->fillIinEntity($binServiceIINEntity);
+                $entity['source'] = 'bin-service';
+                return $entity;
+            }
+        }
+
+        //fallback to APi DB
+
+        $id = substr($id, 0, 6);
+        $id = Entity::verifyIdAndSilentlyStripSign($id);
+
+        $entity = parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
+        $entity['source'] = 'api';
+        return $entity;
+
     }
 }

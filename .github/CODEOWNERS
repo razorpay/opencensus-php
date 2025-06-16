@@ -361,3 +361,14 @@ app/Models/Merchant/Detail/Validator.php                 @razorpay/pg-onboarding
 app/Models/Merchant/Detail/NeedsClarification            @razorpay/pg-onboarding-service
 app/Models/Merchant/Detail/DeDupe                        @razorpay/pg-onboarding-service
 app/Models/Merchant/Detail/Transformers                  @razorpay/pg-onboarding-service
+
+
+#
+# Payments Core
+# Mandating payment core's review as we have moved toArrayPublic() logic of payment to pg-router.
+#
+app/Models/Payment/Entity.php                                @razorpay/techpaymentscore
+
+
+app/Models/Merchant/Methods/                             @razorpay/TechOnlinePaymentsOnboarding
+

@@ -22,6 +22,9 @@ final class Constant
     const EXCLUDED_LINKED_ACCOUNTS = 'excluded_linked_accounts';
     const INCLUDED_LINKED_ACCOUNTS = 'included_linked_accounts';
 
+    const ORIGIN_API = 'api';
+
+    const ORIGIN_ROUTE = 'route';
 
     // Attempts
     const MAX_ALLOWED_PAYMENT_TRANSFER_PROCESS_ATTEMPTS = 1;
@@ -90,6 +93,7 @@ final class Constant
     const MID_ICIC_SEC     = 'Kj3sw5mDSZkyXs';
     const MID_CRED_AVENUE  = 'LJO3Ll3t8JXabv';
     const MID_INDIABONDS_1 = 'OSCUKkCy2XT7gh';
+    const MID_LAUNCHPAD_FINTECH  ='GWkj7uXTyhQGMx';
 
 
     const TRANSFER_SETTLED_WEBHOOK_MIDS = [
@@ -98,5 +102,6 @@ final class Constant
         self::MID_ICIC_SEC,
         self::MID_CRED_AVENUE,
         self::MID_INDIABONDS_1,
+        self::MID_LAUNCHPAD_FINTECH,
     ];
 }

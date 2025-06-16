@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Admin;
 
+use DB;
 use Mail;
 
 use RZP\Models\User\Entity;
@@ -13,6 +14,7 @@ use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
+use RZP\Models\User\Entity as UserEntity;
 
 class AdminLeadTest extends TestCase
 {
@@ -179,6 +181,71 @@ class AdminLeadTest extends TestCase
         return $adminLead;
     }
 
+    public function testAdminLeadCreateWithoutCustomInvitePermission()
+    {
+        $this->mockOrgCreation(OrgEntity::YES_ORG_ID);
+
+         $this->fixtures->create('user', [
+            UserEntity::EMAIL                   => "abc@xyz.com",
+            UserEntity::CONTACT_MOBILE          => "+912233776658",
+            UserEntity::NAME                    => "Ashok Kumar",
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testAdminLeadWithCustomInvitePermission()
+    {
+        Mail::fake();
+
+        $this->mockOrgCreation(OrgEntity::YES_ORG_ID);
+
+        $perm = $this->fixtures->create('permission', ['name' => 'custom_invite_merchant_flow']);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::VAS_ORG_IDENTIFIER],$this->org->getId());
+
+        $permissionMapData = [
+            'permission_id'   => $perm->getId(),
+            'entity_id'       => $this->org->getId(),
+            'entity_type'     => 'org',
+            'enable_workflow' => true
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
+        $this->startTest();
+
+        Mail::assertNotQueued(MerchantInvitationMail::class);
+
+        $adminLead = $this->getLastEntity('admin_lead', true);
+
+        return $adminLead;
+    }
+
+    public function testAdminLeadWithoutCustomInvitePermission()
+    {
+        Mail::fake();
+
+        $this->mockOrgCreation(OrgEntity::YES_ORG_ID);
+
+        $this->startTest();
+
+        Mail::assertQueued(MerchantInvitationMail::class, function ($mail)
+        {
+            $data = $mail->viewData;
+
+            $this->assertArrayHasKey('invitation', $data);
+
+            $this->assertArrayHasKey('adminName', $data);
+
+            return true;
+        });
+
+        $adminLead = $this->getLastEntity('admin_lead', true);
+
+        return $adminLead;
+    }
 
     public function testCreatePartnerAdminLead()
     {

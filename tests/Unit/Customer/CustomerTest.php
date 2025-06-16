@@ -4,6 +4,7 @@ namespace Unit\Customer;
 
 use Mockery;
 use RZP\Http\Controllers\CustomerController;
+use RZP\Models\Customer\Entity;
 use RZP\Tests\TestCase;
 use RZP\Trace\TraceCode;
 
@@ -117,5 +118,29 @@ class CustomerTest extends TestCase
             ]
         ]);
         (new CustomerController())->logInfoAboutRequestPayload($requestPayload);
+    }
+
+    public function testGlobalCustomerLazyRead()
+    {
+        $mockCustomerRepo = Mockery::mock('\RZP\Models\Customer\Repository', [$this->app]);
+        $mockCustomerEntity = new Entity();
+        $mockCustomerId = '100000customer';
+        $mockCustomerEntity->fill([
+            'id' => $mockCustomerId,
+            'name' => 'RzpCustomerName',
+            'email' => 'RzpCustomer@email.com',
+            'contact' => '9999999999',
+            'merchant_id' => '100000Razorpay'
+        ]);
+        $mockCustomerRepo->shouldReceive('find')->with($mockCustomerId)->andReturn($mockCustomerEntity);
+
+        $mockRepoManager = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app]);
+        $this->app->instance('repo', $mockRepoManager);
+        $mockRepoManager->shouldReceive('driver')->with('customer')->andReturn($mockCustomerRepo);
+
+
+        $customer = new Entity();
+        $customer->setAttribute('global_customer_id', $mockCustomerId);
+        $this->assertEquals($mockCustomerEntity, $customer->globalCustomer);
     }
 }

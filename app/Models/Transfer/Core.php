@@ -10,11 +10,13 @@ use App;
 use RZP\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as E;
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Jobs\AsyncBalanceUpdateForTransfer;
 use RZP\Jobs\AsyncBalanceUpdateForTransferQueueOne;
 use RZP\Jobs\AsyncBalanceUpdateForTransferQueueThree;
 use RZP\Jobs\AsyncBalanceUpdateForTransferQueueTwo;
+use RZP\Jobs\EsSync;
 use RZP\Jobs\TransferLedgerOutboxPush;
 use RZP\Jobs\TransferProcessDedicatedQueueOne;
 use RZP\Jobs\TransferProcessDedicatedQueueTwo;
@@ -2563,6 +2565,50 @@ class Core extends Base\Core
         return true;
     }
 
+    public function syncRearchTransfersToEs(array $input)
+    {
+        try
+        {
+            $metric = new Metric();
+
+            $transferId = $input['transfer_id'];
+
+            $transfer = $this->repo->transfer->findOrFail($transferId);
+
+            $payment = $this->repo->payment_method_transfer->findByTransferIdAndMerchant($transferId, $transfer->getToId());
+
+            EsSync::dispatch(Mode::LIVE, Base\EsRepository::CREATE, Constants\Entity::PAYMENT, $payment->getId(), true);
+
+            $this->trace->info(
+                TraceCode::ES_SYNC_DISPATCH_FOR_REARCH_TRANSFER,
+                [
+                    'transfer_id'  => $transfer->getId(),
+                    'payment_id'   => $payment->getId(),
+                ]
+            );
+
+            $metric->pushRearchTransferEsSyncSucessMetric();
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::ES_SYNC_DISPATCH_FOR_REARCH_TRANSFER_FAILED,
+                [
+                    'transfer_id'  => $transfer->getId(),
+                    'payment_id'   => $payment->getId(),
+                ]
+            );
+
+            $metric->pushRearchTransferEsSyncFailureMetric($e);
+
+            throw $e;
+        }
+
+        return true;
+    }
+
     public function fetchJournalFromLedgerForTransfer(Transfer\Entity $transfer, string $merchant)
     {
         $requestHeaders = [
@@ -3220,7 +3266,7 @@ class Core extends Base\Core
 
         $transfer->setMessage(PublicErrorDescription::BAD_REQUEST_TRANSFER_FAILED_AS_SOURCE_PAYMENT_REFUNDED);
 
-        $transfer->saveOrFail();
+        $this->repo->transfer->saveOrFail($transfer);
 
         $this->trace->info(
             TraceCode::TRANSFER_FAILED_AS_SOURCE_PAYMENT_IS_REFUNDED,

@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use Request;
+use RZP\Http\Request\Requests;
 use Throwable;
 use \WpOrg\Requests\Hooks as Requests_Hooks;
 use \WpOrg\Requests\Session as Requests_Session;
@@ -630,5 +631,55 @@ class Stork
     {
         $this->init(app('rzp.mode'));
         return $this->requestAndGetParsedBody(self::REMOVE_FROM_SUPPRESSION_LIST_PATH, $payload);
+    }
+    public function sendRequest($response,$path)
+    {
+        if (!empty($response['attachment_responses'][0])) {
+
+
+            $fileId = $response['attachment_responses'][0]['file_id'];
+            $url = $response['attachment_responses'][0]['presigned_url'];
+
+            $headers = [
+                'Content-Type' => 'application/pdf',
+            ];
+
+            // Read file
+            $data = file_get_contents($path);
+
+            if ($data === false)
+            {
+                $this->trace->error(TraceCode::FILE_READ_FAILED, ['path' => $path]);
+                return null;
+            }
+
+            $request = [
+                'url'     => $url,         // Presigned S3 URL
+                'headers' => $headers,
+                'content' => $data,
+            ];
+
+            $uploadResponse = $this->uploadFile($request,$fileId);
+
+            if ($uploadResponse->status_code !== 200) {
+                $this->trace->error(TraceCode::FILE_UPLOAD_FAILED, [
+                    'file_id'      => $fileId,
+                    'status_code'  => $uploadResponse->status_code,
+                    'body'         => $uploadResponse->body,
+                ]);
+                return null;
+            }
+            return $fileId;
+        }
+    }
+
+    protected function uploadFile($request,$fileId)
+    {
+        $uploadResponse = Requests::put(
+            $request['url'],
+            $request['headers'],
+            $request['content']);
+
+        return $uploadResponse;
     }
 }

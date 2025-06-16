@@ -281,6 +281,11 @@ class Service
                     json_encode($data, JSON_FORCE_OBJECT),
                     $options);
 
+                // Retry if status code is 503, 504
+                if (!empty($response) && in_array($response->status_code, [ StatusCode::SERVICE_UNAVAILABLE, StatusCode::GATEWAY_TIMEOUT])){
+                    throw new \Exception("Server error: {$response->status_code}");
+                }
+
                 break;
             }
             catch (\Throwable $e)

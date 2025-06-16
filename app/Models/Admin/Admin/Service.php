@@ -625,6 +625,9 @@ class Service extends Base\Service
         return $admin;
     }
 
+    /**
+     * @throws BadRequestException
+     */
     public function samlAuthLogin($input)
     {
         $validator = new Validator();
@@ -649,14 +652,24 @@ class Service extends Base\Service
             {
                 try
                 {
-                    $adminMeta = (new \RZP\Models\Admin\AdminsMeta\Repository())->fetchByAdminIdAndUniqueIdentifier($admin->getId(), $input['ad_id']);
+                    if($orgId === Constant::IDAM_AXIS_ORG)
+                    {
+                        $this->checkIDAMAdminDisabled($admin);
+                    }
 
-                    if ($adminMeta !== null )
+                    $adminMeta = $this->repo->admins_meta->fetchByAdminIdAndUniqueIdentifier($admin->getId(), $input['ad_id']);
+
+                    if($adminMeta !== null)
                     {
                         $generatedToken = $this->generateLoginToken($admin);
                     }
                 }
-                catch (\Throwable $e)
+                catch(BadRequestException $e)
+                {
+                    $this->trace->traceException($e);
+                    throw $e;
+                }
+                catch(\Throwable $e)
                 {
                     $this->trace->info(TraceCode::USER_SAML_AUTHENTICATION_FAIL);
 

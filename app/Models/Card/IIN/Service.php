@@ -94,8 +94,10 @@ class Service extends Base\Service
         if (is_null($iinEntity) === false)
         {
             $data['flows']['emi']       = $iinEntity->isEmiAvailable();
+            $data['flows']['instalment'] = false;
             $data['type']               = $iinEntity->getType();
             $data['issuer']             = $iinEntity->getIssuer();
+            $data['issuer_name'] = $iinEntity->getIssuerName();
             $data['network']            = $iinEntity->getNetwork();
             $data['cobranding_partner'] = $iinEntity->getCobrandingPartner();
             $data['dcc_blacklisted']      = $iinEntity->isDCCBlacklisted();
@@ -117,6 +119,18 @@ class Service extends Base\Service
                 ($iinEntity->getType() === Card\Type::DEBIT)))
             {
                 $data['flows']['emi'] = true;
+            }
+            /*
+             * Need to return instalment as available for Instalment because there is additional step to fetch
+             * available plan by passing the whole card number
+             */
+            if (
+                $iinEntity->getType() === Card\Type::CREDIT and
+                $merchant->methods->isVisEnabled() and
+                $merchant->methods->isVisSupported($iinEntity->getIssuerName())
+            )
+            {
+                $data['flows']['instalment'] = true;
             }
         }
 
@@ -1213,5 +1227,26 @@ class Service extends Base\Service
         ];
 
         return (new Card\TokenisedIIN\Service())->checkIfSplitzExperimentIsEnabled($properties);
+    }
+
+    public function shouldFetchDashboardIINFromBinService($iin)
+    {
+        if (Environment::isTestingEnvironment($this->app['env']) === true ||
+            Environment::isEnvironmentQA($this->app['env']) === true ||
+            Environment::isEnvironmentItf($this->app['env']) === true)
+        {
+            return false;
+        }
+
+        $properties = [
+            'id'            => $iin,
+            'experiment_id' => $this->app['config']->get('app.fetch_dashboard_iin_from_bin_service'),
+            'request_data' => json_encode([
+                "bin" => $iin
+            ]),
+        ];
+
+        return (new Card\TokenisedIIN\Service)->checkIfSplitzExperimentIsEnabled($properties);
+
     }
 }
