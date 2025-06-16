@@ -101,7 +101,8 @@ class Entity extends Base\PublicEntity
 
         $readingWorkflowDetailsFromCache = false;
         $readingWorkflowDetailsFromContext = false;
-        $onboardingDetails = $app['request.ctx.v2']->merchantOnboardingDetails ?? null;
+        $merchantId = $this->getMerchantId();
+        $onboardingDetails = $app['request.ctx.v2']->merchantOnboardingDetails[$merchantId] ?? null;
         $app['trace']->info(TraceCode::ONBOARDING_WORKFLOW_DETAILS_FROM_CONTEXT, [
             'onboarding_details' => $onboardingDetails,
         ]);
@@ -157,7 +158,7 @@ class Entity extends Base\PublicEntity
                     {
                         if ($isPGOSReadForMetadataEnabled === true)
                         {
-                            $app['request.ctx.v2']->merchantOnboardingDetails = $onboardingDetails;
+                            $app['request.ctx.v2']->merchantOnboardingDetails[$merchantId] = $onboardingDetails;
                             $app['trace']->info(TraceCode::SAVING_WOKFLOW_DETAILS_TO_CONTEXT, [
                                 'onboarding_details' => $onboardingDetails,
                             ]);

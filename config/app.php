@@ -1245,6 +1245,8 @@ return array(
 
     'setl_fetch_by_id_from_nss_shadow_exp_id' => env('SETL_FETCH_BY_ID_FROM_NSS_SHADOW_EXP_ID'),
 
+    'setl_fetch_by_id_from_nss_reverse_shadow_exp_id' => env('SETL_FETCH_BY_ID_FROM_NSS_REVERSE_SHADOW_EXP_ID'),
+
     'setl_fetch_multiple_from_nss_shadow_exp_id' => env('SETL_FETCH_MULTIPLE_FROM_NSS_SHADOW_EXP_ID'),
 
     'setl_fetch_source_details_from_nss_shadow_exp_id' => env('SETL_FETCH_SOURCE_DETAILS_FROM_NSS_SHADOW_EXP_ID'),
@@ -1338,6 +1340,8 @@ return array(
     'downtime_v2_experiment_id' => env('DOWNTIME_V2_EXPERIMENT_ID'),
 
     'my_save_card_splitz_experiment_id' => env('MY_SAVE_CARD_SPLITZ_EXPERIMENT_ID'),
+
+    'in_save_int_card_splitz_experiment_id' => env('IN_SAVE_INT_CARD_SPLITZ_EXPERIMENT_ID'),
 
     'partner_qr_code_feature_override_exp_id'=> env('PARTNER_QR_CODE_OVERRIDE_EXP_ID'),
 
@@ -1503,4 +1507,6 @@ return array(
     'workflow_segregation_store_user_signup_state' => env('WORKFLOW_SEGREGATION_STORE_USER_SIGNUP_STATE'),
 
     'merchant_with_qr_expiry_gt_2_hours' => env('MERCHANT_WITH_QR_EXPIRY_GT_2_HOURS'),
+
+    'emandate_fetch_token_from_tidb' => env('EMANDATE_FETCH_TOKEN_FROM_TIDB'),
 );
