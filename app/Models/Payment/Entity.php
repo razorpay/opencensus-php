@@ -4375,7 +4375,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             case Method::GIFT_CARDS:
                 return [$method, Processor\GiftCard::getName($this->getGateway())];
             Case Method:: INSTALMENT:
-                return [$method, Emi\InstalmentProvider::INSTALMENT];
+                return [$method, ''];
         }
     }
 
