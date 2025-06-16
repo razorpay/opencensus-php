@@ -11048,14 +11048,14 @@ class Processor
 
         $this->eventPaymentFailed($exception);
 
-        $isUpiOtmPayment = false;
+        $isUpiOtmMandateSuccess = false;
 
         if(isset($this->payment->localToken->upiMandate) === true)
         {
-            $isUpiOtmPayment = $this->isUpiOtmPayment($payment, $this->payment->localToken->upiMandate->toArray());
+            $isUpiOtmMandateSuccess = $this->isUpiOtmMandateSuccess($this->payment, $this->payment->localToken->upiMandate->toArray());
         }
 
-        if($isUpiOtmPayment === false)
+        if($isUpiOtmMandateSuccess === false)
         {
             (new Notify($this->payment))->trigger(Payment\Event::CUSTOMER_FAILED);
         }
