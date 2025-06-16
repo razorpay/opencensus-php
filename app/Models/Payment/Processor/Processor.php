@@ -11050,7 +11050,7 @@ class Processor
 
         $isUpiOtmMandateSuccess = false;
 
-        if(isset($this->payment->localToken->upiMandate) === true)
+        if(isset($this->payment->localToken) === true && isset($this->payment->localToken->upiMandate) === true)
         {
             $isUpiOtmMandateSuccess = $this->isUpiOtmMandateSuccess($this->payment, $this->payment->localToken->upiMandate->toArray());
         }

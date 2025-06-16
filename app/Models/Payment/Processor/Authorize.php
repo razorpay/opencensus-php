@@ -3978,7 +3978,8 @@ trait Authorize
             (isset($upiMandate['frequency']) === true) and
             ($upiMandate['frequency'] === 'one_time') and
             (isset($upiMandate['status']) === true) and
-            ($upiMandate['status'] === 'confirmed')){
+            ($upiMandate['status'] === 'confirmed'))
+        {
             return true;
         }
         return false;
