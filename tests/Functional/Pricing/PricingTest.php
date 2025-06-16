@@ -3837,7 +3837,7 @@ class PricingTest extends TestCase
             'url'     => '/pricing/' . $pricingPlan['id'] . '/rule',
             'content' => [
                 'product'             => 'primary',
-                'feature'             => 'offer_prefunding_fee',
+                'feature'             => 'buyer_protection_customer',
                 'payment_method'      => 'emi',
                 'percent_rate'        => 0,
                 'international'       => 0,
