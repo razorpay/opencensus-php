@@ -2753,7 +2753,10 @@ class Processor
                                     return false;
                                 }
 
-                                $cardInput = [];
+                                $cardInput = [
+                                    Card\Entity::TOKENISED              => true,
+                                    Card\Entity::REWARD                 => $input['card']['reward'],
+                                ];
 
                                 $tokenRearchIssuerExperimentName = 'app.saved_card_token_payments_rearch_issuer';
                                 $tokenRearchIssuerResult = (new Payment\Service())->getSplitzExpResponseForTokenFetchFromTokenService($merchant->getId(), $card->getVault(), $tokenRearchIssuerExperimentName);
@@ -2765,7 +2768,6 @@ class Processor
                                 ){
                                     $cardInput += [
                                         "cryptogram_source" => "cps",
-                                        Card\Entity::TOKENISED => true,
                                     ];
                                     $this->trace->info(TraceCode::TOKENISED_REARCH_STATUS,[
                                         'message'=>'Issuer Result is on',
@@ -2775,8 +2777,6 @@ class Processor
                                         Card\Entity::NAME                   => Card\Entity::DUMMY_NAME,
                                         Card\Entity::NUMBER                 => Card\Entity::DUMMY_CARD_NUMBER,
                                         Card\Entity::CVV                    => $input['card']['cvv'] ?? Card\Entity::DUMMY_CVV,
-                                        Card\Entity::TOKENISED              => true,
-                                        Card\Entity::REWARD                 => $input['card']['reward'],
                                         Card\Entity::COUNTRY                => $card->getCountry(),
                                         Card\Entity::ISSUER                 => $card->getIssuer(),
                                         Card\Entity::TYPE                   => $card->getType(),
