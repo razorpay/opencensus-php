@@ -4344,6 +4344,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             case Method::CARD:
             case Method::EMI:
+            case Method::INSTALMENT:
                 return [$method, $this->getFormattedCard()];
             case Method::NETBANKING:
                 return [$method, $this->getBankName()];
@@ -4374,8 +4375,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 return [$method, Processor\App::getName($this->getWallet())];
             case Method::GIFT_CARDS:
                 return [$method, Processor\GiftCard::getName($this->getGateway())];
-            Case Method:: INSTALMENT:
-                return [$method, $this->getFormattedCard()];
         }
     }
 
