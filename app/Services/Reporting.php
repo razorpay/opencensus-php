@@ -328,9 +328,22 @@ class Reporting implements ExternalService
     {
         $this->addAssociatedFeaturesHeader();
 
+        $uuid = $this->generateUuidV4();
+
+        //for api decomp recon
+        $input['unique_id'] = $uuid;
+
         $configs = $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input);
 
-        return $this->filterConfigsByFeatureAndTags($configs);
+        $data = $this->filterConfigsByFeatureAndTags($configs);
+
+        $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS_RECON,
+            [
+                'configs'   => $data,
+                'unique_id' => $uuid,
+            ]);
+
+        return $data;
     }
 
     public function fetchConfigById(string $id): array
@@ -1044,6 +1057,12 @@ class Reporting implements ExternalService
 
         $configs['items'] = $items->values()->all();
         $configs['count'] = $items->count();
+
+        $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS,
+            [
+                'configs'   => $configs,
+
+            ]);
 
         return $configs;
     }
@@ -1790,5 +1809,16 @@ class Reporting implements ExternalService
         {
             $input[self::TEMPLATE_OVERRIDES][self::DASHBOARD_HOST_NAME] = $orgHostName;
         }
+    }
+
+    protected function generateUuidV4(): string {
+        $data = random_bytes(16);
+        // Set version to 0100
+        $data[6] = chr((ord($data[6]) & 0x0f) | 0x40);
+    
+        // Set bits 6-7 to 10
+        $data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
+
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 }
