@@ -11598,7 +11598,11 @@ class Core extends Base\Core
                     $isModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
                     
                 }
-               
+                $this->trace->info(TraceCode::REMOVE_NEW_BUSINESS_TYPE, [
+                    "merchant_id"       => $merchantId,
+                    "business_type"     => $businessType,
+                    "is_modular" => $isModularMerchant,
+                ]);
                 if (empty($merchantId) ===  false and  in_array($businessType, [BusinessType::GOVERNMENT,BusinessType::JUDICAL_PERSON,BusinessType::LOCAL_AUTHORITY,BusinessType::SECTION_8_COMPANY]) and !$isModularMerchant)
                 {
                     $this->trace->info(TraceCode::REMOVE_NEW_BUSINESS_TYPE, [

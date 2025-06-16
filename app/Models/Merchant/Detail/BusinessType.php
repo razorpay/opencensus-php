@@ -46,7 +46,7 @@ class BusinessType
     const HUF                    = 'huf';
     const GOVERNMENT = "government";
     const LOCAL_AUTHORITY ="local_authority";
-    const JUDICAL_PERSON ="judicial_person";
+    const JUDICIAL_PERSON ="judicial_person";
     const SECTION_8_COMPANY ="section_8_company";
 
     /**
@@ -72,7 +72,7 @@ class BusinessType
         self::OTHER                  => 12,
         self::HUF                    => 13,
         self::GOVERNMENT =>14,
-        self::JUDICAL_PERSON =>15,
+        self::JUDICIAL_PERSON =>15,
         self::LOCAL_AUTHORITY =>16,
         self::SECTION_8_COMPANY =>17,
     ];
@@ -94,7 +94,7 @@ class BusinessType
         self::GOVERNMENT => "Government",
         self::SECTION_8_COMPANY => "Section 8 Company",
         self::LOCAL_AUTHORITY => "Local Authority",
-        self::JUDICAL_PERSON => "Judical Person"
+        self::JUDICIAL_PERSON => "Judicial Person"
     ];
     const REGISTERED   = 'registered';
     
@@ -115,7 +115,7 @@ class BusinessType
             self::NGO,
             self::HUF,
             self::GOVERNMENT,
-            self::JUDICAL_PERSON,
+            self::JUDICIAL_PERSON,
             self::LOCAL_AUTHORITY,
             self::SECTION_8_COMPANY
         ],
