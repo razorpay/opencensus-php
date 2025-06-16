@@ -113,11 +113,7 @@ class BusinessType
             self::SOCIETY,
             self::OTHER,
             self::NGO,
-            self::HUF,
-            self::GOVERNMENT,
-            self::JUDICIAL_PERSON,
-            self::LOCAL_AUTHORITY,
-            self::SECTION_8_COMPANY
+            self::HUF
         ],
         self::UNREGISTERED => [
             self::INDIVIDUAL,

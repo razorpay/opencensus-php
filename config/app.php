@@ -1114,6 +1114,8 @@ return array(
     'subcategory_exclusion_for_automation' => env('SUBCATEGORY_EXCLUSION_FOR_AUTOMATION'),
 
     'migrate_mkyc_to_document_upload_v2' => env('MIGRATE_MKYC_TO_DOCUMENT_UPLOAD_V2'),
+    
+    'add_new_business_types' => env('ADD_NEW_BUSINESS_TYPES'),
 
     'partnership_unblock_huf_business_type_experiment_id' => env('PARTNERSHIP_UNBLOCK_HUF_BUSINESS_TYPE_EXP_ID'),
 

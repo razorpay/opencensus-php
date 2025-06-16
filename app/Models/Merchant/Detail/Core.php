@@ -11592,26 +11592,6 @@ class Core extends Base\Core
                 {
                     continue;
                 }
-                $isModularMerchant =false;
-                if (!empty($merchantId))
-                {
-                    $isModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
-                    
-                }
-                $this->trace->info(TraceCode::REMOVE_NEW_BUSINESS_TYPE, [
-                    "merchant_id"       => $merchantId,
-                    "business_type"     => $businessType,
-                    "is_modular" => $isModularMerchant,
-                ]);
-                if (empty($merchantId) ===  false and  in_array($businessType, [BusinessType::GOVERNMENT,BusinessType::JUDICIAL_PERSON,BusinessType::LOCAL_AUTHORITY,BusinessType::SECTION_8_COMPANY]) and !$isModularMerchant)
-                {
-                    $this->trace->info(TraceCode::REMOVE_NEW_BUSINESS_TYPE, [
-                        "merchant_id"       => $merchantId,
-                        "business_type"     => $businessType,
-                    ]);
-                    continue;
-                }
-
 //              If the merchant is sales assisted skip adding individual or not_yet_registered as business type
                 if (empty($merchantId) ===  false and ($businessType === BusinessType::INDIVIDUAL or $businessType === BusinessType::NOT_YET_REGISTERED) and !empty($userDeviceDetails) and $userDeviceDetails->isAssistedOnboardedMerchant())
                 {
@@ -11669,7 +11649,28 @@ class Core extends Base\Core
                 }
             }
         }
-
+        if ($this->shouldAddNewBusinessTypes($merchant) === true) {
+            $businessTypes = [
+                BusinessType::GOVERNMENT,
+                BusinessType::JUDICIAL_PERSON,
+                BusinessType::LOCAL_AUTHORITY,
+                BusinessType::SECTION_8_COMPANY
+            ];
+            $this->trace->info(TraceCode::ADD_NEW_BUSINESS_TYPE, [
+                "merchant_id"          => $merchantId,
+                "business_types"       => $businessTypes
+            ]);
+            
+            foreach ($businessTypes as $businessType) {
+                array_push($result[BusinessType::REGISTERED],
+                           [
+                               "id"      => strval(BusinessType::getIndexFromKey($businessType)),
+                               "label" => BusinessType::getDisplayNameFromKey($businessType),
+                               "status"  => 'active'
+                           ]
+                );
+            }
+        }
         return $result;
     }
 
@@ -13957,6 +13958,22 @@ class Core extends Base\Core
         $isModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
 
         return ($isExperimentEnabled and $isModularMerchant);
+    }
+    
+    private function shouldAddNewBusinessTypes(MerchantEntity $merchant) : bool {
+       
+        $isExperimentEnabled = (new MerchantCore)->isSplitzExperimentEnable(
+            [
+                'id' => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.add_new_business_types')
+            ],
+            DetailConstants::ENABLE
+        );
+       
+        $isModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
+        
+        return ($isExperimentEnabled and $isModularMerchant);
+        
     }
 
     public function createVCIPEntity($input)
