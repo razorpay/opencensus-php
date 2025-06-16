@@ -2774,6 +2774,8 @@ class Processor
                                         Card\Entity::NAME                   => Card\Entity::DUMMY_NAME,
                                         Card\Entity::NUMBER                 => Card\Entity::DUMMY_CARD_NUMBER,
                                         Card\Entity::CVV                    => $input['card']['cvv'] ?? Card\Entity::DUMMY_CVV,
+                                        Card\Entity::TOKENISED              => true,
+                                        Card\Entity::REWARD                 => $input['card']['reward'],
                                         Card\Entity::COUNTRY                => $card->getCountry(),
                                         Card\Entity::ISSUER                 => $card->getIssuer(),
                                         Card\Entity::TYPE                   => $card->getType(),
@@ -2793,13 +2795,10 @@ class Processor
                                     ]);
 
                                     $input[Payment\Entity::CARD] = $cardInput;
+                                    $input[Payment\Entity::TOKEN] = $token->getId();
                                     $input[Payment\Entity::API_VAULT] = $card->getVault();   // We are passing API_VALUT key to CPS to send it to router so that it can provide us terminals acc.
                                     // explicitly adding token_id in token since for global customer we add token instead of token_id
                                 }
-                                $input[Payment\Entity::TOKEN] = $token->getId();
-//                                $input[Payment\Entity::CARD] = $cardInput;
-//                                $input[Payment\Entity::API_VAULT] = $card->getVault();   // We are passing API_VALUT key to CPS to send it to router so that it can provide us terminals acc.
-//                                // explicitly adding token_id in token since for global customer we add token instead of token_id
 
                                 $networkToken = (new TokenCore())->fetchToken($token, false);
                                 //Iterating over fetched token array to extract trid and token reference number for hdfc_issuer payments
