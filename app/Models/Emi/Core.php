@@ -5,11 +5,13 @@ namespace RZP\Models\Emi;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base;
 use RZP\Services\AffordabilityService;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
     public function addEmiPlan($input)
     {
+
         if (isset($input[Entity::SOURCE_CHANNEL]) && $input[Entity::SOURCE_CHANNEL] === Entity::SOURCE_CHANNEL_IN_PERSON)
         {
             $affordabilityService = $this->app->make(AffordabilityService::class);
@@ -24,18 +26,48 @@ class Core extends Base\Core
 
         $emiPlan->generateId();
 
-        (new Migration)->handleMigration(Migration::CREATE, $emiPlan);
+        try {
+            $this->repo->transaction(
+                function () use (&$emiPlan,$input)
+                {
 
-        try
-        {
-            $this->repo->saveOrFail($emiPlan);
+                    $this->repo->saveOrFail($emiPlan);
+
+                    (new Migration)->handleDualWrite(Migration::CREATE, $emiPlan,'',$input);
+                }
+            );
+        } catch (\Exception $e) {
+
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::EMI_PLANS_CREATION_FAILED, [
+                'error' => $e->getMessage(),
+            ]);
+
+            throw $e;
         }
-        catch (\Exception $ex)
-        {
-            //If there is an error saving on api, this should delete the emi_plan on cps aswell.
-            (new Migration)->handleMigration(Migration::DELETE, $emiPlan);
 
-            throw $ex;
+        return $emiPlan;
+    }
+
+    public function deleteEmiPlan($id)
+    {
+        $emiPlan = $this->repo->emi_plan->findOrFail($id);
+
+        try {
+            $this->repo->transaction(
+                function () use ($emiPlan, $id) {
+                    $this->repo->emi_plan->deleteOrFail($emiPlan);
+
+                    (new Migration)->handleDualWrite(Migration::DELETE, $emiPlan, $id);
+
+                }
+            );
+        } catch (\Exception $e) {
+
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::EMI_PLANS_DELETION_FAILED, [
+                'error' => $e->getMessage(),
+            ]);
+
+            throw $e;
         }
 
         return $emiPlan;
@@ -61,3 +93,4 @@ class Core extends Base\Core
         return $minAmounts->max() ?? 0;
     }
 }
+

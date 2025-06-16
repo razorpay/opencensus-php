@@ -1339,12 +1339,14 @@ class Entity extends Base\PublicEntity
         }
 
         $isMalaysianMerchant = ($merchant !== null) ? Country::matches($merchant->getCountry(), Country::MY) : false;
+        $isIndianMerchant = ($merchant !== null) ? Country::matches($merchant->getCountry(), Country::IN) : false;
 
         return (
             $this->isInternational() ||
             $this->isBajaj() ||
             ($this->isLocal() && $this->isNetworkTokenisedCard()) ||
-            $isMalaysianMerchant
+            $isMalaysianMerchant ||
+            ($isIndianMerchant && $this->getCountry() !== 'IN')
         );
     }
 

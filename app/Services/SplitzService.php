@@ -238,6 +238,87 @@ class SplitzService extends Base\Service
         return $this->sendRequest($input, self::EVALUATE_URL, Requests::POST);
     }
 
+    /**
+     * Evaluate request with custom timeout (in milliseconds)
+     */
+    public function evaluateRequestWithTimeout($input, int $timeoutMs)
+    {
+        return $this->sendRequestWithTimeout($input, self::EVALUATE_URL, Requests::POST, $timeoutMs);
+    }
+
+    /**
+     * Send request with custom timeout override
+     */
+    public function sendRequestWithTimeout($parameters, $path, $method, int $timeoutMs)
+    {
+        $requestParams = $this->getRequestParamsWithTimeout($parameters, $path, $method, $timeoutMs);
+
+        $client = new Client();
+
+        try
+        {
+            $reqStartAt = millitime();
+
+            $options = [
+                'headers' => $requestParams['headers'],
+                'body'    => $requestParams['data'],
+                'timeout' => $requestParams['options']['timeout'],
+                'auth'    => $requestParams['options']['auth']
+            ];
+
+            $response = $client->request($requestParams['method'], $requestParams['url'], $options);
+
+            $dimensions = [
+                "path"                       => $path,
+            ];
+
+            $this->trace->histogram(self::METRIC_SPLITZ_REQUEST_DURATION_MILLISECS, millitime() - $reqStartAt, $dimensions);
+            return $this->parseAndReturnResponse($response);
+        }
+        catch (Throwable $e)
+        {
+            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_SPLITZ_FAILURE, null, $e);
+        }
+    }
+
+    /**
+     * Get request params with custom timeout override
+     */
+    protected function getRequestParamsWithTimeout($parameters, $path, $method, int $timeoutMs)
+    {
+        $url = $this->baseUrl . $path;
+
+        $headers = [];
+
+        $parameters = json_encode($parameters);
+
+        $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
+
+        // Use custom timeout (convert ms to seconds)
+        $timeout = $timeoutMs / 1000.0;
+
+        // send passport if not evaluate route
+        if (($path != self::EVALUATE_URL && $path != self::EVALUATE_BULK_URL) && empty($this->ba) === false)
+        {
+            $headers[self::X_PASSPORT_JWT_V1] = $this->ba->getPassportJwt($this->baseUrl);
+        }
+
+        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+
+        $options = [
+            'timeout' => $timeout,
+            'auth'    => [$this->key, $this->secret],
+        ];
+
+        return [
+            'url'     => $url,
+            'headers' => $headers,
+            'data'    => $parameters,
+            'options' => $options,
+            'method'  => $method,
+        ];
+    }
+
     public function getSegmentFromName($segmentName)
     {
         $parameters = $this->getParametersForGetSegmentByName($segmentName);

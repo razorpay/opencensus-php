@@ -44,6 +44,9 @@ class Metric extends Base\Core
     //status
     const SUCCESS                               = 'success';
     const FAILED                                = 'failed';
+    const TOKENS_FETCHED_FROM_TOKEN_SERVICE_FETCH_FOR_INDIAN_MERCHANT = 'tokens_fetched_from_token_service_fetch_for_indian_merchant';
+    const ROUTING_VIA_REARCH_FOR_INDIAN_MERCHANT_INTERNATIONAL_TOKEN = 'routing_via_rearch_for_indian_merchant_international_token';
+
 
 
     public function pushTokenHQDimensions($input, $status, $statusCode = null, $action = null, $exe = null, $class = null)
