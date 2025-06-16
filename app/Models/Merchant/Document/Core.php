@@ -512,7 +512,7 @@ class Core extends Base\Core
                 Entity::CREATED_AT => $document->getCreatedAt(),
                 Entity::METADATA => $document->getMetadata()
             ];
-            
+
             if (isset($documentsResponse[$document->getDocumentType()]) === false)
             {
                 $documentsResponse[$document->getDocumentType()] = [];
@@ -728,7 +728,6 @@ class Core extends Base\Core
 
             $this->repo->merchant_detail->saveOrFail($merchantDetails);
         }
-
 
     }
 

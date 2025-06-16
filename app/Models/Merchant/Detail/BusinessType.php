@@ -44,10 +44,10 @@ class BusinessType
     const NOT_YET_REGISTERED     = 'not_yet_registered';
     const EDUCATIONAL_INSTITUTES = 'educational_institutes';
     const HUF                    = 'huf';
-    const GOVERNMENT = "government";
-    const LOCAL_AUTHORITY ="local_authority";
-    const JUDICIAL_PERSON ="judicial_person";
-    const SECTION_8_COMPANY ="section_8_company";
+    const GOVERNMENT             = "government";
+    const LOCAL_AUTHORITY        = "local_authority";
+    const JUDICIAL_PERSON        = "judicial_person";
+    const SECTION_8_COMPANY      = "section_8_company";
 
     /**
      * The database field for business_type is a string but integer values are currently being stored in it.
@@ -71,10 +71,10 @@ class BusinessType
         self::NOT_YET_REGISTERED     => 11,
         self::OTHER                  => 12,
         self::HUF                    => 13,
-        self::GOVERNMENT =>14,
-        self::JUDICIAL_PERSON =>15,
-        self::LOCAL_AUTHORITY =>16,
-        self::SECTION_8_COMPANY =>17,
+        self::GOVERNMENT             => 14,
+        self::JUDICIAL_PERSON        => 15,
+        self::LOCAL_AUTHORITY        => 16,
+        self::SECTION_8_COMPANY      => 17,
     ];
 
     protected static $displayNameMap = [
@@ -91,10 +91,10 @@ class BusinessType
         self::NOT_YET_REGISTERED     => "Not Yet Registered",
         self::OTHER                  => "Other",
         self::HUF                    => "HUF",
-        self::GOVERNMENT => "Government",
-        self::SECTION_8_COMPANY => "Section 8 Company",
-        self::LOCAL_AUTHORITY => "Local Authority",
-        self::JUDICIAL_PERSON => "Judicial Person"
+        self::GOVERNMENT             => "Government",
+        self::SECTION_8_COMPANY      => "Section 8 Company",
+        self::LOCAL_AUTHORITY        => "Local Authority",
+        self::JUDICIAL_PERSON        => "Judicial Person"
     ];
     const REGISTERED   = 'registered';
     
