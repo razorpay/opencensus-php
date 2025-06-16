@@ -169,7 +169,7 @@ class Service extends Base\Service
                 'input' => $input,
             ]);
 
-        if ($this->app['basicauth']->isMobApp() and $this->core->checkRblOnBasExperimentEnabled($this->merchant->getId()))
+        if ($this->app['basicauth']->isMobApp())
         {
             $admin = $this->core->getAdminFromHeadersForMobApp();
 

@@ -4411,6 +4411,35 @@ class Core extends Base\Core
                 if ($merchant->getOrgID() === $orgId or in_array($merchant->getId(), $merchantIdsWithCrossOrgFeature, true) === true)
                 {
                     $filteredMerchants->add($merchant);
+
+                    $ezetapMid = $this->app['config']->get('app.ezetap_merchant_id');
+
+                    if(!empty($merchant[Entity::PIVOT]) && !empty($merchant[Entity::PIVOT][Entity::ROLE]) && $merchant[Entity::PIVOT][Entity::ROLE] == ROLE::PARTNER_AGENT && $merchant->getId() == $ezetapMid) {
+                        $this->trace->info(TraceCode::PARTNER_AGENT_MERCHANT_FOUND, [
+                            'user_id' => $user->getUserId()
+                        ]);
+
+                        $partnerAgentMerchants = new Base\PublicCollection;
+
+                        $partnerAgentMerchants->add($merchant);
+
+                        $partnerMerchants = $partnerAgentMerchants->callOnEveryItem('toArrayUser');
+
+                        $partnerMerchantsUnique = $this->getUnifiedMerchants($partnerMerchants);
+
+                        $userId = $user->getUserId();
+
+                        $partnerMerchantsUnique = $this->appendBankingSpecificDetails($partnerMerchantsUnique, $userId);
+
+                        $partnerMerchantsUnique = $this->addProductSpecificDetails($partnerMerchantsUnique);
+
+                        $response['rzp_partner_agent'] = $partnerMerchantsUnique;
+
+                        $this->trace->info(TraceCode::PARTNER_AGENT_RESPONSE_UPDATED, [
+                            'merchant_id' => $merchant->getId(),
+                            'user_id' => $userId
+                        ]);
+                    }
                 }
             }
         }
@@ -7444,8 +7473,7 @@ class Core extends Base\Core
         // merchants for whom pgos is serving onboarding requests
         // merchants who are not completely activated
         if ($merchant->getService() === Merchant\Constants::PGOS and
-            empty($users) === false and
-            $merchant->merchantDetail->getActivationStatus() != Merchant\Detail\Status::ACTIVATED)
+            empty($users) === false)
             {
                 $user = $this->repo->user->find($users[0]);
 

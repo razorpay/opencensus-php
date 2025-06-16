@@ -47,7 +47,7 @@ class Validator extends QrCode\Validator
     ];
 
     protected static $createQrForSingleStackRules = [
-        Entity::VPA            => 'required|string',
+        Entity::VPA            => 'sometimes|nullable',
         Entity::DEVICE_ID      => 'required|string',
         Entity::QR_STRING      => 'required|string',
         Entity::MERCHANT_ID    => 'required|string',

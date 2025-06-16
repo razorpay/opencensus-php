@@ -127,6 +127,62 @@ class Core extends Base
         (new Repository)->updateBankingAccountIntoPayoutServiceDB($merchantId, $balanceId, $data);
     }
 
+    public function updatePayoutServiceEnabledFlagInPayoutServiceBankingAccountWithMerchantOnboardingTime(string $merchantId, string $balanceId, bool $payoutServiceEnabled)
+    {
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SERVICE_BANKING_ACCOUNT_UPDATE_INIT,
+            ['merchant_id' => $merchantId, 'balance_id' => $balanceId, 'payout_service_enabled' => $payoutServiceEnabled]
+        );
+
+        /** @var \RZP\Models\Merchant\Balance\Entity $balance */
+
+        $balance = $this->repo->balance->getBalanceEntityForBalanceId($balanceId);
+
+        $onboardingTime = null;
+
+        try
+        {
+            $bankingAcc = $this->repo->banking_account->getFromBalanceId($balance->getId());
+            $onboardingTime = optional($bankingAcc)->getCreatedAt();
+
+            // In case of Merchants Onboarded on BAS flow, bankingAcc needs to be retrived from BAS
+            if ($bankingAcc === null)
+            {
+
+                $bankingAcc =  (new \RZP\Services\BankingAccountService($this->app)) -> fetchBankingAccountByAccountNumberAndChannel($balance->getMerchantId(), $balance->getAccountNumber(), $balance->getChannel());
+                if ($bankingAcc !== null)
+                {
+                    $onboardingTime = intdiv($bankingAcc['created_at'], 1000); // CreatedAt is in Milliseconds in BAS
+
+                }
+            }
+
+        }
+        catch (\Throwable $ex)
+        {
+
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::PAYOUT_SERVICE_BANKING_ACCOUNT_FETCH_FROM_API_MONOLITH_FAILURE,
+                ['merchant_id' => $merchantId, 'balance_id' => $balanceId, 'payout_service_enabled' => $payoutServiceEnabled]
+            );
+
+            throw $ex;
+        }
+
+
+        $data = ([
+            Entity::CREATED_AT              => (!empty($onboardingTime)) ? $onboardingTime : Carbon::now(Timezone::IST)->getTimestamp(),
+            Entity::PAYOUT_SERVICE_ENABLED  => $payoutServiceEnabled,
+            Entity::UPDATED_AT              => Carbon::now(Timezone::IST)->getTimestamp(),
+        ]);
+
+        (new Repository)->updateBankingAccountIntoPayoutServiceDB($merchantId, $balanceId, $data);
+    }
+
+
     public function merchantMigratedToPayoutServiceByMerchantIdAndBalanceId(string $merchantId, string $balanceId)
     {
         $this->trace->info(
@@ -442,7 +498,7 @@ class Core extends Base
         }
         else
         {
-            $this->updatePayoutServiceEnabledFlagInPayoutServiceBankingAccount($merchantId, $balanceId, true);
+            $this->updatePayoutServiceEnabledFlagInPayoutServiceBankingAccountWithMerchantOnboardingTime($merchantId, $balanceId, true);
 
         }
     }

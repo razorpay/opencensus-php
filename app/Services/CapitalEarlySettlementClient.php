@@ -29,6 +29,14 @@ class CapitalEarlySettlementClient
 
     const DUAL_WRITE_FUND_ACCOUNT = 'fund_accounts/dual_write';
 
+    const CREATE_ODS = 'instant_settlements/ondemand';
+
+    const FETCH_ODS = 'instant_settlements/ondemand/';
+
+    const FETCH_MULTIPLE_ODS = 'instant_settlements/ondemand/multiple';
+
+    const PAYOUTS_WEBHOOK = 'instant_settlements/ondemand/payouts/webhook';
+
     protected $app;
 
     protected $trace;
@@ -135,7 +143,7 @@ class CapitalEarlySettlementClient
             'GET'
         );
     }
-      
+
     public function getFundAccount($merchantId)
     {
         $url = self::GET_FUND_ACCOUNT . '?' . http_build_query(['merchant_id' => $merchantId]);
@@ -176,6 +184,70 @@ class CapitalEarlySettlementClient
                 'X-Service-Name' => 'api'
             ],
             'PUT'
+        );
+    }
+
+    public function createODS($request, $merchantId, $userId)
+    {
+        return $this->sendRequestAndParseResponse(self::CREATE_ODS,
+            $request,
+            [
+                'X-Auth-Type'    => 'internal',
+                'X-Service-Name' => 'api',
+                'X-Merchant-Id' => $merchantId,
+                'X-User-Id' => $userId,
+            ],
+            'POST'
+        );
+    }
+
+    public function getSettlementOndemand($request, $merchantId, $id) {
+        $url = self::FETCH_ODS . $id;
+
+        if (empty($request) === false)
+        {
+            $url .= '?' . http_build_query($request);
+        }
+
+        return $this->sendRequestAndParseResponse($url,
+            [],
+            [
+                'X-Auth-Type'    => 'internal',
+                'X-Service-Name' => 'api',
+                'X-Merchant-Id'  => $merchantId
+            ],
+            'GET'
+        );
+    }
+
+    public function getMultipleSettlementOndemand($request, $merchantId){
+        $url = self::FETCH_MULTIPLE_ODS;
+
+        if (empty($request) === false)
+        {
+            $url .= '?' . http_build_query($request);
+        }
+
+        return $this->sendRequestAndParseResponse($url,
+            [],
+            [
+                'X-Auth-Type'    => 'internal',
+                'X-Service-Name' => 'api',
+                'X-Merchant-Id'  => $merchantId
+            ],
+            'GET'
+        );
+    }
+
+    public function payoutsWebhook($request, $signature) {
+        return $this->sendRequestAndParseResponse(self::PAYOUTS_WEBHOOK,
+            $request,
+            [
+                'X-Auth-Type'    => 'internal',
+                'X-Service-Name' => 'api',
+                'X-Razorpay-Signature' => $signature,
+            ],
+            'POST'
         );
     }
 
@@ -232,14 +304,18 @@ class CapitalEarlySettlementClient
 
         if ($resp->getStatusCode() >= 500)
         {
-            throw new ServerErrorException('could not complete request', ErrorCode::SERVER_ERROR);
+            throw new ServerErrorException('could not complete request', ErrorCode::SERVER_ERROR,
+                [
+                    'status_code' => $resp->getStatusCode(),
+                    'body' => json_decode($resp->getBody(), true),
+                ]);
         }
         else if($resp->getStatusCode() >= 400)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,null,
                 [
                     'status_code' => $resp->getStatusCode(),
-                    'body' => $resp->getBody(),
+                    'body' => json_decode($resp->getBody(), true),
                 ]);
         }
         else

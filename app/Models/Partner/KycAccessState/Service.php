@@ -9,6 +9,10 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Repository as MerchantRepo;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Merchant;
+use RZP\Models\User\Role;
 
 use RZP\Models\Merchant\MerchantApplications as MerchantApplications;
 class Service extends Base\Service
@@ -51,6 +55,7 @@ class Service extends Base\Service
 
     public function confirmRequestForSubMerchantKyc($input)
     {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
         (new Entity)->getValidator()->validateInput('token', $input);
         $partner = (new MerchantRepo())->getMerchant($input[Entity::PARTNER_ID]);
         $prtsResult = $this->proxyToPartnershipServiceForPKYC($input, $partner->getId());

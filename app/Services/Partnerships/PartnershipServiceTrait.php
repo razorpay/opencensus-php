@@ -66,10 +66,9 @@ trait PartnershipServiceTrait
     public function proxyToPartnershipServiceForPKYC(array $parameters, string $partnerId)
     {
         $currentRoute = app('request.ctx')->getRoute();
-        $mode =  app('basicauth')->getMode();
 
         $experimentId = $this->app['config']->get('app.prts_kyc_access_status_writes_exp_id');
-        $variant = $this->getExperimentVariant($experimentId, $partnerId, $currentRoute, $mode);
+        $variant = $this->getExperimentVariant($experimentId, $partnerId, $currentRoute);
 
         // Inject exp_mode into the payload so that PRTS doesn't need to evaluate it twice
         $parameters['exp_mode'] = $parameters['exp_mode'] ?? $variant;
@@ -112,10 +111,10 @@ trait PartnershipServiceTrait
     }
 
 
-    private function getExperimentVariant(string $experimentId, string $partnerId, string $routeName, string $mode)
+    private function getExperimentVariant(string $experimentId, string $partnerId, string $routeName)
     {
         try {
-            $requestData = ['mid' => $partnerId, 'route_name' => $routeName, 'mode' => $mode];
+            $requestData = ['mid' => $partnerId, 'route_name' => $routeName];
 
             $properties = [
                 'id'            => $partnerId,

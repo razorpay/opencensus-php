@@ -3,10 +3,17 @@
 namespace RZP\Models\Customer;
 
 use RZP\Base\BuilderEx;
+use RZP\Base\Common;
+use RZP\Base\ConnectionType;
+use RZP\Constants\Environment;
+use RZP\Constants\Es;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\DbQueryException;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Base;
 use RZP\Models\Base\Collection;
+use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Customer;
@@ -30,28 +37,134 @@ class Repository extends Base\Repository
     public function fetch(array $params, string $merchantId = null, string $connectionType = null): PublicCollection
     {
         // Check if query can be served by DB.
-        // It should not contain any params other than "count" and "skip"
-        $allowedKeys = ['count', 'skip'];
+        // It should not contain any params other than the ones mentioned below
+        $allowedKeys = ['count', 'skip', 'email', 'contact', 'merchant_id'];
         $invalidKeys = array_diff(array_keys($params), $allowedKeys);
         if (!empty($invalidKeys))
             return parent::fetch($params, $merchantId, $connectionType);
 
+        $merchantId = $merchantId ?? $params['merchant_id'];
         $merchant = $this->repo->merchant->find($merchantId);
         $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled($merchant);
-        $this->logMethodCall(__FUNCTION__, ['merchant_id' => $merchantId, 'should_read_via_cms' => $shouldReadViaCMS]);
+        $this->logMethodCall(__FUNCTION__, ['merchant_id' => $merchantId, 'should_read_via_cms' => $shouldReadViaCMS, 'params' => $params]);
         if ($shouldReadViaCMS)
         {
+            $useReplica =  (is_numeric($params['count']) && (int)$params['count'] > 10) ||
+                (is_numeric($params['skip']) && (int)$params['skip'] > 0);
+
             $response = $this->app['cms']->listCustomers(
                 [
                     'merchant_id' => $merchantId,
                     'count' => $params['count'],
-                    'skip' => $params['skip']
-                ]
-            );
+                    'skip' => $params['skip'],
+                    'contact' => $params['contact'],
+                    'email' => $params['email']
+                ], $useReplica);
             return (new Customer\Account\Transformations)->convertListResponseToPublicCollection($response);
         }
 
         return parent::fetch($params, $merchantId, $connectionType);
+    }
+
+    // Overrides runEsMatch defined in RepositoryFetch Trait
+    // The difference in this implementation is that this uses CDP Core microservice to fetch customers
+    // rather than API DB
+    protected function runEsFetch(
+        array $params,
+        string $merchantId = null,
+        array $expands,
+        string $connectionType = null): PublicCollection
+    {
+        $this->logMethodCall(__FUNCTION__, ['params' => $params]);
+        $startTimeMs = round(microtime(true) * 1000);
+        $response = $this->esRepo->buildQueryAndSearch($params, $merchantId);
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $queryDuration = $endTimeMs - $startTimeMs;
+
+        if($queryDuration > 100) {
+            $this->trace->info(TraceCode::ES_SEARCH_DURATION, [
+                'duration_ms' => $queryDuration,
+                'function'    => 'runESSearch',
+            ]);
+        }
+
+        // Extract results from ES response. If hit has _source get that else just the document id.
+        $result = array_map(
+            function ($res)
+            {
+                return $res[ES::_SOURCE] ?? [Common::ID => $res[ES::_ID]];
+            },
+            $response[ES::HITS][ES::HITS]);
+
+        if (count($result) === 0)
+        {
+            return new PublicCollection;
+        }
+
+        // If callee expects only es data (for auto-complete etc) then hydrate the result into model and return.
+        $esHitsOnly = boolval(($params[EsRepository::SEARCH_HITS]) ?? false);
+
+        if ($esHitsOnly)
+        {
+            return $this->hydrate($result);
+        }
+
+        // Else extract the matched ids and return collection by making a MySQL query on found ids.
+        $ids = array_column($result, 'id');
+        $query = $this->newQuery();
+
+        if ((is_null($connectionType) === false) and
+            ($this->app['env'] !== Environment::TESTING))
+        {
+            $connection = $this->getConnectionFromType($connectionType);
+
+            $query = $this->newQueryWithConnection($connection);
+        }
+
+        $query = $query->with($expands);
+
+        $this->addCommonQueryParamMerchantId($query, $merchantId);
+
+        $temp = $this->fetchByMerchantIdAndIds($merchantId, $ids);
+        $entities = (new Customer\Account\Transformations())->convertEntityListToPublicCollection($temp);
+
+        // If not all the ids from es are found in MySQL just log an error as this should not happen.
+        if (count($ids) !== $entities->count())
+        {
+            $this->trace->critical(TraceCode::ES_MYSQL_RESULTS_MISMATCH, ['ids' => $ids]);
+        }
+
+        //checking connection type twice as it's default value is null so in
+        // some cases null is passed in the place of string which throws error.
+
+        try
+        {
+            if(sizeof($expands) === 0 and ($connectionType === ConnectionType::DATA_WAREHOUSE_ADMIN
+                    or $connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT) and $this->checkWdaRouteForFetchPayment($expands, $connectionType) === true)
+            {
+                $wdaStartTimeMs = round(microtime(true) * 1000);
+
+                $wdaEntities =  $this->fetchEsEntitiesFromWDA($query, $ids, $connectionType, $merchantId);
+
+                $difference = $this->compareAndLogEntitiesInShadowMode($wdaEntities, $entities, $wdaStartTimeMs);
+
+                if($difference === false)
+                {
+                    return $wdaEntities;
+                }
+            }
+        }
+        catch ( \Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                'migration_error_with_es_params' => $ex->getMessage(),
+                'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
+        return $entities;
     }
 
     public function getEntitiesFromWda(WDAQueryBuilder $wdaQueryBuilder, $query)
@@ -187,6 +300,10 @@ class Repository extends Base\Repository
     public function findOrFailPublic($id, $columns = ['*'], string $connectionType = null): Entity
     {
         $this->logMethodCall(__FUNCTION__, ['customer_id' => $id, 'connection_type' => $connectionType]);
+
+        if (is_null($id))
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+
         $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled(null);
         if ($shouldReadViaCMS)
         {
@@ -194,13 +311,13 @@ class Repository extends Base\Repository
             {
                 return $this->getCustomerEntityFromCMS($id);
             }
-            catch (\Exception) {
-                /* This exception can occur when
-                    1. CMS responds with "ID does not exist"
-                    2. Request to CMS fails [Expected in geos where CMS is not yet deployed]
-                */
+            catch (ServerErrorException)
+            {
+                // this exception can occur when request to CMS fails [Expected in geos where CMS is not yet deployed]
             }
         }
+
+        $this->trace->warning(TraceCode::CUSTOMER_READ_FROM_API_DB, ['customer_id' => $id, 'method' => __FUNCTION__]);
         return parent::findOrFailPublic($id, $columns, $connectionType);
     }
 
@@ -297,22 +414,26 @@ class Repository extends Base\Repository
 
     public function find($id, $columns = array('*'), string $connectionType = null)
     {
-        $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled(null);
-        $this->logMethodCall(__FUNCTION__, [ 'id' => $id, 'connection_type' => $connectionType, 'should_create_via_cms' => $shouldReadViaCMS]);
+        $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled($this->merchant);
+        if (is_null($id))
+            return null;
+
+        $this->logMethodCall(__FUNCTION__, [ 'id' => $id, 'connection_type' => $connectionType, 'should_read_via_cms' => $shouldReadViaCMS]);
         if ($shouldReadViaCMS)
         {
             try
             {
                 return $this->getCustomerEntityFromCMS($id);
             }
-            catch (\Exception) {
-                /* This exception can occur when
-                    1. CMS responds with "ID does not exist"
-                    2. Request to CMS fails [Expected in geos where CMS is not yet deployed]
-                */
+            catch (BadRequestException){
+                return null;
+            }
+            catch (ServerErrorException) {
+                // This exception can occur when request to CMS fails [Expected in geos where CMS is not yet deployed]
             }
         }
 
+        $this->trace->warning(TraceCode::CUSTOMER_READ_FROM_API_DB, ['customer_id' => $id, 'method' => __FUNCTION__]);
         return parent::find($id, $columns, $connectionType);
     }
 
@@ -326,20 +447,21 @@ class Repository extends Base\Repository
     {
         $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled(null);
         $this->logMethodCall(__FUNCTION__, [ 'customer_id' => $id, 'connection_type' => $connectionType, 'should_read_via_cms' => $shouldReadViaCMS]);
+        if (is_null($id))
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+
         if ($shouldReadViaCMS)
         {
             try
             {
                 return $this->getCustomerEntityFromCMS($id);
             }
-            catch (\Exception) {
-                /* This exception can occur when
-                    1. CMS responds with "ID does not exist"
-                    2. Request to CMS fails [Expected in geos where CMS is not yet deployed]
-                */
+            catch (ServerErrorException) {
+                // This exception can occur when request to CMS fails [Expected in geos where CMS is not yet deployed]
             }
         }
 
+        $this->trace->warning(TraceCode::CUSTOMER_READ_FROM_API_DB, ['customer_id' => $id, 'method' => __FUNCTION__]);
         return parent::findOrFail($id, $columns, $connectionType);
     }
 
@@ -397,29 +519,21 @@ class Repository extends Base\Repository
         $this->logMethodCall(__FUNCTION__, [ 'ids' => $ids, 'should_read_via_cms' => $shouldReadViaCMS]);
         if ($shouldReadViaCMS)
         {
-            try
-            {
-                $collection = new Collection();
-                foreach ($ids as $id) {
-                    $cust = $this->findOrFail($id);
-                    $collection->push($cust);
-                }
+            $collection = new Collection();
+            foreach ($ids as $id) {
+                $cust = $this->findOrFail($id);
+                $collection->push($cust);
+            }
 
-                return array_map(
-                    function($v)
-                    {
-                        return $this->serializeForIndexing($v);
-                    },
-                    $collection->all());
-            }
-            catch (\Exception) {
-                /* This exception can occur when
-                    1. CMS responds with "ID does not exist"
-                    2. Request to CMS fails [Expected in geos where CMS is not yet deployed]
-                */
-            }
+            return array_map(
+                function($v)
+                {
+                    return $this->serializeForIndexing($v);
+                },
+                $collection->all());
         }
 
+        $this->trace->warning(TraceCode::CUSTOMER_READ_FROM_API_DB, ['customer_ids' => $ids, 'method' => __FUNCTION__]);
         return parent::findManyForIndexingByIds($ids);
     }
 
@@ -542,25 +656,26 @@ class Repository extends Base\Repository
     // behaviour: does not throw exception, either the entity or null
     public function findById($id, $columns = ['*'])
     {
+        $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled(null);
+        $this->logMethodCall(__FUNCTION__, [ 'customer_id' => $id, 'should_read_via_cms' => $shouldReadViaCMS]);
         if (is_null($id))
             return null;
 
-        $shouldReadViaCMS = (new Customer\Account\SplitzExperimentEvaluator())->isReadOverrideToCmsEnabled(null);
-        $this->logMethodCall(__FUNCTION__, [ 'customer_id' => $id, 'should_read_via_cms' => $shouldReadViaCMS]);
         if ($shouldReadViaCMS)
         {
             try
             {
                 return $this->getCustomerEntityFromCMS($id);
             }
-            catch (\Exception) {
-                /* This exception can occur when
-                    1. CMS responds with "ID does not exist"
-                    2. Request to CMS fails [Expected in geos where CMS is not yet deployed]
-                */
+            catch (BadRequestException) {
+                return null;
+            }
+            catch (ServerErrorException) {
+                // This exception can occur when request to CMS fails [Expected in geos where CMS is not yet deployed]
             }
         }
 
+        $this->trace->warning(TraceCode::CUSTOMER_READ_FROM_API_DB, ['customer_id' => $id, 'method' => __FUNCTION__]);
         return $this->newQuery()
             ->select($columns)
             ->find($id);
@@ -712,6 +827,36 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function fetchByMerchantIdAndIds($merchantId, $customerIds): array
+    {
+        $allCustomers = [];
+
+        foreach (array_chunk($customerIds, 100) as $chunk) {
+            $response = $this->app['cms']->listCustomers(
+                [
+                    'merchant_id' => $merchantId,
+                    'ids' => $chunk,
+                ],
+                true
+            );
+
+            foreach ($response['items'] as $item)
+            {
+                $c = new Customer\Entity();
+                (new Customer\Account\Transformations)->fillV2CustomerInfoInCustomerEntity($c, $item);
+                $allCustomers[] = $c;
+            }
+        }
+
+        // Sort according to list of IDs provided as input
+        $orderMap = array_flip($customerIds);
+        usort($allCustomers, function($a, $b) use ($orderMap) {
+            return ($orderMap[$a->getId()] ?? PHP_INT_MAX) <=> ($orderMap[$b->getId()] ?? PHP_INT_MAX);
+        });
+
+        return $allCustomers;
+    }
+
 
     protected function logMethodCall(string $methodName, $extra = [], $opType = 'read')
     {
@@ -728,19 +873,11 @@ class Repository extends Base\Repository
 
     /**
      * @throws BadRequestException
+     * @throws ServerErrorException
      */
     protected function getCustomerEntityFromCMS($id, $merchantId = null): Entity
     {
-        try
-        {
-            $responseData = $this->app['cms']->getCustomerById($id);
-        }
-        catch (\Exception)
-        {
-            // TODO: This will return 400 even when CMS returns 500. Fix exception handling.
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
-        }
-
+        $responseData = $this->app['cms']->getCustomerById($id);
         if (!is_null($merchantId) && $responseData['merchant_id'] != $merchantId)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);

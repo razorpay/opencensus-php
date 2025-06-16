@@ -143,6 +143,8 @@ final class Metric
     // Payouts Service Dual Write New Flow Metric
     const PAYOUTS_SERVICE_DUAL_WRITE_NEW_FLOW = 'payouts_service_dual_write_new_flow';
 
+    const PAYOUTS_SERVICE_REQUEST_FUND_ACCOUNT_ID_MISSING = 'payouts_service_request_fund_account_id_missing';
+
     // Dimension constants
     const SOURCE         = 'source';
     const BATCH          = 'batch';

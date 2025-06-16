@@ -29,9 +29,9 @@ class Aubl extends Base
     const BANK_CODE = IFSC::AUBL;
     const FILE_TYPE = FileStore\Type::AUBL_EMI_FILE;
     const FILE_NAME         = 'Razorpay_EMI';
-    const DATE_FORMAT       = 'M d, Y';
+    const DATE_FORMAT       = 'M d,Y';
     const BEAM_FILE_TYPE    = 'emi';
-    const COMPRESSION_REQUIRED = false;
+    const COMPRESSION_REQUIRED = true;
     protected $totalAmount;
     protected $totalTransactions;
     protected $chotaBeam = false;
@@ -208,8 +208,6 @@ class Aubl extends Base
 
         $bucketConfig = $config[$bucketType];
 
-        $bucketConfig['name'] = Config::get('applications.chota_beam.bucket_name');
-
         return $bucketConfig;
     }
 
@@ -250,8 +248,10 @@ class Aubl extends Base
         return number_format((float)$amount, 2, '.', '');
     }
 
-
-
-
+    public function generateEmiFilePassword()
+    {
+        $publicKey = Config::get('applications.emi.aubl_cc_emi_file_password');
+        return $publicKey;
+    }
 
 }

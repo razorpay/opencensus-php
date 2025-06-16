@@ -8,4 +8,6 @@ class StatusCode
     const REDIRECTION  = 300;
     const CLIENT_ERROR = 400;
     const SERVER_ERROR = 500;
+    const SERVICE_UNAVAILABLE = 503;
+    const GATEWAY_TIMEOUT = 504;
 }

@@ -5,8 +5,11 @@ namespace RZP\Models\Settlement\Ondemand;
 use Config;
 use Carbon\Carbon;
 
+use Http\Discovery\Exception\NotFoundException;
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Error\Error;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Feature;
@@ -124,6 +127,10 @@ class Service extends Base\Service
         if ($this->app['basicauth']->isCapitalEarlySettlementApp() === true) {
             $requestDetails['scheduled'] = isset($input['scheduled']) ? (bool) $input['scheduled'] : $requestDetails['scheduled'];
             unset($input['scheduled']);
+        }
+
+        if ($this->mode === Mode::LIVE && $this->merchant->isFeatureEnabled(Feature\Constants::ODS_MICROSERVICE) === true) {
+            return $this->createViaMicroservice($input, $requestDetails);
         }
 
         return $this->app['api.mutex']->acquireAndRelease(
@@ -368,6 +375,11 @@ class Service extends Base\Service
 
     public function fetch(string $id, array $input): array
     {
+        if ($this->mode === Mode::LIVE && $this->merchant->isFeatureEnabled(Feature\Constants::ODS_MICROSERVICE) === true)
+        {
+            return $this->fetchViaMicroservice($id, $input);
+        }
+
         $settlementOndemand = (new Repository)->findByPublicIdAndMerchant($id, $this->merchant);
 
         if (isset($input['expand']) === true && boolval($input['expand']) === true)
@@ -386,6 +398,11 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
+        if ($this->mode === Mode::LIVE && $this->merchant->isFeatureEnabled(Feature\Constants::ODS_MICROSERVICE) === true)
+        {
+            return $this->fetchMultipleViaMicroservice($input, $this->merchant->getId());
+        }
+
         (new Validator)->validateInput(Validator::FETCH_BY_TIMESTAMP_INPUT, $input);
 
         if (!isset($input['to']) === true)
@@ -598,5 +615,96 @@ class Service extends Base\Service
         $response = $this->core()->syncOdsTransaction($input['ods_input']);
 
         return ["response" => $response];
+    }
+
+    private function createViaMicroservice($input, $requestDetails)
+    {
+        $userId = optional($this->user)->getId() ?? '';
+        $merchantId = $this->merchant->getId();
+
+        $productType = 'ondemand';
+        if ($requestDetails[Constants::SETTLEMENT_TYPE] === Constants::LINKED_ACCOUNT_SETTLEMENT) {
+            $productType = 'linked';
+        }
+        if ($requestDetails['scheduled'] === true) {
+            $productType = 'scheduled';
+        }
+
+        $request = [
+            'amount' => $input['amount'],
+            'settle_full_balance' => $input['settle_full_balance'] ?? false,
+            'description' => $input['description'],
+            'type' => $input['settlement_payout_type'],
+            'product_type' => $productType,
+            'expand' => $input['expand'],
+            'notes' => $input['notes']
+        ];
+
+        try {
+            return $this->app['capital_early_settlements']->createODS($request, $merchantId, $userId);
+        }
+        catch (\Exception $e) {
+            $errorData = $e->getData();
+
+            $statusCode = $errorData['status_code'] ?? 500;
+            $field = $errorData['body']['details'][0]['field'] ?? null;
+            $description = $errorData['body']['details'][0]['description'] ?? null;
+            $message = $errorData['body']['message'] ?? null;
+        }
+
+        if ($statusCode < 500) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, $field, null, $description);
+        }
+        throw new ServerErrorException($message, ErrorCode::SERVER_ERROR);
+    }
+
+    private function fetchViaMicroservice($id, $input)
+    {
+        try {
+            $request = [];
+
+            if (isset($input['expand']) === true && (bool) $input['expand'] === true) {
+                $request = [
+                    'expand' => [
+                        'ondemand_payouts'
+                    ]
+                ];
+            }
+
+            return $this->app['capital_early_settlements']->getSettlementOndemand($request, $this->merchant->getId(), $id);
+        }
+        catch (\Exception $e) {
+            $errorData = $e->getData();
+
+            $statusCode = $errorData['status_code'] ?? 500;
+            $field = $errorData['body']['details'][0]['field'] ?? null;
+            $description = $errorData['body']['details'][0]['description'] ?? null;
+            $message = $errorData['body']['message'] ?? null;
+        }
+
+        if ($statusCode < 500) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, $field, null, $description);
+        }
+        throw new ServerErrorException($message, ErrorCode::SERVER_ERROR);
+    }
+
+    private function fetchMultipleViaMicroservice($input, $merchantId)
+    {
+        try {
+            return $this->app['capital_early_settlements']->getMultipleSettlementOndemand($input, $merchantId);
+        }
+        catch (\Exception $e) {
+            $errorData = $e->getData();
+
+            $statusCode = $errorData['status_code'] ?? 500;
+            $field = $errorData['body']['details'][0]['field'] ?? null;
+            $description = $errorData['body']['details'][0]['description'] ?? null;
+            $message = $errorData['body']['message'] ?? null;
+        }
+
+        if ($statusCode < 500) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, $field, null, $description);
+        }
+        throw new ServerErrorException($message, ErrorCode::SERVER_ERROR);
     }
 }

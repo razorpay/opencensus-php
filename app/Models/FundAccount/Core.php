@@ -32,6 +32,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Services\FTS\CreateAccount;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Constants\Metric as MetricConstant;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -168,7 +169,7 @@ class Core extends Base\Core
         }
 
         if ($input[Entity::ACCOUNT_TYPE] === Entity::MOBILE) {
-            $this->sanitizeAndCreateFundAccountInputForLinkedNumber($input);
+            $this->sanitizeAndCreateFundAccountInputForLinkedNumber($input, $merchant->getId());
         }
 
         (new Validator)->setStrictFalse()->validateInput('create', $input);
@@ -1583,6 +1584,62 @@ class Core extends Base\Core
         return [false, null, null];
     }
 
+    /*
+     * Creating Separate Function For fetching Fund Account for Payouts Service as Duplicate
+     * Payout Evaluation and Prevention using same Flow
+     */
+    public function fetchFundAccountForPayoutService(string $merchantId, array $input): array
+    {
+        try {
+            if (isset($input[Payout\Entity::FUND_ACCOUNT_ID]) === false)
+            {
+                $this->trace->info(
+                    TraceCode::PAYOUT_SERVICE_REQUEST_FUND_ACCOUNT_ID_NOT_PRESENT,
+                    [
+                        'merchant_id'   => $merchantId,
+                    ]);
+                $this->trace->count(Payout\Metric::PAYOUTS_SERVICE_REQUEST_FUND_ACCOUNT_ID_MISSING, [
+                    MetricConstant::LABEL_MESSAGE => "Payouts Service request fund account id missing",
+
+                ]);
+                return [false, null, null];
+            }
+
+            $fundAccountId = $input[Payout\Entity::FUND_ACCOUNT_ID];
+
+            if ($this->merchant === null)
+            {
+                $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+            }
+
+            $entity = (new FundAccount\Repository)->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
+
+            $entity->load('contact');
+
+            $entity->setIsPSPayout(true);
+            $entity->contact->setIsPSPayout(true);
+
+            $fundAccount = $entity->toArray();
+            if ($fundAccount[BankAccount\Entity::ACCOUNT_TYPE] == FundAccount\Entity::BANK_ACCOUNT)
+            {
+                $fundAccount[FundAccount\Entity::ACCOUNT]['virtual'] = $entity->account->isVirtual();
+            }
+
+            return [true, $fundAccount, $entity];
+
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(
+                TraceCode::FUND_ACCOUNT_FETCH_FOR_PAYOUT_SERVICE_EXCEPTION,
+                [
+                    'error' => $ex->getMessage()
+                ]);
+        }
+
+        return [false, null, null];
+    }
+
     public function getBulkAppSpecificInformation(Base\PublicCollection $fundAccounts) : Base\PublicCollection
     {
         $fundAccountIds = [];
@@ -1772,12 +1829,12 @@ class Core extends Base\Core
     This function will change the input for fund account creation
     For UPI Number Payouts because underline payment instrument is VPA
      */
-    private function sanitizeAndCreateFundAccountInputForLinkedNumber(array &$input): void
+    private function sanitizeAndCreateFundAccountInputForLinkedNumber(array &$input, string $merchantId): void
     {
         $mobileNumber = $input[Entity::MOBILE][Entity::NUMBER] ?? '';
         $accountHolderName = $input[Entity::MOBILE][Entity::ACCOUNT_HOLDER_NAME] ?? '';
 
-        $mappedVpa = (new LinkedNumber\Core())->FetchMappedVpaFromLinkedNumber($mobileNumber, $accountHolderName);
+        $mappedVpa = (new LinkedNumber\Core())->FetchMappedVpaFromLinkedNumber($mobileNumber, $accountHolderName, $merchantId);
 
         $input = array_merge($input, [
             Entity::LINKED_NUMBER => $mobileNumber,

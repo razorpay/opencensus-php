@@ -86,6 +86,8 @@ class Core extends QrCode\Core
 
         $qrCode->source()->associate($order);
 
+        $qrCode->modifyCloseByIfApplicable();
+
         $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE_BUILD_QR_CODE], function () use ($terminal, $qrCode) {
             return $this->build($qrCode, $terminal);
         });
@@ -95,6 +97,53 @@ class Core extends QrCode\Core
 
         return $qrCode;
 
+    }
+
+    /**
+     * Evaluate the Splitz experiment for setting QR's CLOSE_BY to max of 2 hours post Qr creation
+     *
+     * @param $merchantId
+     * @return bool True if merchant_id present in splitz file, else False
+     */
+    public function evaluateSplitzExperimentForSettingQrCloseBy($merchantId): bool {
+        try {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app->config->get('app.merchant_with_qr_expiry_gt_2_hours'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+            $response   = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->app->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'merchant_id'   => $merchantId,
+                'response'     => $response
+            ]);
+
+
+            $qrVariant = false; // Default Value
+            $variables = $response['response']['variant']['variables'] ?? [];
+            foreach ($variables as $variable) {
+                $key = $variable['key'] ?? '';
+                $value = $variable['value'] ?? '';
+                if ($key === 'result' && $value === 'on') {
+                    $qrVariant = true;
+                    break; // Stop looping once the condition is met
+                }
+            }
+
+            return $qrVariant;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SET_QR_CLOSE_BY_SPLITZ_FAILURE
+            );
+        }
+
+        return true;
     }
 
     public function createTerminalForSingleStack(array $input)
@@ -184,6 +233,26 @@ class Core extends QrCode\Core
         $customer = $this->getCustomerIfGiven($input);
 
         $terminal = $this->validateAndFetchTerminalIfAvailable($input, $additionalData);
+
+        //return existing QR CODE for terminal, if already exists.
+        $existingQrCodeId = (new BharatQrService())->findQrCodeIdFromQrCodeConfig($terminal);
+
+        if (empty($existingQrCodeId) === false)
+        {
+            $existingQrCode = $this->repo->qr_code->find($existingQrCodeId);
+
+                if (empty($existingQrCode) === false)
+                {
+                    $this->trace->info(
+                        TraceCode::QR_CODE_ALREADY_EXIST_IN_QR_CONFIG,
+                        [
+                            'message' => 'QR_CODE_ALREADY_EXIST_IN_QR_CONFIG',
+                            'qrCode'  => $qrCode,
+                        ]
+                    );
+                    return $existingQrCode;
+                }
+        }
 
         $qrCode->customer()->associate($customer);
 
@@ -338,21 +407,18 @@ class Core extends QrCode\Core
             return null;
         }
 
-        $gateway = $qrCode->getGatewayFromQrString();
-        if ($gateway === null)
+        if ($inputTerminal === null)
         {
             return null;
         }
+
+        $gateway = $inputTerminal->getGateway();
 
 
         if ((new BharatQrService())->checkIfQrGatewayUnrecognizedPaymentProcess($gateway) === false) {
             return null;
         }
 
-        if ($inputTerminal === null)
-        {
-            return null;
-        }
 
         (new QrCodeConfigService())->createOrUpdateStaticQRCodeConfig($inputTerminal, $qrCode);
 
@@ -628,8 +694,7 @@ class Core extends QrCode\Core
     public function validateAndFetchTerminalIfAvailable(array $input, $additionalData = null)
     {
 
-        if ((isset($input['vpa']) === false) or
-            ($input['usage'] !== UsageType::MULTIPLE_USE))
+        if (((isset($input['vpa']) === false) and (isset($additionalData['tid']) === false)) or ($input['usage'] !== UsageType::MULTIPLE_USE))
         {
             $this->trace->info(TraceCode::QR_CODE_REQUEST_VPA_TERMINAL_NOT_AVAILABLE, [
                 'message' => 'Terminal not available for the input',
@@ -637,7 +702,24 @@ class Core extends QrCode\Core
             ]);
             return null;
         }
-
+        elseif (isset($input['vpa']) !== false)
+        {
+            $vpa = strtolower($input['vpa']);
+            $gateway = $this->fetchGatewayFromVpa($vpa);
+        }
+        // Determine whether including terminal details in the create merchant QR code request is appropriate.
+        // The request may include additional fields like to fetch the terminal details:
+        // {
+        //     "terminal": {
+        //         "gateway": "hdfc_mintoak",
+        //         "gateway_merchant_id": "tid"
+        //     }
+        // }
+        elseif (isset($additionalData['tid']) !== false)
+        {
+            $gateway = Gateway::HDFC_MINTOAK;
+            $tid = $additionalData['tid'];
+        }
 //        if (empty($additionalData['qrString']) === false)
 //        {
 //            $this->trace->info(TraceCode::QR_CODE_REQUEST_VPA_TERMINAL_NOT_FETCHED, [
@@ -648,8 +730,6 @@ class Core extends QrCode\Core
 //            return null;
 //        }
 
-        $vpa = strtolower($input['vpa']);
-        $gateway = $this->fetchGatewayFromVpa($vpa);
 
         $terminalDetails = [];
 
@@ -667,6 +747,10 @@ class Core extends QrCode\Core
         elseif (in_array($gateway, ['upi_jkbank', 'upi_rzpapb']))
         {
             $terminalDetails[TerminalEntity::VPA] = $vpa;
+        }
+        elseif (in_array($gateway, [Gateway::HDFC_MINTOAK]))
+        {
+            $terminalDetails[TerminalEntity::GATEWAY_MERCHANT_ID] = $tid;
         }
 
         if ($gateway === null)
@@ -713,9 +797,9 @@ class Core extends QrCode\Core
                     break;
                 default:
                     $gateway = null;
+
             }
         }
-
         return $gateway;
     }
 

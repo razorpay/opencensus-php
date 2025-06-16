@@ -78,15 +78,18 @@ use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Http\Controllers\BankTransferController;
 use RZP\Models\Application\ApplicationMerchantMaps;
 use RZP\Services\Mock\UfhService as MockUfhService;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\PayoutsStatusDetails\StatusReasonMap;
 use RZP\Models\PayoutSource\Core as PayoutSourceCore;
 use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Models\Feature\Constants as FeatureConstant;
+use RZP\Models\Payment\Constant as PaymentConstant;
 use RZP\Models\BankTransfer\Core as BankTransferCore;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
 use RZP\Models\FundAccount\Service as FundAccountService;
+use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Services\RazorpayLabs\SlackApp as SlackAppService;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
@@ -561,18 +564,26 @@ class Service extends Base\Service
 
         (new Validator)->validateAndUpdateCardMode($input);
 
-        $isMobileNumberPayout = $this->isMobileNumberPayout($input);
+        $isCompositePayout = false;
+
+        if (isset($input[Entity::FUND_ACCOUNT]) === true)
+        {
+            $isCompositePayout = true;
+        }
+
+        $isMobileNumberPayout = $this->isMobileNumberPayout($input, $isCompositePayout);
         $mobileNumber = null;
 
         if ($isMobileNumberPayout) {
             $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_VOLUME_COUNT);
 
-            $mobileNumber = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::MOBILE][FundAccount\Entity::NUMBER] ?? null;
+            if ($isCompositePayout) {
+                $mobileNumber = $input[Entity::FUND_ACCOUNT][FundAccount\Entity::MOBILE][FundAccount\Entity::NUMBER] ?? null;
 
-            $this->trace->info(TraceCode::LINKED_NUMBER_PAYOUT_INFO,
-                [
+                $this->trace->info(TraceCode::LINKED_NUMBER_PAYOUT_INFO, [
                     FundAccount\Entity::LINKED_NUMBER => $mobileNumber,
                 ]);
+            }
 
             $properties = [
                 'id'            => $this->merchant->getId(),
@@ -586,14 +597,10 @@ class Service extends Base\Service
                     ErrorCode::BAD_REQUEST_MOBILE_NUMBER_PAYOUT_NOT_ALLOWED,
                     null);
             }
-            (new Validator)->validateMobileNumberPayout($input);
-        }
 
-        $isCompositePayout = false;
-
-        if (isset($input[Entity::FUND_ACCOUNT]) === true)
-        {
-            $isCompositePayout = true;
+            if ($isCompositePayout) {
+                (new Validator)->validateMobileNumberPayout($input);
+            }
         }
 
         $this->checkIfPayoutIsAllowed($isCompositePayout, $input, $internal, $balance);
@@ -693,6 +700,14 @@ class Service extends Base\Service
             }
         }
 
+        if ($isMobileNumberPayout) {
+            $fundAccount = $this->repo->fund_account->findByPublicId($input[Entity::FUND_ACCOUNT_ID]);
+
+            $vpaHandle = $fundAccount->account->getHandle();
+
+            $input[Entity::NOTES]['VPA_HANDLE'] = $vpaHandle;
+        }
+
         $payout = $this->core->createPayoutToFundAccount($input, $this->merchant, null, $internal, $balance);
 
         if ($isCompositePayout === true)
@@ -738,7 +753,7 @@ class Service extends Base\Service
             $payoutArray = $payout->toArrayPublic();
         }
 
-        if ($isMobileNumberPayout) {
+        if ($isMobileNumberPayout && $isCompositePayout) {
             $fundAccount = $payout->fundAccount;
             $this->sanitizeResponseForMobileNumberPayout($payoutArray, $fundAccount);
             $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_SUCCESS_COUNT);
@@ -930,7 +945,8 @@ class Service extends Base\Service
                $this->auth->isCapitalCollectionsApp() or
                $this->auth->isFTSApp() or
                $this->auth->isXperienceApp() or
-               $this->auth->isCrossBorderImportApp();
+               $this->auth->isCrossBorderImportApp() or
+               $this->auth->isCapitalEarlySettlementApp();
     }
 
     public function isSettlementsApp(): bool
@@ -991,7 +1007,8 @@ class Service extends Base\Service
             ($this->auth->isCapitalCollectionsApp() === false) and
             ($this->auth->isFTSApp() === false) and
             ($this->auth->isXperienceApp() === false) and
-            ($this->auth->isCrossBorderImportApp() === false)
+            ($this->auth->isCrossBorderImportApp() === false) and
+            ($this->auth->isCapitalEarlySettlementApp() === false)
         );
     }
 
@@ -6994,8 +7011,20 @@ class Service extends Base\Service
         );
     }
 
-    private function isMobileNumberPayout(array $input): bool {
-        return isset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE]) && $input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE] === FundAccount\Entity::MOBILE;
+    private function isMobileNumberPayout(array $input, bool $isCompositePayout): bool {
+        if ($isCompositePayout) {
+            return isset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE]) && $input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE] === FundAccount\Entity::MOBILE;
+        } else {
+            $fundAccountId = $input[Entity::FUND_ACCOUNT_ID];
+            $fundAccount = $this->repo->fund_account->findByPublicId($fundAccountId);
+
+
+            if ($fundAccount->getLinkedNumber() != null && $fundAccount->getCustomerName() != null) {
+                $this->fundAccountService->updateMappedVpaForFundAccount($fundAccount, $this->merchant->getId());
+                return true;
+            }
+            return false;
+        }
     }
 
     private function sanitizeResponseForMobileNumberPayout(array &$payoutArray, FundAccount\Entity $fundAccount): void
@@ -7160,5 +7189,126 @@ class Service extends Base\Service
     protected function isLiveTraffic(): bool
     {
         return $this->mode == Constants\Mode::LIVE;
+    }
+
+    // This method is used only for collectx payout
+    public function fundAccountDirectPayout(array $input, bool $internal = false): array
+    {
+        // Get merchant ID and check if it belongs to collectx
+        $merchantId = $this->merchant->getId();
+
+        if ($this->merchant->isFeatureEnabled(FeatureConstant::COLLECTX_ENABLED) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_COLLECTX,
+                null,
+                ['merchant_id' => $merchantId]
+            );
+        }
+
+        $this->trace->info
+        (
+            TraceCode::PAYOUT_INTERNAL_DIRECT_INPUT,
+            [
+                'merchant_id' => $merchantId,
+                'input'       => $input,
+            ]
+        );
+
+        // Get payment entity if payment_id is present
+        if (isset($input[Entity::PAYMENT_ID]) === false)
+        {
+            $this->trace->info
+            (
+                TraceCode::PAYOUT_INTERNAL_DIRECT_INPUT_PAYMENT_ID_NOT_PRESNET,
+                [
+                    'merchant_id' => $merchantId,
+                    'input'       => $input,
+                ]
+            );
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ID_REQUIRED_FOR_COLLECTX_REFUND_PAYOUT,
+                null,
+                ['merchant_id' => $merchantId]
+            );
+        }
+
+        $payment = $this->repo->payment->findOrFailPublic($input[Entity::PAYMENT_ID]);
+
+        if($payment[PaymentEntity::REFERENCE14] !== PaymentConstant::COLLECTX) {
+            $this->trace->info
+            (
+                TraceCode::PAYOUT_INTERNAL_DIRECT_INPUT_PAYMENT_NOT_COLLECTX,
+                [
+                    'merchant_id' => $merchantId,
+                    'input'       => $input,
+                ]
+            );
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_NOT_COLLECTX,
+                null,
+                [
+                    'merchant_id' => $merchantId,
+                    'payment_id' => $payment->getId()
+                ]
+            );
+        }
+
+        $settledBy = $payment->getSettledBy();
+        $channel = PaymentConstant::CHANNEL_SETTLED_BY_MAPPING[$settledBy];
+        if (empty($channel) === true) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CHANNEL_NOT_FOUND_FOR_PAYMENT_ID,
+                null,
+                ['merchant_id' => $merchantId]
+            );
+        }
+
+        $this->trace->info
+        (
+            TraceCode::PAYOUT_INTERNAL_DIRECT_INPUT_CHANNEL,
+            [
+                'merchant_id'    => $merchantId,
+                '$channel'       => $channel,
+            ]
+        );
+
+        // Get balance entity based on merchantId, accountType, type, and channel
+        $balance = $this->repo->balance->getBalanceByMerchantIdChannelsAndAccountType(
+            $merchantId,
+            [$channel],
+            AccountType::DIRECT
+        );
+
+        if (empty($balance))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_DIRECT_ACCOUNT_FOUND,
+                null,
+                [
+                    'merchant_id' => $merchantId,
+                    'channel' => $channel
+                ]
+            );
+        }
+
+        // Get account number from balance entity
+        $balanceAccountNumber = $balance->getAccountNumber();
+
+        // Update the account number in input
+        $input[BalanceEntity::ACCOUNT_NUMBER] = $balanceAccountNumber;
+
+        unset($input[Entity::PAYMENT_ID]);
+
+        $this->trace->info
+        (
+            TraceCode::PAYOUT_INTERNAL_DIRECT_INPUT_UPDATED_INPUT,
+            [
+                'merchant_id' => $merchantId,
+                'input'       => $input,
+            ]
+        );
+
+        return $this->fundAccountPayout($input);
     }
 }

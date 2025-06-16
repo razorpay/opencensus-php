@@ -9,6 +9,7 @@ use RZP\Constants\Metric;
 use RZP\Models\Base;
 use RZP\Models\Ledger\Constants;
 use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
+use RZP\Models\LedgerOutbox\Core as LedgerOutboxCore;
 use RZP\Models\Merchant\Credits;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -70,6 +71,8 @@ class Core extends Base\Core
     const MERCHANT_RESERVE_OPENING_BALANCE   = "merchant_reserve_opening_balance";
     const MERCHANT_BALANCE_MINIMUM_BALANCE   = "merchant_balance_minimum_balance";
     const MERCHANT_OPENING_BALANCES          = "merchant_opening_balances";
+    const ACCOUNTS                           = "accounts";
+    const BODY                               = "body";
 
     const CREDIT_ID  = 'credit_id';
     const EXPIRED_AT = 'expired_at';
@@ -178,8 +181,17 @@ class Core extends Base\Core
                 LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()->toString()
             ];
             $ledgerService = $this->app['ledger'];
-            $ledgerService->createAccountsOnEvent($payload, $requestHeaders, true);
+            $accCreationResponse = $ledgerService->createAccountsOnEvent($payload, $requestHeaders, true);
 
+            $balanceId = $this->getBalanceIdFromAccCreateResponse($accCreationResponse);
+
+            if($accCreationResponse === null || $balanceId === null)
+            {
+                $merchantAccounts = $this->getMerchantAccounts($ledgerService,$merchant->getId());
+
+                $balanceId = (new LedgerOutboxCore())->getMerchantAccountId($merchantAccounts);
+
+            }
             if (empty($amountCreditIdBalances) === false)
             {
                 foreach ($amountCreditIdBalances as $amountCreditId => $value)
@@ -192,7 +204,7 @@ class Core extends Base\Core
                     $this->loadFundsInAmountCreditAccount($amountCreditId, $amountCreditIdBalance, $merchant->getId());
                 }
             }
-            return true;
+            return [$balanceId, true];
         }
         catch (\Throwable $ex)
         {
@@ -205,7 +217,14 @@ class Core extends Base\Core
                     self::MERCHANT_ID => $merchant->getMerchantId(),
                     self::TENANT      => self::PG
                 ]);
-            return false;
+
+            $this->trace->count(Metric::LEDGER_PG_ACCOUNT_CREATION_FAILED, [
+                'code'                  => $ex->getCode(),
+                'message'               => $ex->getMessage(),
+                'tenant'                => self::PG
+            ]);
+
+            throw $ex;
         }
     }
 
@@ -1083,5 +1102,35 @@ class Core extends Base\Core
             ]);
             return false;
         }
+    }
+
+    //  getBalanceIdFromAccCreateResponse - Iterates on create account response and fetch the merchant balance id from there
+    protected function getBalanceIdFromAccCreateResponse($accCreateResponse)
+    {
+        $balanceId = null;
+        if ($accCreateResponse === null)
+        {
+            return null;
+        }
+
+        $accountsArray = $accCreateResponse[self::BODY][self::ACCOUNTS][self::PG_MERCHANT_ONBOARDING];
+
+        foreach ($accountsArray as $account)
+        {
+            if (isset($account[Constants::ACCOUNTDETAIL][Constants::ENTITIES]) === true)
+            {
+                $accountEntities = $account[Constants::ACCOUNTDETAIL][Constants::ENTITIES];
+                $fundAccountType = $accountEntities[Constants::FUND_ACCOUNT_TYPE][0];
+                $accountType = $accountEntities[Constants::ACCOUNT_TYPE][0];
+
+                if(($fundAccountType === self::MERCHANT_BALANCE) &&
+                    ($accountType === Constants::PAYABLE))
+                {
+                    $balanceId =  $account['id'] ?? null;
+                    break;
+                }
+            }
+        }
+        return $balanceId;
     }
 }

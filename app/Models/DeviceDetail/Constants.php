@@ -10,6 +10,7 @@ class Constants
 
     const EASY_ONBOARDING             = 'easy_onboarding';
     const ASSISTED_ONBOARDING         = 'assisted_onboarding';
+    const ACTIVATE_MERCHANT           = 'activate_merchant';
     const PARTNER_ASSISTED_ONBOARDING = 'partner_assisted_onboarding';
     const PHANTOM_ONBOARDING  = 'phantom_onboarding';
     const UNBOUNCE              = 'unbounce';
@@ -18,6 +19,8 @@ class Constants
     const CLIENT_IP       = 'ip';
     const G_CLICK_ID      = 'gclid';
     const SERVICE         = 'service';
+
+    const USER_SIGNUP_STATE = 'user_signup_state';
     const SERVICE_PGOS    = 'pgos';
     const SERVICE_API     = 'api';
     const G_CLIENT_ID     = '_ga';

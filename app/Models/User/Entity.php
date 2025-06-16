@@ -120,6 +120,7 @@ class Entity extends Base\PublicEntity
     const MEDIUM_EMAIL                  = 'email';
     const SETTINGS                      = 'settings';
     const METADATA                      = 'metadata';
+    const FINGERPRINT                   = 'fingerprint';
 
     // Settings keys
     const SETTINGS_SKIP_CONTACT_MOBILE_VERIFY = 'skip_contact_mobile_verify';

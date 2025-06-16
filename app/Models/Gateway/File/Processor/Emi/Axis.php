@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use Carbon\Carbon;
+use RZP\Base\RuntimeManager;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception\GatewayErrorException;
@@ -135,6 +136,13 @@ class Axis extends Base
         }
 
         return $formattedData;
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('5120M'); // 5GB
+        RuntimeManager::setTimeLimit(20 * 60); // 20 mins
+        RuntimeManager::setMaxExecTime(20 * 60);
     }
 
     protected function getCardActualIin($vaultToken, $tokenIin)

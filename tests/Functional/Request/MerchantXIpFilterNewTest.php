@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Request;
 
 //use Redis;
+use Mockery;
 use Request;
 //use Mockery;
 use Exception;
@@ -10,8 +11,10 @@ use ApiResponse;
 use RZP\Models\Settings;
 use Razorpay\OAuth\Client;
 use RZP\Models\Pricing\Fee;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -21,6 +24,7 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 class MerchantXIpFilterNewTest extends TestCase
 {
     use OAuthTrait;
+    use MocksSplitz;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
     use TestsBusinessBanking;
@@ -64,7 +68,7 @@ class MerchantXIpFilterNewTest extends TestCase
             'type' => 'self',
             'active' => 1,
         ];
-        $contact = array_merge($contact, (array) $params);
+        $contact = array_merge($contact, (array)$params);
         return $contact;
     }
 
@@ -79,7 +83,7 @@ class MerchantXIpFilterNewTest extends TestCase
             'account_number' => '111000',
             'merchant_id' => $this->merchantId,
         ];
-        $bankAccount = array_merge($bankAccount, (array) $params);
+        $bankAccount = array_merge($bankAccount, (array)$params);
         return $bankAccount;
     }
 
@@ -95,7 +99,7 @@ class MerchantXIpFilterNewTest extends TestCase
             'account_id' => 'bnk10000000000',
             'active' => 1,
         ];
-        $fundAccount = array_merge($fundAccount, (array) $params);
+        $fundAccount = array_merge($fundAccount, (array)$params);
         return $fundAccount;
     }
 
@@ -111,24 +115,25 @@ class MerchantXIpFilterNewTest extends TestCase
             'currency' => 'INR',
             'purpose' => 'test',
         ];
-        $payout = array_merge($payout, (array) $params);
+        $payout = array_merge($payout, (array)$params);
         return $payout;
     }
 
     protected function resetRedisKeysForIpWhitelist($isReset = true)
     {
-        if($isReset === true)
-        {
+        if ($isReset === true) {
             $redisKey = 'ip_config_10000000000000_api_payouts';
             $redisKey2 = 'ip_config_10000000000000_api_fund_account_validation';
+            $redisKey3 = 'ip_config_10000000000000_api_payout_links';
 
             $this->app['redis']->del($redisKey);
             $this->app['redis']->del($redisKey2);
+            $this->app['redis']->del($redisKey3);
         }
     }
 
 
-   //Tests if merchant is enabled on feature and not opted out and has no ip whitelisted, then request should fail.
+    //Tests if merchant is enabled on feature and not opted out and has no ip whitelisted, then request should fail.
     public function testPayoutCreateGetsErrorForNoWhitelistedIps()
     {
         $this->fixtures->on('live')->merchant->addFeatures(['enable_ip_whitelist']);
@@ -364,6 +369,88 @@ class MerchantXIpFilterNewTest extends TestCase
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['rx_partner_read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
 
         $this->ba->oauthBearerAuth($accessToken->toString());
+
+        $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    protected function addAccountNumberParameter($funcName): void
+    {
+        $this->testData[$funcName]['request']['content']['account_number'] =
+            $this->virtualAccount->bankAccount->getAccountNumber();
+    }
+    protected function mockCreatePayoutLinks(): void
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+        $plMock->shouldReceive('create')->andReturn([]);
+        $this->app->instance('payout-links', $plMock);
+    }
+
+    public function testCreatePayoutLinksGetsErrorForNoWhitelistedIps()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures(['enable_ip_whitelist']);
+
+        $ipList = ['1.1.1.1', '2.2.2.2'];
+
+        $redisKey = 'ip_config_10000000000000_api_payout_links';
+
+        $this->app['redis']->sadd($redisKey, $ipList);
+
+
+        $this->addAccountNumberParameter(__FUNCTION__);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::PAYOUT_LINKS_IP_WHITELIST=> 'enable']);
+
+        $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testCreatePayoutLinksGetsExpectedResponseForWhitelistedIps()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures(['enable_ip_whitelist']);
+
+        $ipList = ['10.0.123.123', '2.2.2.2'];
+
+        $redisKey = 'ip_config_10000000000000_api_payout_links';
+
+        $this->app['redis']->sadd($redisKey, $ipList);
+
+        $this->addAccountNumberParameter(__FUNCTION__);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::PAYOUT_LINKS_IP_WHITELIST=> 'enable']);
+
+        $this->mockCreatePayoutLinks();
+
+        $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+    public function testCreatePayoutLinksGetsExpectedResponseWhenMerchantIsNotBehindExperiment()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures(['enable_ip_whitelist']);
+
+        $ipList = ['2.2.2.2','10.0.123.123'];
+
+        $redisKey = 'ip_config_10000000000000_api_payouts';
+
+        $redisKey1 = 'ip_config_10000000000000_api_fund_account_validation';
+
+        $redisKey2 = 'ip_config_10000000000000_api_payout_links';
+
+        $this->app['redis']->sadd($redisKey, $ipList);
+
+        $this->app['redis']->sadd($redisKey1, $ipList);
+
+        $this->app['redis']->sadd($redisKey2, $ipList);
+
+        $this->addAccountNumberParameter(__FUNCTION__);
+
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::PAYOUT_LINKS_IP_WHITELIST=> 'disable']);
+
+        $this->mockCreatePayoutLinks();
 
         $this->startTest();
 

@@ -510,6 +510,7 @@ class Route
         'merchant_create_terminal_v3'              => ['post',     'merchants/{id}/terminals/v3',                    'MerchantController@postCreateTerminalV3'                           ],
         'merchant_create_terminal_internal'        => ['post',     'merchants/{id}/terminals/internal',              'MerchantController@postCreateTerminalWithId',                      ],
         'merchant_info_fetch'                      => ['get',      'internal/merchant_info_fetch/{mid}',             'MerchantController@fetchUserIdAndOrgIdFromMerchantId',             ],
+        'merchant_list_by_org_and_category'        => ['get',      'merchant_list/org/{orgid}/category/{category}',        'MerchantController@fetchMidAndNameFromOrgAndCategoryFromLiveConnection'                       ],
         'merchant_get_terminals'                   => ['get',      'merchants/{id}/terminals',                       'MerchantController@getTerminals'                                   ],
         'proxy_merchant_get_terminals'             => ['get',      'proxy/merchant/terminals',                       'MerchantController@proxyGetTerminals'                              ],
         'admin_merchant_get_terminals'             => ['post',     'admin/merchant/terminals',                       'TerminalController@proxyV2TerminalService'                        ],
@@ -849,6 +850,7 @@ class Route
         'qr_code_payment_links_create'             => ['post',     'payment_links/qr_codes',                         'QrCodeController@createForPaymentLinks'                            ],
         //'qr_code_checkout_create'                  => ['post',     'checkout/qr_codes',                              'QrCodeController@createForCheckout'                                           ],
         'qr_code_fetch_payment_status'             => ['get',      'checkout/qr_code/{id}/payment/status',           'QrPaymentController@fetchCheckoutPaymentStatusByQrCodeId'          ],
+        'fetch_qr_code_from_device_id'             => ['post',     'payments/qr_codes/device/fetch',                 'QrCodeController@fetchQRFromDeviceId'                                ],
         'virtual_account_create'                   => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_create_for_internal'      => ['post',     'virtual_accounts/internal',                      'VirtualAccountController@createForInternal'                        ],
         'virtual_account_order_create'             => ['post',     'orders/{id}/virtual_accounts',                   'VirtualAccountController@createForOrder'                           ],
@@ -1050,6 +1052,7 @@ class Route
         'buy_pricing_update_plan_rule'             => ['patch',    'buy_pricing/{planId}/rule/{ruleId}',             'PricingController@updateBuyPricingPlanRule'                        ],
         'pricing_hard_delete_plan'                 => ['delete',   'pricing/{planId}/force',                         'PricingController@hardDeletePlan'                                  ],
         'pricing_hard_refresh_plan'                => ['post',     'pricing/{planId}/force/refresh',                 'PricingController@hardRefreshPlan'                                 ],
+        'pricing_create_plan_recon_job_sync'       => ['post',     'pricing/recon/job/sync',                         'PricingController@createPlanReconJobSync'                          ],
 
         //pricing-sdk related routes
         'pricing_get_vas_price'                   =>  ['get',     'pricing/vas/fetch',                              'PricingController@calculateVASPrice'                               ],
@@ -1546,6 +1549,7 @@ class Route
         'onboarding_get'                                    => ['get',      'onboarding/workflow/merchant/{id}',                            'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'onboarding_create_or_fetch'                        => ['get',      'onboarding/workflow/merchant/{id}/create_or_fetch',            'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'onboarding_save'                                   => ['post',     'onboarding/workflow/merchant/{id}',                            'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'activate_merchant'                                 => ['post',     'pg/onboarding/activate_merchant',                              'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'onboarding_order_create'                           => ['post',     'pg/onboarding/payment_order_create',                           'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'onboarding_order_verify'                           => ['post',     'pg/onboarding/payment_order_verify',                           'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
         'onboarding_payment_webhook'                        => ['post',     'pg/onboarding/payment_order_webhook',                          'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
@@ -2219,6 +2223,7 @@ class Route
         'payout_create'                            => ['post',     'payouts',                                        'PayoutController@postFundAccountPayout'                            ],
         'payout_validate'                          => ['post',     'validate_payouts',                               'PayoutController@validatePayout'                            ],
         'payout_create_internal'                   => ['post',     'payouts_internal',                               'PayoutController@postFundAccountPayout'                            ],
+        'payout_create_internal_direct'            => ['post',     'payouts_internal_direct',                         'PayoutController@postFundAccountDirectBankingPayout'                            ],
         'payout_create_on_internal_contact'        => ['post',     'internalContactPayout',                          'PayoutController@postFundAccountOnInternalContact'                 ],
         'payouts_batch_create'                     => ['post',     'payouts_batch',                                  'PayoutsBatchController@create'                                     ],
         'payouts_batch_create_x_demo_cron'         => ['post',     'payouts_batch_x_demo_cron',                      'PayoutsBatchController@createXDemoPayoutCron'                      ],
@@ -2811,6 +2816,10 @@ class Route
         'user_fetch_by_verified_contact_internal'  => ['post',     'users_internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
         'user_internal_fetch_by_verified_contact'  => ['post',     'users/internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
         'user_edit_internal'                       => ['patch',    'users_internal/{id}',                            'UserController@editUserInternal'                                   ],
+        'fetch_user_details'                       => ['get',      'users/details',                                  'UserController@getUserDetailsWithRelations'                                   ],
+        'upsert_user_details'                      => ['post',     'users/details',                                  'UserController@upsertUserDetailsWithRelations'                                ],
+        'delete_user_details'                      => ['delete',     'users/details',                                  'UserController@deleteUserDetailsWithRelations'                                ],
+
 
         //b2b flow
         'create_international_virtual_accounts'             => ['post',     'international/virtual_accounts',                 'BankTransferController@createAccountForCurrencyCloud'          ],
@@ -3352,6 +3361,7 @@ class Route
         'oauth_sync_merchant_map'                  => ['post',     'oauth/update_merchant_map',                      'MerchantController@updateMerchantAccessMapFromTokens'              ],
 
         'merchant_analytics'                       => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
+        'merchant_analytics_private'               => ['post',     'internal/merchant/analytics',                    'MerchantController@postAnalytics'                                  ],
         'get_merchant_data_for_segment'            => ['get',      'merchant/data_for_segment',                      'MerchantController@getMerchantDataForSegment'                      ],
         'merchant_settlements_events_cron'         => ['post',     'merchant/settlements_events_cron',               'MerchantController@postSettlementsEventsCron'                      ],
 
@@ -4827,7 +4837,7 @@ class Route
         'tokens_push_fetch'                       => ['get',           'tokens/push/{id}',                                     'TokenController@tokensPushFetch'                             ],
 
         //VCPP Token Push Provisioning
-        'vcpp_tokens_push'                        => ['post',          'notifysp/enroll',                                       'TokenController@vcppTokensPush'                            ],
+        'vcpp_tokens_push'                        => ['post',          'internal/notifysp/enroll',                                       'TokenController@vcppTokensPush'                            ],
 
         // Async tokenisation
         'tokenisation_local_cards'                => ['post',        'tokenisation/local_cards',                                 'TokenController@localSavedCardAsyncTokenisation'          ],
@@ -5835,15 +5845,20 @@ class Route
         '1cc_wooc_ingestion_plugins_post',
         '1cc_process_prepay_cod_orders',
 
-        'wallet_dashboard_proxy'
+        'wallet_dashboard_proxy',
+        'merchant_analytics_private',
     ];
 
     // Only routes defined in internalApps go here
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'fetch_user_details',
+        'upsert_user_details',
+        'delete_user_details',
         'pricing_hard_delete_plan',
         'pricing_hard_refresh_plan',
+        'pricing_create_plan_recon_job_sync',
         'pricing_create_plan',
         'internal_order_payments',
         'merchant_info_fetch',
@@ -5856,6 +5871,7 @@ class Route
         'customer_fetch_addresses_by_contact',
         'internal_merchant_get_tags',
         'rupay_push_token',
+        'vcpp_tokens_push',
         'pricing_fetch_plan_internal',
         'internal_fetch_merchant_users',
         'internal_workflow_create',
@@ -6365,6 +6381,7 @@ class Route
         'fund_account_get_internal',
         'fund_account_list_internal',
         'payout_create_internal',
+        'payout_create_internal_direct',
         'payout_create_2FA_internal',
         'payout_fetch_multiple_internal',
         'payout_links_send_email',
@@ -7009,6 +7026,7 @@ class Route
         'qr_code_merchant_create',
         'set_qr_code_device',
         'qr_code_device_id_unmap',
+        'fetch_qr_code_from_device_id',
 
         // NoCodeApps
         'payment_page_dual_write_internal',
@@ -7197,6 +7215,7 @@ class Route
         'onboarding_get',
         'onboarding_create_or_fetch',
         'onboarding_save',
+        'activate_merchant',
         'merchant_bmc_response_save',
         'onboarding_order_create',
         'onboarding_order_verify',
@@ -9965,6 +9984,7 @@ class Route
         'merchant_bmc_response_fetch_admin'               => Permission::VIEW_MERCHANT,
         'merchant_bmc_response_save'                      => Permission::EDIT_MERCHANT,
         'onboarding_save'                                 => Permission::EDIT_MERCHANT,
+        'activate_merchant'                               => Permission::EDIT_MERCHANT,
         'pgos_send_sms_otp'                               => Permission::EDIT_MERCHANT,
         'pgos_verify_otp'                                 => Permission::EDIT_MERCHANT,
         'onboarding_order_create'                         => Permission::EDIT_MERCHANT,
@@ -12207,6 +12227,7 @@ class Route
     ];
 
     public static $direct = [
+        'merchant_list_by_org_and_category',
         'update_late_auth_config_bulk',
         'onboarding_payment_webhook',
         'payment_page_fetch_records',
@@ -12346,7 +12367,7 @@ class Route
         'payment_button_create_order',
         'payment_links_demo',
         'payment_links_demo_cors',
-        'vcpp_tokens_push',
+//        'vcpp_tokens_push',
 
         //virtual cards - capital
         'capital_virtual_cards_validate_token',
@@ -17643,7 +17664,11 @@ class Route
             'payment_refund',
             'payment_fetch_refunds',
             'payment_fetch_refund_by_id',
-            'create_qr_for_single_stack'
+            'create_qr_for_single_stack',
+            'payment_links_create',
+            'payment_links_cancel',
+            'payment_links_notify_by_medium',
+            'payment_links_get',
         ],
 
         'billme' => [
@@ -17833,6 +17858,9 @@ class Route
             'contact_create_internal',
             'fund_account_create_internal',
             'merchant_integration_get_by_param',
+            'payout_create_internal',
+            'pricing_fetch_plan',
+            'setl_adj_add',
         ],
 
         'leegality' => [
@@ -17888,6 +17916,7 @@ class Route
             'refund_scrooge_transaction_create',
             'refund_scrooge_reverse_transfers',
             'payout_create_internal',
+            'payout_create_internal_direct',
             'payout_create_2FA_internal',
             'refund_edit_internal',
             'scrooge_refund_back_write',
@@ -18235,7 +18264,8 @@ class Route
             'merchant_edit_all_methods_internal',
             'internal_merchant_fetch',
             'merchant_methods_offers_checkout_internal',
-            'emi_plan_fetch_by_mid_internal'
+            'emi_plan_fetch_by_mid_internal',
+            'merchant_integration_get_by_param',
         ],
 
         'pos_app' => [
@@ -18255,9 +18285,11 @@ class Route
             'internal_merchant_details_fetch',
             'payment_fetch_by_id_internal',
             'qr_code_device_id_unmap',
+            'fetch_qr_code_from_device_id',
             'set_qr_code_device',
             'create_sqr_for_single_stack',
             'acquirer_fetch',
+            'internal_merchant_fetch'
         ],
 
         'spinnaker' => [
@@ -18517,6 +18549,7 @@ class Route
             'internal_fd_fetch_agent_detail_for_ticket',
             'internal_create_risk_action',
             'dispute_edit',
+            'internal_create_workflow',
         ],
 
         'pgos' => [
@@ -18659,6 +18692,7 @@ class Route
         'card_vault' => [
             'token_status',
             'rupay_push_token',
+            'vcpp_tokens_push',
         ],
 
         'growth_internal' => [
@@ -18677,6 +18711,7 @@ class Route
             'contact_create_internal',
             'pricing_hard_delete_plan',
             'pricing_hard_refresh_plan',
+            'pricing_create_plan_recon_job_sync',
             'pricing_create_plan',
         ],
 
@@ -19064,6 +19099,7 @@ class Route
         'payout_2fa_approve'                   => [Feature::PAYOUT],
         'payout_reject'                        => [Feature::PAYOUT],
         'payout_create_internal'               => [Feature::PAYOUT],
+        'payout_create_internal_direct'        => [Feature::PAYOUT],
         'payout_create_2FA_internal'           => [Feature::PAYOUT],
         'bulk_payouts_reject_owner'            => [Feature::PAYOUT],
         'bulk_payouts_bulk_approve'            => [Feature::PAYOUT],
@@ -19282,6 +19318,12 @@ class Route
             IdempotencyKey\Constants::IKEY_MANDATORY => true,
             IdempotencyKey\Constants::FEATURE_FLAG_FOR_MANDATORY_IKEY => Feature::PAYOUT_IDEM_KEY_REQUIRED,
         ],
+        'payout_create_internal_direct' => [
+            IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
+            IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+            IdempotencyKey\Constants::IKEY_MANDATORY => true,
+            IdempotencyKey\Constants::FEATURE_FLAG_FOR_MANDATORY_IKEY => Feature::PAYOUT_IDEM_KEY_REQUIRED,
+        ],
         'payout_create_2FA_internal' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
             IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_IDEMPOTENCY,
@@ -19342,7 +19384,8 @@ class Route
 
     public static $serviceEligibleForIPWhitelist = [
         'api_payouts',
-        'api_fund_account_validation'
+        'api_fund_account_validation',
+        'api_payout_links'
     ];
 
     public static $routeServiceMappingForIpWhitelisting = [
@@ -19364,7 +19407,9 @@ class Route
 
         'fund_account_validate'             => 'api_fund_account_validation',
         'fund_account_validate_fetch'       => 'api_fund_account_validation',
-        'fund_account_validate_fetch_by_id' => 'api_fund_account_validation'
+        'fund_account_validate_fetch_by_id' => 'api_fund_account_validation',
+
+        'payout_links_create'               => 'api_payout_links'
     ];
 
     public static $routeEnabledForBankingSmartRouting = [
@@ -19669,6 +19714,7 @@ class Route
         'payouts_merchant_smart_routing_rules_modify',
         'payout_validate',
         'payout_create_internal',
+        'payout_create_internal_direct',
         'payout_create_2FA_internal',
         'payouts_batch_create',
         'payout_create_with_otp',
@@ -20444,6 +20490,7 @@ class Route
         'payment_get_flows_private'                         => HeartbeatLagChecker::SLAVE,
         'org_get_by_hostname'                               => HeartbeatLagChecker::SLAVE,
         'merchant_analytics'                                => HeartbeatLagChecker::SLAVE,
+        'merchant_analytics_private'                        => HeartbeatLagChecker::SLAVE,
         'inspector_view_get'                                => HeartbeatLagChecker::SLAVE,
         'account'                                           => HeartbeatLagChecker::SLAVE,
         'merchant_methods'                                  => HeartbeatLagChecker::SLAVE,
@@ -20685,6 +20732,7 @@ class Route
         'payment_get_flows_private',
         'org_get_by_hostname',
         'merchant_analytics',
+        'merchant_analytics_private',
         'inspector_view_get',
         'account',
         'merchant_methods',

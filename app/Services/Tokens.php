@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Razorpay\Edge\Passport\Passport;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\RuntimeException;
 use RZP\Http\Request\Requests;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\UniqueIdEntity;
@@ -222,6 +223,22 @@ class Tokens
         return $resp;
     }
 
+    public function getPublicCollection($resp): PublicCollection
+    {
+        $tokens = new PublicCollection();
+
+        foreach ($resp as $tok)
+        {
+            $token = $this->forceFillTokensFromResponse($tok);
+
+            $token = $this->loadRelatedEntity($token);
+
+            $tokens->add($token);
+        }
+
+        return $tokens;
+    }
+
     public function fetchCustomerTokensInternal($input)
     {
         $resp = $this->sendRequest(
@@ -281,6 +298,23 @@ class Tokens
         }
 
         return $resp;
+    }
+
+    /**
+     * @throws RuntimeException
+     */
+    public function deleteTokensInternal($tokenID)
+    {
+        $this->trace->info(TraceCode::TOKENS_DELETE_EXTERNAL, [
+            'token_id'      => $tokenID,
+        ]);
+
+        return $this->sendRequest(
+            self::TokensBaseURL . '/' . $tokenID,
+            Requests::DELETE,
+            (array)null,
+            true
+        );
     }
 
     private function forceFillTokensFromResponse($response)
