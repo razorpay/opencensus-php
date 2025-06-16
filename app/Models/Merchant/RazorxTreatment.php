@@ -743,8 +743,6 @@ final class RazorxTreatment
     //Experiment used to ramp up requests for edge url created for scrooge
     const SCROOGE_EDGE_MIGRATION = 'scrooge_edge_migration';
 
-    const PP_MAGIC_SETTING = 'pp_magic_setting';
-
 
     //Experiment used to control whether requests route to DCS or NOT
     const DCS_EDIT_ENABLED = 'dcs_edit_enabled';

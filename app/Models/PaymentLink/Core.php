@@ -1467,19 +1467,9 @@ class Core extends Base\Core
             return $this->modifyAndValidateInputToCreateLineItems($input, $paymentLink);
         });
 
-        $setting =  $paymentLink->getSettings()->toArray();
-
-        $oneCCEnabled = $setting[Entity::ONE_CLICK_CHECKOUT] ?? '0';
-
-        $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::PP_MAGIC_SETTING,
-            $this->mode
-        );
-
         $totalAmount = $this->getTotalAmountForOrder($input[Entity::LINE_ITEMS]);
 
-        $order = Tracer::inSpan(['name' => 'payment_page.order.create.create_order'], function() use($variant, $oneCCEnabled, $totalAmount, $paymentLink, $input)
+        $order = Tracer::inSpan(['name' => 'payment_page.order.create.create_order'], function() use($totalAmount, $paymentLink, $input)
         {
             $orderReq = [
                 Order\Entity::AMOUNT => $totalAmount,
@@ -1489,9 +1479,6 @@ class Core extends Base\Core
                 Order\Entity::PRODUCT_TYPE => $paymentLink->getProductType(),
                 Order\Entity::PRODUCT_ID => $paymentLink->getId(),
             ];
-            if ($oneCCEnabled === '1' && strtolower($variant) === 'on'){
-                $orderReq = array_merge($orderReq, [Fields::LINE_ITEMS_TOTAL => $totalAmount]);
-            }
             return (new Order\Core)->create(
                 $orderReq,
                 $paymentLink->merchant
@@ -3821,11 +3808,11 @@ class Core extends Base\Core
     public function getGrievanceEntityDetails(string $id)
     {
         $id = Entity::stripDefaultSign($id);
-    
+
         try {
             $paymentPage = $this->repo->payment_link->findOrFailPublic($id);
             $merchant = $paymentPage->merchant;
-    
+
             return [
                 'entity' => 'payment_page',
                 'entity_id' => $paymentPage->getPublicId(),
@@ -3839,15 +3826,15 @@ class Core extends Base\Core
                 'error' => $e->getMessage(),
                 'id' => $id
             ]);
-    
+
             try {
                 $pageDetails = $this->fetchExternalNCAPaymentPageDetails($id);
-                
+
                 $this->trace->info(TraceCode::NOCODE_SERVICE_RESPONSE_RECIEVED, [
                     'id' => $id,
                     'response' => $pageDetails
                 ]);
-    
+
                 if (empty($pageDetails)) {
                     $this->trace->info(TraceCode::PAYMENT_PAGE_NOT_FOUND, [
                         'id' => $id,
@@ -3857,9 +3844,9 @@ class Core extends Base\Core
                         'Payment page does not exist.'
                     );
                 }
-    
+
                 $merchantDetails = $this->repo->merchant->findOrFail($pageDetails['data']['merchant_id']);
-    
+
                 return [
                     'entity' => 'payment_page',
                     'entity_id' => $pageDetails['data']['id'],
@@ -3873,25 +3860,25 @@ class Core extends Base\Core
                     'error' => $ex->getMessage(),
                     'id' => $id
                 ]);
-    
+
                 throw new BadRequestValidationFailureException(
                     'Payment page does not exist.'
                 );
             }
         }
-    }    
+    }
 
     public function fetchExternalNCAPaymentPageDetails(string $pageId)
     {
         $ncaService = new NoCodeAppsService($this->app);
-        
+
         $res = $ncaService->fetchPageDetails($pageId);
-        
+
         $this->trace->info(TraceCode::NOCODE_SERVICE_RESPONSE_RECIEVED, [$res]);
-        
+
         return $res;
     }
-    
+
 
     protected function eventPaymentPagePaid(Entity $paymentPage, Payment\Entity $payment)
     {
@@ -3947,34 +3934,6 @@ class Core extends Base\Core
         }
 
         $order = $payment->order;
-
-        $setting = $paymentPage->getSettings()->toArray();
-
-        $oneCCEnabled = $setting[Entity::ONE_CLICK_CHECKOUT] ?? '0';
-
-        $variant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::PP_MAGIC_SETTING,
-            $this->mode
-        );
-
-        if ($oneCCEnabled === '1' && strtolower($variant) === 'on') {
-            if ($order != null) {
-                $customerDetails = $order->toArrayPublic()[Fields::CUSTOMER_DETAILS] ?? null;
-                $shippingAddress = $customerDetails[Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS];
-                $note = [
-                    Fields::CUSTOMER_DETAILS_EMAIL => $customerDetails[Fields::CUSTOMER_DETAILS_EMAIL],
-                    self::PHONE => $shippingAddress[Fields::CUSTOMER_DETAILS_CONTACT],
-                    Fields::CUSTOMER_DETAILS_NAME => $shippingAddress[Fields::CUSTOMER_DETAILS_NAME],
-                    self::ADDRESS => $shippingAddress[AddressEntity::LINE1] . $shippingAddress[AddressEntity::LINE2],
-                    AddressEntity::CITY => $shippingAddress[AddressEntity::CITY],
-                    AddressEntity::STATE => $shippingAddress[AddressEntity::STATE],
-                    AddressEntity::PINCODE => $shippingAddress[AddressEntity::ZIPCODE],
-                ];
-                $payment->setNotes($note);
-                $order->setNotes($note);
-            }
-        }
 
         $payload[E::PAYMENT_PAGE] = $paymentPage->toArrayPublic();
 
