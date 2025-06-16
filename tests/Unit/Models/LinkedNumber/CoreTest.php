@@ -84,7 +84,7 @@ class CoreTest extends TestCase
 
         // Setup: Event tracking should succeed - payoutCore service called
         $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutFailureEvents')
+            ->shouldReceive('trackPhoneNumberPayoutEvents')
             ->once()
             ->with(
                 Core::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND,
@@ -133,7 +133,7 @@ class CoreTest extends TestCase
 
         // Event tracking should succeed
         $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutFailureEvents')
+            ->shouldReceive('trackPhoneNumberPayoutEvents')
             ->once()
             ->with(
                 Core::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND,
@@ -247,7 +247,7 @@ class CoreTest extends TestCase
 
         // Setup: Event tracking should succeed - payoutCore service called
         $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutFailureEvents')
+            ->shouldReceive('trackPhoneNumberPayoutEvents')
             ->once()
             ->with(
                 Core::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD,
@@ -394,7 +394,7 @@ class CoreTest extends TestCase
 
         // Event tracking should succeed
         $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutFailureEvents')
+            ->shouldReceive('trackPhoneNumberPayoutEvents')
             ->once()
             ->with(
                 Core::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD,
@@ -443,7 +443,7 @@ class CoreTest extends TestCase
 
         // Setup: PayoutCore service throws exception
         $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutFailureEvents')
+            ->shouldReceive('trackPhoneNumberPayoutEvents')
             ->once()
             ->with(
                 Core::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND,

@@ -1849,7 +1849,7 @@ class Validator extends Base\Validator
                     $sanitizedData = $this->getPayoutCore()->sanitizeDataForTracking([
                         FundAccount\Entity::MOBILE => $mobileNumber
                     ]);
-                    $this->getPayoutCore()->trackPhoneNumberPayoutFailureEvents(
+                    $this->getPayoutCore()->trackPhoneNumberPayoutEvents(
                         self::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID,
                         [
                             FundAccount\Entity::MOBILE      => $sanitizedData[FundAccount\Entity::MOBILE],

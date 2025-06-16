@@ -56,7 +56,7 @@ class ValidatorTest extends TestCase
 
         // Setup: Event tracking should succeed - payoutCore method called
         $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutFailureEvents')
+            ->shouldReceive('trackPhoneNumberPayoutEvents')
             ->once()
             ->with(
                 Validator::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID,
@@ -95,7 +95,7 @@ class ValidatorTest extends TestCase
 
         // Setup: PayoutCore service throws exception
         $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutFailureEvents')
+            ->shouldReceive('trackPhoneNumberPayoutEvents')
             ->once()
             ->andThrow(new \Exception('PayoutCore service failed'));
 
@@ -131,7 +131,7 @@ class ValidatorTest extends TestCase
     public function testValidateMobileNumberFormatWithValidNumberPasses()
     {
         // No event tracking calls should happen for valid numbers
-        $this->mockPayoutCore->shouldNotReceive('trackPhoneNumberPayoutFailureEvents');
+        $this->mockPayoutCore->shouldNotReceive('trackPhoneNumberPayoutEvents');
         $this->mockPayoutCore->shouldNotReceive('sanitizeDataForTracking');
         $this->mockTrace->shouldNotReceive('error')->with(TraceCode::PAYOUT_TO_PHONE_NUMBER_EVENT_TRACKING_FAILED, Mockery::any());
 
@@ -183,7 +183,7 @@ class ValidatorTest extends TestCase
                 ->andReturn([FundAccount\Entity::MOBILE => 'xxxxx' . substr($invalidNumber, -5)]);
 
             $this->mockPayoutCore
-                ->shouldReceive('trackPhoneNumberPayoutFailureEvents')
+                ->shouldReceive('trackPhoneNumberPayoutEvents')
                 ->once()
                 ->with(
                     Validator::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID,
@@ -214,7 +214,7 @@ class ValidatorTest extends TestCase
         $this->app->instance('basicauth', $mockBasicAuthWithoutMerchant);
 
         // No event tracking should happen
-        $this->mockPayoutCore->shouldNotReceive('trackPhoneNumberPayoutFailureEvents');
+        $this->mockPayoutCore->shouldNotReceive('trackPhoneNumberPayoutEvents');
         $this->mockPayoutCore->shouldNotReceive('sanitizeDataForTracking');
         $this->mockTrace->shouldNotReceive('error')->with(TraceCode::PAYOUT_TO_PHONE_NUMBER_EVENT_TRACKING_FAILED, Mockery::any());
 

@@ -48,7 +48,7 @@ class Core extends Base\Core
                 $sanitizedData = $this->payoutCore->sanitizeDataForTracking([
                     FundAccount\Entity::MOBILE => $linkedNumber
                 ]);
-                $this->payoutCore->trackPhoneNumberPayoutFailureEvents(
+                $this->payoutCore->trackPhoneNumberPayoutEvents(
                     self::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND,
                     [
                         Base\PublicEntity::MERCHANT_ID      => $merchantId,
@@ -111,7 +111,7 @@ class Core extends Base\Core
                     FundAccount\Entity::VPA     => $vpaID
                 ]);
 
-                $this->payoutCore->trackPhoneNumberPayoutFailureEvents(
+                $this->payoutCore->trackPhoneNumberPayoutEvents(
                     self::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD,
                     [
                         Base\PublicEntity::MERCHANT_ID      => $merchantId,

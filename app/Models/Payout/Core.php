@@ -255,6 +255,7 @@ class Core extends Base\Core
 
     const PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID = 'PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID';
 
+    const PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED = 'PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED';
     /**
      * @var Mutex
      */
@@ -12773,7 +12774,7 @@ class Core extends Base\Core
         }
     }
 
-    public function trackPhoneNumberPayoutFailureEvents(
+    public function trackPhoneNumberPayoutEvents(
         string $eventName,
         array $properties): void
     {
@@ -12790,9 +12791,12 @@ class Core extends Base\Core
             case self::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID:
                 $eventDataGroup = EventCode::PAYOUTS_TO_PHONE_NUMBER_EVENT_MOBILE_NUMBER_FORMAT_INVALID;
                 break;
+            case self::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED:
+                $eventDataGroup = EventCode::PAYOUTS_TO_PHONE_NUMBER_EVENT_VPA_UPDATED;
+                break;
         }
 
-        $this->app['diag']->trackPhoneNumberPayoutFailureEvents(
+        $this->app['diag']->trackPhoneNumberPayoutEvents(
             $eventDataGroup,
             $properties
         );

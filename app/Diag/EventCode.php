@@ -1236,6 +1236,11 @@ class EventCode
         'name'    => 'payouts_to_phone_number_failure.mobile_number_format_invalid'
     ];
 
+    const PAYOUTS_TO_PHONE_NUMBER_EVENT_VPA_UPDATED = [
+        'group'  => 'payouts_to_phone_number_event',
+        'name'   => 'payouts_to_phone_number_event.vpa_updated'
+    ];
+
     const PAYOUT_FETCH_REQUESTS = [
         'group'   => 'external_payouts',
         'name'    => 'external_payouts.fetch.request'
