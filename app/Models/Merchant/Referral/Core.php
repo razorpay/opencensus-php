@@ -189,6 +189,11 @@ class Core extends Base\Core
 
         $this->addOptionalParams($productConfig, $merchant);
 
+        // setting params for FE analytics
+        $productConfig[Product::PRIMARY]["params"][self::PARTNER_TYPE] = $merchant->getPartnerType();
+        $productConfig[Product::PRIMARY]["params"][self::PARTNER_ID] = $merchant->getId();
+        $productConfig[Product::PRIMARY]["params"][self::USER_TYPE] = self::SUBMERCHANT;
+
         $referrals = Tracer::inspan(['name' => HyperTrace::CREATE_REFERRAL_CORE], function() use ($referrals, $merchant, $productConfig) {
 
             if (empty($referrals) === true)
@@ -204,11 +209,6 @@ class Core extends Base\Core
                 return array_merge($existingReferrals, $missingReferrals);
             }
         });
-
-        // setting params for FE analytics
-        $productConfig[Product::PRIMARY]["params"][self::PARTNER_TYPE] = $merchant->getPartnerType();
-        $productConfig[Product::PRIMARY]["params"][self::PARTNER_ID] = $merchant->getId();
-        $productConfig[Product::PRIMARY]["params"][self::USER_TYPE] = self::SUBMERCHANT;
 
         return $referrals;
     }

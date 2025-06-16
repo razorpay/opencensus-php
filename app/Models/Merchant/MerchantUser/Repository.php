@@ -598,4 +598,45 @@ class Repository extends Base\Repository
             ->where(Entity::ROLE, '=', $role)
             ->delete();
     }
+
+    public function getMerchantUsersForUserId($userId): array
+    {
+        return $this->newQuery()
+            ->where(Entity::USER_ID, '=', $userId)
+            ->get()
+            ->toArray();
+    }
+
+    public function getMerchantUsersForIdAndMerchantIdAndProduct($userId, $merchantId, $product)
+    {
+        return $this->newQuery()
+            ->where(Entity::USER_ID, '=', $userId)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::PRODUCT, '=', $product)
+            ->first();
+    }
+
+    public function updateMerchantUser(string $userId, string $merchantId, string $product, string $role)
+    {
+        $this->newQuery()
+            ->where(Entity::USER_ID, '=', $userId)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::PRODUCT, '=', $product)
+            ->update([Entity::ROLE => $role]);
+
+        return $this->newQuery()
+            ->where(Entity::USER_ID, '=', $userId)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::PRODUCT, '=', $product)
+            ->first();
+    }
+
+    public function deleteMerchantUsersForUserIdAndMerchantIdAndProduct($userId, $merchantId, $product)
+    {
+        return $this->newQuery()
+            ->where(Entity::USER_ID, '=', $userId)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::PRODUCT, '=', $product)
+            ->delete();
+    }
 }

@@ -100,4 +100,13 @@ final class RequestContextV2
      * @var \RZP\Models\User\Entity|null
      */
     public $user;
+
+    /**
+     * Stores merchant onboarding details fetched from PGOS microservice in request context
+     * to avoid repeated calls within the same request lifecycle.
+     * Key is merchant ID and value is the onboarding details for that merchant.
+     *
+     * @var array<string, array>|null
+     */
+    public $merchantOnboardingDetails = [];
 }

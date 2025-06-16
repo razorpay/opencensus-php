@@ -9941,6 +9941,8 @@ trait Authorize
             {
                 $cardMandateId = $token->getCardMandateId();
 
+                $cardMandate = null;
+
                 if(empty($cardMandateId) === false) {
                     try {
                         $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($cardMandateId, $payment->merchant);

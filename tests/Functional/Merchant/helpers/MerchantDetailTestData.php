@@ -262,7 +262,6 @@ return [
                 'error' => [
                     'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   =>  'business_type should not be null.',
-                    'source'        =>  'business',
                     'reason'        =>  'input_validation_failed'
                 ],
             ],
@@ -291,7 +290,6 @@ return [
                 'error' => [
                     'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   =>  'Invalid business_website : https://razorpay.com',
-                    'source'        =>  'business',
                     'reason'        =>  'input_validation_failed'
                 ],
             ],
@@ -320,7 +318,6 @@ return [
                 'error' => [
                     'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   =>  'The business_website is not a valid URL.',
-                    'source'        =>  'business',
                     'reason'        =>  'input_validation_failed'
                 ],
             ],
@@ -390,7 +387,6 @@ return [
                 'error' => [
                     'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   =>  'The CIN is invalid for public_limited',
-                    'source'        =>  'business',
                     'reason'        =>  'input_validation_failed'
                 ],
             ],
@@ -428,7 +424,6 @@ return [
                 'error' => [
                     'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   =>  'The CIN is invalid for private_limited',
-                    'source'        =>  'business',
                     'reason'        =>  'input_validation_failed'
                 ],
             ],
@@ -620,7 +615,6 @@ return [
                 'error' => [
                     'code'          =>  PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   =>  'The pan in GSTIN is not as same as Authorised Signatory PAN for proprietorship',
-                    'source'        =>  'business',
                     'reason'        =>  'input_validation_failed'
                 ],
             ],
@@ -3038,7 +3032,6 @@ return [
                 'error' => [
                     'code' => 'BAD_REQUEST_ERROR',
                     'description' => 'BAD_REQUEST_INVALID_MIQ_SHARING_DATE',
-                    'source' => 'business',
                     'step' =>  'payment_initiation',
                     'reason'=> 'input_validation_failed',
                     'metadata'=> []

@@ -9,8 +9,21 @@ class AffordabilityService extends BaseAffordabilityService
     /**
      * @inheritDoc
      */
-    public function invalidateCache(array $keys, string $merchantId = null, bool $InvalidateTerminalCache = false, bool $InvalidateMerchantMethodsCache = false, string $terminalMethod = null): bool
+    public function invalidateCache(array $keys, bool $invalidateOffersCacheForAllMerchants = false, string $merchantId = null, bool $InvalidateTerminalCache = false, bool $InvalidateMerchantMethodsCache = false, string $terminalMethod = null): bool
     {
         return true;
     }
+     public function addEmiPlan($emiPlanData)
+     {
+         return [
+
+         ];
+     }
+
+     public function deleteEmiPlan(string $emiPlanId)
+     {
+            return [
+
+            ];
+     }
 }

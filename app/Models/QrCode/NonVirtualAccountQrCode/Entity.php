@@ -3,12 +3,13 @@
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
-use RZP\Models\Base\PublicEntity;
 use RZP\Models\QrCode;
 use RZP\Models\Feature;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\BankAccount;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Constants\Entity as ConstantsEntity;
@@ -201,6 +202,36 @@ class Entity extends QrCode\Entity
     {
         $this->setAttribute(self::PROVIDER, $input[self::REQ_PROVIDER]);
     }
+
+    public function modifyCloseByIfApplicable() : void
+    {
+        if ($this->getAttribute(self::REQUEST_SOURCE) === RequestSource::API and
+            $this->getAttribute(self::USAGE_TYPE) === UsageType::SINGLE_USE)
+        {
+            $isMerchantExcluded = (new Core())->evaluateSplitzExperimentForSettingQrCloseBy($this->merchant->getId());
+            if (!$isMerchantExcluded) {
+
+                $twoHoursFromNow = now()->addHours(2)->getTimestamp();
+                $currentCloseBy = $this->getAttribute(self::CLOSE_BY);
+
+                if ((empty($currentCloseBy) === true) or
+                    ($currentCloseBy > $twoHoursFromNow))
+                {
+                    $this->setAttribute(self::CLOSE_BY, $twoHoursFromNow);
+                    app('trace')->info(TraceCode::MODIFY_CLOSE_BY_IF_APPLICABLE, [
+                        'merchant_id'        => $this->merchant->getId(),
+                        'current_close_by'   => $currentCloseBy,
+                        'two_hours_from_now' => $twoHoursFromNow,
+                        'qr_code_id'         => $this->getId(),
+                    ]);
+                }
+
+            }
+        }
+
+    }
+
+
 
     public function customer()
     {
