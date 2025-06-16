@@ -5000,8 +5000,23 @@ class Core extends Base\Core
         $fromActivationStatus = $oldMerchantDetails->getActivationStatus();
         $toActivationStatus = $newMerchantDetails->getActivationStatus();
         $this->pushMetricOnManualActivationStatusChangeForRegularIndiaPgMerchants($merchant, $fromActivationStatus, $toActivationStatus);
+        $this->pushCrossBorderSegmentEventIfApplicable($merchant, $properties);
 
         return $merchantDetails;
+    }
+
+    private function pushCrossBorderSegmentEventIfApplicable(MerchantEntity $merchant, $properties)
+    {
+        if((new MerchantOnboardingProxyController())->isCrossBorderIndiaModularMerchant($merchant) === false) {
+            return;
+        }
+        $payload = [
+            'action' => CrossBorderCommonUseCases::CROSS_BORDER_MERCHANT_ACTIVATION_STATUS_CHANGE,
+            'merchant_id' => $merchant->getId(),
+            'properties' => $properties,
+            'mode' =>  Mode::LIVE,
+        ];
+        CrossBorderCommonUseCases::dispatch($payload)->delay(rand(0, 5));
     }
 
     private function pushMetricOnManualActivationStatusChangeForRegularIndiaPgMerchants(MerchantEntity $merchant, $fromActivationStatus, $toActivationStatus) : void

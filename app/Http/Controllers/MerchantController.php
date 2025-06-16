@@ -4671,9 +4671,11 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function fetchMidAndNameFromOrgAndCategoryFromTiDB($orgId, $category)
+    public function fetchMidAndNameFromOrgAndCategoryFromLiveConnection($orgId, $category)
     {
-        $response = $this->service(E::MERCHANT)->fetchMidAndNameFromOrgAndCategoryFromTiDB($orgId, $category);
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $response = $this->service(E::MERCHANT)->fetchMidAndNameFromOrgAndCategoryFromLiveConnection($orgId, $category);
 
         return ApiResponse::json($response);
     }
