@@ -4,6 +4,7 @@ namespace RZP\Services\PayoutService;
 
 use GuzzleHttp\Client;
 use RZP\Http\RequestHeader;
+use RZP\Models\Payout\SourceRequestIDMapping\Core as SourceRequestIDMappingCore;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 
@@ -54,7 +55,7 @@ class PayoutShadowService
                 return;
             }
 
-            $awsTraceId = (new PayoutShadowService)->getAwsTraceId();
+            $awsTraceId = (new SourceRequestIDMappingCore())->extractAWSTraceIDFromHeaders($app);
 
             // Store the AWS trace ID in cache with the request ID as the key
             $cacheKey = 'payout_shadow_request:' . $requestId;

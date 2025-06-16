@@ -199,7 +199,7 @@ class Base
 
         $this->razorx = $app['razorx'];
 
-        $this->setHeaders();
+        $this->setHeaders($app);
     }
 
     /**
@@ -303,14 +303,14 @@ class Base
     /**
      * Method to set headers in the request
      */
-    protected function setHeaders()
+    protected function setHeaders($app = null)
     {
         $headers = [];
 
         $headers[self::ACCEPT]       = 'application/json';
         $headers[self::CONTENT_TYPE] = 'application/json';
 
-        $awsTraceID = (new SourceRequestIDMappingCore())->extractAWSTraceIDFromHeaders();
+        $awsTraceID = (new SourceRequestIDMappingCore())->extractAWSTraceIDFromHeaders($app);
         if (empty($awsTraceID) === false)
         {
             $headers[self::AWS_TRACE_ID] = $awsTraceID;

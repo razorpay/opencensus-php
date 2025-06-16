@@ -52,7 +52,7 @@ class Core extends Base
      */
     public function createSourceRequestIdMapping(string $sourceId, string $sourceType): void
     {
-        $requestId = $this->extractAWSTraceIDFromHeaders();
+        $requestId = $this->extractAWSTraceIDFromHeaders($this->app);
         if (empty($requestId)) {
             $this->trace->info(
                 'aws_trace_id.empty_error',
@@ -82,9 +82,16 @@ class Core extends Base
         (new SourceRequestIDMappingRepository)->insertSourceRequestIdMapping($data);
     }
 
-    public function extractAWSTraceIDFromHeaders() {
+    public function extractAWSTraceIDFromHeaders($app) {
         try {
-            return $this->app['request']->headers?->get(RequestHeader::X_AMAZON_TRACE_ID);
+            $awsTraceID = $app['request']->headers?->get(RequestHeader::X_AMAZON_TRACE_ID);
+            if (empty($awsTraceID) === false)
+            {
+                // add the requestID instead
+                $awsTraceID = $app['request']->getTaskId();
+            }
+
+            return $awsTraceID;
         }
         catch (\Throwable $e)
         {
