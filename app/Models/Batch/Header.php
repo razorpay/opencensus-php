@@ -2510,10 +2510,7 @@ class Header
         Header::CREATE_BULK_GIFT_CARD_PROGRAM_ID,
         Header::CREATE_BULK_GIFT_CARD_AMOUNT
     ];
-    // mandatory headers for cancellation gift card batch
-    const MANDATORY_HEADERS_FOR_CANCEL_BULK_GIFT_CARDS = [
-        Header::CANCEL_BULK_GIFT_CARD_ID
-    ];
+
 
 //     mandatory headers for create gift card transfers batch
     const MANDATORY_HEADERS_FOR_CREATE_GIFT_CARD_TRANSFERS = [

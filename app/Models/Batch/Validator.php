@@ -2673,6 +2673,21 @@ class Validator extends Base\Validator
         });
     }
 
+    protected function validateCancelBulkGiftCardsEntries(array & $entries, array $params, ME $merchant)
+    {
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        {
+            $giftCardId = trim($entry[Header::CANCEL_BULK_GIFT_CARD_ID] ?? '');
+            $giftCardNumber = trim($entry[Header::CANCEL_BULK_GIFT_CARD_NUMBER] ?? '');
+            
+            if (empty($giftCardId) && empty($giftCardNumber)) {
+                throw new BadRequestValidationFailureException(
+                    'Either Gift Card ID or Gift Card Number must be provided'
+                );
+            }
+        });
+    }
+
     private function checkValidBalanceTypeForAdjustment(string $balanceType, string $referenceId)
     {
         $validBalanceTypes = [
