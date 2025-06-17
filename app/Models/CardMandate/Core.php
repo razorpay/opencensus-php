@@ -542,8 +542,22 @@ class Core extends Base\Core
 
         $cardMandateId = $token->getCardMandateId();
 
-        $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($cardMandateId, $payment->merchant);
+        try
+        {
+            $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($cardMandateId, $payment->merchant);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::CARD_MANDATE_FETCH_FAILED,
+                [
+                    'card_mandate_id' => $cardMandateId,
+                    'exception'       => $e->getMessage(),
+                ]);
 
+            $cardMandate = null;
+        }
         if (empty($cardMandate))
         {
             $class = \RZP\Constants\Entity::getExternalRepoSingleton(\RZP\Constants\Entity::CARD_MANDATE);
