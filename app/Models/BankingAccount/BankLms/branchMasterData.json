@@ -5674,5 +5674,355 @@
     "branch_manager_email": "",
     "address": "Uttam Vila, Plot 346, Sec 24, Ground floor, Nigdi, Pune - 411044",
     "pincode": "411044"
+  },
+  {
+    "branch_code": 539,
+    "name": "Rajpur Road, Dehradun",
+    "cluster": "Direct ZH-North 3",
+    "pincode": "248001",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 540,
+    "name": "Kota",
+    "cluster": "Rajasthan",
+    "pincode": "324007",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 541,
+    "name": "Dolamundai, Cuttack",
+    "cluster": "East 2",
+    "pincode": "753012",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 542,
+    "name": "Junagadh",
+    "cluster": "Gujarat 2",
+    "pincode": "362002",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 543,
+    "name": "Karim Nagar",
+    "cluster": "TAP 2",
+    "pincode": "505001",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 544,
+    "name": "Nizamabad",
+    "cluster": "TAP 2",
+    "pincode": "503001",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 545,
+    "name": "Gujral Nagar, Jalandhar",
+    "cluster": "Punjab 2",
+    "pincode": "144003",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 546,
+    "name": "KARNAL",
+    "cluster": "Punjab 1",
+    "pincode": "132001",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 547,
+    "name": "RR Nagar Bangalore",
+    "cluster": "Blr 1",
+    "pincode": "560098",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 548,
+    "name": "Sahakar Nagar, Bangalore",
+    "cluster": "Blr 2",
+    "pincode": "560092",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 549,
+    "name": "Warangal",
+    "cluster": "TAP 1",
+    "pincode": "506001",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 550,
+    "name": "Khammam",
+    "cluster": "TAP 1",
+    "pincode": "507002",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 551,
+    "name": "Ujjain",
+    "cluster": "MP",
+    "pincode": "456010",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 552,
+    "name": "Jabalpur",
+    "cluster": "MP",
+    "pincode": "482002",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 553,
+    "name": "Rohtak",
+    "cluster": "Direct ZH-North 3",
+    "pincode": "124001",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 554,
+    "name": "Krishna Nagar",
+    "cluster": "Delhi 1",
+    "pincode": "110051",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 555,
+    "name": "Mehsana",
+    "cluster": "Gujarat 2",
+    "pincode": "384002",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 556,
+    "name": "Attapur",
+    "cluster": "TAP 1",
+    "pincode": "500048",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 557,
+    "name": "Kakinada",
+    "cluster": "TAP 1",
+    "pincode": "533003",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 558,
+    "name": "Pimpri, Pune",
+    "cluster": "Pune 2",
+    "pincode": "411018",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 559,
+    "name": "Rohini Sec 7",
+    "cluster": "Delhi 4",
+    "pincode": "110085",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 560,
+    "name": "Bangur Nagar Goregaon",
+    "cluster": "Mumbai 2",
+    "pincode": "400104",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 561,
+    "name": "Trichy -Thillainagar",
+    "cluster": "Tamil Nadu",
+    "pincode": "620018",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 562,
+    "name": "Dindigul",
+    "cluster": "Tamil Nadu",
+    "pincode": "624001",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 563,
+    "name": "Jamnagar",
+    "cluster": "Gujarat 1",
+    "pincode": "361008",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 564,
+    "name": "Egmore",
+    "cluster": "Chennai 1",
+    "pincode": "600008",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 565,
+    "name": "Sector-16 Branch, Gandhinagar",
+    "cluster": "Gujarat 1",
+    "pincode": "382016",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 566,
+    "name": "Nellore",
+    "cluster": "Chennai 2",
+    "pincode": "524003",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 567,
+    "name": "Pammal",
+    "cluster": "Chennai 3",
+    "pincode": "600043",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 568,
+    "name": "Ambala",
+    "cluster": "Punjab 1",
+    "pincode": "133001",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 569,
+    "name": "CA Road, Nagpur",
+    "cluster": "Pune 3",
+    "pincode": "440008",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 571,
+    "name": "Dewas",
+    "cluster": "MP",
+    "pincode": "455001",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 572,
+    "name": "Ratlam",
+    "cluster": "MP",
+    "pincode": "457001",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 573,
+    "name": "Dhanbad",
+    "cluster": "East 4",
+    "pincode": "826001",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
+  },
+  {
+    "branch_code": 576,
+    "name": "GMS Road - Dehradun",
+    "cluster": "Punjab 1",
+    "pincode": "248001",
+    "branch_manager_name": "",
+    "branch_manager_phone": null,
+    "branch_manager_email": "",
+    "address": ""
   }
 ]
