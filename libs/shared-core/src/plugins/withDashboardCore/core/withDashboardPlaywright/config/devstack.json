@@ -1,12 +1,3 @@
 {
-  "api": "",
-  "pg-router": "",
-  "terminals": "",
-  "settlements": "",
-  "splitz": "",
-  "subscriptions": "",
-  "no-code-apps": "",
-  "partnerships": "",
-  "care": "",
-  "ui-config-service": ""
+  "settlements": ""
 }
