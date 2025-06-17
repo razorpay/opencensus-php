@@ -48,7 +48,7 @@ jobs:
             console.log("Labeler: ", actor);
 
             // Check if the user who triggered the workflow is in the approversList
-            const approversList = ["rahul-rzp", "abhieshekumar", "vinilvasani", "shridhar52war", "joel-jaimon"];
+            const approversList = ["rahul-rzp", "abhieshekumar", "vinilvasani", "shridhar52war", "joel-jaimon", "mohitagrawal1305", "victorakaps", "harshcut"];
             if (!approversList.includes(actor)) {
               console.log(`User ${actor} is not in the approvers list.`);
               process.exit(1);
@@ -76,3 +76,4 @@ jobs:
           doe_approval: ${{ github.event.inputs.doe_approval }}
           why_skip: ${{ github.event.inputs.why_skip }}
           commit_sha: ${{ github.event.inputs.commit_sha }}
+          skippedBy: ${{ context.payload.sender.login }}

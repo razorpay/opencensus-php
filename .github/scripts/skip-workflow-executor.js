@@ -22,6 +22,7 @@ const path = require('path');
         commitSha,
         whySkip,
         doeApproval,
+        skippedBy,
       };
 
     writeFileSync(commitFilePath, JSON.stringify(executionData, null, 2), 'utf8');
