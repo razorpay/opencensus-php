@@ -416,4 +416,193 @@ class Api extends Base
 
         return $response;
     }
+
+    public function fetchMultipleTransfers(array $input) : array
+    {
+        if ( (new Config())->shouldCreateNewPassportToken() )
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $queryParams = [
+            'count' => $input['count'] ?? 0,
+            'skip' => $input['skip'] ?? 0,
+            'from' => $input['from'] ?? null,
+            'to' => $input['to'] ?? null,
+            'recipient_settlement_id' => $input['recipient_settlement_id'] ?? null,
+            'expand' => $input['expand'] ?? []
+        ];
+
+        $queryParams = array_filter($queryParams, function ($value) {
+            return $value !== null;
+        });
+
+        // Using http_build_query with PHP_QUERY_RFC3986 to preserve array brackets (e.g., expand[]=value)
+        $queryString = http_build_query($queryParams, '', '&&', PHP_QUERY_RFC3986);
+
+        $endpoint = Constant::TRANSFER_FETCH_MULTIPLE_ENDPOINT . '?' . $queryString;
+
+        $this->trace->info(TraceCode::ROUTE_FETCH_TRANSFER_QUERY, [
+            'query_string' => $queryString,
+            'query_params' => $queryParams,
+            'endpoint' => $endpoint
+        ]);
+
+        return $this->sendRequest($endpoint, Requests::GET);
+    }
+
+    public function fetchTransferByIDExternal($transferID,array $input) : array
+    {
+        if ( (new Config())->shouldCreateNewPassportToken() )
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $queryParams = [
+            'expand' => $input['expand'] ?? []
+        ];
+
+        $queryParams = array_filter($queryParams, function ($value) {
+            return $value !== null;
+        });
+
+        $queryString = http_build_query($queryParams, '', '&&', PHP_QUERY_RFC3986);
+
+        $endpoint = sprintf(Constant::TRANSFER_FETCH_ENDPOINT, $transferID);
+        $endpoint = $endpoint. '?' . $queryString;
+
+        $this->trace->info(TraceCode::ROUTE_FETCH_TRANSFER_QUERY, [
+            'query_string' => $queryString,
+            'query_params' => $queryParams,
+            'endpoint' => $endpoint
+        ]);
+
+        return $this->sendRequest($endpoint, Requests::GET);
+    }
+
+    public function fetchByPaymentID($paymentID) : array
+    {
+        if ( (new Config())->shouldCreateNewPassportToken() )
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $endpoint = sprintf(Constant::TRANSFER_FETCH_BY_PAYMENT_ENDPOINT, 'pay_'.$paymentID);
+
+        return $this->sendRequest($endpoint, Requests::GET);
+    }
+
+    public function fetchByOrderID($orderID) : array
+    {
+        if ( (new Config())->shouldCreateNewPassportToken() )
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $endpoint = sprintf(Constant::TRANSFER_FETCH_BY_ORDER_ENDPOINT, 'order_'.$orderID);
+
+
+        return $this->sendRequest($endpoint, Requests::GET);
+    }
+
+    public function fetchLinkedAccountTransfersByID($id) : array
+    {
+        if ( (new Config())->shouldCreateNewPassportToken() )
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $endpoint = sprintf(Constant::LA_TRANSFER_FETCH_BY_ID_ENDPOINT, $id);
+
+        return $this->sendRequest($endpoint, Requests::GET);
+    }
+
+    public function fetchLinkedAccountTransfersByPaymentID($id,$input) : array
+    {
+        if ( (new Config())->shouldCreateNewPassportToken() )
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $endpoint = sprintf(Constant::LA_TRANSFER_FETCH_BY_PAYMENT_ID_ENDPOINT, $id);
+
+        $queryParams = [
+            'transfer_id' => $input['id']
+        ];
+
+        $queryParams = array_filter($queryParams, function ($value) {
+            return $value !== null;
+        });
+
+        // Using http_build_query with PHP_QUERY_RFC3986 to preserve array brackets (e.g., expand[]=value)
+        $queryString = http_build_query($queryParams, '', '&&', PHP_QUERY_RFC3986);
+
+        $endpoint = $endpoint. '?' . $queryString;
+
+        return $this->sendRequest($endpoint, Requests::GET);
+    }
+
+    public function fetchLinkedAccountTransfers($input) : array
+    {
+        if ( (new Config())->shouldCreateNewPassportToken() )
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+
+        $queryParams = [
+            'count' => $input['count'] ?? 0,
+            'skip' => $input['skip'] ?? 0,
+            'from' => $input['from'] ?? null,
+            'to' => $input['to'] ?? null,
+            'recipient_settlement_id' => $input['recipient_settlement_id'] ?? null,
+            'expand' => $input['expand'] ?? []
+        ];
+
+        $queryParams = array_filter($queryParams, function ($value) {
+            return $value !== null;
+        });
+
+        // Using http_build_query with PHP_QUERY_RFC3986 to preserve array brackets (e.g., expand[]=value)
+        $queryString = http_build_query($queryParams, '', '&&', PHP_QUERY_RFC3986);
+
+        $endpoint = Constant::LA_TRANSFER_FETCH_MULTIPLE_ENDPOINT . '?' . $queryString;
+
+        $this->trace->info(TraceCode::ROUTE_FETCH_TRANSFER_QUERY, [
+            'query_string' => $queryString,
+            'query_params' => $queryParams,
+            'endpoint' => $endpoint
+        ]);
+
+        return $this->sendRequest($endpoint, Requests::GET);
+
+    }
 }

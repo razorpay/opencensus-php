@@ -823,11 +823,28 @@ class Core extends Base\Core
                 }
             }
 
-            if ($merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true) {
-                $token = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN_BY_GATEWAY_TOKEN], function () use ($id, $merchant) {
-                    return $this->repo->token->getByGatewayTokenAndMerchantIdWithForceIndex($id, $merchant->getId(),
-                        $this->mode);
-                });
+            $variant = $this->evaluateSplitzExperimentForFetchTokenFromTidb($merchant->getId());
+
+            if($variant === true)
+            {
+                if ($merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true)
+                {
+                    $token = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN_BY_GATEWAY_TOKEN], function () use ($id, $merchant) {
+                        return $this->repo->token->getByGatewayTokenAndMerchantIdFromTidb($id, $merchant->getId(),
+                            $this->mode);
+                    });
+                }
+
+            }
+            else
+            {
+                if ($merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true)
+                {
+                    $token = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN_BY_GATEWAY_TOKEN], function () use ($id, $merchant) {
+                        return $this->repo->token->getByGatewayTokenAndMerchantIdWithForceIndex($id, $merchant->getId(),
+                            $this->mode);
+                    });
+                }
             }
 
             if (empty($token) === true) {
@@ -1758,5 +1775,40 @@ class Core extends Base\Core
         return false;
     }
 
+    protected function evaluateSplitzExperimentForFetchTokenFromTidb($merchantId): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.emandate_fetch_token_from_tidb'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $varName = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($varName === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::EMANDATE_FETCH_TOKEN_FROM_TIDB_SPLITZ_ERROR
+            );
+        }
+
+        return false;
+    }
 
 }

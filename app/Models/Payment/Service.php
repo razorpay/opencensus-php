@@ -24,6 +24,7 @@ use RZP\Models\QrPayment\Constants as QrConstants;
 use RZP\Models\Reminders\ReminderProcessor;
 use RZP\Http\Controllers\GatewayController;
 use RZP\Jobs\MerchantBalanceUpdateAfterCLSOnboarding;
+use RZP\Models\Transfer\Metric as TransferMetric;
 use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
 use RZP\Http\Request\Requests;
 use RZP\Models\Ledger\Constants as LedgerConstants;
@@ -119,6 +120,7 @@ use RZP\Models\GenericDocument\Constants as GenericDocumentConstants;
 use RZP\Models\Ledger\ReverseShadow as LedgerReverseShadow;
 use Symfony\Component\HttpFoundation;
 use RZP\Services\UfhService;
+use RZP\Services\Route as RouteService;
 
 class Service extends Base\Service
 {
@@ -2069,31 +2071,43 @@ class Service extends Base\Service
     {
         Payment\Entity::verifyIdAndStripSign($id);
 
-        $transfers = Tracer::inSpan(['name' => 'transfer.fetch_by_payment'], function() use ($id)
+        $merchantId = $this->merchant->getMerchantId() ?? '';
+
+        $routeFetchEnabled = (new Transfer\Service())->isRouteFetchExperimentEnabled($merchantId,'');
+
+        $routeConfig =  (new RouteService\Config())->isExternalQueryAndDiffEnabled(__FUNCTION__);
+
+        $isExternalFetchEnabled = $routeConfig['enabled'] ?? false;
+
+        $diffCheck = $routeConfig['diff_check'] ?? false;
+
+        if ($isExternalFetchEnabled === false || $routeFetchEnabled === false)
         {
-            return (new Transfer\Core())->getForPayment($id);
-        });
+            return $this->getTransfersFromAPI($id);
+        }
 
-        $payment = $this->repo
-                        ->payment
-                        ->findByIdAndMerchant($id, $this->merchant);
+        $routeTransfers = app('route')->fetchByPaymentID($id);
 
-        if ($payment->hasOrder() === true)
+        if ($diffCheck === true )
         {
-            $orderId = $payment->getApiOrderId();
+            $apiTransfers = $this->getTransfersFromAPI($id);
 
-            $transfersFromOrder = Tracer::inSpan(['name' => 'transfer.fetch_by_order'], function() use ($orderId)
-            {
-                return (new Transfer\Core())->getForOrder($orderId);
-            });
+            $success = (new Transfer\Service())->findDiffInTransferResponse($apiTransfers,$routeTransfers);
 
-            foreach ($transfersFromOrder as $transferFromOrder)
+            if ($success === false)
             {
-                $transfers->push($transferFromOrder);
+                return $apiTransfers;
             }
         }
 
-        return ((new Transfer\Service())->setPartnerDetailsForTransfers($transfers))->toArrayPublic();
+        $this->trace->info(
+            TraceCode::TRANSFER_FETCH_MULTIPLE_RESPONSE,
+            [
+                'routeTransfers' => $routeTransfers
+            ]
+        );
+
+        return $routeTransfers;
     }
 
     /**
@@ -9785,5 +9799,35 @@ class Service extends Base\Service
         $filteredStores = array_intersect($userStores, $storeIds);
 
         $input['store_ids'] = $filteredStores;
+    }
+
+    private function getTransfersFromAPI(string $id)
+    {
+        $transfers = Tracer::inSpan(['name' => 'transfer.fetch_by_payment'], function() use ($id)
+        {
+            return (new Transfer\Core())->getForPayment($id);
+        });
+
+        $payment = $this->repo
+            ->payment
+            ->findByIdAndMerchant($id, $this->merchant);
+
+        if ($payment->hasOrder() === true)
+        {
+            $orderId = $payment->getApiOrderId();
+
+            $transfersFromOrder = Tracer::inSpan(['name' => 'transfer.fetch_by_order'], function() use ($orderId)
+            {
+                return (new Transfer\Core())->getForOrder($orderId);
+            });
+
+            foreach ($transfersFromOrder as $transferFromOrder)
+            {
+                $transfers->push($transferFromOrder);
+            }
+        }
+
+        return ((new Transfer\Service())->setPartnerDetailsForTransfers($transfers))->toArrayPublic();
+
     }
 }
