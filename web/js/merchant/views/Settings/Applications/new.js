@@ -28,9 +28,20 @@ import {
 import { compose } from 'redux';
 
 const info = (user) => ({
-  icon: `Your uploaded app icon will be shown to your users on ${
-    user.isOrgRZP ? 'Razorpay' : 'the'
-  } Connect screens. The icon will also be displayed in the connected applications list`,
+  icon: (
+    <span>
+      Your uploaded app icon will be shown to your users on {user.isOrgRZP ? 'Razorpay' : 'the'}{' '}
+      Connect screens. The icon will also be displayed in the connected applications list.
+      <br /> Maximum image size: <b>1 MB</b>. You can reduce the size on{' '}
+      {user.isOrgAllowedFunctionality('external_links') ? (
+        <a href="https://tinypng.com" target="_blank" rel="noreferrer noopener">
+          tinypng.com.
+        </a>
+      ) : (
+        'tinypng.com'
+      )}
+    </span>
+  ),
   dev: `Add comma separated URIs. URI can be localhost. We'll redirect your users back to any of the URI provided, after they connect ${
     user.isOrgRZP ? 'with Razorpay' : 'their account'
   }.`,
@@ -57,6 +68,15 @@ function readURL(input, self) {
 
     reader.readAsDataURL(input.files[0]);
   }
+}
+
+const LogoSizeErrorMsg = 'Please upload an image under the size of 1 MB';
+
+function isLogoSizeError(err) {
+  return (
+    err?.errors?.length > 0 &&
+    err?.errors[0] === 'Size of the logo is too big. Upload a smaller file size.'
+  );
 }
 
 class NewApplicationForm extends Component {
@@ -177,7 +197,7 @@ class NewApplicationForm extends Component {
       .catch((err) => {
         this.props.showNotification({
           type: 'error',
-          message: err.errors,
+          message: isLogoSizeError(err) ? LogoSizeErrorMsg : err.errors,
         });
       });
   };
@@ -235,10 +255,10 @@ class NewApplicationForm extends Component {
           message: 'Application saved successfully',
         });
       })
-      .catch(() => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
-          message: "Couldn't save application",
+          message: isLogoSizeError(err) ? LogoSizeErrorMsg : "Couldn't save application",
         });
       });
   };

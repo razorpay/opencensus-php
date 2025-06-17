@@ -26,6 +26,7 @@ const state = {
   session: {
     user: {
       isPartner,
+      isOrgAllowedFunctionality: jest.fn(() => true),
     },
   },
 };
