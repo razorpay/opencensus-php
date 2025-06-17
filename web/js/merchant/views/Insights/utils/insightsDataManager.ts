@@ -9,6 +9,23 @@ interface MethodAggregateResponse {
   data: InsightsApiResponse;
 }
 
+const METRIC_PRIORITY = ['success-rate', 'checkout'];
+
+const orderByPriority = (data: InsightsApiResponse): InsightsApiResponse => {
+  const ordered: InsightsApiResponse = {};
+  
+  METRIC_PRIORITY.forEach(key => {
+    if (data[key]) ordered[key] = data[key];
+  });
+  
+  Object.keys(data)
+    .filter(key => !METRIC_PRIORITY.includes(key))
+    .sort()
+    .forEach(key => ordered[key] = data[key]);
+    
+  return ordered;
+};
+
 export const fetchInsightsData = async (): Promise<InsightsApiResponse> => {
   try {
     const response = await merchantFetch<MethodAggregateResponse>({
@@ -21,7 +38,7 @@ export const fetchInsightsData = async (): Promise<InsightsApiResponse> => {
         Object.keys(response.data).length > 0) {
       
       const isValidFormat = Object.values(response.data).every(
-        metrics => Array.isArray(metrics) && metrics.length > 0
+        metrics => Array.isArray(metrics)
       );
       
       if (isValidFormat) {
@@ -45,7 +62,8 @@ export const fetchInsightsData = async (): Promise<InsightsApiResponse> => {
             data['success-rate'].unshift({ "overview": String(totalSuccessRate) });
           }
         }
-        return data;
+      
+        return orderByPriority(data);
       }
       
       console.error('API response has invalid format');
@@ -54,7 +72,7 @@ export const fetchInsightsData = async (): Promise<InsightsApiResponse> => {
       console.error('API returned empty or invalid data structure');
       throw new Error('API returned empty or invalid data structure');
     }
-  } catch (error) {;
+  } catch (error) {
     console.error('Error fetching insights data');
     throw new Error('Error fetching insights data');
   }
@@ -68,7 +86,6 @@ export const prefetchInsightsData = async (): Promise<void> => {
       staleTime: 15 * 60 * 1000, 
       cacheTime: 24 * 60 * 60 * 1000,
       retry: 3,
-      retryOnMount: false, 
       refetchOnWindowFocus: false, 
     });
   } catch (error) {
