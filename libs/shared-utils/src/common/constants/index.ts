@@ -2,6 +2,7 @@ export { COUNTRY_CODES } from './COUNTRY_CODES';
 export { CURRENCIES } from './CURRENCIES';
 export { DASHBOARD_ROUTES } from './DASHBOARD_ROUTES';
 export { DASHBOARD_ZINDEX_MAP } from './DASHBOARD_ZINDEX_MAP';
+export { INDIAN_STATES } from './INDIAN_STATES';
 export { ROUTE_REG } from './DASHBOARD_ROUTES';
 export { BASE_ROUTES } from './DASHBOARD_ROUTES';
 export { ANALYTICS, ANALYTICS_ONENAV } from './ANALYTICS';

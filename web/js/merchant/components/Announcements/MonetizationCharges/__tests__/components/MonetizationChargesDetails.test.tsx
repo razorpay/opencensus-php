@@ -1,6 +1,5 @@
 import React from 'react';
 import { render, screen, userEvent } from 'test-utils';
-import * as posHooks from 'merchant/views/POS/hooks';
 import MonetizationChargesDetails from '../../components/MonetizationChargesDetails';
 
 let mockClosemodal = jest.fn();
@@ -8,7 +7,7 @@ let mockSetShowCustomPricing = jest.fn();
 let mockSetShowProductWiseBenefits = jest.fn();
 
 describe('MonetizationChargesDetails', () => {
-  jest.spyOn(posHooks, 'useBladeBreakpoints').mockReturnValue({
+  jest.spyOn(require('@libs/shared-utils'), 'useBladeBreakpoints').mockReturnValue({
     matchedBreakpoint: 'l',
     isMobile: false,
     isDesktop: true,

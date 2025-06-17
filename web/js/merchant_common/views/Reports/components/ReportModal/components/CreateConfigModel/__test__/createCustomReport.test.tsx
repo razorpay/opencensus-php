@@ -5,7 +5,6 @@ import 'merchant_common/views/Reports/mocks/hooks/useReportsSplitzExperimentsMoc
 import { OverView } from 'merchant_common/views/Reports/features/Overview';
 import { withRouter } from 'common/deprecated/withRouter';
 import { REPORT_TEST_DASHBOARD } from 'merchant_common/views/Reports/constants';
-import * as posHooks from 'merchant/views/POS/hooks';
 import { getOverViewStateWith } from 'merchant_common/views/Reports/features/Overview/__test__/fixtures/index';
 import { mockConfigs } from 'merchant_common/views/Reports/redux/__test__/fixtures/configs.fixtures';
 
@@ -29,15 +28,18 @@ const reportsCoreState = getOverViewStateWith({
   },
 });
 
-describe('CreateConfigModel', () => {
-  const useBladeBreakpointsSpy = jest.spyOn(posHooks, 'useBladeBreakpoints');
-  useBladeBreakpointsSpy.mockReturnValue({
+// Mock the entire module to avoid spy conflicts
+jest.mock('@libs/shared-utils', () => ({
+  ...jest.requireActual('@libs/shared-utils'),
+  useBladeBreakpoints: jest.fn(() => ({
     isDesktop: true,
     isMobile: false,
     isLargeScreen: true,
     matchedBreakpoint: 'xl',
-  });
+  })),
+}));
 
+describe('CreateConfigModel', () => {
   const App = withRouter((props) => {
     return <OverView {...props} dashboardType={REPORT_TEST_DASHBOARD} />;
   });

@@ -1,4 +1,4 @@
-import { merchantFetch } from '@libs/web-nexus/merchant/utils/merchantFetch';
+import { posFetch } from 'apps/pos/src/app/utils/posFetch';
 
 type ApiResponseType = {
   data?: {
@@ -11,7 +11,7 @@ type ApiResponseType = {
 };
 
 export const saveUserName = (payload: { name: string }): Promise<ApiResponseType> => {
-  return merchantFetch({
+  return posFetch({
     url: 'users/update_name',
     method: 'post',
     data: payload,

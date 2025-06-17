@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowLeftIconWrapper, CustomPricingWrapper } from './styled';
 import { ArrowLeftIcon, Box, Text, Heading } from '@razorpay/blade/components';
-import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
+import { useBladeBreakpoints } from '@libs/shared-utils';
 import GetCustomPricing from 'assets/pricing-bundle/get-custom-pricing.svg';
 import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
 import { isMobileDevice } from 'merchant/components/Home/data';

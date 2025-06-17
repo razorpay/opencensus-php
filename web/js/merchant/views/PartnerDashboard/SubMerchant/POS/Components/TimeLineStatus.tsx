@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { POS_ACTIVATION_STATUS } from 'merchant/views/POS/types';
+import { POS_ACTIVATION_STATUS } from 'merchant/views/PartnerDashboard/constants';
 
 import {
   StyledDotBackgroundInfo,

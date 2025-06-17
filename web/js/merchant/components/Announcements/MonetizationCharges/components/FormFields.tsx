@@ -1,6 +1,6 @@
 import React from 'react';
 import { FORM_FIELDS } from '../constants/fields';
-import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
+import { useBladeBreakpoints } from '@libs/shared-utils';
 import {
   ActionList,
   ActionListItem,

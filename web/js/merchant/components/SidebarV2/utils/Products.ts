@@ -57,10 +57,13 @@ import {
 import { ConfigTagType } from 'merchant/constants/tags';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { isBillMeMerchant } from 'merchant/utils/omniUtils';
-import {  canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
-import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
+import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
+import { isPosExperimentEnabled } from 'merchant/helpers/pos-helper';
 import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
-import { getInsightsL1ProductsFromFallbackData, getInsightsL1ProductsFromData } from 'merchant/components/SidebarV2/Products/Insights/Insights';
+import {
+  getInsightsL1ProductsFromFallbackData,
+  getInsightsL1ProductsFromData,
+} from 'merchant/components/SidebarV2/Products/Insights/Insights';
 import { getInsightsDataFromCache } from 'merchant/views/Insights/utils/insightsDataManager';
 import { isConnectedNavigationEnabled } from 'merchant/components/NavigationLayout/utils';
 
@@ -449,7 +452,7 @@ export const PRODUCTS_DATA: Record<string, Partial<ProductData>> = {
     additionalCondition: (user: any, { abExperiments }: ExtraConfig) =>
       isExperimentEnabled(abExperiments.insights_experiment) &&
       user.isOrgRZP &&
-      isConnectedNavigationEnabled({ user, abExperiments }) && 
+      isConnectedNavigationEnabled({ user, abExperiments }) &&
       user.isCountryIndia &&
       !isMobileResolution(),
     items: getInsightsL1ProductsFromFallbackData() || [],
@@ -459,8 +462,8 @@ export const PRODUCTS_DATA: Record<string, Partial<ProductData>> = {
         props: {
           color: 'positive',
           size: 'medium',
-          children: 'Beta'
-        }
+          children: 'Beta',
+        },
       };
     },
   },
@@ -578,12 +581,14 @@ const getRouteL1Products = (items: L1ProductItem[], user: any) => {
   return items.filter((product) => product.title !== ROUTE_L1_PRODUCTS_TITLES.batchupload);
 };
 
-export const getL1ProductItems = (productId: string, user: any,abExperiments:any) => {
+export const getL1ProductItems = (productId: string, user: any, abExperiments: any) => {
   switch (productId) {
     case 'insights':
       const cachedInsightsData = getInsightsDataFromCache();
-      return getInsightsL1ProductsFromData(cachedInsightsData) || PRODUCTS_DATA[productId]?.items || [];
-      // Only for Optimizer merchants where route is enabled we will show L1 items on Route Product
+      return (
+        getInsightsL1ProductsFromData(cachedInsightsData) || PRODUCTS_DATA[productId]?.items || []
+      );
+    // Only for Optimizer merchants where route is enabled we will show L1 items on Route Product
     case 'route':
       if (user?.isOptimizerEnabled && user?.isOptimizerRouteEnabled) {
         return getRouteL1Products(PRODUCTS_DATA[productId]?.items, user);

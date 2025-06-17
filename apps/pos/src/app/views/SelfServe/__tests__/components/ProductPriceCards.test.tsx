@@ -1,0 +1,84 @@
+import React from 'react';
+
+import ProductPriceCards from 'apps/pos/src/app/views/SelfServe/ProductDescription/ProductPriceCards';
+import {
+  MOCK_USER,
+  MOCK_PRODUCT_OFFER_CONFIG,
+} from 'apps/pos/src/app/views/SelfServe/__tests__/mocks/fixtures';
+import {
+  getProductPricingHandler,
+  getPartnerProductPricingHandler,
+} from 'apps/pos/src/app/views/SelfServe/__tests__/mocks/handlers';
+import { PRODUCT_PLANS, PosStoreInitialState } from 'apps/pos/src/app/views/SelfServe/constants';
+import * as posHelpers from 'apps/pos/src/app/views/SelfServe/helpers';
+import { PosDeviceStoreProvider } from 'apps/pos/src/app/views/SelfServe/providers';
+import { render, screen, server, userEvent, waitForElementToBeRemoved } from 'test-utils';
+
+const initProps = {
+  selectedPricing: PRODUCT_PLANS.MONTHLY,
+  productCode: 'mock-product',
+  onPricingPlanChange: jest.fn(),
+};
+
+const renderApp = (initialState = PosStoreInitialState) => {
+  render(
+    <PosDeviceStoreProvider init={initialState} user={MOCK_USER}>
+      <ProductPriceCards {...initProps} />
+    </PosDeviceStoreProvider>,
+  );
+};
+
+describe('<ProductPriceCards/>', () => {
+  beforeEach(async () => {
+    server.use(getProductPricingHandler());
+    renderApp();
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+  });
+  test('should render Product price cards on screen', () => {
+    expect(screen.getByText(/Monthly Subscription/)).toBeVisible();
+    expect(screen.getByText(/Lifetime Plan/)).toBeVisible();
+
+    expect(
+      screen.getByText(
+        '*Subscription only starts when device gets delivered. GST charges applicable.',
+      ),
+    ).toBeVisible();
+
+    expect(screen.getByText('*No Setup fees required. GST charges applicable.')).toBeVisible();
+  });
+
+  test('should render prices on screen', () => {
+    expect(screen.getByText('300')).toBeVisible();
+    expect(screen.getByText('200')).toBeVisible();
+    expect(screen.getByText('12,000')).toBeVisible();
+  });
+
+  test('should highlight Product price cards on click', async () => {
+    await userEvent.click(screen.getByTestId('monthly-price-card'));
+    expect(screen.getByTestId('monthly-price-card').getAttribute('aria-selected')).toBe('true');
+    expect(initProps.onPricingPlanChange).toHaveBeenCalledWith(PRODUCT_PLANS.MONTHLY);
+  });
+});
+
+describe('<ProductPriceCards/> with offer', () => {
+  beforeEach(() => {
+    const fetchOffersSpy = jest.spyOn(posHelpers, 'fetchProductOffers');
+    fetchOffersSpy.mockReturnValue({
+      isEnabled: true,
+      offers: MOCK_PRODUCT_OFFER_CONFIG,
+    });
+  });
+  test('should  render offer price cards if offer exists for a product', async () => {
+    server.use(getProductPricingHandler());
+    renderApp();
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    expect(screen.getAllByTestId('pos-offer-price-cards').length).toBe(2);
+  });
+
+  test('should  render partner offer price cards if offer exists for a product', async () => {
+    server.use(getPartnerProductPricingHandler());
+    renderApp();
+    await waitForElementToBeRemoved(screen.getByLabelText('pos-store-spinner'));
+    expect(screen.getAllByTestId('pos-offer-price-cards').length).toBe(2);
+  });
+});

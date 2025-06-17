@@ -1,6 +1,6 @@
-import { DevicePaymentStatus } from "apps/pos/src/app/types/DeviceSelection";
-import { PricingNcStatus } from "apps/pos/src/app/types/PaymentsAndService";
-import { STATUS_FILTERS } from "apps/pos/src/app/types/SalesAssistedOnboarding";
+import { DevicePaymentStatus } from 'apps/pos/src/app/types/DeviceSelection';
+import { PricingNcStatus } from 'apps/pos/src/app/types/PaymentsAndService';
+import { STATUS_FILTERS } from 'apps/pos/src/app/types/SalesAssistedOnboarding';
 
 export type APIResponse<SuccessReseponse, ErrorResponse> = {
   status_code: number;
@@ -129,6 +129,12 @@ export enum MODULES {
   AGREEMENT_SIGNING = 'Agreement Signing',
   ADDITIONAL_DETAILS = 'Additional Details',
   DEVICE_DEPLOYMENT = 'Device Deployment',
+  POS_SELF_SERVE = 'POS Self Serve',
 }
 
-export type AllBadgeTypes = DevicePaymentStatus | PricingNcStatus| STATUS_FILTERS | 'completed' | 'kyc_completed';
+export type AllBadgeTypes =
+  | DevicePaymentStatus
+  | PricingNcStatus
+  | STATUS_FILTERS
+  | 'completed'
+  | 'kyc_completed';

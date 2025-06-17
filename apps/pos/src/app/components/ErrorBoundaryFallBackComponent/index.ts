@@ -1,0 +1,1 @@
+export { ErrorBoundaryFallBackComponent } from './ErrorBoundaryFallBackComponent';

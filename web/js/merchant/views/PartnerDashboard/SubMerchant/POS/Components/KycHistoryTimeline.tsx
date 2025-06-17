@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Text } from '@razorpay/blade/components';
 
-import { POS_ACTIVATION_STATUS } from 'merchant/views/POS/types';
+import { POS_ACTIVATION_STATUS } from 'merchant/views/PartnerDashboard/constants';
 import {
   parsedActionStatesType,
   parsedClarificationReasonsType,

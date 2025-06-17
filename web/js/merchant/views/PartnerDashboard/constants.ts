@@ -119,3 +119,40 @@ export const PARTNERSHIPS_WEBSITE_LINKS = {
 export const CREATE_BUREAU_COUNTDOWN_TIME = 30000;
 
 export const SMS_COUNT_MAX_LIMIT = 10;
+export const ORDER_LIST_STATUS_TYPES = ['paid', 'delivered', 'rejected'];
+export enum POS_ACTIVATION_STATUS {
+  submitted = 'submitted',
+  needs_clarification = 'needs_clarification',
+  rejected = 'rejected',
+  under_review = 'under_review',
+  activated = 'activated',
+  kyc_qualified_stb = 'kyc_qualified_stb',
+  kyc_qualified_unactivated = 'kyc_qualified_unactivated',
+}
+
+export const ORDER_STATUS_META_DATA = {
+  ORDER_RECEIVED: {
+    key: 'ORDER_RECEIVED',
+    name: 'ORDER RECEIVED',
+    variant: 'positive',
+    icon: 'CheckCircleIcon',
+  },
+  DELIVERED: {
+    key: 'DELIVERED',
+    name: 'DELIVERED',
+    variant: 'positive',
+    icon: 'CheckCircleIcon',
+  },
+  ORDER_REJECTED: {
+    key: 'ORDER_REJECTED',
+    name: 'ORDER REJECTED',
+    variant: 'negative',
+    icon: 'AlertCircleIcon',
+  },
+};
+
+export const PLAN_NAME_MAPPINGS = {
+  monthly: 'Monthly',
+  quarterly: 'Quarterly',
+  yearly: 'Yearly',
+};

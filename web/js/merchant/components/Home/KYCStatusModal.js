@@ -24,7 +24,7 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import InstantActivationModal from './InstantActivationModal';
 import { kycModalContent } from './KycStatusModalContent';
 import { isMobileDevice } from './data';
-import { useLatestOrder } from 'merchant/views/POS/hooks';
+import { useLatestOrder } from 'merchant_common/views/Reports/hooks/useLatestOrder';
 import { checkIfSignUpViaEasyOnboarding } from 'common/utils/activation';
 
 const MODAL_CONTENT = {

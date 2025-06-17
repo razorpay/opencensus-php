@@ -1,4 +1,4 @@
-import { merchantFetch } from '@libs/web-nexus/merchant/utils/merchantFetch';
+import { posFetch } from 'apps/pos/src/app/utils/posFetch';
 
 interface SalesFetchProps<T> {
   url: string;
@@ -18,7 +18,7 @@ export const salesFetch = <SalesFetchArgs, APIResponse>({
   headers,
 }: SalesFetchProps<SalesFetchArgs>): Promise<APIResponse> =>
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-  merchantFetch({
+  posFetch({
     url,
     method,
     mode,

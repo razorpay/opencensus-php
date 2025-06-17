@@ -4,7 +4,7 @@ import useForm from '../hooks/useForm';
 import validate from '../utils/validator';
 import { FORM_FIELDS } from '../constants/fields';
 import { submitSFLead } from '../utils/salesForce';
-import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
+import { useBladeBreakpoints } from '@libs/shared-utils';
 import FormFields from './FormFields';
 
 interface LeadFormLayoutProps {

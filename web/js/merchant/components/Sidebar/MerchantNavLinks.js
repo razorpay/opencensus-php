@@ -17,7 +17,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import MagicCheckoutNavLink from 'merchant/components/Sidebar/MagicCheckoutNavLink';
 import { isBillMeMerchant } from 'merchant/utils/omniUtils';
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
-import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
+import { isPosExperimentEnabled } from 'merchant/helpers/pos-helper';
 import { checkReconSaasEnabled } from 'merchant/views/Reconciliations/utils';
 import MainNavLink from 'merchant_common/components/MainNavLink';
 import { isGCMSExperimentEnabled } from 'merchant/views/GCMS/shared/utils';

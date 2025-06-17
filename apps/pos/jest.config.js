@@ -8,8 +8,11 @@ module.exports = withDashboardCore({
     config.moduleNameMapper = {
       ...config.moduleNameMapper,
       '^apps/pos/src(/.*)$': '<rootDir>/src/$1',
+      '^test-utils$': '<rootDir>/src/services/test/test-utils.tsx',
+      '^common/utils/localStorage$': '<rootDir>/test/mocks/localStorage.js',
     };
 
+    config.setupFilesAfterEnv = [...config.setupFilesAfterEnv, '<rootDir>/test/setupTests.js'];
     config.coverageThreshold = {
       global: {
         statements: 50,
@@ -21,6 +24,8 @@ module.exports = withDashboardCore({
 
     config.coveragePathIgnorePatterns = [
       ...config.coveragePathIgnorePatterns,
+      '<rootDir>/src/bootstrap',
+      '<rootDir>/src/manifests',
       '<rootDir>/new-coverage.js',
     ];
 

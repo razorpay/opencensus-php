@@ -36,27 +36,6 @@ jest.mock('merchant/views/Transactions/v1/AnalyticsTrack', () => ({
   selfServeTrackResult: jest.fn(),
 }));
 
-jest.mock('merchant/views/POS/constants', () => {
-  const mockProduct = jest.requireActual(
-    'merchant/views/POS/__tests__/mocks/fixtures',
-  ).MOCK_PRODUCT;
-
-  const mockProductNew = {
-    ...mockProduct,
-    name: 'mock-product-new',
-    code: 'mock-product-new',
-    productTitle: 'Mock Product New',
-  };
-
-  return {
-    ...jest.requireActual('merchant/views/POS/constants'),
-    PRODUCT_DESCRIPTIONS: {
-      'mock-product': mockProduct,
-      'mock-product-new': mockProductNew,
-    },
-  };
-});
-
 jest.mock('common/i18', () => {
   return {
     __esModule: true,
@@ -90,7 +69,6 @@ if (!process.env.LISTENING_TO_UNHANDLED_REJECTION) {
   process.env.LISTENING_TO_UNHANDLED_REJECTION = true;
 }
 
-
 afterEach(() => {
   queryCache.clear();
 });
@@ -100,4 +78,3 @@ if (process.env.CI === 'true') {
     logErrorsBeforeRetry: true,
   });
 }
-

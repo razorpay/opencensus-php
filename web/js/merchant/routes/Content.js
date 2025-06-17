@@ -41,7 +41,7 @@ import { NavLink, Navigate, Route, Routes, matchPath } from 'react-router-dom';
 import HandleIndex from './HandleIndex';
 import lazy from './LazyLoader';
 
-import { isPosExperimentEnabled } from 'merchant/views/POS/helpers';
+import { isPosExperimentEnabled } from 'merchant/helpers/pos-helper';
 import SelfServeStateWrapper from 'merchant/views/Transactions/SelfServeStateWrapper';
 
 import { isMicrofrontendSelfserveEnabled } from 'merchant/views/Transactions/v2/common/utils';
@@ -511,8 +511,10 @@ const Wallet = lazy(() => import(/* webpackChunkName: "IssuingWallet" */ 'mercha
 
 const GCMS = lazy(() => import(/* webpackChunkName: "EngageHQGCMS" */ 'merchant/views/GCMS'));
 
-// const POS = lazy(() => import(/* webpackChunkName: "POS" */ 'merchant/views/POS'));
-const Pos = lazy(() => import(/* webpackChunkName: "POS" */ 'merchant/views/POS'));
+// const POS = lazy(() => import(/* webpackChunkName: "POS" */ 'apps/pos/src/app/views/SelfServe'));
+const SelfServePos = lazy(() =>
+  import(/* webpackChunkName: "POS" */ '@federated/apps/pos/self-serve'),
+);
 
 const PaymentsDetailsV2 = lazy(() =>
   import(
@@ -573,8 +575,11 @@ const ReconAiIngestion = lazy(() =>
 );
 
 const PosMerchantAgreement = lazy(() =>
-  import(/* webpackChunkName: "PosMerchantAgreement" */ 'merchant/views/POS/MerchantAgreement'),
+  import(
+    /* webpackChunkName: "PosMerchantAgreement" */ '@federated/apps/pos/self-serve/MerchantAgreement'
+  ),
 );
+
 const BillMeSettings = lazy(() =>
   import(/* webpackChunkName: "BillMeSettings" */ 'merchant/views/BillMeSettings'),
 );
@@ -2320,7 +2325,7 @@ class Content extends Component {
                   !user.isMkycSubMerchant
                 }
               >
-                <Pos />
+                <SelfServePos />
               </RouteGuard>
             }
           />

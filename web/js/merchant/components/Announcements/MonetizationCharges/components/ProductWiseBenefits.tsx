@@ -13,7 +13,7 @@ import {
 } from '@razorpay/blade/components';
 import { User } from 'common/typings';
 import content from '../constants/content';
-import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
+import { useBladeBreakpoints } from '@libs/shared-utils';
 import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';

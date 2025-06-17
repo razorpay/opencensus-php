@@ -5,9 +5,9 @@ import { connect } from 'react-redux';
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import styled from 'styled-components';
 
-import OrderList from 'merchant/views/POS/OrderList';
-import { PosDeviceStoreProvider } from 'merchant/views/POS/providers';
-import { ScrollObserverProvider } from 'merchant/views/POS/utils/ScrollObserver';
+import OrderList from './OrderList';
+import { PosDeviceStoreProvider } from './providers';
+import { ScrollObserverProvider } from './ScrollObserver';
 
 import ClientInfoCard from './ClientInfoCard';
 import { getSubmerchantIdFromPath } from './utils';

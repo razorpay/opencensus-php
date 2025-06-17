@@ -17,7 +17,7 @@ import StorefrontIcon from 'icons/merchant/storefront.svg';
 import InvoicesIcon from 'icons/merchant/invoices.svg';
 import content from '../constants/content';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
+import { useBladeBreakpoints } from '@libs/shared-utils';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
 import { MonetizationChargesDetailsWrapper, NoCodeAppButton, NoCodeAppButtonIcon } from './styled';

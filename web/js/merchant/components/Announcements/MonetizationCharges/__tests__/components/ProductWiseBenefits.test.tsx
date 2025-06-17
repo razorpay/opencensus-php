@@ -1,6 +1,5 @@
 import React from 'react';
 import { render, screen, userEvent } from 'test-utils';
-import * as posHooks from 'merchant/views/POS/hooks';
 import ProductWiseBenefits from '../../components/ProductWiseBenefits';
 
 describe('ProductWiseBenefits', () => {
@@ -23,7 +22,7 @@ describe('ProductWiseBenefits', () => {
   });
 
   it('calls setShowProductWiseBenefits and setShowCustomPricing on contactSales', async () => {
-    jest.spyOn(posHooks, 'useBladeBreakpoints').mockReturnValue({
+    jest.spyOn(require('@libs/shared-utils'), 'useBladeBreakpoints').mockReturnValue({
       matchedBreakpoint: 's',
       isMobile: true,
       isDesktop: false,
@@ -36,7 +35,7 @@ describe('ProductWiseBenefits', () => {
   });
 
   it('does not render contact sales text on non-mobile devices', () => {
-    jest.spyOn(posHooks, 'useBladeBreakpoints').mockReturnValue({
+    jest.spyOn(require('@libs/shared-utils'), 'useBladeBreakpoints').mockReturnValue({
       matchedBreakpoint: 'l',
       isMobile: false,
       isDesktop: true,

@@ -873,6 +873,9 @@ importers:
       '@types/node':
         specifier: 17.0.41
         version: 17.0.41
+      formik:
+        specifier: 2.1.5
+        version: 2.1.5(react@17.0.2)
       graphql-tag:
         specifier: 2.12.6
         version: 2.12.6(graphql@16.8.1)
@@ -894,6 +897,9 @@ importers:
       react-hook-form:
         specifier: ^7.52.1
         version: 7.52.1(react@17.0.2)
+      react-lottie:
+        specifier: 1.2.3
+        version: 1.2.3(react@17.0.2)
       react-router-dom:
         specifier: 6.14.2
         version: 6.14.2(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -906,6 +912,9 @@ importers:
       styled-components:
         specifier: 5.3.11
         version: 5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2)
+      yup:
+        specifier: 0.29.3
+        version: 0.29.3
       zustand:
         specifier: 3.1.2
         version: 3.1.2(react@17.0.2)

@@ -6,7 +6,7 @@ import {
   getProductPricingHandler,
   getSubmerchantOrdersListHandler,
   getSubmerchantProductPricingHandler,
-} from 'merchant/views/POS/__tests__/mocks/handlers';
+} from 'merchant/views/PartnerDashboard/ClientAccounts/ClientDetails/ClientPOSOrderList/__tests__/mocks/handlers';
 import ClientPOSOrderList from 'merchant/views/PartnerDashboard/ClientAccounts/ClientDetails/ClientPOSOrderList';
 import { submerchantWithKYCAccess } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/__tests__/mocks/fixtures';
 import { submerchantDetailsHandler } from 'merchant/views/PartnerDashboard/ClientAccounts/ProductTabsWrapper/ProductClientAccounts/__tests__/mocks/once-handlers';

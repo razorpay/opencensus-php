@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import content from './constants/content';
 import { Box, ToastContainer } from '@razorpay/blade/components';
-import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
+import { useBladeBreakpoints } from '@libs/shared-utils';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';

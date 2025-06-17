@@ -1,0 +1,263 @@
+import React, { useContext, useState } from 'react';
+import { ArrowRightIcon, Box, Button, Link, Text, useToast } from '@razorpay/blade/components';
+import analytics, { SignUpEvents } from '@razorpay/universe-utils/analytics';
+import { useQueryClient } from '@tanstack/react-query';
+
+// TODO: Check if this is needed
+import rzpLogo from 'assets/rzp_logo.jpg';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
+import { User } from 'common/typings';
+import {
+  ACTIONS,
+  DELIVERY_UNAVAILABLE_TEXT,
+  POS_TERMS_AND_CONDITION_DATE,
+} from 'apps/pos/src/app/views/SelfServe/constants';
+import { PosDeviceStoreContext } from 'apps/pos/src/app/views/SelfServe/context';
+import {
+  getPayloadForOrderCreate,
+  checkIfPanIndiaLive,
+  loadCheckoutForPos,
+  preCheckoutAdditionalDetails,
+} from 'apps/pos/src/app/views/SelfServe/helpers';
+import {
+  createOrder,
+  createActvationCase,
+  getPincodeInfo,
+  initiatePosOnboarding,
+} from 'apps/pos/src/app/views/SelfServe/services';
+import {
+  ApiResponse,
+  DeviceConfig,
+  OrderDetailsItem,
+} from 'apps/pos/src/app/views/SelfServe/types';
+
+import ConfirmCheckout from './ConfirmCheckout';
+import MissingShopImagesModal from './MissingShopImagesModal';
+
+type CheckoutCtaProps = {
+  isDisabled: boolean;
+  isLoading: boolean;
+  isSkipCheckout: boolean;
+};
+
+type AdditionalInfoModal = {
+  isRequired: boolean;
+  url: string | null;
+};
+
+const CheckoutCta = ({ isDisabled, isLoading, isSkipCheckout }: CheckoutCtaProps): JSX.Element => {
+  const queryClient = useQueryClient();
+  const { state, dispatch } = useContext(PosDeviceStoreContext);
+  const toast = useToast();
+  const productPricingData = queryClient.getQueryData([
+    'pos-pricing-plan',
+  ]) as ApiResponse<DeviceConfig>;
+  const razorpayKey = productPricingData?.data?.rzp_key;
+
+  const { user, cartItems, deliveryAddresses } = state;
+  const { created_at } = user || {};
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState<boolean>(false);
+  const [isConfirmCheckoutOpen, setIsConfirmCheckoutOpen] = useState<boolean>(false);
+  const [additionalInfoModal, setAdditionalInfoModal] = useState<AdditionalInfoModal>({
+    isRequired: false,
+    url: null,
+  });
+
+  const { abExperiments } = useSplitzService();
+  const { omniChannelGtm } = abExperiments ?? {};
+  const gtmCities = omniChannelGtm?.variables?.cities;
+  const availableCities = typeof gtmCities === 'string' ? gtmCities.split(',') : [];
+
+  const isPanIndiaLive = checkIfPanIndiaLive({ abExperiments });
+  const isPOSEnabledForAPIMerchant = isExperimentEnabled(abExperiments.pos_api_merchant_enablement);
+
+  const isTermsAndConditionCheck = created_at ? created_at < POS_TERMS_AND_CONDITION_DATE : false;
+
+  const handleOnPaymentFailure = (error?: string | null, dimissCheckout?: boolean) => {
+    if (!!dimissCheckout) setIsCheckoutLoading(false);
+    toast.show({ color: 'negative', content: error ?? 'Payment Failed!' });
+  };
+
+  const redirectToOrderStatus = (orderId: string) => {
+    window.location.assign(`/app/pos/order-status/${orderId}`);
+  };
+
+  const handleCheckoutSuccess = async (
+    isCaseCreateRequired: boolean,
+    orderData: OrderDetailsItem,
+  ) => {
+    toast.show({ color: 'positive', content: 'Order Successful!' });
+    try {
+      if (isCaseCreateRequired) {
+        const { data: activationData } = await createActvationCase();
+        if (!activationData?.pos_activation_status) {
+          throw new Error();
+        }
+        redirectToOrderStatus(orderData?.id);
+      }
+    } catch {
+      handleOnPaymentFailure('Something went wrong.', true);
+    } finally {
+      dispatch({
+        type: ACTIONS.UPDATE_CART,
+        payload: {
+          cartItems: [],
+        },
+      });
+      setIsCheckoutLoading(false);
+      if (!isCaseCreateRequired) {
+        redirectToOrderStatus(orderData?.id);
+      }
+    }
+  };
+
+  const handleOnCheckoutClick = async () => {
+    const { isRequired, url, isCaseCreateRequired } = preCheckoutAdditionalDetails({
+      user: user as User,
+    });
+
+    analytics.track_EXPERIMENTAL(SignUpEvents.websiteCtaClicked, {
+      label: 'Confirm Address & Pay',
+      whatsAppUpdates: 'No',
+      l1FunnelStage: 'Purchase Intention',
+      l2FunnelStage: 'Pre-checkout',
+      section: 'Pre-checkout',
+      subSection: 'Pre-checkout',
+    });
+
+    try {
+      if (isPOSEnabledForAPIMerchant) {
+        const initiatePosOnboardingRes = await initiatePosOnboarding();
+        if (!initiatePosOnboardingRes?.success) throw new Error();
+      }
+    } catch (error: unknown) {
+      handleOnPaymentFailure(
+        error instanceof Error && error?.message
+          ? error.message
+          : 'Something went wrong. Please try again',
+        true,
+      );
+    }
+
+    if (isRequired && url) {
+      setAdditionalInfoModal(() => ({ isRequired, url }));
+      return;
+    }
+
+    if (isSkipCheckout && !isConfirmCheckoutOpen) {
+      setIsConfirmCheckoutOpen(true);
+      return;
+    }
+
+    setIsConfirmCheckoutOpen(false);
+    setIsCheckoutLoading(true);
+
+    try {
+      const createOrderPayload = await getPayloadForOrderCreate({ cartItems, deliveryAddresses });
+      if (!createOrderPayload || !razorpayKey) throw new Error();
+
+      if (!isPanIndiaLive) {
+        const { data: pincodeInfo } = await getPincodeInfo(
+          createOrderPayload?.delivery_address?.pin_code,
+        );
+
+        if (!pincodeInfo || !availableCities.includes(pincodeInfo.city)) {
+          throw new Error(DELIVERY_UNAVAILABLE_TEXT);
+        }
+      }
+
+      const { data } = await createOrder(createOrderPayload);
+      if (!data?.id || !user) throw new Error();
+
+      if (data.amount.total === 0 && !data.order_id) {
+        handleCheckoutSuccess(isCaseCreateRequired, data);
+        return;
+      }
+
+      await loadCheckoutForPos();
+      const options = {
+        notes: {
+          type: 'Pos Device Store',
+          merchant_id: user?.merchant?.id,
+          device_order_id: data?.id,
+        },
+        key: razorpayKey,
+        order_id: data.order_id,
+        name: `Razorpay POS`,
+        description: '18% GST included',
+        image: rzpLogo,
+        theme: {
+          color: '#3005BF2',
+        },
+        modal: {
+          confirm_close: true,
+          ondismiss: () => handleOnPaymentFailure(null, true),
+        },
+        handler: () => handleCheckoutSuccess(isCaseCreateRequired, data),
+      };
+      const razorpayCheckout = new window.Razorpay(options);
+      razorpayCheckout.open();
+    } catch (error: unknown) {
+      handleOnPaymentFailure(
+        error instanceof Error && error?.message
+          ? error.message
+          : 'Something went wrong. Please try again',
+        true,
+      );
+    } finally {
+      setIsCheckoutLoading(true);
+    }
+  };
+
+  return (
+    <Box width="100%">
+      <MissingShopImagesModal
+        isOpen={additionalInfoModal.isRequired}
+        externalUrl={additionalInfoModal.url}
+        onClose={() => setAdditionalInfoModal({ isRequired: false, url: null })}
+      />
+      <ConfirmCheckout
+        isOpen={isConfirmCheckoutOpen}
+        onDismiss={() => setIsConfirmCheckoutOpen(false)}
+        onSubmit={handleOnCheckoutClick}
+      />
+      {isTermsAndConditionCheck ? (
+        <Text size="small" marginBottom="spacing.5" textAlign="center">
+          By proceeding to pay, I agree to Razorpay POS{'  '}
+          <Link
+            size="small"
+            href="https://razorpay.com/s/pos-machine-terms-of-use"
+            testID="pos-terms-and-conditions-link"
+          >
+            Terms & Conditions
+          </Link>{' '}
+          and{' '}
+          <Link
+            size="small"
+            href="https://razorpay.com/s/pos-machine-privacy-policy"
+            testID="pos-privacy-policy-link"
+          >
+            Privacy Policy
+          </Link>
+        </Text>
+      ) : null}
+      <Button
+        type="button"
+        variant="primary"
+        size="large"
+        icon={ArrowRightIcon}
+        iconPosition="right"
+        testID="pos-checkout-cta"
+        onClick={handleOnCheckoutClick}
+        isDisabled={isDisabled}
+        isLoading={isLoading || isCheckoutLoading}
+        isFullWidth
+      >
+        Confirm Address & Pay
+      </Button>
+    </Box>
+  );
+};
+
+export default CheckoutCta;

@@ -13,7 +13,7 @@ import {
   Box,
 } from 'merchant_common/views/Reports/components';
 
-import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
+import { useBladeBreakpoints } from '@libs/shared-utils';
 import { OverViewPropsType } from 'merchant_common/views/Reports/features/Overview/types';
 import { OverviewCard as Card } from 'merchant_common/views/Reports/features/Overview/components/Card/OverviewCard';
 import { CardSkeleton } from 'merchant_common/views/Reports/features/Overview/components/Card/Skeleton';

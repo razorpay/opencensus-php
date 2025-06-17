@@ -1,7 +1,6 @@
 import React from 'react';
 import CustomPricing from '../../components/CustomPricing';
 import { userEvent, render, screen } from 'test-utils';
-import * as posHooks from 'merchant/views/POS/hooks';
 import User from 'merchant/models/User';
 
 const closeModal = jest.fn();
@@ -23,7 +22,7 @@ describe('CustomPricing', () => {
   });
 
   it('should render CustomPricing in desktop', async () => {
-    jest.spyOn(posHooks, 'useBladeBreakpoints').mockReturnValue({
+    jest.spyOn(require('@libs/shared-utils'), 'useBladeBreakpoints').mockReturnValue({
       matchedBreakpoint: 'l',
       isMobile: false,
       isDesktop: true,
@@ -46,7 +45,7 @@ describe('CustomPricing', () => {
   });
 
   it('should render CustomPricing in mobile', async () => {
-    jest.spyOn(posHooks, 'useBladeBreakpoints').mockReturnValue({
+    jest.spyOn(require('@libs/shared-utils'), 'useBladeBreakpoints').mockReturnValue({
       matchedBreakpoint: 's',
       isMobile: true,
       isDesktop: false,
@@ -69,7 +68,7 @@ describe('CustomPricing', () => {
   });
 
   it('calls setShowCustomPricing with false when the back icon is clicked', async () => {
-    jest.spyOn(posHooks, 'useBladeBreakpoints').mockReturnValue({
+    jest.spyOn(require('@libs/shared-utils'), 'useBladeBreakpoints').mockReturnValue({
       matchedBreakpoint: 'l',
       isMobile: false,
       isDesktop: true,

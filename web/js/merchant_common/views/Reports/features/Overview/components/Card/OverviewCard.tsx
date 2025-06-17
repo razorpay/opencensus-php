@@ -37,7 +37,7 @@ import { CreateConfigModel } from 'merchant_common/views/Reports/components/Repo
 import { useCreateConfigModal } from 'merchant_common/views/Reports/components/ReportModal/components/CreateConfigModel/store/createConfigModalStore';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { Action } from 'merchant_common/views/Reports/components/ReportModal/components/CreateConfigModel/types';
-import { useBladeBreakpoints } from 'merchant/views/POS/hooks';
+import { useBladeBreakpoints } from '@libs/shared-utils';
 
 const mapStateToProps = ({ session }) => {
   const isSchedulesEnabled = Boolean(session.user.isRevampedReportsEnabled?.schedules);

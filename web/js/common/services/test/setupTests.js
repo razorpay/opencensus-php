@@ -30,6 +30,32 @@ jest.mock('merchant/views/TicketSupport/utils.js', () => ({
   CreateTicketEmitter: jest.fn(),
 }));
 
+jest.mock(
+  'merchant/views/PartnerDashboard/ClientAccounts/ClientDetails/ClientPOSOrderList/constants',
+  () => {
+    const mockProduct = jest.requireActual(
+      'merchant/views/PartnerDashboard/ClientAccounts/ClientDetails/ClientPOSOrderList/__tests__/mocks/fixtures',
+    ).MOCK_PRODUCT;
+
+    const mockProductNew = {
+      ...mockProduct,
+      name: 'mock-product-new',
+      code: 'mock-product-new',
+      productTitle: 'Mock Product New',
+    };
+
+    return {
+      ...jest.requireActual(
+        'merchant/views/PartnerDashboard/ClientAccounts/ClientDetails/ClientPOSOrderList/constants',
+      ),
+      PRODUCT_DESCRIPTIONS: {
+        'mock-product': mockProduct,
+        'mock-product-new': mockProductNew,
+      },
+    };
+  },
+);
+
 jest.mock('@libs/shared-utils', () => ({
   ...jest.requireActual('@libs/shared-utils'),
   analyticsTrack: jest.fn(),
@@ -52,27 +78,6 @@ jest.mock('merchant/views/Transactions/v1/AnalyticsTrack', () => ({
   selfServerTrack: jest.fn(),
   selfServeTrackResult: jest.fn(),
 }));
-
-jest.mock('merchant/views/POS/constants', () => {
-  const mockProduct = jest.requireActual(
-    'merchant/views/POS/__tests__/mocks/fixtures',
-  ).MOCK_PRODUCT;
-
-  const mockProductNew = {
-    ...mockProduct,
-    name: 'mock-product-new',
-    code: 'mock-product-new',
-    productTitle: 'Mock Product New',
-  };
-
-  return {
-    ...jest.requireActual('merchant/views/POS/constants'),
-    PRODUCT_DESCRIPTIONS: {
-      'mock-product': mockProduct,
-      'mock-product-new': mockProductNew,
-    },
-  };
-});
 
 jest.mock('common/i18', () => {
   return {
