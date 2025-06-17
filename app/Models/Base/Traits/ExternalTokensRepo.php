@@ -949,12 +949,8 @@ trait ExternalTokensRepo
                     "experiment_id" => $experimentId,
                 ];
 
-
-
                 $response = $this->app['splitzService']->evaluateRequest($properties);
 
-
-                
                 $variant = 'control';
 
                 if(!empty($response['response']['variant']) && isset($response['response']['variant']['name']))
