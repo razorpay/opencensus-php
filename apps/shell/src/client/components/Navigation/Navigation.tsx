@@ -29,7 +29,7 @@ export const ConnectedNavigationContainer = ({ children }): JSX.Element => {
         marginX={{ base: 'spacing.0', m: 'spacing.3' }}
         overflow="hidden"
         backgroundColor="surface.background.gray.moderate"
-        borderTopLeftRadius="medium"
+        borderTopLeftRadius={isMobile ? 'none' : 'medium'}
         display="flex"
         flexDirection="column"
         flexGrow="1"

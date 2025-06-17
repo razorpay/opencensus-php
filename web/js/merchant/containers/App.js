@@ -894,7 +894,7 @@ class App extends Component {
         this.props.fetchTrustedBadgeStatus(),
         this.props.fetchMerchantReferralDetail(),
         this.props.fetchGST(),
-        prefetchInsightsData(),   //this is for prefetch insights sidenav data
+        prefetchInsightsData(), //this is for prefetch insights sidenav data
       ]);
     } catch (error) {
       console.error('Error fetching APIs:', error);
@@ -1415,7 +1415,8 @@ class App extends Component {
 
     const showNewHomePage = isRTUXHomepage || isFtuxV2Enabled;
 
-    const isSidebarV2 = user.isOrgRZP &&
+    const isSidebarV2 =
+      user.isOrgRZP &&
       !user.isPartner() &&
       !user.isSourceRX &&
       !user.isPartnerAgentRole &&
@@ -1551,6 +1552,8 @@ class App extends Component {
                         fullPageView={this.renderFullPageView}
                         isWebView={this.state.isWebView}
                         showNewHomePage={showNewHomePage}
+                        onSwitchMode={this.switchMode}
+                        currentMode={currentMode}
                       />
                     </Suspense>
                   </SplitzRoutesBasedService>
@@ -1567,11 +1570,13 @@ class App extends Component {
               ) : null}
             </TwoFactorVerificationProvider>
           </div>
-          {currentMode === 'test' && !isMobileDevice() && !isConnectedNavigation && (
-            <div style={{ position: 'relative' }}>
-              <HighlightTestMode onSwitchMode={this.switchMode} />
-            </div>
-          )}
+          {currentMode === 'test' &&
+            !isMobileDevice() &&
+            !(isConnectedNavigation || isOpenedInOneDashboard) && (
+              <div style={{ position: 'relative' }}>
+                <HighlightTestMode onSwitchMode={this.switchMode} />
+              </div>
+            )}
         </Wrapper>
       </Suspense>
     );

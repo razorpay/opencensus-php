@@ -1,4 +1,4 @@
-import { Indicator, SideNavItem, Switch } from '@razorpay/blade/components';
+import { SideNavItem, Switch, TestIcon } from '@razorpay/blade/components';
 import useConnectedNavigationStore from 'merchant/components/NavigationLayout/navigationStore';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -23,7 +23,6 @@ function SidebarModeSwitcher({ mode }: SidebarModeSwitcherProps): JSX.Element | 
   const { selectedProduct } = useConnectedNavigationStore();
   const [currentMode, setCurrentMode] = useState(mode);
   const isTestModeActive = currentMode === 'test';
-
   const handleSwitchMode = () => {
     const invertMode = mode === 'live' ? 'test' : 'live';
     let page = location.pathname?.replace('/app/', '');
@@ -52,13 +51,11 @@ function SidebarModeSwitcher({ mode }: SidebarModeSwitcherProps): JSX.Element | 
       as="label"
       title="Test Mode"
       leading={
-        <Indicator
-          color={isTestModeActive ? 'notice' : 'positive'}
-          emphasis="intense"
-          accessibilityLabel=""
-        />
+        <TestIcon/>
       }
-      backgroundColor={isTestModeActive ? 'feedback.background.notice.subtle' : undefined}
+      tooltip={{
+        content: "The Test mode allows you to test all aspects of your integration before you go live.",
+      }}
       trailing={
         <Switch
           accessibilityLabel=""

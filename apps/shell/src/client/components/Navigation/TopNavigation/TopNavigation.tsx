@@ -370,7 +370,11 @@ function TopNavigation() {
             <Box></Box>
             <HeaderActionsLoader />
           </TopNav>
-          {showSearchOnMobile && <HeaderActionsLoader showOnlyMobileSearch={true} />}
+          {showSearchOnMobile && (
+            <Box paddingBottom="spacing.3">
+              <HeaderActionsLoader showOnlyMobileSearch={true} />
+            </Box>
+          )}
         </Card>
       </Box>
     );

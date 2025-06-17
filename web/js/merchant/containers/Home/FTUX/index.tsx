@@ -39,15 +39,6 @@ const FTUXHomepage = (): JSX.Element => {
 
   return (
     <Box>
-      {mode === 'test' && (
-        <Alert
-          description="You are in Test mode - you can test payments and features here. Switch to Live Mode (bottom left) to accept real transactions."
-          icon={DotIcon}
-          isFullWidth
-          color="notice"
-          isDismissible={false}
-        />
-      )}
       <Box display="flex" justifyContent="center">
         <Box maxWidth="920px" width="100%" paddingTop="spacing.2">
           <Suspense fallback={<LayoutLoader />}>

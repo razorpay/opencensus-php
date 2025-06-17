@@ -66,7 +66,15 @@ import { BUSSINESS_TYPE } from 'merchant/views/CompanyRegistration/constant';
 import { DashboardLoader } from '@libs/shared-ui';
 import { compose } from 'redux';
 import { getBillMeRoutes } from 'merchant/routes/BillMeRoutes';
-
+import { TestModeBanner } from '@libs/shared-ui';
+import {
+  getBannerMarginTop,
+  getBannerMarginHorizontal,
+  getBannerPositionTop,
+  getTestModeTitle,
+  getModeLinkLabel,
+  getTestModeTooltip,
+} from './utils';
 const SelfServe = lazy(() =>
   import(/* webpackChunkName: "SelfServeRouter" */ '@federated/apps/self-serve/entry'),
 );
@@ -2337,8 +2345,8 @@ class Content extends Component {
                 additionalCondition={(user) =>
                   true ||
                   (user.isIssuingDashboardEnabled &&
-                  isGCMSExperimentEnabled(splitz) &&
-                  user.isIssuingGcmsEnabled)
+                    isGCMSExperimentEnabled(splitz) &&
+                    user.isIssuingGcmsEnabled)
                 }
               >
                 <GCMS />
@@ -2598,6 +2606,8 @@ class Content extends Component {
       isMobile,
       org,
       splitz: { abExperiments },
+      onSwitchMode,
+      currentMode,
     } = this.props;
 
     let DetailView = this.detailView;
@@ -2651,6 +2661,10 @@ class Content extends Component {
     }
 
     const isConnectedNavigation = isConnectedNavigationEnabled({ user, abExperiments });
+    const isOpenedInOneDashboard = Boolean(window?.ONE_DASHBOARD);
+    const handleSwitchMode = () => {
+      onSwitchMode(currentMode === 'test' ? 'live' : 'test');
+    };
 
     return (
       // to add a new class alognside main-content if we are in the test mode and in m-web
@@ -2679,6 +2693,26 @@ class Content extends Component {
       >
         <ErrorBoundary resetOnProps>
           <Suspense fallback={<DashboardLoader loaderType="wrt-product" />}>
+            {currentMode === 'test' && (isOpenedInOneDashboard || isConnectedNavigation) ? (
+              <TestModeBanner
+                title={getTestModeTitle(isMobile)}
+                tooltip={getTestModeTooltip(isMobile)}
+                linkLabel={getModeLinkLabel(user.activated)}
+                onSwitchMode={handleSwitchMode}
+                marginTop={getBannerMarginTop(isOpenedInOneDashboard, fullPageView, isMobile)}
+                marginLeft={getBannerMarginHorizontal(
+                  isOpenedInOneDashboard,
+                  fullPageView,
+                  isMobile,
+                )}
+                marginRight={getBannerMarginHorizontal(
+                  isOpenedInOneDashboard,
+                  fullPageView,
+                  isMobile,
+                )}
+                positionTop={getBannerPositionTop(isOpenedInOneDashboard, fullPageView, isMobile)}
+              />
+            ) : null}
             {BaseView}
             {DetailView}
             {ModalFormView}

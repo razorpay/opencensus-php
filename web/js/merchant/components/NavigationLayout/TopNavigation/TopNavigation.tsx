@@ -417,7 +417,7 @@ const TopNavigation = ({
               width="100%"
               zIndex="100"
               paddingX="spacing.3"
-              paddingBottom="spacing.5"
+              paddingBottom="spacing.3"
               backgroundColor="surface.background.gray.intense"
             >
               <UniversalSearch isConnectedNavigation={true} />
