@@ -253,7 +253,7 @@ class Validator extends Base\Validator
 
     protected static $setMerchantDetailsRules = [
         Entity::TEXT_80G_12A    => 'sometimes|string|max:2048',
-        Entity::IMAGE_URL_80G   => 'sometimes|nullable|string|max:512',
+        Entity::IMAGE_URL_80G   => 'sometimes|nullable|string|max:512|custom',
     ];
 
     protected static $setInvoiceDetailsRules = [
@@ -1367,6 +1367,47 @@ class Validator extends Base\Validator
         if ($nocodeEntity !== null && ! $nocodeEntity->trashed())
         {
             throw new BadRequestValidationFailureException(NocodeCustomUrl\Core::ENTITY_DUPLICATE_ERROR);
+        }
+    }
+
+    /**
+     * Validates that the URL is a valid S3 URL with the pattern https://s3.{region}.amazonaws.com
+     *
+     * @param string $attribute
+     * @param string $value
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateImageUrl80g(string $attribute, string $value)
+    {
+        if (empty($value) === true) {
+            return;
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_URL) === false) {
+            throw new BadRequestValidationFailureException(
+                'The ' . $attribute . ' must be a valid URL.'
+            );
+        }
+
+        $parsedUrl = parse_url($value);
+
+        if ($parsedUrl === false || !isset($parsedUrl['scheme']) || !isset($parsedUrl['host'])) {
+            throw new BadRequestValidationFailureException(
+                'The ' . $attribute . ' must be a valid S3 URL.'
+            );
+        }
+
+        if ($parsedUrl['scheme'] !== 'https') {
+            throw new BadRequestValidationFailureException(
+                'The ' . $attribute . ' must use allowed protocol only.'
+            );
+        }
+        $host = $parsedUrl['host'];
+        $s3UrlPattern = '/^s3(?:\.([a-z0-9-]+))?\.amazonaws\.com$/i';
+        if (preg_match($s3UrlPattern, $host) !== 1) {
+            throw new BadRequestValidationFailureException(
+                'The ' . $attribute . ' must be a valid S3 URL.'
+            );
         }
     }
 }
