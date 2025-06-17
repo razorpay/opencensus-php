@@ -160,9 +160,8 @@ export const getNextDate = async ({ page }: { page: Page }): Promise<string> => 
     'November',
     'December',
   ];
-  return `${
-    monthNames[targetDate.getMonth()]
-  } ${targetDate.getDate()}, ${targetDate.getFullYear()}`;
+  return `${monthNames[targetDate.getMonth()]
+    } ${targetDate.getDate()}, ${targetDate.getFullYear()}`;
 };
 
 export const fillExpiry = async ({
@@ -263,11 +262,46 @@ export async function selectDateRange(page: Page, options: { from: string; to: s
 // ================================
 const removeTags = (str: string) => str.replace(/@.*$/i, '');
 
+/**
+ * Categorizes test errors based on specific known issues
+ */
+const categorizeErrorType = (testInfo: TestInfo, pageUrl?: string): {
+  error_type: 'generic' | 'module_specific';
+  root_cause?: string;
+} => {
+  if (testInfo.status === 'passed') {
+    return { error_type: 'module_specific' };
+  }
+
+  const error = testInfo.error;
+  if (!error) {
+    return { error_type: 'generic', root_cause: 'not_available' };
+  }
+
+  const errorString = `${error.message || ''} ${error.stack || ''}`.toLowerCase();
+  const currentUrl = pageUrl?.toLowerCase() || '';
+
+  // 1. Storage state authentication errors (.auth/*.json)
+  if (errorString.includes('.auth/') && errorString.includes('.json')) {
+    return { error_type: 'generic', root_cause: 'login_failed' };
+  }
+
+  // 2. Authentication redirects (redirected to sign-in page)
+  if (currentUrl.includes('screen=sign_in')) {
+    return { error_type: 'generic', root_cause: 'auth_redirect' };
+  }
+
+  // Default: treat as module-specific error
+  return { error_type: 'module_specific' };
+};
+
 export const formatDataForSR = ({
   file,
   titlePath,
   status,
-}: Pick<TestInfo, 'file' | 'titlePath' | 'status'>) => {
+  testInfo,
+  pageUrl,
+}: Pick<TestInfo, 'file' | 'titlePath' | 'status'> & { testInfo: TestInfo; pageUrl?: string }) => {
   const formattedTitle = titlePath
     .slice(1)
     .map(removeTags)
@@ -275,21 +309,39 @@ export const formatDataForSR = ({
     .join(' | ')
     .toLowerCase()
     .trim();
-  const dataPoints = {
+
+  const dataPoints: {
+    title: string;
+    status: string;
+    module: string;
+    error_type?: 'generic' | 'module_specific';
+    root_cause?: string;
+  } = {
     title: formattedTitle,
     status: status === 'passed' ? 'passed' : 'failed',
     module: file.toLowerCase(),
   };
+
+  // Only add error_type and root_cause for failed tests
+  if (status !== 'passed') {
+    const errorAnalysis = categorizeErrorType(testInfo, pageUrl);
+    dataPoints.error_type = errorAnalysis.error_type;
+    if (errorAnalysis.root_cause) {
+      dataPoints.root_cause = errorAnalysis.root_cause;
+    }
+  }
+
   return dataPoints;
 };
 
-export const pushSRData = async ({ testInfo }: { testInfo: TestInfo }) => {
+export const pushSRData = async ({ testInfo, pageUrl }: { testInfo: TestInfo; pageUrl?: string }) => {
   const isCI = process.env.CI;
   const { E2E_SR_LUMBERJACK_KEY: LJ_KEY } = playwrightEnvs;
   const { file, titlePath, status } = testInfo;
 
   const metricName = 'merchant.dashboard.e2e.status';
-  const srData = formatDataForSR({ file, titlePath, status });
+  const srData = formatDataForSR({ file, titlePath, status, testInfo, pageUrl });
+
   if (isCI) {
     // push to querybook
     const body = {
