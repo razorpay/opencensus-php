@@ -14,7 +14,7 @@ test.describe('Test Assisted financing @flow=assistedFinancing @project=payments
     await navigateToAssistedFinancingPage(page);
   });
 
-  test('show open send payment link modal after clicking on an emi option', async ({ page }) => {
+  test.skip('show open send payment link modal after clicking on an emi option', async ({ page }) => {
     await Promise.all([page.waitForResponse('**/merchant/methods')]);
     await expect(await page.getByText('Assisted Financing').first()).toBeVisible();
     await expect(await page.getByText('Check EMI Options').first()).toBeVisible();

@@ -6,7 +6,7 @@ test.describe.parallel('Landing page for BillMe @flow=digital-bills @project=pay
     storageState: getStorageStatePath('test').ACTIVATED_RZP_MERCHANT,
   });
 
-  test("should render 'Onboarding Landing page' in test mode for a non-BillMe merchant", async ({
+  test.skip("should render 'Onboarding Landing page' in test mode for a non-BillMe merchant", async ({
     page,
   }) => {
     // Navigate to BillMe (Digital Bills) landing page

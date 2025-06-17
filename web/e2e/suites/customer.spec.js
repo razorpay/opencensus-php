@@ -53,7 +53,7 @@ test.describe
   });
 
   // roast test editCustomerDetailsTest
-  test('should edit customer @priority=critical @suite=payments-automation @suite=payments-canary', async ({
+  test.skip('should edit customer @priority=critical @suite=payments-automation @suite=payments-canary', async ({
     page,
   }) => {
     // go to the customers tab

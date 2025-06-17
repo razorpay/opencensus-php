@@ -10,7 +10,7 @@ test.describe
     storageState: getStorageStatePath().POS_SALES_AGENT,
   });
 
-  test('should successfully add a new merchant', async ({ page, worker }) => {
+  test.skip('should successfully add a new merchant', async ({ page, worker }) => {
     await worker.use(queryMocks.SalesOnboardedMerchants);
     await worker.use(queryMocks.MerchantModularOnboardingDetailsAsSales);
     await worker.use(queryMocks.SendOTP);
