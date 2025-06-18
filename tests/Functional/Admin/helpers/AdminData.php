@@ -2540,10 +2540,9 @@ return [
     'testAdminOrgReplications_AddsMissingFeaturesOnly' => [
         'request' => [
             'url'    => '/admin/org/replications',
-            'method' => 'post',
+            'method' => 'POST',
             'content' => [
                 'from_org_id' => '100000razorpay',
-                'to_org_id'   => 'BhdZPkeM3ZQVl0',
                 'replications_type' => 'feature'
             ],
         ],
@@ -2561,7 +2560,6 @@ return [
             'method' => 'post',
             'content' => [
                 'from_org_id' => '100000razorpay',
-                'to_org_id'   => 'BhdZPkeM3ZQVl0',
                 'replications_type' => 'feature'
             ],
         ],
@@ -2579,19 +2577,19 @@ return [
             'method' => 'post',
             'content' => [
                 'from_org_id' => '100000razorpay',
-                'to_org_id'   => 'BhdZPkeM3ZQVl0',
                 'replications_type' => 'feature'
             ],
         ],
         'response' => [
             'content' => [
-                'error' => [
-                    'description' => 'BAD_REQUEST_NO_NEW_FEATURES',
-                ],
+
             ],
             'status_code' => 400,
-        ]
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_NEW_FEATURES
+        ],
     ],
-
 
 ];

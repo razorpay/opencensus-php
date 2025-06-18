@@ -3121,23 +3121,24 @@ class AdminTest extends TestCase
     public function testAdminOrgReplications_AddsMissingFeaturesOnly()
     {
         $testData = $this->testData[__FUNCTION__];
+        $org = $this->createOrg();
+        $this->testData[__FUNCTION__]['request']['content']['to_org_id'] = $org->getId();
 
-        $this->ba->dashboardGuestAppAuth();
-
-        $this->fixtures->create('org_feature', [
-        'org_id' => 'BhdZPkeM3ZQVl0',
-        'feature_name' => 'feature_existing',
-        ]);
+        $this->fixtures->create(
+            'feature', ['entity_id' => $org->getId(), 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
 
         // Source org has two features (one same + one new)
-        $this->fixtures->create('org_feature', [
-            'org_id' => '100000razorpay',
-            'feature_name' => 'feature_existing',
+        $this->fixtures->create(
+            'feature', ['entity_id' => '100000razorpay', 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
+        $this->fixtures->create(
+            'feature', ['entity_id' => '100000razorpay', 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::DUMMY]);
+
+        $token = $this->createAdminWithRedisConfigPermissions([
+            'admin_org_replications'
         ]);
-        $this->fixtures->create('org_feature', [
-            'org_id' => '100000razorpay',
-            'feature_name' => 'feature_new',
-        ]);
+
+        $this->ba->adminAuth('test', $token);
 
         $this->startTest($testData);
     }
@@ -3146,19 +3147,21 @@ class AdminTest extends TestCase
     {
         $testData = $this->testData[__FUNCTION__];
 
-        $this->ba->dashboardGuestAppAuth();
+        $org = $this->createOrg();
+        $this->testData[__FUNCTION__]['request']['content']['to_org_id'] = $org->getId();
 
+        $token = $this->createAdminWithRedisConfigPermissions([
+            'admin_org_replications'
+        ]);
+
+        $this->ba->adminAuth('test', $token);
 
         // Source org has multiple features
-        $this->fixtures->create('org_feature', [
-            'org_id' => '100000razorpay',
-            'feature_name' => 'feature1',
-        ]);
-        $this->fixtures->create('org_feature', [
-            'org_id' => '100000razorpay',
-            'feature_name' => 'feature2',
-        ]);
+        $this->fixtures->create(
+            'feature', ['entity_id' => '100000razorpay', 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
 
+        $this->fixtures->create(
+            'feature', ['entity_id' => '100000razorpay', 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::DUMMY]);
 
         $this->startTest($testData);
     }
@@ -3167,30 +3170,23 @@ class AdminTest extends TestCase
     {
         $testData = $this->testData[__FUNCTION__];
 
-        $this->ba->dashboardGuestAppAuth();
+        $org = $this->createOrg();
+        $this->testData[__FUNCTION__]['request']['content']['to_org_id'] = $org->getId();
+
+        $token = $this->createAdminWithRedisConfigPermissions([
+            'admin_org_replications'
+        ]);
+
+        $this->ba->adminAuth('test', $token);
 
         // Destination org has the same features as source org
-        $this->fixtures->create('org_feature', [
-            'org_id' => 'BhdZPkeM3ZQVl0',
-            'feature_name' => 'featureA',
-        ]);
-        $this->fixtures->create('org_feature', [
-            'org_id' => 'BhdZPkeM3ZQVl0',
-            'feature_name' => 'featureB',
-        ]);
+        $this->fixtures->create(
+            'feature', ['entity_id' => $org->getId(), 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
 
-        $this->fixtures->create('org_feature', [
-            'org_id' => '100000razorpay',
-            'feature_name' => 'featureA',
-        ]);
-        $this->fixtures->create('org_feature', [
-            'org_id' => '100000razorpay',
-            'feature_name' => 'featureB',
-        ]);
+        $this->fixtures->create(
+            'feature', ['entity_id' => '100000razorpay', 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
 
         $this->startTest($testData);
     }
-
-
 
 }
