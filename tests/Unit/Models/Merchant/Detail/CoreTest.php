@@ -80,6 +80,7 @@ use RZP\Models\Merchant\Cron as CronJobHandler;
 use RZP\Models\Merchant\Document;
 use RZP\Services\Mock\KafkaProducerClient as KafkaProducerClientMock;
 use RZP\Services\Mock\DataLakePresto as DataLakePrestoMock;
+use RZP\Models\DeviceDetail\Core as DeviceDetailCore;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 
@@ -19711,4 +19712,32 @@ class CoreTest extends TestCase
         $this->assertTrue($merchantDetail->isLocked());
     }
 
+    public function testcreateDeviceDetailsForOmniMerchantsIfNotExist_NoMerchantUserFound()
+    {
+        $merchantId = 'OlyFnGyZQeEKrF';
+
+        $merchant = $this->fixtures->create('merchant', ['id' => $merchantId]);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_MERCHANT_USER_DOES_NOT_EXISTS);
+
+        (new DeviceDetailCore)->createDeviceDetailsForOmniMerchantsIfNotExist($merchantId);
+    }
+
+    public function testcreateDeviceDetailsForOmniMerchantsIfNotExist_CreateDeviceDetailsSuccessfully()
+    {
+        $merchantId = 'OlyFnGyZQeEKrF';
+        
+        $merchant = $this->fixtures->create('merchant', ['id' => $merchantId]);
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        (new DeviceDetailCore)->createDeviceDetailsForOmniMerchantsIfNotExist($merchantId);
+
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
+        $this->assertNotNull($userDeviceDetail);
+    }
 }
