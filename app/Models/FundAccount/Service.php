@@ -36,8 +36,8 @@ class Service extends Base\Service
 {
     const FA_MUTEX_LOCK_TIMEOUT = 180;
 
-    const FA_CONTACT_MUTEX_RESOURCE             = 'FUND_ACCOUNT_CONTACT_%s_%s';
-    const FA_CUSTOMER_MUTEX_RESOURCE            = 'FUND_ACCOUNT_CUSTOMER_%s_%s';
+    const FA_CONTACT_MUTEX_RESOURCE        = 'FUND_ACCOUNT_CONTACT_%s_%s';
+    const FA_CUSTOMER_MUTEX_RESOURCE        = 'FUND_ACCOUNT_CUSTOMER_%s_%s';
 
     const PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED   = 'PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED';
 
