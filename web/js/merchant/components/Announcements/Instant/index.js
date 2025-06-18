@@ -20,7 +20,7 @@ import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 import ProductsModal from 'merchant/components/Home/ProductsModal';
 import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import { isMobileDevice } from 'merchant/components/Home/data';
-import { getNCUrlOnEasyOrPhantom, getCountryOnboardingUrl } from 'merchant/utils/urls';
+import { getNCUrlOnEasyOrPhantom } from 'merchant/utils/urls';
 import { compose } from 'redux';
 
 class InstantActivationAnnouncements extends Component {
@@ -104,25 +104,7 @@ class InstantActivationAnnouncements extends Component {
 
     const expiryDate = getNcExpiryDate(user?.kyc_clarification_reasons);
 
-    if (['MY', 'SG'].includes(user?.country_code) && !user?.merchant?.activated) {
-      theme = 'warning';
-      title = 'Complete KYC details';
-      content = (
-        <div className="announcement-container">
-          <div className="announcement-info">
-            Please submit your KYC details to get your account activated and start accepting
-            payments{' '}
-          </div>
-          <div className="big-circle-seprator" />
-          <Link
-            to={getCountryOnboardingUrl(user?.country_code)}
-            onClick={() => this.sendL2StartEvent()}
-          >
-            Complete KYC
-          </Link>
-        </div>
-      );
-    } else if (user.isInstantActivationEnabled) {
+    if (user.isInstantActivationEnabled) {
       switch (activationState) {
         case 'L1_dedupe_blocked':
         case 'L2_dedupe_blocked': {

@@ -39,6 +39,7 @@ import CatalystCampaignBannerPhase2 from 'merchant/components/Announcements/Cata
 import CongratulatoryBanner from 'merchant/components/Announcements/CongratulatoryBanner';
 import CovidCampaignAnnouncement from 'merchant/components/Announcements/CovidCampaign';
 import Announcement from 'merchant/components/Announcements/Instant';
+import I18nOnboardingAnnouncement from 'merchant/components/Announcements/I18nOnboardingAnnouncement';
 import InternationalFormStatusAnnouncement from 'merchant/components/Announcements/InternationalFormStatus';
 import InternationalRequestStatusAnnouncement from 'merchant/components/Announcements/InternationalRequestStatus';
 import IntlPaymentsAnnouncement from 'merchant/components/Announcements/IntlPaymentsAnnouncement';
@@ -122,9 +123,9 @@ const RazorpayRewind = lazy(() =>
 );
 
 const ReKycStatusBanner = lazy(() =>
-  import(
-    /* webpackChunkName: 'rekycStatusBanner' */ 'merchant/components/ReKycStatusAlerts'
-  ).then((module) => ({ default: module.ReKycStatusBanner })),
+  import(/* webpackChunkName: 'rekycStatusBanner' */ 'merchant/components/ReKycStatusAlerts').then(
+    (module) => ({ default: module.ReKycStatusBanner }),
+  ),
 );
 
 class AnalyticsDesktop extends Component {
@@ -559,13 +560,7 @@ class AnalyticsDesktop extends Component {
       <div className="home-analytics-desktop">
         <PricingSubscriptionWrapper />
         {['MY', 'SG'].includes(user.country_code) ? (
-          <Announcement
-            mode={mode}
-            user={user}
-            payments={payments}
-            limitBreach={limitBreach}
-            shouldShowTnCBannerForAxis={shouldShowTnCBannerForAxis}
-          />
+          <I18nOnboardingAnnouncement user={user} />
         ) : null}
         <ShowWhen
           additionalCondition={() =>
