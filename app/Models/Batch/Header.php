@@ -8318,11 +8318,6 @@ class Header
             self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_CREATE_BULK_GIFT_CARDS);
         }
 
-        if ($type === Type::CANCEL_BULK_GIFT_CARDS )
-        {
-            self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_CANCEL_BULK_GIFT_CARDS);
-        }
-
         if ($type === Type::CREATE_GIFT_CARD_TRANSFERS )
         {
             self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_CREATE_GIFT_CARD_TRANSFERS);
