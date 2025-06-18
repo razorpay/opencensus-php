@@ -141,18 +141,16 @@ class MerchantIssued extends Mailable
     {
         $app = \App::getFacadeRoot();
 
-        $isEmailViaStorkEnabled = $this->isSendingPaymentLinkMailsSupported($this->data['merchant']['id'],$this->view);
-
         $traceData = [
             'merchant_id' => $this->data['merchant']['id'],
             'view' => $this->view,
             'data' => $this->data,
-            'isStorkEmailVIAEnabled' => $isEmailViaStorkEnabled
+            'isStorkEmailVIAEnabled' => true
         ];
 
         $app['trace']->info(TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_VIA_SPLITZ_MERCHANT_ISSUED , $traceData);
 
-        if ($this->fileData !== null && $this->fileData['path'] !== null && $isEmailViaStorkEnabled)
+        if ($this->fileData !== null && $this->fileData['path'] !== null )
         {
             try
             {
@@ -164,7 +162,7 @@ class MerchantIssued extends Mailable
                 {
                     $this->fileData['file_id'] = $file_id;
 
-                    return $isEmailViaStorkEnabled;
+                    return true;
                 }
             }
             catch (\Throwable $e)
@@ -206,32 +204,5 @@ class MerchantIssued extends Mailable
             'owner_type'         => 'merchant',
             'url_count'          => '1'
         ];
-    }
-
-    public function isSendingPaymentLinkMailsSupported($merchantId,$view) : bool {
-        $traceCode = TraceCode::PAYMENT_LINK_EMAIL_ATTEMPT_STORK_MERCHANT_ISSUED;
-
-        $experimentId = 'app.send_payment_link_emails_via_stork_merchant_issued';
-
-        try {
-            $app = \App::getFacadeRoot();
-            $properties = [
-                'id'            => $merchantId,
-                'experiment_id' => $app['config']->get($experimentId),
-                'request_data'  => json_encode(['merchant_id' => $merchantId , 'template_name' => $view])
-            ];
-            $response = $app['splitzService']->evaluateRequest($properties);
-            $variant = $response['response']['variant']['name'] ?? '';
-
-            $app['trace']->info($traceCode, [
-                'splitzUserResult' => $response,
-            ]);
-
-            return  $variant == "enable";
-
-        } catch (\Exception $e) {
-            $app['trace']->traceException($e, null, $traceCode);
-        }
-        return false;
     }
 }

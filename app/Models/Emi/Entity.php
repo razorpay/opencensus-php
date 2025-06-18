@@ -32,6 +32,10 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
 
+    const EMI_TYPE = 'emi_type';
+    const GATEWAY = 'gateway';
+
+
     // Appended attributes
     const ISSUER                = 'issuer';
 
@@ -171,6 +175,11 @@ class Entity extends Base\PublicEntity
     public function getMinAmount()
     {
         return $this->getAttribute(self::MIN_AMOUNT);
+    }
+
+    public function getSourceChannel()
+    {
+        return $this->getAttribute(self::SOURCE_CHANNEL);
     }
 
     public function getSubvention()

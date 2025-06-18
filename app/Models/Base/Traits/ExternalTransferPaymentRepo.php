@@ -21,7 +21,7 @@ trait ExternalTransferPaymentRepo
 
     protected function validateIfExternalFetchIsEnabledForTransferPayment()
     {
-        $keyName = EntityConstants::getExternalConfigKeyName($this->entityName);
+          $keyName = EntityConstants::getExternalConfigKeyName($this->entityName);
 
         return (bool) ConfigKey::get($keyName, false);
     }
