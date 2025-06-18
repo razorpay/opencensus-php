@@ -8,6 +8,8 @@ class Constants
 
     const MAX_REJECTION_COUNT = 3;
 
+    const AGGREGATOR_MAX_REJECTION_COUNT = 10;
+
     const UPSERT_KYC_ACCESS_STATE = 'upsert_kyc_access_state';
 
     const PAYLOAD = 'payload';
