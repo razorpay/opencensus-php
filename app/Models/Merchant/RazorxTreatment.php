@@ -848,6 +848,9 @@ final class RazorxTreatment
     // Expt to handle non terminal payouts after migration
     const NON_TERMINAL_MIGRATION_HANDLING       = 'non_terminal_migration_handling';
 
+    // Experiment to handle source and request ID capture
+    const PAYOUTS_CAPTURE_SOURCE_REQUEST_ID = 'payouts_capture_source_request_id_experiment';
+
     // Experiment for sending user details to getsimpl
     const SEND_USER_DETAILS_TO_GETSIMPL         = 'send_user_details_to_getsimpl';
 

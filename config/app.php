@@ -724,6 +724,8 @@ return array(
 
     'payouts_shadow_router_splitz_experiment_id' => env('PAYOUTS_SHADOW_ROUTER_SPLITZ_EXPERIMENT_ID'),
 
+    'payouts_capture_source_request_id_experiment_id' => env('PAYOUTS_CAPTURE_SOURCE_REQUEST_ID_EXPERIMENT_ID'),
+
     'dcc_on_auto_subscription_payments_experiment_id' => env('DCC_ON_AUTO_SUBSCRIPTION_PAYMENTS_EXPERIMENT_ID'),
 
     'optimise_submerchant_create_exp_id' => env('OPTIMISE_SUBMERCHANT_CREATE_EXP_ID'),

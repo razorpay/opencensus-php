@@ -12862,7 +12862,7 @@ class Core extends Base\Core
     protected function isSourceRequestIdMappingEnabled(Entity $payout): bool
     {
 
-        $eventExperimentName = 'payouts_source_request_id_mapping';
+        $eventExperimentName = Merchant\RazorxTreatment::PAYOUTS_CAPTURE_SOURCE_REQUEST_ID;
         $eventExperimentIdConfigKey = 'app.'.$eventExperimentName.'_id';
 
         $properties = [
@@ -12871,7 +12871,7 @@ class Core extends Base\Core
             'request_data' => json_encode(['merchant_id' => $payout->merchant->getId()])
         ];
 
-        if ($this->isSplitzExperimentEnable($properties,'enable', TraceCode::PAYOUT_PROPERTIES_EVENT_SPLITZ_ERROR))
+        if ($this->isSplitzExperimentEnable($properties,Merchant\RazorxTreatment::VARIANT_ENABLE, TraceCode::PAYOUT_CAPTURE_REQUEST_ID_SPLITZ_ERROR))
         {
             return true;
         }

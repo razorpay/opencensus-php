@@ -7,16 +7,17 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payout\Entity as Payout;
 
-class CreateSourceRequestIdMapping extends Migration
+class CreatePsSourceRequestIdMapping extends Migration
 {
     /**
-     * Run the migrations.
+     * This table doesn't exist on prod. It only exists on CI.
+     * This is only to run test cases related to data migration of Payouts.
      *
      * @return void
      */
     public function up()
     {
-        Schema::create('source_request_id_mapping', function (Blueprint $table)
+        Schema::create('ps_source_request_id_mapping', function (Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -39,6 +40,6 @@ class CreateSourceRequestIdMapping extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('source_request_id_mapping');
+        Schema::dropIfExists('ps_source_request_id_mapping');
     }
-} 
+}

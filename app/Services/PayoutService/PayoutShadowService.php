@@ -17,8 +17,6 @@ class PayoutShadowService
      */
     public static function shouldMirrorRequest($merchantID, $killSwitch): bool
     {
-        $trace = app('trace');
-
         if (!$killSwitch) {
             return false;
         }
@@ -204,8 +202,8 @@ class PayoutShadowService
         return config([
                           'debug' => false,
                           'shadow_service_url' => $config['payouts_shadow_router_url'],
-                          'timeout' => $config['timeout'] ?? 0.1, // Default to 100ms
-                          'connect_timeout' =>  $config['connect_timeout'] ?? 0.1, // Default to 100ms
+                          'timeout' => $config['timeout'] ?? 0.01, // Default to 10ms
+                          'connect_timeout' =>  $config['connect_timeout'] ?? 0.01, // Default to 10ms
                           'kill_switch' => $config['kill_switch'] ?? false
                       ]);
     }
