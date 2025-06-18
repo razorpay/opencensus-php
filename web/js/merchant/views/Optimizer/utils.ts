@@ -1396,12 +1396,16 @@ export const PARAMETERS: Parameter[] = [
   {
     name: 'Cardless EMI Provider',
     value: '$payment.optimizer_cardless_emi_provider',
-    description: 'Shopse',
+    description: 'Shopse, Snapmint',
     id: 20,
     values: [
       {
         label: 'Shopse',
         value: 'shopse',
+      },
+      {
+        label: 'Snapmint',
+        value: 'snapmint',
       },
     ],
     operators: {
