@@ -11664,7 +11664,7 @@ class Core extends Base\Core
                 }
             }
         }
-        if ($this->shouldAddNewBusinessTypes($merchant) === true) {
+        if (!empty($merchant) and $this->shouldAddNewBusinessTypes($merchant) === true) {
             $businessTypes = [
                 BusinessType::GOVERNMENT,
                 BusinessType::JUDICIAL_PERSON,
