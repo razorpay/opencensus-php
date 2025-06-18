@@ -19,7 +19,7 @@ const BottomAnalyticsOverview = ({
 
   let bottomCardsData = getBottomSectionData({ data, mode });
 
-  // Filtering the bottomCardsData for i18n, to show/hide the products based on the country config key
+  // Filtering the bottomCardsData for i18n, to show/hide the products based on the country config key.
   bottomCardsData = bottomCardsData.filter((data) => {
     if (isConfigTagEnabled('refunds.refund') && data.name === PaymentTypes.Refunds) {
       return false;

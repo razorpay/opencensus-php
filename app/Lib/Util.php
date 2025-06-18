@@ -3,6 +3,7 @@
 namespace App\Lib;
 
 use App\Http\ApiUrl;
+use App\Trace\TraceCode;
 
 class Util
 {
@@ -174,5 +175,71 @@ class Util
     public static function getIsMerchantLoginCacheKey($merchantId): string
     {
         return 'is_merchant_login_'.$merchantId;
+    }
+
+    /**
+     * Sanitize JSON data for logging by converting values to their data types
+     * while preserving the structure and key names.
+     * 
+     * @param mixed $data The data to sanitize
+     * @param int $depth Current recursion depth (prevents infinite loops)
+     * @param array $visited Visited objects to prevent circular references
+     * @return mixed The sanitized data with values converted to their type names
+     */
+    public static function sanitizeJsonForLogging($data, $depth = 0, &$visited = [])
+    {
+        try {
+            if ($depth > 50) {
+                return '[MAX_DEPTH_EXCEEDED]';
+            }
+
+            if (is_array($data)) {
+                $sanitized = [];
+                foreach ($data as $key => $value) {
+                    $safeKey = is_string($key) || is_int($key) ? $key : (string)$key;
+                    $sanitized[$safeKey] = Util::sanitizeJsonForLogging($value, $depth + 1, $visited);
+                }
+                return $sanitized;
+            } elseif (is_object($data)) {
+                $objectId = spl_object_id($data);
+                if (in_array($objectId, $visited)) {
+                    return '[CIRCULAR_REFERENCE]';
+                }
+                $visited[] = $objectId;
+
+                $sanitized = [];
+                $properties = get_object_vars($data);
+                foreach ($properties as $key => $value) {
+                    $safeKey = is_string($key) ? $key : (string)$key;
+                    $sanitized[$safeKey] = Util::sanitizeJsonForLogging($value, $depth + 1, $visited);
+                }
+
+                array_pop($visited);
+                return $sanitized;
+            } elseif (is_string($data)) {
+                return 'string';
+            } elseif (is_int($data)) {
+                return 'integer';
+            } elseif (is_float($data)) {
+                return 'float';
+            } elseif (is_bool($data)) {
+                return 'boolean';
+            } elseif (is_null($data)) {
+                return 'null';
+            } elseif (is_resource($data)) {
+                return 'resource[' . get_resource_type($data) . ']';
+            } elseif (is_callable($data)) {
+                return 'callable';
+            } else {
+                // Fallback for any other types
+                return gettype($data);
+            }
+        } catch (\Throwable $e) {
+            app('trace')->warning(TraceCode::SANITIZE_JSON_FOR_LOGGING_ERROR, [
+                'trace' => $e->getTrace() ?? "unknown_trace",
+                'message' => $e->getMessage() ?? "unknown_message"
+            ]);
+            return '[SANITIZATION_ERROR]';
+        }
     }
 }

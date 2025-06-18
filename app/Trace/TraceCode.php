@@ -383,6 +383,10 @@ class TraceCode
 
     const BIN_SERVICE_UPLOAD_FAILED = 'BIN_SERVICE_UPLOAD_FAILED';
 
+    const ADMIN_DASHBOARD_REQUEST_RECEIVED = 'ADMIN_DASHBOARD_REQUEST_RECEIVED';
+
+    const SANITIZE_JSON_FOR_LOGGING_ERROR = 'SANITIZE_JSON_FOR_LOGGING_ERROR';
+    
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',
