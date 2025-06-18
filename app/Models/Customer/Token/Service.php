@@ -2668,21 +2668,7 @@ class Service extends Base\Service
         }
 
         $core = (new Token\Core());
-        if(isset($input['additional_data']['international']) && $input['additional_data']['international'])
-        {
-            $this->trace->info(TraceCode::MISC_TRACE_CODE, [
-                'international_card_recurring_token'     =>  $token->getId(),
-                'international_recurring_token_input' => $input,
-                'paymentId'   => $payment->getId(),
-                'newCard'     => $tokenCard,
-                'card'        => $card,
-                'token'       => $token
-            ]);
-            $token->setRecurring(true);
-            $token->setRecurringStatus(Token\RecurringStatus::CONFIRMED);
-        } else {
-            $core->updateTokenStatus($token->getId(), Token\Constants::INITIATED);
-        }
+        $core->updateTokenStatus($token->getId(), Token\Constants::INITIATED);
 
 
         if ($customer !== null)
@@ -2697,6 +2683,24 @@ class Service extends Base\Service
         $token->setAcknowledgedAt(Carbon::now(Timezone::IST)->getTimestamp());
 
         $this->repo->saveOrFail($token);
+
+        if(isset($input['additional_data']['international']) && $input['additional_data']['international'])
+        {
+            $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                'international_card_recurring_token'     =>  $token->getId(),
+                'international_recurring_token_input' => $input,
+                'paymentId'   => $payment->getId(),
+                'newCard'     => $tokenCard,
+                'card'        => $card,
+                'token'       => $token
+            ]);
+            $token->setRecurring(true);
+            $token->setRecurringStatus(Token\RecurringStatus::CONFIRMED);
+            $core->updateTokenStatus($token->getId(), Token\Constants::ACTIVE);
+            $token->setRecurringDetails($input['additional_data']);
+            $this->repo->saveOrFail($token);
+            return $token->toArrayPublic();
+        }
 
 
         $isSync =  isset($input['additional_data']['sync']) && $input['additional_data']['sync'] === true;
