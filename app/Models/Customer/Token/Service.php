@@ -2675,15 +2675,6 @@ class Service extends Base\Service
         {
             $customer->merchant()->associate($this->repo->merchant->getSharedAccount());
         }
-
-        $token->incrementUsedCount();
-
-        $token->setUsedAt(Carbon::now(Timezone::IST)->getTimestamp());
-
-        $token->setAcknowledgedAt(Carbon::now(Timezone::IST)->getTimestamp());
-
-        $this->repo->saveOrFail($token);
-
         if(isset($input['additional_data']['international']) && $input['additional_data']['international'])
         {
             $this->trace->info(TraceCode::MISC_TRACE_CODE, [
@@ -2698,7 +2689,17 @@ class Service extends Base\Service
             $token->setRecurringStatus(Token\RecurringStatus::CONFIRMED);
             $core->updateTokenStatus($token->getId(), Token\Constants::ACTIVE);
             $token->setRecurringDetails($input['additional_data']);
-            $this->repo->saveOrFail($token);
+        }
+        $token->incrementUsedCount();
+
+        $token->setUsedAt(Carbon::now(Timezone::IST)->getTimestamp());
+
+        $token->setAcknowledgedAt(Carbon::now(Timezone::IST)->getTimestamp());
+
+        $this->repo->saveOrFail($token);
+
+        if(isset($input['additional_data']['international']) && $input['additional_data']['international'])
+        {
             return $token->toArrayPublic();
         }
 
