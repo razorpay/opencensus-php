@@ -3652,7 +3652,6 @@ class Route
         'update_partner_intent'                    => ['patch',    'merchant/partner-intent',                        'MerchantController@updatePartnerIntent'                            ],
         'update_partner_type'                      => ['patch',    'merchant/partner_type',                          'MerchantController@updatePartnerType'                              ],
         'partner_referral_fetch'                   => ['get',      'merchant/referral',                              'MerchantController@fetchReferral'                                  ],
-        'partner_referral_regenerate'              => ['post',     'merchant/referral/regenerate',                   'PartnershipsAdhocMigrationsController@regenerateReferralLinks'     ],
         'partner_referral_create'                  => ['post',     'merchant/referral',                              'MerchantController@createReferral'                                 ],
         'backfill_merchant_applications'           => ['post',     'merchant/backfill_merchant_apps',                'MerchantController@backFillMerchantApplications'                   ],
         'backfill_referred_application'            => ['post',     'merchant/backfill_referred_app',                 'MerchantController@backFillReferredApplication'                    ],
@@ -5717,7 +5716,6 @@ class Route
         'update_submerchant_user_contact',
         'update_bucket_name_region',
 
-        'partner_referral_regenerate',
         'fetch_partner_sub_mtu',
 
         // webhooks for onboarding APIs
