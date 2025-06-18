@@ -16419,23 +16419,23 @@ public function isLibrarySupportedForNbplusRearch($library): bool
     }
 
 
-    public function isOptimizerMigratedToken($token)
+    public function isOptimizerMigratedToken($token) 
     {
-        if ($token == null)
+        if ($token == null) 
         {
             return false;
         }
 
         $notes = $token->getNotes();
 
-        if (empty($notes) === true)
+        if (empty($notes) === true) 
         {
             return false;
         }
 
-        if (isset($notes["source"]) &&
-            isset($notes["mandate_id"]) &&
-            isset($notes["migrated_reference_id"]))
+        if (isset($notes["source"]) && 
+            isset($notes["mandate_id"]) && 
+            isset($notes["migrated_reference_id"])) 
         {
             return true;
         }
