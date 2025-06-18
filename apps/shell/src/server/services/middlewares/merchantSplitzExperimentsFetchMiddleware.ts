@@ -75,6 +75,7 @@ export const merchantSplitzExperimentsFetchMiddleware: MerchantSplitzExperiments
             message: `Merchant Splitz Experiments data fetch failed.`,
             statusCode: status,
             context: {
+              path: SHELL_EXTERNAL_API_ROUTES.MERCHANT_SPLITZ_EXPERIMENTS,
               dashboardBackendRequestId,
             },
           });
@@ -100,6 +101,7 @@ export const merchantSplitzExperimentsFetchMiddleware: MerchantSplitzExperiments
             moduleName: '@merchantSplitzExperimentsFetchMiddleware',
             message: `Invalid API Response`,
             context: {
+              path: SHELL_EXTERNAL_API_ROUTES.MERCHANT_SPLITZ_EXPERIMENTS,
               dashboardBackendRequestId,
               response,
             },

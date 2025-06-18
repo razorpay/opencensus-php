@@ -64,6 +64,10 @@ export const shellSplitzMiddleware: ShellSplitzMiddleware =
             throw new ShellError({
               moduleName: '@shellSplitzMiddleware',
               message: 'Failed to evaluate experiments.',
+              context: {
+                path: splitzConfig.apiBaseUrl,
+                dashboardBackendRequestId: undefined,
+              },
             });
           }
 
@@ -99,6 +103,10 @@ export const shellSplitzMiddleware: ShellSplitzMiddleware =
         moduleName: '@shellSplitzMiddleware',
         message: 'Failed to evaluate experiments.',
         statusCode: 500,
+        context: {
+          path: splitzConfig.apiBaseUrl,
+          dashboardBackendRequestId: undefined,
+        },
       });
     }
   };

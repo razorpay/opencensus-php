@@ -75,6 +75,7 @@ export const merchantExperimentsFetchMiddleware: MerchantExperimentsFetchMiddlew
             message: `Merchant Experiments data fetch failed.`,
             statusCode: status,
             context: {
+              path: SHELL_EXTERNAL_API_ROUTES.MERCHANT_EXPERIMENTS,
               dashboardBackendRequestId,
             },
           });
@@ -99,6 +100,7 @@ export const merchantExperimentsFetchMiddleware: MerchantExperimentsFetchMiddlew
             moduleName: '@merchantExperimentsFetchMiddleware',
             message: `Invalid API Response`,
             context: {
+              path: SHELL_EXTERNAL_API_ROUTES.MERCHANT_EXPERIMENTS,
               dashboardBackendRequestId,
             },
           });

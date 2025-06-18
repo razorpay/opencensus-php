@@ -64,6 +64,7 @@ export const userSessionFetchMiddleware: UserSessionFetchMiddleware =
             message: `User session data fetch failed.`,
             statusCode: status,
             context: {
+              path: SHELL_EXTERNAL_API_ROUTES.USER_SESSION,
               dashboardBackendRequestId,
               response,
             },
@@ -92,6 +93,7 @@ export const userSessionFetchMiddleware: UserSessionFetchMiddleware =
             moduleName: '@userSessionFetchMiddleware',
             message: `Invalid API Response`,
             context: {
+              path: SHELL_EXTERNAL_API_ROUTES.USER_SESSION,
               dashboardBackendRequestId,
               response,
             },

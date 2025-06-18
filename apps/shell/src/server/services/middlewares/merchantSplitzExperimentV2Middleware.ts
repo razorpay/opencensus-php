@@ -66,6 +66,7 @@ export const merchantSplitzExperimentV2Middleware: MerchantSplitzExperimentV2Mid
             message: `Merchant splitz experiment v2 fetch failed.`,
             statusCode: status,
             context: {
+              path: SHELL_EXTERNAL_API_ROUTES.MERCHANT_SPLITZ_EXPERIMENTS_V2,
               dashboardBackendRequestId,
             },
           });
@@ -88,6 +89,7 @@ export const merchantSplitzExperimentV2Middleware: MerchantSplitzExperimentV2Mid
             moduleName: '@merchantSplitzExperimentV2Middleware',
             message: `Invalid API Response`,
             context: {
+              path: SHELL_EXTERNAL_API_ROUTES.MERCHANT_SPLITZ_EXPERIMENTS_V2,
               dashboardBackendRequestId,
             },
           });
@@ -95,7 +97,7 @@ export const merchantSplitzExperimentV2Middleware: MerchantSplitzExperimentV2Mid
       })
       .catch((error) => {
         req.shellLogger.error({
-          message: "Fallback to empty object for splitz_experiments_v2",
+          message: 'Fallback to empty object for splitz_experiments_v2',
           moduleName: '@merchantSplitzExperimentV2Middleware',
           context: {
             dashboardBackendRequestId,

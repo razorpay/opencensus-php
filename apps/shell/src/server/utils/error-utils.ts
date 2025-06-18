@@ -24,33 +24,59 @@ export enum SHELL_ERROR_TRACE {
   GATEWAY_TIMEOUT = 'Gateway Timeout',
 }
 
+// Interface for individual API failure information
+export interface ApiFailureInfo {
+  middlewareName: string;
+  statusCode: number;
+  message: string;
+  dashboardBackendRequestId?: string;
+  apiPath?: string;
+  timestamp: string;
+  moduleName?: string;
+  error?: any;
+}
+
+export interface ShellErrorConstructorArgs {
+  message: string;
+  statusCode?: number;
+  moduleName?: string;
+  trace?: SHELL_ERROR_TRACE;
+  context?: any;
+  originalError?: Error;
+  // New property for multiple API failures
+  apiFailures?: ApiFailureInfo[];
+}
+
 export class ShellError extends Error {
-  public trace: SHELL_ERROR_TRACE;
-  public moduleName: string;
   public statusCode: number;
-  public message: string;
-  public context?: unknown;
+  public moduleName: string;
+  public trace?: SHELL_ERROR_TRACE;
+  public context?: any;
+  public originalError?: Error;
+  // New property to store multiple API failures
+  public apiFailures?: ApiFailureInfo[];
 
   constructor({
-    trace,
-    moduleName,
-    statusCode,
     message,
+    statusCode = 500,
+    moduleName = 'UNKNOWN',
+    trace,
     context,
-  }: {
-    moduleName: string;
-    trace?: SHELL_ERROR_TRACE;
-    statusCode?: number;
-    message?: string;
-    context?: unknown;
-  }) {
-    super();
+    originalError,
+    apiFailures,
+  }: ShellErrorConstructorArgs) {
+    super(message);
     this.name = 'ShellError';
+    this.statusCode = statusCode;
     this.moduleName = moduleName;
-    this.trace = trace || SHELL_ERROR_TRACE.INTERNAL_SERVER_ERROR;
-    this.statusCode = statusCode || 500;
-    this.message = message || '';
+    this.trace = trace;
     this.context = context;
-    Object.setPrototypeOf(this, new.target.prototype);
+    this.originalError = originalError;
+    this.apiFailures = apiFailures;
+
+    // Maintain proper stack trace for V8
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ShellError);
+    }
   }
 }

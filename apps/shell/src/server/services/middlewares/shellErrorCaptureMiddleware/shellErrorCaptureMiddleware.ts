@@ -23,8 +23,10 @@ export const shellErrorCaptureMiddleware = (): ErrorRequestHandler => {
           moduleName,
           message,
           context: {
-            trace: SHELL_ERROR_TRACE.UNAUTHENTICATED,
+            trace: SHELL_ERROR_TRACE.UNAUTHORIZED_USER,
             errorCode: 401,
+            path: req.originalUrl || req.url,
+            dashboardBackendRequestId: error.context?.dashboardBackendRequestId,
           },
         });
       }
@@ -42,6 +44,8 @@ export const shellErrorCaptureMiddleware = (): ErrorRequestHandler => {
         context: {
           trace: error?.trace || SHELL_ERROR_TRACE.INTERNAL_SERVER_ERROR,
           errorCode: error?.statusCode || DEFAULT_ERROR_CODE,
+          path: error.context?.path || req.originalUrl || req.url,
+          dashboardBackendRequestId: error.context?.dashboardBackendRequestId,
         },
       });
     }

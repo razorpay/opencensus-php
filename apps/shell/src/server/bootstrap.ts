@@ -31,7 +31,7 @@ import {
   optimizedUserFetchMiddleware,
   merchantSplitzExperimentV2Middleware,
   merchantConfigStoreFetchMiddleware,
-  shellSplitzMiddleware
+  shellSplitzMiddleware,
 } from '@apps/shell/src/server/services/middlewares';
 import prom from '@apps/shell/src/server/services/promMetrics';
 import { getAppHealth, getAppVersions } from '@apps/shell/src/server/services/routes';
@@ -199,6 +199,10 @@ try {
         moduleName: '@bootstrap',
         message: `x-request-id=${req.x_shell_request_id} | Invalid: ${req.originalUrl}`,
         trace: SHELL_ERROR_TRACE.PAGE_NOT_FOUND,
+        context: {
+          path: req.originalUrl || req.url,
+          dashboardBackendRequestId: undefined,
+        },
       });
     });
 

@@ -75,6 +75,7 @@ export const merchantTagsFetchMiddleware: MerchantTagsFetchMiddleware =
             message: `Merchant Tags data fetch failed.`,
             statusCode: status,
             context: {
+              path: SHELL_EXTERNAL_API_ROUTES.MERCHANT_TAGS,
               dashboardBackendRequestId,
             },
           });
@@ -98,6 +99,7 @@ export const merchantTagsFetchMiddleware: MerchantTagsFetchMiddleware =
             moduleName: '@merchantTagsFetchMiddleware',
             message: `Invalid API Response`,
             context: {
+              path: SHELL_EXTERNAL_API_ROUTES.MERCHANT_TAGS,
               dashboardBackendRequestId,
             },
           });

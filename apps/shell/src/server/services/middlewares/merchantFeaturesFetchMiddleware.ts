@@ -75,6 +75,7 @@ export const merchantFeaturesFetchMiddleware: MerchantFeaturesFetchMiddleware =
             message: `Merchant Features data fetch failed.`,
             statusCode: status,
             context: {
+              path: SHELL_EXTERNAL_API_ROUTES.MERCHANT_FEATURES,
               dashboardBackendRequestId,
             },
           });
@@ -98,6 +99,7 @@ export const merchantFeaturesFetchMiddleware: MerchantFeaturesFetchMiddleware =
             moduleName: '@merchantFeaturesFetchMiddleware',
             message: `Invalid API Response`,
             context: {
+              path: SHELL_EXTERNAL_API_ROUTES.MERCHANT_FEATURES,
               dashboardBackendRequestId,
               response,
             },

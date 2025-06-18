@@ -75,6 +75,7 @@ export const merchantConfigStoreFetchMiddleware: MerchantConfigStoreFetchMiddlew
             message: `Merchant config store data fetch failed.`,
             statusCode: status,
             context: {
+              path: SHELL_EXTERNAL_API_ROUTES.MERCHANT_CONFIG_STORE_LIVE_ONBOARDING,
               dashboardBackendRequestId,
             },
           });
@@ -97,6 +98,7 @@ export const merchantConfigStoreFetchMiddleware: MerchantConfigStoreFetchMiddlew
             moduleName: '@merchantConfigStoreFetchMiddleware',
             message: `Invalid API Response`,
             context: {
+              path: SHELL_EXTERNAL_API_ROUTES.MERCHANT_CONFIG_STORE_LIVE_ONBOARDING,
               dashboardBackendRequestId,
               response,
             },

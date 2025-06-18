@@ -68,6 +68,7 @@ export const optimizedUserFetchMiddleware: OptimizedUserFetchMiddleware =
             statusCode: status,
             context: {
               dashboardBackendRequestId,
+              path: SHELL_EXTERNAL_API_ROUTES.USER_OPTIMIZED,
             },
           });
         }
@@ -99,6 +100,7 @@ export const optimizedUserFetchMiddleware: OptimizedUserFetchMiddleware =
             message: `Invalid API Response`,
             context: {
               dashboardBackendRequestId,
+              path: SHELL_EXTERNAL_API_ROUTES.USER_OPTIMIZED,
             },
           });
         }
@@ -109,6 +111,7 @@ export const optimizedUserFetchMiddleware: OptimizedUserFetchMiddleware =
           moduleName: '@optimizedUserFetchMiddleware',
           context: {
             dashboardBackendRequestId,
+            path: SHELL_EXTERNAL_API_ROUTES.USER_OPTIMIZED,
           },
           error,
           sentry: false,

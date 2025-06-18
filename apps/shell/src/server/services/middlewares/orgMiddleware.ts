@@ -40,6 +40,7 @@ export const orgMiddleware: OrgMiddleware =
             message: `Org data fetch failed.`,
             statusCode: status,
             context: {
+              path: SHELL_EXTERNAL_API_ROUTES.ORG,
               dashboardBackendRequestId,
             },
           });
@@ -64,6 +65,7 @@ export const orgMiddleware: OrgMiddleware =
             moduleName: '@orgMiddleware',
             message: `Invalid API Response`,
             context: {
+              path: SHELL_EXTERNAL_API_ROUTES.ORG,
               dashboardBackendRequestId,
             },
           });
