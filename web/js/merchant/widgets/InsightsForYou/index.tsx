@@ -105,6 +105,12 @@ export const InsightsForYou = (props: InsightsForYouWidgetProps & CommonWidgetPr
     retryHandler({ id, ...requestPayload });
   };
 
+  const onErrorRetry = () => {
+    const { date_time, store_ids, payment_source } = filters;
+    const requestPayload = getRequestPayload({ date_time, stores: store_ids, source: payment_source });
+    retryHandler({ id, ...requestPayload });
+  };
+
   return (
     <Box
       key={`widget-${id}`}
@@ -160,7 +166,7 @@ export const InsightsForYou = (props: InsightsForYouWidgetProps & CommonWidgetPr
         ) : error ? (
           <ErrorState
             text={`${title} couldn't be loaded`}
-            retryHandler={() => retryHandler({ id })}
+            retryHandler={onErrorRetry}
             analyticsProperties={{
               screen,
               error: `${error.message}`,

@@ -1,8 +1,10 @@
 import { useMobile } from '@libs/shared-utils';
 import { Box, Heading } from '@razorpay/blade/components';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { CommonWidgetProps } from 'merchant/widgets/types';
+import { ErrorState } from 'merchant/widgets/common/ErrorState';
+import { getUcsAliasFromQueryKey } from 'merchant/widgets/utils';
 import { renderInput } from '../common/utils';
 import { useRetryWidget } from '../hooks';
 import { VARIANT_TO_ICON_MAP } from './constants';
@@ -14,14 +16,25 @@ import { BusinessPerformanceProps } from './types';
 
 export const BusinessPerformance = (props: BusinessPerformanceProps & CommonWidgetProps) => {
   const isMobile = useMobile();
+  const { error, title, queryKey, type, id, inputs } = props;
   const [isRetrying, retryHandler] = useRetryWidget(props.queryKey);
+  const [filterValue, setFilterValue] = useState<string>(inputs[0]?.default_value || '');
+  
   const { date_time } = props.filters;
+  
+  const screen = getUcsAliasFromQueryKey(queryKey) ?? '';
+  const widgetId = `merchantDashboard.${screen}.${type}.${id}`;
 
   function handleChange({ values }: { values: string }) {
+    setFilterValue(values[0]);
     retryHandler({ id: props.id, filter_selected: values[0], date_time });
   }
 
   const isLoading = props.isLoading || isRetrying;
+
+  const onErrorRetry = () => {
+    retryHandler({ id, filter_selected: filterValue, date_time });
+  }
 
   return (
     <Box backgroundColor="surface.background.gray.intense" padding="spacing.7">
@@ -41,6 +54,19 @@ export const BusinessPerformance = (props: BusinessPerformanceProps & CommonWidg
 
       {isLoading ? (
         <Loader />
+      ) : error ? (
+        <ErrorState
+          text={`${title} couldn't be loaded`}
+          retryHandler={onErrorRetry}
+          analyticsProperties={{
+            screen,
+            error: `${error.message}`,
+            widgetId,
+            actionBy: widgetId,
+            title,
+            date: date_time,
+          }}
+        />
       ) : (
         <>
           {props.components.map((component) => {
