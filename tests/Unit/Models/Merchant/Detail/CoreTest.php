@@ -19751,7 +19751,6 @@ class CoreTest extends TestCase
         $this->assertArrayHasKey('registered', $result);
         $this->assertArrayHasKey('unregistered', $result);
         
-        // Should return all business types when merchant ID is empty
         $this->assertNotEmpty($result['registered']);
         $this->assertNotEmpty($result['unregistered']);
         $newBusinessTypes = ['Government', 'Judicial Person', 'Local Authority', 'Section 8 Company'];
@@ -19771,12 +19770,10 @@ class CoreTest extends TestCase
     {
         $merchantId = 'test_merchant_123';
         
-        // Mock MerchantDetail entity
         $merchantDetail = Mockery::mock('RZP\Models\Merchant\Detail\Entity');
         $merchantDetail->shouldReceive('getBusinessType')->andReturn('proprietorship');
         $merchantDetail->shouldReceive('getMerchantId')->andReturn($merchantId);
         
-        // Mock Merchant entity
         $merchant = Mockery::mock('RZP\Models\Merchant\Entity');
         $merchant->shouldReceive('setAttribute')->andReturnSelf();
         $merchant->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($merchantDetail);
@@ -19789,44 +19786,35 @@ class CoreTest extends TestCase
         
         $merchantDetail->shouldReceive('getAttribute')->with('merchant')->andReturn($merchant);
         
-        // Mock Merchant repository
         $merchantRepo = Mockery::mock('RZP\Models\Merchant\Repository');
         $merchantRepo->shouldReceive('findOrFailPublic')->with($merchantId)->andReturn($merchant);
         
-        // Mock UserDeviceDetail entity
         $userDeviceEntity = Mockery::mock('RZP\Models\UserDeviceDetail\Entity');
         $userDeviceEntity->shouldReceive('isAssistedOnboardedMerchant')->andReturn(false);
         
-        // Mock UserDeviceDetail repository
         $userDeviceRepo = Mockery::mock('RZP\Models\UserDeviceDetail\Repository');
         $userDeviceRepo->shouldReceive('fetchByMerchantId')->with($merchantId)->andReturn($userDeviceEntity);
         
-        // Mock RepositoryManager as property-based, not method-based
         $repoManager = Mockery::mock('RZP\Repositories\RepositoryManager');
         $repoManager->merchant = $merchantRepo;
         $repoManager->user_device_detail = $userDeviceRepo;
         
-        // Mock config
         $configMock = Mockery::mock('Illuminate\Config\Repository');
         $configMock->shouldReceive('get')->with('app.add_new_business_types')->andReturn('test_experiment');
         
-        // Mock MerchantCore
         $merchantCore = Mockery::mock('RZP\Models\Merchant\Core');
         $merchantCore->shouldReceive('isSplitzExperimentEnable')->andReturn(true);
         $merchantCore->shouldReceive('isBlockedMerchantType')->andReturn(false);
         $merchantCore->shouldReceive('isMerchantEligibleForComplianceCheck')->andReturn(false);
         
-        // Mock PGOS Proxy Controller
         $pgosProxyController = Mockery::mock('RZP\Http\Controllers\MerchantOnboardingProxyController');
         $pgosProxyController->shouldReceive('getIndiaModularMerchantResult')->andReturn([
                                                                                             'is_modular' => true
                                                                                         ]);
         
-        // Optional: Trace mock
         $traceMock = Mockery::mock('RZP\Trace\Trace');
         $traceMock->shouldReceive('info')->andReturn();
         
-        // Instantiate Core and inject dependencies
         $core = new \RZP\Models\Merchant\Detail\Core();
         
         $this->assignValueThroughReflection($core, $repoManager, 'repo');
@@ -19835,10 +19823,7 @@ class CoreTest extends TestCase
         $this->assignValueThroughReflection($core, $configMock, 'config');
         $this->assignValueThroughReflection($core, $traceMock, 'trace');
         
-        // Execute method under test
         $result = $core->getBusinessTypes($merchantId);
-        
-        // Assertions
         $this->assertIsArray($result);
         $this->assertArrayHasKey('registered', $result);
         
@@ -19855,13 +19840,11 @@ class CoreTest extends TestCase
     public function testGetBusinessTypesWithNonModularMerchant()
     {
         $merchantId = 'test_merchant_123';
-        
-        // Mock MerchantDetail entity
+
         $merchantDetail = Mockery::mock('RZP\Models\Merchant\Detail\Entity');
         $merchantDetail->shouldReceive('getBusinessType')->andReturn('proprietorship');
         $merchantDetail->shouldReceive('getMerchantId')->andReturn($merchantId);
         
-        // Mock Merchant entity
         $merchant = Mockery::mock('RZP\Models\Merchant\Entity');
         $merchant->shouldReceive('setAttribute')->andReturnSelf();
         $merchant->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($merchantDetail);
@@ -19874,44 +19857,35 @@ class CoreTest extends TestCase
         
         $merchantDetail->shouldReceive('getAttribute')->with('merchant')->andReturn($merchant);
         
-        // Mock Merchant repository
         $merchantRepo = Mockery::mock('RZP\Models\Merchant\Repository');
         $merchantRepo->shouldReceive('findOrFailPublic')->with($merchantId)->andReturn($merchant);
         
-        // Mock UserDeviceDetail entity
         $userDeviceEntity = Mockery::mock('RZP\Models\UserDeviceDetail\Entity');
         $userDeviceEntity->shouldReceive('isAssistedOnboardedMerchant')->andReturn(false);
         
-        // Mock UserDeviceDetail repository
         $userDeviceRepo = Mockery::mock('RZP\Models\UserDeviceDetail\Repository');
         $userDeviceRepo->shouldReceive('fetchByMerchantId')->with($merchantId)->andReturn($userDeviceEntity);
         
-        // Mock RepositoryManager as property-based, not method-based
         $repoManager = Mockery::mock('RZP\Repositories\RepositoryManager');
         $repoManager->merchant = $merchantRepo;
         $repoManager->user_device_detail = $userDeviceRepo;
-        
-        // Mock config
+
         $configMock = Mockery::mock('Illuminate\Config\Repository');
         $configMock->shouldReceive('get')->with('app.add_new_business_types')->andReturn('test_experiment');
         
-        // Mock MerchantCore
         $merchantCore = Mockery::mock('RZP\Models\Merchant\Core');
         $merchantCore->shouldReceive('isSplitzExperimentEnable')->andReturn(true);
         $merchantCore->shouldReceive('isBlockedMerchantType')->andReturn(false);
         $merchantCore->shouldReceive('isMerchantEligibleForComplianceCheck')->andReturn(false);
         
-        // Mock PGOS Proxy Controller
+      
         $pgosProxyController = Mockery::mock('RZP\Http\Controllers\MerchantOnboardingProxyController');
         $pgosProxyController->shouldReceive('getIndiaModularMerchantResult')->andReturn([
                                                                                             'is_modular' => false
                                                                                         ]);
-        
-        // Optional: Trace mock
         $traceMock = Mockery::mock('RZP\Trace\Trace');
         $traceMock->shouldReceive('info')->andReturn();
-        
-        // Instantiate Core and inject dependencies
+    
         $core = new \RZP\Models\Merchant\Detail\Core();
         
         $this->assignValueThroughReflection($core, $repoManager, 'repo');
@@ -19919,11 +19893,9 @@ class CoreTest extends TestCase
         $this->assignValueThroughReflection($core, $pgosProxyController, 'pgosProxyController');
         $this->assignValueThroughReflection($core, $configMock, 'config');
         $this->assignValueThroughReflection($core, $traceMock, 'trace');
-        
-        // Execute method under test
+      
         $result = $core->getBusinessTypes($merchantId);
-        
-        // Assertions
+
         $this->assertIsArray($result);
         $this->assertArrayHasKey('registered', $result);
         
