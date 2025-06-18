@@ -1504,6 +1504,8 @@ return array(
 
     'workflow_segregation_store_user_signup_state' => env('WORKFLOW_SEGREGATION_STORE_USER_SIGNUP_STATE'),
 
+    'optimizer_bank_transfer_enable' => env('OPTIMIZER_BANK_TRANSFER_ENABLE_EXPERIMENT_ID'),
+
     'merchant_with_qr_expiry_gt_2_hours' => env('MERCHANT_WITH_QR_EXPIRY_GT_2_HOURS'),
 
     'emandate_fetch_token_from_tidb' => env('EMANDATE_FETCH_TOKEN_FROM_TIDB'),
