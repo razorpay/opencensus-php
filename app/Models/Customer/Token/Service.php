@@ -2671,7 +2671,7 @@ class Service extends Base\Service
         $core->updateTokenStatus($token->getId(), Token\Constants::INITIATED);
         if(isset($input['additional_data']['international']) && $input['additional_data']['international'])
         {
-            $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+            $this->trace->info(TraceCode::CROSS_BORDER_RECURRING_TOKEN, [
                 'international_card_recurring_token'     =>  $token->getId(),
                 'international_recurring_token_input' => $input,
                 'paymentId'   => $payment->getId(),
@@ -2682,7 +2682,6 @@ class Service extends Base\Service
             $core->updateTokenStatus($token->getId(), Token\Constants::ACTIVE);
             $token->setRecurring(true);
             $token->setRecurringStatus(Token\RecurringStatus::CONFIRMED);
-            $token->setRecurringDetails($input['additional_data']);
         }
 
         if ($customer !== null)
