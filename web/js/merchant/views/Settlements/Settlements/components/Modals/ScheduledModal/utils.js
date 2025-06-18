@@ -11,19 +11,11 @@ export const getAutomaticSettlementTime = () => {
   return '9 AM';
 };
 
-export const enableAutomaticSettlements = (userId) => {
-  const payload = {
-    merchant_id: userId,
-    user_role: 'admin',
-    skip_user_role_check: false,
-  };
-
+export const enableAutomaticSettlements = () => {
   const url = 'capital_es/service/instant_settlements/scheduled/enable';
-
   return merchantFetch({
     url,
     method: 'POST',
-    data: payload,
   });
 };
 

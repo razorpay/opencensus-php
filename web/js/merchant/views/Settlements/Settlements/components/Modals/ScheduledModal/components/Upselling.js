@@ -121,7 +121,7 @@ function Upselling({
     });
     setLoading(true);
     return new Promise((resolve) => {
-      enableAutomaticSettlements(user.id)
+      enableAutomaticSettlements()
         .then(() => {
           const updatedUser = new User(user);
           updatedUser
