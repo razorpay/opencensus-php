@@ -8083,10 +8083,10 @@ class Processor
                     $customerId = $input[Payment\Entity::CUSTOMER_ID];
 
                     Customer\Entity::verifyIdAndStripSign($customerId);
-                    
+
                     $token = (new Customer\Token\Core)->getByTokenIdAndCustomerId($tokenId, $customerId);
 
-                    if ($this->isOptimizerMigratedToken($token))
+                    if ($this->isOptimizerMigratedToken($token)) 
                     {
                         $this->app['trace']->info(
                             TraceCode::MISC_TRACE_CODE,
@@ -8095,7 +8095,7 @@ class Processor
 
                         return;
                     }
-
+                    
                 } else {
 
                     $token = (new Customer\Token\Core)->getByTokenId($tokenId);
