@@ -8083,10 +8083,10 @@ class Processor
                     $customerId = $input[Payment\Entity::CUSTOMER_ID];
 
                     Customer\Entity::verifyIdAndStripSign($customerId);
-                    
+
                     $token = (new Customer\Token\Core)->getByTokenIdAndCustomerId($tokenId, $customerId);
 
-                    if ($this->isOptimizerMigratedToken($token)) 
+                    if ($this->isOptimizerMigratedToken($token))
                     {
                         $this->app['trace']->info(
                             TraceCode::MISC_TRACE_CODE,
@@ -8095,7 +8095,7 @@ class Processor
 
                         return;
                     }
-                    
+
                 } else {
 
                     $token = (new Customer\Token\Core)->getByTokenId($tokenId);
@@ -11224,6 +11224,16 @@ class Processor
         else if ($this->shouldPopulateSubscriptionInfoToGatewayData())
         {
             $gatewayData['card_mandate']['recurring_frequency'] = CardMandate\MandateHubs\MandateHQ\Constants::FREQUENCY_AS_PRESENTED;
+
+            if (($this->subscription === null))
+            {
+                return;
+            }
+
+            $gatewayData['card_mandate']['end_date'] = $this->subscription->getEndAt();
+            $gatewayData['card_mandate']['recurring_count'] = $this->subscription->getTotalCount();
+            $gatewayData['card_mandate']['start_date']= $this->subscription->getStartAt();
+            $gatewayData['card_mandate']['max_debit_amount']= $token->getMaxAmount();
 
         }
     }
@@ -16409,23 +16419,23 @@ public function isLibrarySupportedForNbplusRearch($library): bool
     }
 
 
-    public function isOptimizerMigratedToken($token) 
+    public function isOptimizerMigratedToken($token)
     {
-        if ($token == null) 
+        if ($token == null)
         {
             return false;
         }
 
         $notes = $token->getNotes();
 
-        if (empty($notes) === true) 
+        if (empty($notes) === true)
         {
             return false;
         }
 
-        if (isset($notes["source"]) && 
-            isset($notes["mandate_id"]) && 
-            isset($notes["migrated_reference_id"])) 
+        if (isset($notes["source"]) &&
+            isset($notes["mandate_id"]) &&
+            isset($notes["migrated_reference_id"]))
         {
             return true;
         }
