@@ -1042,7 +1042,7 @@ class Validator extends Base\Validator
                     $threshold = 0.8;
                 }
                 // Log scores between 0.6 and 0.8 to track threshold impact
-                if ($output->score >= 0.6 && $output->score < 0.8)
+                if ($output->score >= 0.6 && $output->score < 0.8 && $isInternational)
                 {
                     $app['trace']->info(TraceCode::CAPTCHA_SCORE_THRESHOLD_IMPACT, [
                         'score' => $output->score,
