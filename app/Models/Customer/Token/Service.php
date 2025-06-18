@@ -2669,12 +2669,6 @@ class Service extends Base\Service
 
         $core = (new Token\Core());
         $core->updateTokenStatus($token->getId(), Token\Constants::INITIATED);
-
-
-        if ($customer !== null)
-        {
-            $customer->merchant()->associate($this->repo->merchant->getSharedAccount());
-        }
         if(isset($input['additional_data']['international']) && $input['additional_data']['international'])
         {
             $this->trace->info(TraceCode::MISC_TRACE_CODE, [
@@ -2685,10 +2679,15 @@ class Service extends Base\Service
                 'card'        => $card,
                 'token'       => $token
             ]);
+            $core->updateTokenStatus($token->getId(), Token\Constants::ACTIVE);
             $token->setRecurring(true);
             $token->setRecurringStatus(Token\RecurringStatus::CONFIRMED);
-            $core->updateTokenStatus($token->getId(), Token\Constants::ACTIVE);
             $token->setRecurringDetails($input['additional_data']);
+        }
+
+        if ($customer !== null)
+        {
+            $customer->merchant()->associate($this->repo->merchant->getSharedAccount());
         }
         $token->incrementUsedCount();
 
