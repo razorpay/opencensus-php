@@ -5828,7 +5828,7 @@ class Core extends Base\Core
         $merchantId = $this->app['request']->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
         $merchant = $this->repo->merchant->find($merchantId);
         $isModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
-        if(($merchant != null and $this->pgosProxyController->isCurlecModularMerchant($merchant)) || ($isModularMerchant)){
+        if(($merchant !== null and $this->pgosProxyController->isCurlecModularMerchant($merchant)) || ($isModularMerchant)){
             $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::ACTIVATION_DOCUMENT_TYPES, [], $merchant);
             return $pgosResponse['data'];
         }
@@ -11593,9 +11593,7 @@ class Core extends Base\Core
             $merchantBusinessType = $merchant->merchantDetail->getBusinessType();
             $userDeviceDetails = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
         }
-        $this->trace->info(TraceCode::REMOVE_INDIVIDUAL_BUSINESS_TYPE, [
-            "merchant_id_for_business_type"       => $merchantId
-        ]);
+       
         foreach (BusinessType::$businessTypeBuckets as $bucketName => $businessTypes)
         {
             $result[$bucketName] = [];
@@ -11664,6 +11662,9 @@ class Core extends Base\Core
                 }
             }
         }
+        $this->trace->info(TraceCode::ADD_NEW_BUSINESS_TYPE, [
+            "merchant_id"       => $merchantId
+        ]);
         if (!empty($merchant) and $this->shouldAddNewBusinessTypes($merchant) === true) {
             $businessTypes = [
                 BusinessType::GOVERNMENT,
