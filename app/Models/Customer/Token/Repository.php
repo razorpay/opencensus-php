@@ -449,13 +449,19 @@ class Repository extends Base\Repository
             $tokens = $query->get();
             $customerIds = [];
             foreach ($tokens as $t)
-                $customerIds[] = $t->getCustomerId();
+            {
+                $customerId = $t->getCustomerId();
+                if ($customerId !== null)
+                    $customerIds[] = $customerId;
+            }
 
             $customers = (new Customer\Repository())->fetchByMerchantIdAndIds($merchantId, $customerIds);
 
-            for ($i = 0; $i < count($customers); $i++)
+            for ($i = 0; $i < count($tokens); $i++)
             {
-                $tokens[$i]->customer()->associate($customers[$i]);
+                $customerId = $tokens[$i]->getCustomerId();
+                if ($customerId !== null)
+                    $tokens[$i]->customer()->associate($customers[$customerId]);
             }
 
             return $tokens;
