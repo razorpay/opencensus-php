@@ -151,7 +151,7 @@ class GatewayController extends Controller
 
         if ($mode === null)
         {
-            $payment = $this->fetchExternalUpiPayment($paymentRepo, $paymentId);
+            $payment = $this->fetchExternalPayment($paymentRepo, $paymentId);
 
             if ($payment !== null)
             {
@@ -485,7 +485,7 @@ class GatewayController extends Controller
         {
             if ($mode === null)
             {
-                $payment = $this->fetchExternalUpiPayment($paymentRepo, $paymentId);
+                $payment = $this->fetchExternalPayment($paymentRepo, $paymentId);
 
                 if ($payment !== null)
                 {
@@ -2465,7 +2465,7 @@ class GatewayController extends Controller
      * @param $paymentId
      * @return Payment\Entity
      */
-    protected function fetchExternalUpiPayment($paymentRepo, $paymentId)
+    protected function fetchExternalPayment($paymentRepo, $paymentId)
     {
         try
         {
@@ -2491,7 +2491,7 @@ class GatewayController extends Controller
             return null;
         }
 
-        if ($payment->isUpi() === false)
+        if ($payment->isUpi() === false && $payment->isBankTransfer() === false)
         {
             return null;
         }
