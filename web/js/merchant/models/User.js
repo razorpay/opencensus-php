@@ -916,6 +916,11 @@ export default class User {
     return this.merchant.country_code === 'MY';
   }
 
+  get isCountryUS() {
+    // eslint-disable-next-line i18n-rules/no-hardcoded-i18n-types
+    return this.merchant.country_code === 'US';
+  }
+
   get isRBLRoleEnabled() {
     return this.findTag('enable_RBL_role');
   }

@@ -9,9 +9,10 @@ import {
   useCheckoutEditor,
 } from 'merchant/views/Settings/Configuration/CheckoutEditor/context';
 
-import { CHECKOUT_IFRAME_URL } from './constants';
+import { CHECKOUT_IFRAME_URL, CHECKOUT_IFRAME_URL_US } from './constants';
 import { useCheckoutPreview } from './context/createContext';
 import { initCheckout } from './liveCheckout';
+import { getUser } from 'merchant/store';
 
 type CheckoutV2Props = {
   zoomTitleStyle?: boolean;
@@ -22,7 +23,8 @@ const CheckoutV2 = ({ zoomTitleStyle, forceLoadDesktopView = false }: CheckoutV2
   const { isDesktopPreview } = useCheckoutPreview();
   const { values, isLoading } = useCheckoutEditor();
 
-  const merchantAPIKey = values[CHECKOUT_EDITOR_FIELDS.API_KEY] || values[CHECKOUT_EDITOR_FIELDS.KEYLESS_HEADER];
+  const merchantAPIKey =
+    values[CHECKOUT_EDITOR_FIELDS.API_KEY] || values[CHECKOUT_EDITOR_FIELDS.KEYLESS_HEADER];
 
   const updateCheckout = useRef<Promise<{
     update: (value: Record<string, unknown>) => void;
@@ -31,6 +33,12 @@ const CheckoutV2 = ({ zoomTitleStyle, forceLoadDesktopView = false }: CheckoutV2
   const merchantKeyRef = useRef<string | null>(null);
 
   const splitz = useSplitzService();
+
+  const user = getUser();
+
+  const checkoutUrl = useMemo(() => {
+    return user.isCountryUS ? CHECKOUT_IFRAME_URL_US : CHECKOUT_IFRAME_URL;
+  }, [user]);
 
   // only change initialisation
   const init = (node: HTMLIFrameElement) => {
@@ -83,7 +91,7 @@ const CheckoutV2 = ({ zoomTitleStyle, forceLoadDesktopView = false }: CheckoutV2
     <CheckoutFrame
       key={merchantAPIKey}
       tabIndex="-1"
-      src={CHECKOUT_IFRAME_URL}
+      src={checkoutUrl}
       ref={init}
       isDesktopPreview={forceLoadDesktopView || isDesktopPreview}
       zoomTitleStyle={zoomTitleStyle}
@@ -91,7 +99,7 @@ const CheckoutV2 = ({ zoomTitleStyle, forceLoadDesktopView = false }: CheckoutV2
   ) : (
     <CheckoutFrame
       tabIndex="-1"
-      src={CHECKOUT_IFRAME_URL}
+      src={checkoutUrl}
       ref={init}
       isDesktopPreview={forceLoadDesktopView || isDesktopPreview}
       zoomTitleStyle={zoomTitleStyle}
