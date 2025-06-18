@@ -61,6 +61,8 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\BankAccount\Constants as BankAccountConstants;
 use RZP\Models\OfflineChallan\Repository as OfflineChallanRepo;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
+use RZP\Services\PgRouter\Service as PgRouterService;
+use RZP\Models\Base\UniqueIdEntity;
 
 class VirtualAccountTest extends TestCase
 {
@@ -3175,7 +3177,7 @@ class VirtualAccountTest extends TestCase
 
         $this->app['config']->set('gateway.mock_bt_rbl', true);
 
-        $this->app['config']->set('rbl_create_virtual_account.error_code', ErrorCode::ER002);
+        $this->app['config']->set('rbl_create_virtual_account.error_code', 'ER002');
 
         $metricsMock = $this->createMetricsMock();
 
@@ -3252,7 +3254,7 @@ class VirtualAccountTest extends TestCase
 
         $virtualAccount = $this->getDbLastEntity('virtual_account', 'live');
 
-        $this->app['config']->set('rbl_close_virtual_account.error_code', ErrorCode::ER002);
+        $this->app['config']->set('rbl_close_virtual_account.error_code', 'ER002');
 
         $metricsMock = $this->createMetricsMock();
 
@@ -6050,5 +6052,59 @@ class VirtualAccountTest extends TestCase
             return;
         }
 
+    }
+
+    public function testCreateVirtualAccountWithRaasAndOptimizerBankTransfer()
+    {
+        // Enable RAAS feature for merchant
+        $this->fixtures->merchant->addFeatures([Feature\Constants::RAAS]);
+
+        // Mock splitz service response
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn([
+                'response' => [
+                    'variant' => [
+                        'name' => 'variant_on'
+                    ]
+                ]
+            ]);
+
+        // Mock pg router response
+        $this->mockPgRouter();
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['id']);
+        $this->assertEquals('active', $response['status']);
+        $this->assertEquals(10000, $response['amount_expected']);
+        $this->assertEquals('INR', $response['currency']);
+        $this->assertArrayHasKey('receivers', $response);
+        $this->assertEquals('bank_account', $response['receivers'][0]['entity']);
+    }
+
+    protected function mockPgRouter()
+    {
+        $pgRouterMock = Mockery::mock('RZP\Services\PgRouter\Service')->makePartial();
+        $this->app->instance('pg_router', $pgRouterMock);
+
+        $pgRouterMock->shouldReceive('validateAndCreatePayment')
+            ->andReturn([
+                'data' => [
+                    'payment' => [
+                        'id' => 'pay_' . UniqueIdEntity::generateUniqueId(),
+                        'amount' => 10000,
+                        'bank_transfer' => [
+                            'beneficiary_ifsc' => 'RAZR0000001',
+                            'beneficiary_bank_name' => 'Razorpay Bank',
+                            'beneficiary_name' => 'Razorpay',
+                            'beneficiary_account_number' => '1234567890'
+                        ]
+                    ]
+                ]
+            ]);
     }
 }
