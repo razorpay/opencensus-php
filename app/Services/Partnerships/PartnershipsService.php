@@ -400,6 +400,11 @@ class PartnershipsService extends Base\Service
         return $this->sendRequestWithRetry($parameters, self::GET_REFERRAL_LINK_WITH_KYC_ACCESS, Requests::POST);
     }
 
+    public function updateReferralLinkWithKycAccessConsent($parameters)
+    {
+        return $this->sendRequestWithRetry($parameters, self::UPSERT_SETTINGS, Requests::POST);
+    }
+
     /**
      * @param string $merchantId
      *
