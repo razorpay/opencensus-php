@@ -1371,7 +1371,7 @@ class Validator extends Base\Validator
     }
 
     /**
-     * Validates that the URL is a valid S3 URL with the pattern https://s3.{region}.amazonaws.com
+     * Validates that the URL is a valid S3 URL with the pattern  https://s3.{region}.amazonaws.com
      *
      * @param string $attribute
      * @param string $value
