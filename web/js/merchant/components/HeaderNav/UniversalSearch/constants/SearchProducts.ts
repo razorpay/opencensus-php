@@ -246,8 +246,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
       { value: 'instant settlement' },
     ],
     icon: reports.icon,
-    additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      reports.additionalCondition(user),
+    additionalCondition: ({ user }: EligibleProductsTypes, extraConfig: ExtraConfig): boolean =>
+      reports.additionalCondition(user, extraConfig),
     apiCondition: false,
   },
   {
