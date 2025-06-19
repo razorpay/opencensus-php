@@ -19,11 +19,13 @@ const BORDER_TITLE = 'Border style';
 const RightChildren = () => {
   const { values, handleButtonStyleChange } = useCheckoutEditor();
 
-  const selectedButton = values[CHECKOUT_EDITOR_FIELDS.BORDER_STYLE];
+  const selectedButton = values[CHECKOUT_EDITOR_FIELDS.BORDER_STYLE] ?? AVAILABLE_BORDER_STYLE.ROUNDED;
+
   function handleButtonStyleClick(name: string) {
     handleButtonStyleChange(name);
     track.borderStyleClicked(name);
   }
+
   return (
     <RightChildrenWrapper>
       <ChipGroup
@@ -32,7 +34,7 @@ const RightChildren = () => {
         onChange={({ values }) => {
           handleButtonStyleClick(values?.[0]);
         }}
-        defaultValue={selectedButton}
+        value={selectedButton}
         marginBottom="none"
         marginTop="spacing.3"
       >
