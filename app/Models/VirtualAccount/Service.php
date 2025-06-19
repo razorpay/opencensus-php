@@ -97,14 +97,69 @@ class Service extends Base\Service
 
         $order = $this->getOrderIfGiven($input);
 
+        $email = $input['email'] ?? null;
+        $contact = $input['contact'] ?? null;
+        unset($input['email']);
+        unset($input['contact']);
+
         $this->modifyRequestFromOldFormat($input);
 
         (new Validator)->validateDefaultCloseBy($input);
+        
+        if ($this->merchant->isFeatureEnabled(FeatureConstants::RAAS) === true)
+        {
+            try
+            {
+                $splitzResponse = $this->app['splitzService']->evaluateRequest([
+                    'id'            => $order->getId(),
+                    'experiment_id' => $this->app['config']->get('app.optimizer_bank_transfer_enable'),
+                    'request_data'  => json_encode(
+                        [
+                            'merchant_id' => $this->merchant->getId(),
+                        ]),
+                ]);
+        
+                $variant = $splitzResponse['response']['variant']['name'] ?? '';
+        
+                $this->trace->info(TraceCode::OPTIMIZER_BANK_TRANSFER_SPLITZ_RESPONSE, [
+                    'merchant_id' => $this->merchant->getId(),
+                    'response' => $splitzResponse,
+                ]);
 
-         $virtualAccount = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_SERVICE_CREATE], function() use($input, $customer, $order)
-         {
-             return $this->core->create($input, $this->merchant, $customer, $order);
-         });
+                // if variant is on, then sent request to pg-router and handle response
+                if ($variant === 'variant_on') {
+                    $data = $this->getPgRouterRequest($input, $order, $email, $contact);
+                    $paymentResponse = $this->app['pg_router']->validateAndCreatePayment($data, true);
+
+                    $payment = $paymentResponse['data']['payment'];
+                    $bankTransfer = $payment['bank_transfer'];
+
+                    $this->trace->info(TraceCode::OPTIMIZER_BANK_TRANSFER_RESPONSE, [
+                        'payment_id' => $payment['id'],
+                        'bank_transfer' => $bankTransfer,
+                    ]);
+
+                    $virtualAccount = $this->getVirtualAccountFromPgRouterResponse($payment, $bankTransfer);
+
+                    return $virtualAccount;
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->error(TraceCode::OPTIMIZER_BANK_TRANSFER_ERROR, [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+                
+                // Continue with regular flow if optimizer service fails
+            }
+        }
+
+        // Regular virtual account creation flow
+        $virtualAccount = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_SERVICE_CREATE], function() use($input, $customer, $order)
+        {
+            return $this->core->create($input, $this->merchant, $customer, $order);
+        });
 
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_CREATED,
@@ -116,6 +171,53 @@ class Service extends Base\Service
         (new Metric())->pushCreateLatencyMetrics($input, $startTime);
 
         return $virtualAccount->toArrayPublic();
+    }
+
+    protected function getPgRouterRequest(array $input, Order\Entity $order, string $email, string $contact)
+    {
+        $data = [
+            'amount' => $input['amount_expected'] ?? null,
+            'currency' => $input['currency'] ?? 'INR',
+            'order_id' => $order ? $order->getId() : null,
+            'method' => 'bank_transfer',
+            'merchant_id' => $this->merchant->getId(),
+            'description' => 'Virtual Account Payment',
+            'email' => $email,
+            'contact' => $contact,
+        ];
+
+        return $data;
+    }
+
+    protected function getVirtualAccountFromPgRouterResponse(array $payment, array $bankTransfer)
+    {
+        $virtualAccount = [
+            'id' => $payment['id'],
+            'name' => 'Razorpay',
+            'entity' => 'virtual_account',
+            'status' => 'active',
+            'description' => null,
+            'amount_expected' => $payment['amount'],
+            'notes' => [],
+            'amount_paid' => 0,
+            'customer_id' => null,
+            'receivers' => [
+                [
+                    'id' => $payment['id'],
+                    'entity' => 'bank_account',
+                    'ifsc' => $bankTransfer['beneficiary_ifsc'],
+                    'bank_name' => $bankTransfer['beneficiary_bank_name'],
+                    'name' => $bankTransfer['beneficiary_name'],
+                    'notes' => [],
+                    'account_number' => $bankTransfer['beneficiary_account_number'],
+                ],
+            ],
+            'close_by' => null,
+            'closed_at' => null,
+            'created_at' => time()
+        ];
+
+        return $virtualAccount;
     }
 
     public function createForOrder(string $orderId, array $input)
@@ -196,6 +298,9 @@ class Service extends Base\Service
                     Entity::ORDER_ID        => $order->getPublicId(),
                     Entity::AMOUNT_EXPECTED => $order->getAmountDue(),
                     Entity::NOTES           => $this->getNotesForMerchantOfflineChallan($input, $orderNotes),
+                    Entity::NAME            => $input['name'],
+                    Entity::EMAIL           => $input['email'],
+                    Entity::CONTACT         => $input['contact'],
                 ];
 
                 if ((isset($input[Entity::RECEIVERS]) === true) and
