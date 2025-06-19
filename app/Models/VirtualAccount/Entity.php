@@ -82,6 +82,8 @@ class Entity extends Base\PublicEntity
     const SOURCE               = 'source';
 
     const PAYEE_ACCOUNT        = 'payee_account';
+    const EMAIL                = 'email';
+    const CONTACT              = 'contact';
 
     /**
      * Relations to ignore while checking existence of associated entities
