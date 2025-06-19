@@ -1,4 +1,4 @@
-import React, { Fragment, Suspense, useEffect } from 'react';
+import React, { Fragment, Suspense, useEffect, useLayoutEffect } from 'react';
 import { Box } from '@razorpay/blade/components';
 import { useStore } from '@federated/apps/shell/commonStore';
 
@@ -18,11 +18,19 @@ import { ResponsiveWrapper } from './styles';
 import DiwaliReportBanner from '../DiwaliReportBanner';
 import FestivalThemeBanner from '../FestivalThemeBanner';
 import { isEligibleForRazorpayRewind } from 'merchant/components/RazorpayRewind/utils';
-import {isEligibleForSelfServeRekyc} from 'merchant/components/SelfServeRekyc/utils';
+import { isEligibleForSelfServeRekyc } from 'merchant/components/SelfServeRekyc/utils';
 import FeedbackForm from './FeedbackForm';
 import { isRTUXLeftoutSegmentEnabled } from './utils';
 import { rtuxFeedbackFormKeys } from './FeedbackForm/utils';
-import { getItemFromLocalStorage, setItemInLocalStorage } from '@libs/shared-utils';
+import {
+  getItemFromLocalStorage,
+  isExperimentEnabled,
+  setItemInLocalStorage,
+} from '@libs/shared-utils';
+import PlotlineMilestoneWidget from '../PlotlineMilestoneWidget';
+import { ErrorBoundary } from '@libs/shared-ui';
+import { loadPlotlineScript } from '@dashboards/payments/utils/plotlineLoadScript';
+import { DASHBOARD_TEAMS } from '@libs/shared-types';
 
 const RTUX_HOMEPAGE_LAYOUT_KEY = ['rtux-homepage', 'layout'];
 const RTUX_HOMEPAGE_DATA_KEY = ['rtux-homepage', 'data'];
@@ -37,7 +45,9 @@ const RazorpayRewind = lazy(
   () => import(/* webpackChunkName: 'payments-recap' */ 'merchant/components/RazorpayRewind'),
 );
 
-const SelfServeRekycNotifications = lazy(() => import( /* webpackChunkName: 'selfServeRekycBanner' */ 'merchant/components/SelfServeRekyc'));
+const SelfServeRekycNotifications = lazy(
+  () => import(/* webpackChunkName: 'selfServeRekycBanner' */ 'merchant/components/SelfServeRekyc'),
+);
 
 const RTUXHomepage = (): JSX.Element => {
   const {
@@ -58,6 +68,9 @@ const RTUXHomepage = (): JSX.Element => {
   const shouldShowSelfServeRekycNotifications = isEligibleForSelfServeRekyc(splitz, user);
   const isRTUXLeftoutSegment = isRTUXLeftoutSegmentEnabled({ splitz });
   const isMobile = isMobileDevice();
+  const isPlotlineExperimentActive =
+    isExperimentEnabled(splitz?.abExperiments?.['plotline_milestone_widget']) ||
+    isExperimentEnabled(splitz?.abExperiments?.['plotline_milestone_whitelisted_mids']);
 
   const retryHandler = () => {
     if (isError) refetch();
@@ -108,11 +121,16 @@ const RTUXHomepage = (): JSX.Element => {
     }
   }, [isFetching, error]);
 
+  // Loading the plotline script on layout effect to ensure it is loaded before the widget is rendered
+  useLayoutEffect(() => {
+    if (isPlotlineExperimentActive) loadPlotlineScript();
+  }, []);
+
   // if layout errors out, fallback to default loader
   if (isFetchingLayout || (isErrorLayout && isFetching)) {
     return isMobile ? <FullPageLoader /> : <FullPageLoaderCenterToMainContent />;
   }
-  // only retry for data, layout error is handled by default loader 
+  // only retry for data, layout error is handled by default loader
   if (isError)
     return (
       <Box margin="spacing.7">
@@ -135,18 +153,21 @@ const RTUXHomepage = (): JSX.Element => {
 
   return (
     <ResponsiveWrapper>
+      <ErrorBoundary tags={{ module: DASHBOARD_TEAMS.GROWTH }}>
+        <PlotlineMilestoneWidget />
+      </ErrorBoundary>
+
       <Box display="flex" flexDirection="column" paddingY="spacing.5" gap="spacing.6">
         {shouldShowReKycBanner ? (
           <Suspense fallback={null}>
             <ReKycStatusBanner isRtux={true} />
           </Suspense>
         ) : null}
-        {
-          shouldShowSelfServeRekycNotifications ?
+        {shouldShowSelfServeRekycNotifications ? (
           <Suspense fallback={null}>
-            <SelfServeRekycNotifications/>
-          </Suspense> : null
-        }
+            <SelfServeRekycNotifications />
+          </Suspense>
+        ) : null}
         {shouldShowRazorpayRewind ? (
           <Suspense fallback={null}>
             <RazorpayRewind isRtux={true} />

@@ -102,6 +102,9 @@ module.exports = withDashboardCore({
         'process.env.UNIVERSE_PUBLIC_ENV': JSON.stringify(process.env.STAGE),
         __WEB_NEXUS_SENTRY_VERSION__: JSON.stringify(sentryAppVersion),
         __WEB_NEXUS_SENTRY_DSN__: JSON.stringify(process.env.WEB_NEXUS_SENTRY_DSN),
+        'process.env': JSON.stringify({
+          PLOTLINE_SDK_FRONTEND_PUBLIC_KEY: process.env.PLOTLINE_SDK_FRONTEND_PUBLIC_KEY,
+        }),
       }),
       // projectConfig.isWorkboxEnabled &&
       //   !isDev &&

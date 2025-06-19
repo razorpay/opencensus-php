@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import {
   Avatar,
   Box,
@@ -18,6 +18,7 @@ import {
   BottomSheetBody,
   BottomSheetHeader,
   ChevronRightIcon,
+  ConfettiIcon,
 } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import LiveModeIcon from 'assets/rtux/live-mode.svg';
@@ -42,7 +43,9 @@ import { useConnectedNavigationStore } from '@federated/apps/shell/connected-nav
 
 import ShowWhen from '../ShowWhen';
 import { CopyWrapper } from '@libs/shared-ui';
-import { trackProfileDropdownClicks } from '@libs/shared-utils';
+import { isExperimentEnabled, trackProfileDropdownClicks } from '@libs/shared-utils';
+import { loadPlotlineScript } from '@dashboards/payments/utils/plotlineLoadScript';
+import { useSplitzService } from '@libs/web-nexus/common/splitz';
 
 interface ConnectedProfileDropdownProps {
   user: any;
@@ -60,6 +63,8 @@ interface ConnectedProfileDropdownProps {
   onSwitchMerchant: (merchantId: string) => void;
 }
 
+const PLOTLINE_SDK_FRONTEND_PUBLIC_KEY = process.env['PLOTLINE_SDK_FRONTEND_PUBLIC_KEY'];
+
 function ConnectedProfileDropdown({
   user,
   isRTBEnabled,
@@ -76,7 +81,7 @@ function ConnectedProfileDropdown({
   onSwitchMerchant,
 }: ConnectedProfileDropdownProps): JSX.Element {
   const { products } = useConnectedNavigationStore();
-
+  const splitz = useSplitzService();
   const [shouldShowMobileBottomSheet, setShouldShowMobileBottomSheet] = useState(false);
   const { user: loggedInUser, name, id: merchantId } = user;
   const loggedInUserName = loggedInUser?.name || '';
@@ -94,6 +99,14 @@ function ConnectedProfileDropdown({
   const isMobile = matchedDeviceType === 'mobile';
   const showSwitchMerchant = user.merchants && Object.keys(user.merchants).length > 1;
   const invertMode = currentMode === 'live' ? 'test' : 'live';
+  const isPlotlineExperimentActive =
+    isExperimentEnabled(splitz?.abExperiments?.['plotline_milestone_widget']) ||
+    isExperimentEnabled(splitz?.abExperiments?.['plotline_milestone_whitelisted_mids']);
+
+  // Loading the plotline script on layout effect to ensure it is loaded before the widget is rendered
+  useLayoutEffect(() => {
+    if (isPlotlineExperimentActive) loadPlotlineScript();
+  }, []);
 
   const handleSwitchMerchant = () => {
     trackProfileDropdownClicks({
@@ -264,6 +277,22 @@ function ConnectedProfileDropdown({
               onClick={handleModeSwitch}
             />
           </Box>
+
+          {isPlotlineExperimentActive && (
+            <Box marginY={isMobile ? 'spacing.3' : 'spacing.1'}>
+              <MenuItem
+                leading={<ConfettiIcon />}
+                title="My Rewards"
+                onClick={() => {
+                  if (typeof window.plotline === 'function') {
+                    window.plotline('init', PLOTLINE_SDK_FRONTEND_PUBLIC_KEY, merchantId);
+                    window.plotline('track', 'LAUNCH_REWARDS_PAGE');
+                  }
+                }}
+              />
+            </Box>
+          )}
+
           <Box marginY={isMobile ? 'spacing.3' : 'spacing.1'}>
             <Link to={ROUTES_INFO.SUPPORT_TICKETS_MERCHANT}>
               <MenuItem leading={<HeadphonesIcon />} title="View Support Tickets" />

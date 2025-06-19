@@ -23,6 +23,38 @@ export const splitzConfig: SplitzInitConfig = {
     default: [],
     merchant: [
       {
+        uniqueHashKey: 'plotline_milestone_widget',
+        experimentId: {
+          beta: 'QM3OeCgZML96rb',
+          production: 'QM3oMYUIYvTFuR',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
+        uniqueHashKey: 'plotline_milestone_whitelisted_mids',
+        experimentId: {
+          beta: 'QZvJGlJBg8HiEn',
+          production: 'QaNjoJ67VuE70s',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'insights_experiment',
         experimentId: {
           beta: 'OsfzT1j3yvxYca',
