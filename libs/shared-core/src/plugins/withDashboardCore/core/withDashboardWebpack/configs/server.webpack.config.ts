@@ -140,6 +140,7 @@ export const withDashboardServerWebpackConfig: withDashboardServerWebpackConfigT
           __STAGE__: JSON.stringify(process.env.STAGE),
           __APP_VERSION__: JSON.stringify(APP_VERSION),
           __BUILD_MODE__: JSON.stringify(envConfig.buildMode),
+          __IS_WEBPACK_WITH_SWC__: JSON.stringify(options.isWebpackWithSwc ?? isWebpackWithSwc),
         }),
         new optimize.LimitChunkCountPlugin({
           maxChunks: 1,
@@ -185,7 +186,7 @@ export const withDashboardServerWebpackConfig: withDashboardServerWebpackConfigT
             isInAppDir,
             isNodeApp: true,
             isShell,
-            isWebpackWithSwc,
+            isWebpackWithSwc: options.isWebpackWithSwc ?? isWebpackWithSwc,
             moduleName: options.moduleName,
           }),
           ...(consumerAppServerConfig.module?.rules || []), // Add rules if any (by consumer app)

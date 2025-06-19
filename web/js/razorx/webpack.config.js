@@ -8,6 +8,7 @@ const path = require('path');
 module.exports = withDashboardCore({
   browserBundlerOptions: {
     moduleName: 'razorx_dashboard',
+    isWebpackWithSwc: false,
   },
   extendBrowserWebpackConfig: (config, { isDev, externalDeps }) => {
     const MiniCssExtractPlugin = require(externalDeps['mini-css-extract-plugin']);

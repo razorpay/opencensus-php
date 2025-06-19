@@ -104,6 +104,9 @@ export function initSentry(appName: 'la-dashboard' | 'payments-dashboard' | 'one
         ],
         tracePropagationTargets: [/^https:\/\/(?:.+\.)?(razorpay|curlec)\.(com)(\/|\/app.*)?$/],
         beforeSend: (event: any, hint: any) => {
+          // this will be used to identify the errors when swc is enabled
+          event.tags = { ...event.tags, isWebpackWithSwc: __IS_WEBPACK_WITH_SWC__ };
+
           if (shouldSkipNonExceptions({ event })) {
             return null;
           }

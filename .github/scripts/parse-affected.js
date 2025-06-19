@@ -58,7 +58,7 @@ for (const p of affectedProjectsArray) {
     affected_libs.push(p);
   } else if (p === 'payments-dashboard') {
     affected_apps_p0.push(p);
-  } else if (p.endsWith('-dashboard') && p != 'partner-dashboard') {
+  } else if (p.endsWith('-dashboard') && !['partner-dashboard', 'pokedex-dashboard', 'tnc-dashboard'].includes(p)) {
     affected_apps_p1.push(p);
   } else if (existsSync(`apps/${p}`)) {
     // Validate project naming convention

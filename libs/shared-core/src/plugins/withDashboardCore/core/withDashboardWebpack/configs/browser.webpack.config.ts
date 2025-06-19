@@ -259,6 +259,7 @@ export const withDashboardBrowserWebpackConfig: withDashboardBrowserWebpackConfi
           __APP_VERSION__: JSON.stringify(APP_VERSION),
           __APP_NAME__: JSON.stringify(options.moduleName),
           __BUILD_MODE__: JSON.stringify(envConfig.buildMode),
+          __IS_WEBPACK_WITH_SWC__: JSON.stringify(options.isWebpackWithSwc ?? isWebpackWithSwc),
         }),
         new IgnorePlugin({
           resourceRegExp: /^\.\/locale$/,
@@ -302,7 +303,7 @@ export const withDashboardBrowserWebpackConfig: withDashboardBrowserWebpackConfi
             isInAppDir: false,
             isNodeApp: false,
             isShell,
-            isWebpackWithSwc,
+            isWebpackWithSwc: options.isWebpackWithSwc ?? isWebpackWithSwc,
             moduleName: options.moduleName,
           }),
           ...(consumerAppBrowserConfig.module?.rules || []), // Add rules if any (by consumer app)

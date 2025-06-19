@@ -125,6 +125,9 @@ export function initSentry(appName) {
           }),
         ],
         beforeSend: (event, hint) => {
+          // this will be used to identify the errors when swc is enabled
+          event.tags = { ...event.tags, isWebpackWithSwc: __IS_WEBPACK_WITH_SWC__ };
+
           if (shouldSkipNonExceptions({ event })) {
             return null;
           }

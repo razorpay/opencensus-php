@@ -27,6 +27,12 @@ if (IS_PRODUCTION && __APP_VERSION__) {
       'GET /metrics/',
     ],
     tracePropagationTargets: [/^https:\/\/(?:.+\.)?(razorpay|curlec)\.(com)(\/|\/app.*)?$/],
+    beforeSend: (event: any) => {
+      // this will be used to identify the errors when swc is enabled
+      event.tags = { ...event.tags, isWebpackWithSwc: __IS_WEBPACK_WITH_SWC__ };
+
+      return event;
+    },
     tracesSampler: (options: any) => {
       const sentryOp = options?.attributes?.['sentry.op'];
       switch (sentryOp) {

@@ -8,6 +8,7 @@ export type WebpackBaseOptionsType = {
     dsn: string;
     project: string;
   };
+  isWebpackWithSwc?: boolean;
 };
 
 export type BrowserWebpackOptionsType = {
