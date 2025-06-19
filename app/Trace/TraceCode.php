@@ -150,6 +150,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SELF_SERVE_REKYC_UPDATE_SUCCESS                       = 'SELF_SERVE_REKYC_UPDATE_SUCCESS';
     const SELF_SERVE_REKYC_UPDATE_FAILED                        = 'SELF_SERVE_REKYC_UPDATE_FAILED';
     const SELF_SERVE_REKYC_UPDATE_RESPONSE                      = 'SELF_SERVE_REKYC_UPDATE_RESPONSE';
+    const SELF_SERVE_REKYC_MERCHANT                             = 'SELF_SERVE_REKYC_MERCHANT';
 
     const CREDITS_EXPIRE_REQUEST                                = 'CREDITS_EXPIRE_REQUEST';
     const QR_PAYMENT_ES_DEBUG                                   = 'QR_PAYMENT_ES_DEBUG';
