@@ -299,6 +299,33 @@ class ValidatorTest extends BaseTest
         $this->assertTrue(true);
     }
 
+    /**
+     * @dataProvider getData
+     * @group nocode_pp_validator
+     *
+     * @param string $url
+     * @param bool $isValid
+     * @param string|null $expectedMessage
+     * @return void
+     * @throws BadRequestValidationFailureException
+     */
+    public function testValidateImageUrl80g(string $url, bool $isValid, ?string $expectedMessage = null)
+    {
+        if ($isValid === false) {
+            $this->expectException(BadRequestValidationFailureException::class);
+            
+            if ($expectedMessage !== null) {
+                $this->expectExceptionMessage($expectedMessage);
+            }
+        }
+
+        $this->paymentLinkvalidator->validateImageUrl80g('image_url_80g', $url);
+
+        // validation ideally does not return anything, if the validation fails it throws exception, which has been
+        // asserted above. If we expect no error, we simply assert true
+        $this->assertTrue(true);
+    }
+
     protected function assignEntityValueThroughReflection(E $entity): void
     {
         $reflector = new \ReflectionClass($this->paymentLinkvalidator);
