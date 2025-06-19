@@ -1058,12 +1058,6 @@ class Reporting implements ExternalService
         $configs['items'] = $items->values()->all();
         $configs['count'] = $items->count();
 
-        $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS,
-            [
-                'configs'   => $configs,
-
-            ]);
-
         return $configs;
     }
 
