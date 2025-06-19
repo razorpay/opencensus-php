@@ -121,6 +121,7 @@ export enum CONFIG_TAGS_ENUM {
   'refunds.instant_refunds' = 'refunds.instant_refunds',
   'refunds.refund' = 'refunds.refund',
   'reminders.reminder' = 'reminders.reminder',
+  'reports.reports' = 'reports.reports',
   'reports.contacts' = 'reports.contacts',
   'reports.custom' = 'reports.custom',
   'reports.on_demand_settlements' = 'reports.on_demand_settlements',

@@ -188,8 +188,8 @@ export const PRODUCTS_DATA: Record<string, Partial<ProductData>> = {
   reports: {
     bladeIcon: ReportsIcon,
     icon: 'i-books',
-    additionalCondition: (user: any): boolean =>
-      (user.isAllowedView('reports') || user.isCareHealthOwner) && user.hideForNIASupportRole,
+    additionalCondition: (user: any, {isConfigTagEnabled}): boolean =>
+      !isConfigTagEnabled('reports.reports') && (user.isAllowedView('reports') || user.isCareHealthOwner) && user.hideForNIASupportRole,
   },
   x_corporate_cards: {
     bladeIcon: CreditCardIcon,
