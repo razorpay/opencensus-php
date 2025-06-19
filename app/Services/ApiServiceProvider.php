@@ -351,6 +351,19 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new CardPaymentService();
         });
 
+        $this->app->singleton('affordability', function($app)
+        {
+            $affordabilityMock = $app['config']->get('applications.affordability_service.mock');
+
+            if ($affordabilityMock === true)
+            {
+                return new Mock\AffordabilityService();
+            }
+
+            return new AffordabilityService(null,null);
+        });
+
+
         $this->app->singleton('bin.service', function($app)
         {
             return new BinService();
@@ -978,10 +991,6 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             }
 
             return new RZP\Models\Payment\Store\Api($app);
-        });
-
-        $this->app->singleton('payment_methods_service', function ($app) {
-            return new \RZP\Models\Merchant\Methods\PaymentMethodsService();
         });
     }
 

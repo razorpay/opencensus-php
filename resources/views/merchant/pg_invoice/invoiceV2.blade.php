@@ -264,7 +264,7 @@
                                     <tr>
                                         <td class="lesser-width">Account Name</td>
                                         <td class="lesser-width seperator">:</td>
-                                        <td>Razorpay Software Pvt. Ltd.</td>
+                                        <td>Razorpay Software Limited.</td>
                                     </tr>
 
                                     <tr>

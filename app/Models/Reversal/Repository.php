@@ -24,6 +24,8 @@ use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
+    use Base\Traits\ExternalReversalRepo;
+
     protected $entity = 'reversal';
 
     protected $entityFetchParamRules = [

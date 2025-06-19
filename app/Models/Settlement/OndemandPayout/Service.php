@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement\OndemandPayout;
 
 use Config;
 
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Error\Error;
 use RZP\Models\Base;
@@ -56,6 +57,14 @@ class Service extends Base\Service
         $event = $input['event'];
 
         $payoutData = $input['payload']['payout']['entity'];
+
+        $notes = $input['payload']['payout']['entity']['notes'];
+
+        if (empty($notes) === false && $notes['source'] === 'capital-es')
+        {
+            $this->app['capital_early_settlements']->payoutsWebhook($input, $receivedSignature);
+            return ['response' => 'success'];
+        }
 
         $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PAYOUT_WEBHOOK_UPDATE, [
             'payout_response'                  => $payoutData,

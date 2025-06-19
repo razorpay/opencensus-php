@@ -433,6 +433,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MESSAGE);
     }
 
+    public function getOrigin()
+    {
+        return $this->getAttribute(self::ORIGIN);
+    }
+
+    public function isRearch()
+    {
+        return $this->isExternal() || $this->getOrigin() == Constant::ORIGIN_ROUTE;
+    }
+
     public function hasTransaction()
     {
         return ($this->isAttributeNotNull(self::TRANSACTION_ID) === true);

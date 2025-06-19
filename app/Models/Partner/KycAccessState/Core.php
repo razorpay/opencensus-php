@@ -31,7 +31,7 @@ class Core extends Base\Core
     const KYC_ACCESS_MUTEX_TIMEOUT = 300; // in seconds
     const PRTS_DUAL_WRITE_MUTEX_KEY = 'kyc_access_state_dual_write';
 
-    public function accessRequestExistHandle(Base\PublicCollection $accessRequest)
+    public function accessRequestExistHandle(Base\PublicCollection $accessRequest, string $max_rejection_count )
     {
         $kycAccessState = $accessRequest->first();
 
@@ -44,7 +44,7 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_KYC_ACCESS_ALREADY_APPROVED);
         }
 
-        if ($rejectionCount >= Constants::MAX_REJECTION_COUNT)
+        if ($rejectionCount >= $max_rejection_count)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_KYC_ACCESS_ALREADY_REJECTED);
@@ -93,7 +93,8 @@ class Core extends Base\Core
 
         if ($accessRequest->isEmpty() === false)
         {
-            $subMerchantKycAccess = $this->accessRequestExistHandle($accessRequest);
+            $max_rejection_count = $partner->isAggregatorPartner() ? Constants::AGGREGATOR_MAX_REJECTION_COUNT : Constants::MAX_REJECTION_COUNT;
+            $subMerchantKycAccess = $this->accessRequestExistHandle($accessRequest, $max_rejection_count);
         }
         else
         {
@@ -381,6 +382,7 @@ class Core extends Base\Core
             });
 
             $eventData['status'] = State::APPROVED;
+            (new Merchant\Core())->assignSubmerchantDashboardAccessIfApplicable($partner, $this->repo->merchant->findOrFail($input[Entity::ENTITY_ID]),  (new MerchantApplications\Core())->getDefaultAppTypeForPartner($partner), Role::OWNER);  
             $this->app['diag']->trackOnboardingEvent(EventCode::PARTNER_KYC_ACCESS_APPROVE, null, null, $eventData);
             $this->sendKycRequestConfirmedRejectedCommunication($subMerchantKycAccess, true);
         }
@@ -531,8 +533,10 @@ class Core extends Base\Core
 
                 $kycAccessState->fillSelectAttributes($payload['partner_kyc_access_state'], Entity::$prtsFillable);
 
-                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($kycAccessState, $merchantAccessMap, $partner, $subMerchant) {
+                $this->repo->transactionOnLiveAndTestAndAsv(function() use ($kycAccessState, $merchantAccessMap, $partner, $subMerchant, $payload) {
+                    if($payload['partner_kyc_access_state']['state'] == State::APPROVED){
                     (new Merchant\Core())->assignSubmerchantDashboardAccessIfApplicable($partner, $subMerchant,  (new MerchantApplications\Core())->getDefaultAppTypeForPartner($partner), Role::OWNER);
+                    }
                     $this->repo->saveOrFail($kycAccessState);
                     if (isset($merchantAccessMap) === true)
                     {

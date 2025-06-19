@@ -43,6 +43,7 @@ use RZP\Models\PayoutsDetails\Entity as PayoutDetailsEntity;
 use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
 use RZP\Models\PayoutsDetails\Validator as PayoutDetailsValidator;
 use RZP\Models\Payout\Configurations\DirectAccounts\PayoutModeConfig;
+use RZP\Models\Payout\Core as PayoutCore;
 
 class Validator extends Base\Validator
 {
@@ -53,6 +54,10 @@ class Validator extends Base\Validator
      */
     public $merchant;
 
+    /**
+     * @var PayoutCore
+     */
+    protected $payoutCore;
 
     // We are increasing this from 200 to 400. Slack thread for reference:
     // https://razorpay.slack.com/archives/C013868TRK4/p1733080607565809?thread_ts=1732256137.940409&cid=C013868TRK4
@@ -209,6 +214,8 @@ class Validator extends Base\Validator
         'xls',
         'xlsx',
     ];
+
+    const PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID = 'PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID';
 
     //
     // This is required for build. Currently, build does not
@@ -764,6 +771,15 @@ class Validator extends Base\Validator
         'bank_transfer_request_id' => 'sometimes|string',
         'request_payload' => 'sometimes|array'
     ];
+
+    protected function getPayoutCore()
+    {
+        if ($this->payoutCore === null) {
+            $this->payoutCore = new PayoutCore();
+        }
+
+        return $this->payoutCore;
+    }
 
     protected function validateSourceAndDestination($input)
     {
@@ -1825,6 +1841,30 @@ class Validator extends Base\Validator
     private function validateMobileNumberFormat(string $mobileNumber): void
     {
         if (!preg_match('/^\d{10}$/', $mobileNumber)) {
+
+            $app = App::getFacadeRoot();
+            try {
+                if (isset($app['basicauth']) && $app['basicauth']->getMerchant()) {
+                    $merchantId = $app['basicauth']->getMerchant()->getId();
+                    $sanitizedData = $this->getPayoutCore()->sanitizeDataForTracking([
+                        FundAccount\Entity::MOBILE => $mobileNumber
+                    ]);
+                    $this->getPayoutCore()->trackPhoneNumberPayoutFailureEvents(
+                        self::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID,
+                        [
+                            FundAccount\Entity::MOBILE      => $sanitizedData[FundAccount\Entity::MOBILE],
+                            Payout\Entity::MERCHANT_ID      => $merchantId,
+                            'failure_reason'                => self::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID
+                        ]
+                    );
+                }
+            } catch (\Throwable $e) {
+                $app['trace']->error(TraceCode::PAYOUT_TO_PHONE_NUMBER_EVENT_TRACKING_FAILED, [
+                    'error_message'         => $e->getMessage(),
+                    'context'               => self::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID
+                ]);
+            }
+
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MOBILE_NUMBER_INVALID, FundAccount\Entity::NUMBER);
         }
     }

@@ -75,7 +75,10 @@ trait SplitPayment
                 "Order Id is required for split payment");
         }
 
-        $orderAmount = $this->order->getAmount();
+        $orderAmount = ($input[Payment\Entity::METHOD] === Payment\Method::COD)
+            ? $this->order->getAmountDueForCod()
+            : $this->order->getAmount();
+
         $paidAmount = $this->order->getAmountPaid();
 
         // if paid_amount > 0, split payment cannot be supported
@@ -149,7 +152,9 @@ trait SplitPayment
 
             $gatewayInput = [];
 
-            if ($this->payment->isNewSplitPaymentFlow() === true)
+            // payment in a created state means, 2fa is required, so skip gateway call.
+            // Gateway call will happen once upi/netbanking/card payment is authorized.
+            if ($this->payment->isNewSplitPaymentFlow() === true && $this->payment->getStatus() == Payment\Status::CREATED)
             {
                 $gatewayInput = [
                     'skip_gateway_call' => true

@@ -80,6 +80,15 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postFundAccountDirectBankingPayout()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fundAccountDirectPayout($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postCompositePayoutWithOtp()
     {
         $input = Request::all();

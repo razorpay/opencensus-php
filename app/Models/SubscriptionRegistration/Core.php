@@ -506,9 +506,15 @@ class Core extends Base\Core
             $subrInput[Entity::CURRENCY] = $input[Order\Entity::CURRENCY];
         }
 
+        $description = $input[Constants\Entity::Description];
+
         $validator = new Validator;
 
         $validator->validateInput('create_subscription_registration',$subrInput);
+
+        if($this->isValidationRequiredForThisMerchant($merchant)) {
+            $validator->validateDescription($description);
+        }
 
         if (isset($input[Entity::NOTES]) === true)
         {
@@ -589,7 +595,6 @@ class Core extends Base\Core
 
         return $subscriptionRegistration;
     }
-
     protected function handleBankMerger(array & $subrInput = null)
     {
         if ($subrInput !== null and array_key_exists(Constants\Entity::BANK_ACCOUNT, $subrInput) === true)
@@ -803,20 +808,43 @@ class Core extends Base\Core
         }
 
         try {
-            $lockedAcquired = $this->mutex->acquire($idemPotentKey,300);
-            $this->trace->info(TraceCode::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_IDEMPOTENT_LOCK_ACQUIRED, [
-                'locked_acquired'  => $lockedAcquired,
-            ]);
 
-            if ($lockedAcquired === false) {
-                throw new LogicException("Duplicate request", "BAD_REQUEST_BATCH_REQUEST_ALREADY_IN_PROGRESS");
+            $lockedAcquired = false;
+
+            if ($idemPotentKey !== null)
+            {
+                $lockedAcquired = $this->mutex->acquire($idemPotentKey, 300);
+                $this->trace->info(TraceCode::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_IDEMPOTENT_LOCK_ACQUIRED, [
+                    'locked_acquired' => $lockedAcquired,
+                ]);
+
+                if ($lockedAcquired === false) {
+                    throw new LogicException("Duplicate request", "BAD_REQUEST_BATCH_REQUEST_ALREADY_IN_PROGRESS");
+                }
             }
 
-            if ($merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true) {
-                $token = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN_BY_GATEWAY_TOKEN], function () use ($id, $merchant) {
-                    return $this->repo->token->getByGatewayTokenAndMerchantIdWithForceIndex($id, $merchant->getId(),
-                        $this->mode);
-                });
+            $variant = $this->evaluateSplitzExperimentForFetchTokenFromTidb($merchant->getId());
+
+            if($variant === true)
+            {
+                if ($merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true)
+                {
+                    $token = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN_BY_GATEWAY_TOKEN], function () use ($id, $merchant) {
+                        return $this->repo->token->getByGatewayTokenAndMerchantIdFromTidb($id, $merchant->getId(),
+                            $this->mode);
+                    });
+                }
+
+            }
+            else
+            {
+                if ($merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true)
+                {
+                    $token = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN_BY_GATEWAY_TOKEN], function () use ($id, $merchant) {
+                        return $this->repo->token->getByGatewayTokenAndMerchantIdWithForceIndex($id, $merchant->getId(),
+                            $this->mode);
+                    });
+                }
             }
 
             if (empty($token) === true) {
@@ -1713,4 +1741,74 @@ class Core extends Base\Core
             return false;
         }
     }
+    private function isValidationRequiredForThisMerchant($merchant): bool
+    {
+        try
+        {
+            $experimentId = $this->app['config']->get('app.enable_description_validation_for_merchant');
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $experimentId,
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties' => $properties,
+                'response' => $response,
+            ]);
+            $variant = $response['response']['variant']['name'] ?? '';
+            if ($variant === 'enable') {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::MERCHANT_VALIDATION_OF_DESCRIPTION_FIELD
+            );
+        }
+        return false;
+    }
+
+    protected function evaluateSplitzExperimentForFetchTokenFromTidb($merchantId): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.emandate_fetch_token_from_tidb'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $varName = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($varName === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::EMANDATE_FETCH_TOKEN_FROM_TIDB_SPLITZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
 }

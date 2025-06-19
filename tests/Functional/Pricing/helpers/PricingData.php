@@ -5881,6 +5881,136 @@ return [
             ],
         ],
     ],
+    'testCreateUpiInAppAutoPayPlanWithoutAmountRange' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'upiInAppAutoPayWithoutAmountRange',
+                'rules'     => [
+                    [
+                        'product'                => 'primary',
+                        'feature'                => 'upi_inapp',
+                        'payment_method'         => 'upi',
+                        'percent_rate'           => 100,
+                        'type'                   => 'pricing',
+                        'payment_method_subtype' => 'initial'
+                    ],
+                    [
+                        'product'                => 'primary',
+                        'feature'                => 'upi_inapp',
+                        'payment_method'         => 'upi',
+                        'percent_rate'           => 200,
+                        'type'                   => 'pricing',
+                        'payment_method_subtype' => 'auto'
+                    ]
+                ],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name'      => 'upiInAppAutoPayWithoutAmountRange',
+                'entity'    => 'pricing',
+                'count'     => 2,
+                'rules'     => [
+                    [
+                        'plan_name'             => 'upiInAppAutoPayWithoutAmountRange',
+                        'payment_method'        => 'upi',
+                        'payment_method_type'   => null,
+                        'payment_method_subtype'=> 'auto',
+                        'payment_issuer'        => null,
+                        'percent_rate'          => 200,
+                        'type'                  => 'pricing',
+                        'product'               => 'primary',
+                        'feature'               => 'upi_inapp',
+                        'amount_range_active'    => false,
+                    ],
+                    [
+                        'plan_name'             => 'upiInAppAutoPayWithoutAmountRange',
+                        'payment_method'        => 'upi',
+                        'payment_method_type'   => null,
+                        'payment_method_subtype'=> 'initial',
+                        'payment_issuer'        => null,
+                        'percent_rate'          => 100,
+                        'type'                  => 'pricing',
+                        'product'               => 'primary',
+                        'feature'               => 'upi_inapp',
+                        'amount_range_active'    => false,
+                    ]
+                ],
+            ],
+        ],
+    ],
+    'testCreateUpiInAppAutoPayPlanWithAmountRange' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'upiInAppAutoPayWithAmountRange',
+                'rules'     => [
+                    [
+                        'product'                => 'primary',
+                        'feature'                => 'upi_inapp',
+                        'payment_method'         => 'upi',
+                        'percent_rate'           => 100,
+                        'type'                   => 'pricing',
+                        'amount_range_active'    => '1',
+                        'amount_range_min'       => 0,
+                        'amount_range_max'       => 50000,
+                        'payment_method_subtype' => 'initial'
+                    ],
+                    [
+                        'product'                => 'primary',
+                        'feature'                => 'upi_inapp',
+                        'payment_method'         => 'upi',
+                        'percent_rate'           => 200,
+                        'type'                   => 'pricing',
+                        'amount_range_active'    => '1',
+                        'amount_range_min'       => 50001,
+                        'amount_range_max'       => 100000,
+                        'payment_method_subtype' => 'auto'
+                    ]
+                ],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name'      => 'upiInAppAutoPayWithAmountRange',
+                'entity'    => 'pricing',
+                'count'     => 2,
+                'rules'     => [
+                    [
+                        'plan_name'             => 'upiInAppAutoPayWithAmountRange',
+                        'payment_method'        => 'upi',
+                        'payment_method_type'   => null,
+                        'payment_method_subtype'=> 'auto',
+                        'payment_issuer'        => null,
+                        'percent_rate'          => 200,
+                        'type'                  => 'pricing',
+                        'product'               => 'primary',
+                        'feature'               => 'upi_inapp',
+                        'amount_range_active'    => true,
+                        'amount_range_min'       => 50001,
+                        'amount_range_max'       => 100000,
+                    ],
+                    [
+                        'plan_name'             => 'upiInAppAutoPayWithAmountRange',
+                        'payment_method'        => 'upi',
+                        'payment_method_type'   => null,
+                        'payment_method_subtype'=> 'initial',
+                        'payment_issuer'        => null,
+                        'percent_rate'          => 100,
+                        'type'                  => 'pricing',
+                        'product'               => 'primary',
+                        'feature'               => 'upi_inapp',
+                        'amount_range_active'    => true,
+                        'amount_range_min'       => 0,
+                        'amount_range_max'       => 50000,
+                    ]
+                ],
+            ],
+        ],
+    ],
     'testAddPricingPlanWalletInternationalRule' => [
         'request' => [
             'content' => [
@@ -5980,6 +6110,29 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+        ],
+    ],
+
+    'testAddPricingPlanRuleWithInstalmentMethod' => [
+        'request' => [
+            'url' => '/pricing/{id}/rule',
+            'method' => 'POST',
+            'content' => [
+                'payment_method' => 'instalment',
+                'emi_duration' => 12,
+                'percent_rate' => 1000,
+                'fixed_rate' => 0,
+                'type' => 'pricing',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'payment_method' => 'instalment',
+                'emi_duration' => 12,
+                'percent_rate' => 1000,
+                'fixed_rate' => 0,
+                'type' => 'pricing',
+            ],
         ],
     ],
 ];

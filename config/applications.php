@@ -5,6 +5,7 @@ use RZP\Models\VirtualAccount;
 return [
     'dashboard' => [
         'url'       => env('APP_DASHBOARD_URL'),
+        'usl_url'   => env('APP_DASHBOARD_USL_URL'),
         'secret'    => env('APP_DASHBOARD_SECRET'),
         'pretend'   => env('APP_DASHBOARD_PRETEND'),
         'cloud'     => true,
@@ -1537,6 +1538,7 @@ return [
             'user'          => env('PAYMENT_METHODS_SERVICE_TEST_USER'),
         ],
         'read_experiment' => env('PAYMENT_METHODS_SERVICE_READ_EXPERIMENT'),
+        'write_experiment' => env('PAYMENT_METHODS_SERVICE_WRITE_EXPERIMENT'),
         'timeout'         => env('PAYMENT_METHODS_SERVICE_TIMEOUT', 100)
     ],
 

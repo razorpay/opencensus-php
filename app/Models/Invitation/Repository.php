@@ -82,4 +82,67 @@ class Repository extends Base\Repository
             ->whereIn(Entity::CONTACT_MOBILE, $validContactMobileFormats)
             ->firstOrFailPublic();
     }
+
+    public function getInvitationById($id)
+    {
+        return $this->newQuery()
+            ->where(Entity::ID, $id)
+            ->first();
+    }
+
+    public function getInvitationsForMerchantId($merchantId)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->get()
+            ->toArray();
+    }
+
+    public function updateInvitation($invitation)
+    {
+        $this->newQuery()
+            ->where(Entity::ID, array_get($invitation, Entity::ID))
+            ->update([
+                Entity::PRODUCT => array_get($invitation, Entity::PRODUCT),
+                Entity::EMAIL => array_get($invitation, Entity::EMAIL),
+                Entity::ROLE => array_get($invitation, Entity::ROLE),
+                Entity::IS_DRAFT => array_get($invitation, Entity::IS_DRAFT),
+                Entity::METADATA => array_get($invitation, Entity::METADATA),
+                Entity::CONTACT_MOBILE => array_get($invitation, Entity::CONTACT_MOBILE),
+            ]);
+
+        $invitation = $this->newQuery()
+            ->where(Entity::ID, array_get($invitation, Entity::ID))
+            ->first();
+
+        $invitation->id = intval($invitation->id);
+
+        return $invitation;
+    }
+
+    public function createInvitation($invitation)
+    {
+        $invitation =  $this->create([
+            Entity::PRODUCT => array_get($invitation, Entity::PRODUCT),
+            Entity::EMAIL => array_get($invitation, Entity::EMAIL),
+            Entity::ROLE => array_get($invitation, Entity::ROLE),
+            Entity::IS_DRAFT => array_get($invitation, Entity::IS_DRAFT),
+            Entity::METADATA => array_get($invitation, Entity::METADATA),
+            Entity::CONTACT_MOBILE => array_get($invitation, Entity::CONTACT_MOBILE),
+            Entity::TOKEN => array_get($invitation, Entity::TOKEN),
+            Entity::USER_ID => array_get($invitation, Entity::USER_ID),
+            Entity::MERCHANT_ID => array_get($invitation, Entity::MERCHANT_ID),
+        ]);
+
+        $invitation->id = intval($invitation->id);
+
+        return $invitation;
+    }
+
+    public function deleteInvitationById($id)
+    {
+        return $this->newQuery()
+            ->where(Entity::ID, $id)
+            ->delete();
+    }
 }

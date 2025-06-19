@@ -180,6 +180,7 @@ class Validator extends Base\Validator
         'payer_account_type'                                         => 'sometimes_if:method,upi|nullable|string|max:20',
         'wallet_amount'                                              => 'sometimes|integer',
         'device_fingerprint'                                          => 'sometimes|array',
+        'user_risk_providers_token'                                  => 'sometimes|string',
         'split_amount'                                               => 'sometimes|integer',
         'device_id'                                                  => 'sometimes',
         'store_id'                                                   => 'sometimes',
@@ -2179,7 +2180,7 @@ class Validator extends Base\Validator
     {
         if ($payment->isB2BExportCurrencyCloudPayment() === true)
         {
-            if (empty($payment->getReference2()) === true ||
+            if ((empty($payment->getReference2()) === true && $payment->merchant->isFeatureEnabled(Feature\Constants::CB_SKIP_B2B_EXPORT_INVOICE) === false )||
                 $payment->merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B) === false ||
                 empty($payment->getReference16()) === true)
             {
