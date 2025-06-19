@@ -106,7 +106,7 @@ export default (props) => {
     paymentColumns = props.paymentColumns;
   }
 
-  if (props.user?.isSingleReconEnabled && props.user?.isOptimizerEnabled) {
+  if (props.user?.isOptimizerEnabled) {
     paymentColumns.splice(1, 0, {
       title: 'Payment Provider',
       value: (item) => (

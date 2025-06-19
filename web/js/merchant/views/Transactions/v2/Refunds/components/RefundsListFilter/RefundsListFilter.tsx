@@ -294,8 +294,7 @@ const RefundsListFilter = ({
             </>
           ) : null}
 
-          {user.isSingleReconEnabled &&
-            user.isOptimizerEnabled &&
+          {user.isOptimizerEnabled &&
             terminalProviders &&
             terminalProviders.length > 0 && (
               <ProviderSelector

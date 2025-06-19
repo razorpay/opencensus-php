@@ -38,10 +38,10 @@ class PaymentsList extends ListContainer {
 
   componentDidMount() {
     const {
-      user: { isCustomTransactionTabView, isOptimizerEnabled, isSingleReconEnabled },
+      user: { isCustomTransactionTabView, isOptimizerEnabled },
       fetchProviders,
     } = this.props;
-    if (isSingleReconEnabled && isOptimizerEnabled) {
+    if (isOptimizerEnabled) {
       fetchProviders();
     }
 
@@ -114,7 +114,7 @@ class PaymentsList extends ListContainer {
       isMarketplacePayments,
     } = this.props;
 
-    const shouldDisplayOptimizerColumn = this.props.user.isOptimizerView();
+    const shouldDisplayOptimizerColumn = this.props.user.isOptimizerEnabled;
     const isOmniView = isOmniEnabledMerchant || (!!pos_activation_status && isOmniChannelMerchant);
 
     return (

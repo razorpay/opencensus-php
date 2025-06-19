@@ -333,8 +333,7 @@ const PaymentsListFilter = ({
             />
           )}
 
-          {user.isSingleReconEnabled &&
-            user.isOptimizerEnabled &&
+          {user.isOptimizerEnabled &&
             terminalProviders &&
             terminalProviders.length > 0 && (
               <ProviderSelector

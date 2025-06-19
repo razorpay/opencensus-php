@@ -37,15 +37,11 @@ class PaymentsList extends ListContainer {
 
   componentDidMount() {
     const {
-      store: {
-        session: {
-          user: { isCustomTransactionTabView, isOptimizerEnabled, isSingleReconEnabled } = {},
-        } = {},
-      },
+      store: { session: { user: { isCustomTransactionTabView, isOptimizerEnabled } = {} } = {} },
       fetchProviders,
     } = this.props;
 
-    if (isSingleReconEnabled && isOptimizerEnabled) {
+    if (isOptimizerEnabled) {
       fetchProviders();
     }
 
@@ -118,7 +114,6 @@ class PaymentsList extends ListContainer {
           pos_activation_status,
           isOmniEnabledMerchant,
           isCustomTransactionTabView,
-          isSingleReconEnabled,
           isOptimizerEnabled,
           isVASOrg,
         },
@@ -126,7 +121,6 @@ class PaymentsList extends ListContainer {
     } = store;
 
     const shouldDisplayOptimizerColumn =
-      isSingleReconEnabled &&
       isOptimizerEnabled &&
       isExperimentEnabled(this.context.splitz?.abExperiments?.toggle_payments_v2_revamp);
     const isOmniView = isOmniEnabledMerchant || (!!pos_activation_status && isOmniChannelMerchant);

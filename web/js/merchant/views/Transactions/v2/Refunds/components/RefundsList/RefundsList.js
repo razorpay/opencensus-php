@@ -27,7 +27,7 @@ const RefundsListWrapper = (props) => {
 class RefundsList extends ListContainer {
   componentDidMount() {
     const { fetchProviders, user } = this.props;
-    if (user.isOptimizerView()) {
+    if (user.isOptimizerEnabled) {
       fetchProviders();
     }
   }
@@ -42,7 +42,7 @@ class RefundsList extends ListContainer {
       terminalProviders,
     } = this.props;
     const { count, skip } = this.state;
-    const shouldDisplayOptimizerColumn = this.props.user.isOptimizerView();
+    const shouldDisplayOptimizerColumn = this.props.user.isOptimizerEnabled;
     const isOmniView = isOmniChannelMerchant(user);
 
     return (
