@@ -203,9 +203,11 @@ class Entity extends Base\PublicEntity
 
                 } else {
 
-                    $metaData[Constants::SERVICE] = Constants::SERVICE_PGOS;
-
-                    $fetchedFromOnboardingDetails = true;
+                    if (isset($metaData[Constants::USER_SIGNUP_STATE]))
+                    {
+                        $metaData[Constants::SERVICE] = Constants::SERVICE_PGOS;
+                        $fetchedFromOnboardingDetails = true;
+                    }
                 }
 
             }
