@@ -3972,6 +3972,19 @@ trait Authorize
         return false;
     }
 
+    protected function isUpiOtmMandateSuccess(Payment\Entity $payment, array $upiMandate){
+        if (($payment->isUpiRecurring() === true) and
+            ($payment->isRecurringTypeInitial() === true) and
+            (isset($upiMandate['frequency']) === true) and
+            ($upiMandate['frequency'] === 'one_time') and
+            (isset($upiMandate['status']) === true) and
+            ($upiMandate['status'] === 'confirmed'))
+        {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Method to set orderMeta in gateway input.
      *
