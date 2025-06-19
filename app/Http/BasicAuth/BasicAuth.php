@@ -2231,6 +2231,11 @@ class BasicAuth
             ((new Feature\Service())->checkFeatureEnabled(Feature\Constants::MERCHANT, $this->getMerchantId(), Feature\Constants::ENABLE_SINGLE_RECON))['status']);
     }
 
+    public function isOptimizerPaymentDashboardRequest()
+    {
+        return ($this->isProxyAuth() === true and
+            ((new Feature\Service())->checkFeatureEnabled(Feature\Constants::MERCHANT, $this->getMerchantId(), Feature\Constants::RAAS))['status']);
+    }
     /**
      * Checks if request is coming via a lambda trigger
      *
