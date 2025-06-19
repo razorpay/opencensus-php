@@ -15,6 +15,11 @@ use RZP\Constants\HyperTrace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\CapitalSubmerchantUtility;
+use RZP\Services\Elfin\Service as ElfinService;
+use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Merchant\Attribute\Type;
+use RZP\Models\PaymentLink\ElfinWrapper;
+use RZP\Models\Partner\Constants as PartnerConstants;
 
 class Core extends Base\Core
 {
@@ -42,13 +47,40 @@ class Core extends Base\Core
     }
 
     /**
+     * Get the appropriate URL for MKYC flow based on merchant configuration
+     *
+     * @param Merchant\Entity|null $merchant
+     * @return string
+     */
+    private function getBaseUrl(?Merchant\Entity $merchant = null): string
+    {
+        $baseUrl = $this->config['applications.dashboard.url'] . 'signup';
+
+        // Only check for MKYC flow if merchant is provided
+        if ($merchant !== null &&
+            $merchant->getPartnerType() == MerchantConstants::AGGREGATOR &&
+            $this->isMKYCFlowEnabled(
+                $merchant->getId(),
+                $this->app['config']->get('app.mkyc_aggregator_experiment_id'),
+                'mkyc_aggregator_flow_enabled'
+            )
+        ) {
+            $baseUrl = $this->config['applications.dashboard.usl_url'] . 'auth/?auth_intent=signup';
+        }
+
+        return $baseUrl;
+    }
+
+    /**
      * @return array[]
      */
-    protected function getReferralConfig(): array
+    protected function getReferralConfig(?Merchant\Entity $merchant = null): array
     {
+        $baseUrl = $this->getBaseUrl($merchant);
+
         return [
             Product::PRIMARY => [
-                "url"    => $this->config['applications.dashboard.url'] . 'signup',
+                "url" => $baseUrl,
                 "params" => [
                     "referral_code" => null,
                 ]
@@ -60,7 +92,6 @@ class Core extends Base\Core
                 ]
             ],
         ];
-
     }
 
     /**
@@ -181,7 +212,7 @@ class Core extends Base\Core
     {
         $referrals = $this->repo->referrals->getReferralByMerchantId($merchant->getId());
 
-        $productConfig = $this->getReferralConfig();
+        $productConfig = $this->getReferralConfig($merchant);
 
         $productConfig = $this->addCapitalProductConfig($merchant, $productConfig);
 
@@ -223,6 +254,7 @@ class Core extends Base\Core
     {
         // Calling this before the get call below to avoid calling validator
         // explicitly as build method will call it. The following get is to
+
 
         $newReferrals = [];
 
@@ -322,10 +354,11 @@ class Core extends Base\Core
      *
      * @return void
      * @throws Throwable
+     * NOTE :  This method regenerates referral links only for aggregator partner
      */
-    public function regenerate(PublicCollection $partners): void
+    public function regenerate(Merchant\Entity $partner): void
     {
-        $productConfig = $this->getReferralConfig();
+        $productConfig = $this->getReferralConfig($partner);
 
         $productConfig[Product::CAPITAL] = [
             "url"    => Merchant\Constants::RAZORPAY_LINE_OF_CREDIT_SIGN_UP,
@@ -337,41 +370,83 @@ class Core extends Base\Core
 
         $productConfig[Product::POS] = $productConfig[Product::PRIMARY];
 
-        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($partners, $productConfig) {
+        $this->repo->transactionOnLiveAndTestAndAsv(function() use ($partner, $productConfig) {
 
-            $ids = $partners->pluck(Entity::ID)->toArray();
 
-            $oldReferrals = $this->repo->referrals->getReferralsByMerchantIds($ids);
+            $oldReferrals = $this->repo->referrals->getReferralByMerchantIdAndProduct($partner->getId(), Product::PRIMARY);
 
-            foreach ($oldReferrals as $referral)
-            {
+            foreach ($oldReferrals as $referral) {
                 $refCode = $referral->getReferralCode();
-
                 $oldUrl = $referral->getReferralLink();
+                $merchantId = $referral->getMerchantId();
+                $product = $referral->getProduct();
 
-                $productConfig[$referral->getProduct()]["params"]["referral_code"] = $refCode;
+                // Get the merchant entity
+                $merchant = $this->repo->merchants->find($merchantId);
 
-                $newShortUrl = $this->createShortenReferralUrl(
-                    $productConfig[$referral->getProduct()]["url"],
-                    $productConfig[$referral->getProduct()]["params"]
-                );
+                $productConfig[$product]["params"]["referral_code"] = $refCode;
 
-                $referral[Entity::URL] = $newShortUrl;
+                $elfinWrapper = new ElfinWrapper(ElfinService::GIMLI);
 
-                $this->repo->saveOrFail($referral);
+                $oldHash =  $elfinWrapper->getHashFromUrl($oldUrl);
+
+                $updatedHash = $elfinWrapper->updateLongUrlByHash($oldHash, $productConfig[$product]["url"]);
+                
+                $referralData = [
+                    'product' => $product,
+                    'ref_code' => $refCode,
+                ];
+                $this->updateReferralLinkWithKycAccessConsent($merchant, $referralData);
 
                 $this->trace->info(
                     TraceCode::PARTNER_REFERRAL_LINK_REGENERATE,
                     [
-                        'partner_id' => $referral->getMerchantId(),
-                        'product'    => $referral->getProduct(),
+                        'partner_id' => $merchantId,
+                        'product'    => $product,
                         'new_url'    => $referral->getReferralLink(),
                         'old_url'    => $oldUrl,
                     ]
                 );
-
             }
         });
+    }
+
+    /**
+     * Updates the referral link with KYC access consent
+     *
+     * @param Merchant\Entity $merchant
+     * @param array $referralData
+     * @return string|null
+     */
+    protected function updateReferralLinkWithKycAccessConsent(Merchant\Entity $merchant, array $referralData): ?string
+    {
+        try {
+            $parameters = [
+                'entity_id'      => $merchant->getId(),
+                'entity_type'    => 'merchant',
+                'product'        => $referralData['product'],
+                'name'           => PartnerConstants::REFERRAL_WITH_CONSENT,
+                'meta'           => [
+                    'referral_code' => $referralData['ref_code'],
+                    'update_long_url' => true
+                ]
+            ];
+
+            $referralWithKycAccess = $this->app->partnerships->updateReferralLinkWithKycAccessConsent($parameters);
+
+            return $referralWithKycAccess;
+        } catch (Throwable $e) {
+            $this->trace->count(Merchant\Metric::EASY_KYC_ACCESS_REFERRAL_FETCH_FAILURE_TOTAL);
+
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::EASY_KYC_ACCESS_PARTNER_REFERRAL_FETCH_ERROR,
+                ['entity_id' => $merchant->getId()]
+            );
+
+            return null;
+        }
     }
 
     /**
