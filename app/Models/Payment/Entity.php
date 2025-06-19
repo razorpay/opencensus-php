@@ -4520,7 +4520,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $app = \App::getFacadeRoot();
 
         try{
-            if($app['basicauth']->isOptimiserDashboardRequest() === true)
+            if($app['basicauth']->isOptimizerPaymentDashboardRequest() === true)
             {
                 if($this->terminal != null && $this->terminal->getProcurer() === 'merchant')
                 {
@@ -4903,7 +4903,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $app = \App::getFacadeRoot();
 
         if ($merchant->isFeatureEnabledOnNonPurePlatformPartner(Feature\Constants::SEND_PAYMENT_LATE_AUTH) === true
-        or $app['basicauth']->isOptimiserDashboardRequest() === true)
+        or $app['basicauth']->isOptimizerPaymentDashboardRequest() === true)
         {
             $lateAuth = $this->isLateAuthorized();
 
@@ -5174,7 +5174,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if ($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_SETTLED_BY) === false)
         {
             $app = \App::getFacadeRoot();
-            if($app['basicauth']->isOptimiserDashboardRequest() === false)
+            if($app['basicauth']->isOptimizerPaymentDashboardRequest() === false)
             {
                 unset($array[self::SETTLED_BY]);
                 return;
@@ -5275,7 +5275,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         try{
             // We only want to set the Provider while serving requests from optimiser dashboard
 
-            if($app['basicauth']->isOptimiserDashboardRequest() === true)
+            if($app['basicauth']->isOptimizerPaymentDashboardRequest() === true)
             {
                 if($this->terminal != null && $this->terminal->getProcurer() === 'merchant')
                 {
