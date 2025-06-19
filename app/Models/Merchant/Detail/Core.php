@@ -3180,16 +3180,15 @@ class Core extends Base\Core
         $service = new Merchant\Service();
         $isRekycMerchant = $service->isRekycMerchant($merchantId, $activationStatus);
         $nextStatus =  $input[DetailConstants::REKYC_STATUS];
-
+        if (isset($input[DetailConstants::SELF_SERVE_REKYC_MERCHANT]) === true) {
+            $this->trace->info(TraceCode::SELF_SERVE_REKYC_MERCHANT, [
+                '$merchantId' => $merchantId
+            ]);
+            $this->createWorkflow($merchantId, $input[DetailConstants::CURRENT_REKYC_STATUS] , $nextStatus);
+            return $merchant->getMerchantDetail();
+        }
         if ($isRekycMerchant && $nextStatus!=null)
         {
-            if (isset($input[DetailConstants::SELF_SERVE_REKYC_MERCHANT]) === true) {
-                $this->trace->info(TraceCode::SELF_SERVE_REKYC_MERCHANT, [
-                    '$merchantId' => $merchantId
-                ]);
-                $this->createWorkflow($merchantId, $input[DetailConstants::CURRENT_REKYC_STATUS] ,$nextStatus);
-                return $merchant->getMerchantDetail();
-            }
             $details = $service->getAdditionalDetailsFromASV($merchantId);
 
             $manualRekyc = $details[DetailConstants::MANUAL_REKYC] ?? null;
