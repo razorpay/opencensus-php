@@ -2440,39 +2440,4 @@ return [
             ],
         ],
     ],
-
-    'testCreateVirtualAccountWithRaasAndOptimizerBankTransfer' => [
-        'request' => [
-            'url'    => '/virtual_accounts',
-            'method' => 'post',
-            'content' => [
-                'description'      => 'VA for RAAS test',
-                'receivers'        => [
-                    'types' => [
-                        'bank_account',
-                    ]
-                ],
-                'amount_expected'  => 10000,
-                'currency'         => 'INR',
-                'email'            => 'test@example.com',
-                'contact'          => '9876543210'
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'entity'           => 'virtual_account',
-                'description'      => 'VA for RAAS test',
-                'status'           => 'active',
-                'amount_expected'  => 10000,
-                'currency'         => 'INR',
-                'receivers'        => [
-                    [
-                        'entity' => 'bank_account',
-                        'ifsc'   => 'RAZR0000001',
-                    ]
-                ]
-            ],
-            'status_code' => 200,
-        ],
-    ],
 ];
