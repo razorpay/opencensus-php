@@ -744,8 +744,23 @@ class Core extends Base\Core
 
     public function createNotificationUsingOrder(array $input, $order, $token)
     {
-        $rearch = true;
-        if ($rearch and $this->mode === Mode::LIVE)
+        $properties = [
+            'id'            => UniqueIdEntity::generateUniqueId(),
+            'experiment_id' => $this->app['config']->get('app.enable_rearch_card_recurring_pdn_decoupling'),
+            'request_data'  => json_encode([
+                'merchant_id' => $this->merchant->getMerchantId(),
+            ]),
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+            'properties' => $properties,
+            'response' => $response,
+        ]);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        if ($variant === 'enable' and $this->mode === Mode::LIVE)
         {
             $payload = $input['notification'];
             $payload[Entity::ORDER_ID] = $order->getId();
@@ -754,8 +769,10 @@ class Core extends Base\Core
             $payload[Entity::CARD_MANDATE_ID] = $token->getCardMandateId();
             $payload[Entity::AMOUNT] = $order->getAmount();
             $payload[Entity::CURRENCY] = $order->getCurrency() ?? 'INR';
+            $payload['merchant_category'] = $this->merchant->getCategory2();
+            $payload['mcc'] = $this->merchant->getCategory();
+            $payload['gateway_merchant_id'] = $token->getTerminalId();
             $this->addDefaultsForNotificationInput($payload);
-            // Todo: add more parameters in the payload which are required
 
             try
             {
