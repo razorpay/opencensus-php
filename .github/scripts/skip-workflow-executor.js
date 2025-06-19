@@ -12,18 +12,19 @@ const path = require('path');
     const commitSha = env.commit_sha;
     const whySkip = env.why_skip;
     const doeApproval = env.doe_approval;
+    const skippedBy = env.skippedBy;
 
     const tempDir = mkdtempSync(path.join(os.tmpdir(), 'commit-'));
     const commitFilePath = path.join(tempDir, `${commitSha}.json`);
 
     const executionData = {
-        targetBucket,
-        workflowName,
-        commitSha,
-        whySkip,
-        doeApproval,
-        skippedBy,
-      };
+      targetBucket,
+      workflowName,
+      commitSha,
+      whySkip,
+      doeApproval,
+      skippedBy,
+    };
 
     writeFileSync(commitFilePath, JSON.stringify(executionData, null, 2), 'utf8');
 
@@ -46,7 +47,9 @@ const path = require('path');
 
     rmSync(tempDir, { recursive: true, force: true });
 
-    console.log(`Successfully marked ${commitSha} as skipped. Please re-run the workflow now to skip it.`);
+    console.log(
+      `Successfully marked ${commitSha} as skipped. Please re-run the workflow now to skip it.`,
+    );
   } catch (error) {
     console.error('Failed Executing Skip Trigger', error);
     process.exit(1);

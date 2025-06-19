@@ -55,6 +55,9 @@ jobs:
             }
             console.log(`Approved by ${actor}`);
 
+            // Set the approver as output
+            core.setOutput('approver', actor);
+
       - name: Configure AWS Credentials For Dashboard Assets
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -76,4 +79,4 @@ jobs:
           doe_approval: ${{ github.event.inputs.doe_approval }}
           why_skip: ${{ github.event.inputs.why_skip }}
           commit_sha: ${{ github.event.inputs.commit_sha }}
-          skippedBy: ${{ context.payload.sender.login }}
+          skippedBy: ${{ steps.validate_approver.outputs.approver }}
