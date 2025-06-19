@@ -851,6 +851,8 @@ final class RazorxTreatment
     // Experiment to handle source and request ID capture
     const PAYOUTS_CAPTURE_SOURCE_REQUEST_ID = 'payouts_capture_source_request_id_experiment';
 
+    const PAYOUTS_SHADOW_ROUTER = 'payouts_shadow_router_splitz_experiment';
+
     // Experiment for sending user details to getsimpl
     const SEND_USER_DETAILS_TO_GETSIMPL         = 'send_user_details_to_getsimpl';
 

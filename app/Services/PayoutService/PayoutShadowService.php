@@ -46,7 +46,7 @@ class PayoutShadowService
 
         $merchantId = $body['merchant_id'];
 
-        $redis = app('redis')->Connection('mutex_redis');
+        //$redis = app('redis')->Connection('mutex_redis');
 
         try {
             if (self::shouldMirrorRequest($merchantId, $config['kill_switch']) === false) {
@@ -55,10 +55,10 @@ class PayoutShadowService
 
             $awsTraceId = (new SourceRequestIDMappingCore())->extractAWSTraceIDFromHeaders($app);
 
-            // Store the AWS trace ID in cache with the request ID as the key
-            $cacheKey = 'payout_shadow_request:' . $requestId;
-
-            $redis->set($cacheKey, $awsTraceId, 'EX', 60 * 10); // Store for 5 minutes
+            //// Store the AWS trace ID in cache with the request ID as the key
+            //$cacheKey = 'payout_shadow_request:' . $requestId;
+            //
+            //$redis->set($cacheKey, $awsTraceId, 'EX', 60 * 10); // Store for 5 minutes
 
             // Log request start with caller information
             $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -84,8 +84,8 @@ class PayoutShadowService
 
             // Add tracking header to identify mirrored requests
             $requestHeaders['X-Mirrored-Request'] = 'true';
-            $requestHeaders['X-Request-ID'] = $requestId;
-            $requestHeaders['X-Amazon-Trace-Id'] = $awsTraceId;
+            $requestHeaders[RequestHeader::X_RAZORPAY_REQUEST_ID] = $requestId;
+            $requestHeaders[RequestHeader::X_AMAZON_TRACE_ID] = $awsTraceId;
 
             $url = rtrim($config['payouts_shadow_router_url'], '/') . '/' . ltrim($path, '/');
 

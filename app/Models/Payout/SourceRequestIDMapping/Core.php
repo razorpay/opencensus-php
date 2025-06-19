@@ -43,6 +43,26 @@ class Core extends Base
         return get_object_vars($mapping);
     }
 
+    public function getRequestIDByPayout(string $sourceID)
+    {
+        $this->trace->info(
+            'payout.source_request_id.lookup',
+            ['source_id' => $sourceID]
+        );
+
+        $payoutRequestMapping = (new SourceRequestIDMappingRepository)->getRequestIdBySourceID($sourceID, "PAYOUT");
+
+        if (count($payoutRequestMapping) === 0)
+        {
+            return null;
+        }
+
+        $mapping = $payoutRequestMapping[0];
+
+        // Converts the stdClass object into associative array
+        return get_object_vars($mapping);
+    }
+
     /**
      * Creates a mapping between a source request ID and an entity
      *
@@ -74,18 +94,20 @@ class Core extends Base
             Entity::UPDATED_AT  => Carbon::now(Timezone::IST)->getTimestamp(),
         ];
 
-        $this->trace->info(
-            'source_request_id.mapping_create',
-            ['data' => $data, 'source_id' => $sourceId, 'source_type' => $sourceType]
-        );
+        //$this->trace->info(
+        //    'source_request_id.mapping_create',
+        //    ['source_id' => $sourceId, 'source_type' => $sourceType,]
+        //);
 
         (new SourceRequestIDMappingRepository)->insertSourceRequestIdMapping($data);
     }
 
     public function extractAWSTraceIDFromHeaders($app) {
         try {
-            $awsTraceID = $app['request']->headers?->get(RequestHeader::X_AMAZON_TRACE_ID);
-            if (empty($awsTraceID) === false)
+            $awsTraceID = $app['request']->headers?->get(RequestHeader::X_AMAZON_TRACE_ID) ??
+                          $app['request']->headers?->get('X-Amazon-Trace-Id');
+
+            if (empty($awsTraceID) === true)
             {
                 // add the requestID instead
                 $awsTraceID = $app['request']->getTaskId();

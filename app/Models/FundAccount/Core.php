@@ -1875,29 +1875,9 @@ class Core extends Base\Core
                 'request_data' => json_encode(['merchant_id' => $fundAccount->merchant->getId()])
             ];
 
-            $response = $this->app['splitzService']->evaluateRequest($properties);
+            return (new Merchant\Core())->isSplitzExperimentEnable($properties, RazorxTreatment::VARIANT_ENABLE);
 
-            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
-                'experiment_id' => $properties['experiment_id'],
-                'splitz_output' => $response,
-            ]);
 
-            // Check for the variant name
-            $variant = $response['response']['variant']['name'] ?? null;
-            if ($variant === 'enable')
-            {
-                return true;
-            }
-
-            // Also check variables if variant doesn't match
-            $variables = $response['response']['variant']['variables'] ?? [];
-            foreach ($variables as $variable)
-            {
-                if ($variable['key'] === 'enabled' && $variable['value'] === 'true')
-                {
-                    return true;
-                }
-            }
         }
         catch (\Throwable $e)
         {

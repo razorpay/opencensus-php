@@ -16,6 +16,7 @@ use RZP\Traits\TrimSpace;
 use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\Contact\BatchHelper as ContactBatchHelper;
@@ -155,11 +156,13 @@ class Core extends Base\Core
     protected function isSourceRequestIdMappingEnabled(Entity $contact): bool
     {
         $properties = [
-            "id" => $contact->merchant->getId(),
+            "id"            => $contact->merchant->getId(),
             "experiment_id" => $this->app['config']->get('app.source_request_id_mapping_experiment_id'),
         ];
 
-        return $this->isSplitzExperimentEnabled($properties, 'variables', TraceCode::SOURCE_REQUEST_ID_MAPPING_SPLITZ_ERROR);
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, RazorxTreatment::VARIANT_ENABLE);
+
+
     }
 
     /**

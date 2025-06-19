@@ -122,6 +122,8 @@ class RequestHeader
 
     const X_RAZORPAY_REQUEST_ID          = 'X-Razorpay-Request-Id';
 
+    const X_MIRROR_REQUEST_ID            = 'X-Mirror-Request-Id';
+
     const X_CASE_TYPE                    = 'X-Case-type';
 
     const X_MOBILE_OAUTH                 = 'x-mobile-oauth';
@@ -137,7 +139,7 @@ class RequestHeader
     const X_PG_ROUTER_MERCHANT_IP        = "X-PG-Router-Merchant-Ip";
 
     const X_PG_ROUTER_API_PAYMENT        = "X-PG-Router-Api-Payment";
-  
+
     const X_AB_USER_ID                  = 'x-ab-user-id';
 
     const RECON_JOB_SYNC = 'recon-job-sync';

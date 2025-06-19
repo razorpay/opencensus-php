@@ -11,7 +11,7 @@ use RZP\Trace\TraceCode;
 class Repository extends Base\Repository
 {
     protected $entity = Constants\Entity::PAYOUT;
-    
+
     // Add trace constants since they're not in TraceCode yet
     private const PAYOUT_SOURCE_REQUEST_ID_GET = 'payout.source_request_id.get';
     private const PAYOUT_SOURCE_REQUEST_ID_CREATE = 'payout.source_request_id.create';
@@ -26,7 +26,27 @@ class Repository extends Base\Repository
         }
 
         $tableResult = \DB::connection($this->getPayoutsServiceConnection())
-                  ->select("select * from $tableName where source_type = 'aws_trace_id' and source_id = '$requestId'");
+                  ->select("select * from $tableName where request_id = $requestId");
+
+        $this->trace->info(
+            self::PAYOUT_SOURCE_REQUEST_ID_GET,
+            $tableResult
+        );
+
+        return $tableResult;
+    }
+
+    public function getRequestIdBySourceID($sourceID, $sourceType = null)
+    {
+        $tableName = 'source_request_id_mapping';
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_' . $tableName;
+        }
+
+        $tableResult = \DB::connection($this->getPayoutsServiceConnection())
+                          ->select("select * from $tableName where source_id = $sourceID and source_type = $sourceType");
 
         $this->trace->info(
             self::PAYOUT_SOURCE_REQUEST_ID_GET,
@@ -45,13 +65,18 @@ class Repository extends Base\Repository
             $tableName = 'ps_' . $tableName;
         }
 
+
         $this->trace->info(
-            self::PAYOUT_SOURCE_REQUEST_ID_CREATE,
-            $data
+            TraceCode::PAYOUT_SOURCE_REQUEST_ID_CREATE,
+            [
+                'source_id' => $data[Entity::SOURCE_ID],
+                'source_type' => $data[Entity::SOURCE_TYPE],
+                'request_id' => $data[Entity::REQUEST_ID],
+            ]
         );
 
         $this->newQueryWithConnection($this->getPayoutsServiceConnection())
              ->from($tableName)
              ->insert($data);
     }
-} 
+}
