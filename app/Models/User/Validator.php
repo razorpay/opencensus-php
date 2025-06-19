@@ -32,6 +32,7 @@ use RZP\Constants\Metric as ConstantMetric;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\User\Core as UserCore;
 use RZP\Models\Merchant\MerchantUser;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 
 /**
  * Class Validator
@@ -1033,6 +1034,26 @@ class Validator extends Base\Validator
             else if(array_key_exists('score', (array)$output) === true)
             {
                 $threshold = 0.6;
+                // Use higher threshold for international users (non-IN)
+                $countryCode = $input['country_code'] ?? DetailConstants::INDIA_COUNTRY_CODE;
+                $isInternational = $countryCode !== DetailConstants::INDIA_COUNTRY_CODE;
+                if ($isInternational)
+                {
+                    $threshold = 0.8;
+                }
+                // Log scores between 0.6 and 0.8 to track threshold impact
+                if ($output->score >= 0.6 && $output->score < 0.8 && $isInternational)
+                {
+                    $app['trace']->info(TraceCode::CAPTCHA_SCORE_THRESHOLD_IMPACT, [
+                        'score' => $output->score,
+                        'threshold' => $threshold,
+                        'country_code' => $countryCode,
+                        'is_international' => $isInternational,
+                        'would_pass_domestic' => $output->score >= 0.6,
+                        'would_pass_international' => $output->score >= 0.8,
+                        'captcha_mode_header' => Request::header(self::CAPTCHA_MODE_HEADER),
+                    ]);
+                }
 
                 if ($output->score < $threshold)
                 {
