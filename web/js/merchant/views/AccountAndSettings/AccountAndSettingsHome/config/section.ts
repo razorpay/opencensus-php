@@ -69,6 +69,7 @@ import {
   isCurlecPaypalOnboardingEnabled,
   isCheckoutV2PaymentConfigsEnabled,
   isPaymentReceiptCustomizationEnabled,
+  isSettlementsAllowed,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
 export const AccountNSettingsIcons = {
@@ -522,10 +523,10 @@ export const Sections: SectionCardInterface[] = [
         id: BankAccountSettlementFields.SETTLEMENT_DETAILS,
         title: BankAccountSettlementTitles[BankAccountSettlementFields.SETTLEMENT_DETAILS],
         href: ROUTES_INFO.SETTLEMENT_DETAILS,
-        additionalCondition: ({ rbacExperiment }) => {
+        additionalCondition: ({ rbacExperiment, extraConfig }) => {
           return (user: User) => {
             const isActionAllowed = initIsActionAllowed(user, rbacExperiment);
-            return isActionAllowed({
+            return isSettlementsAllowed(extraConfig) && isActionAllowed({
               permissions: [PERMISSIONS.VIEW_SETTLEMENT_BALANCE],
             });
           };
