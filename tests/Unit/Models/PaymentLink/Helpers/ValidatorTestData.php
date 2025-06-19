@@ -709,5 +709,26 @@ return [
         "False url 7"                               => ["https://www.youtube.com@poc-demos.000webhostapp.com/embed_fake_page.php", false],
         "False url 8"                               => ["https://www.youtube.com:abcd@poc-demos.000webhostapp.com/embed_fake_page.php", false],
 
+    ],
+
+    "testValidateImageUrl80g" => [
+        // Valid S3 URLs
+        "Valid S3 URL with ap-south-1 region" => ["https://s3.ap-south-1.amazonaws.com/rzp-prod-merchant-assets/image.jpg", true],
+        "Valid S3 URL with us-east-1 region" => ["https://s3.us-east-1.amazonaws.com/my-bucket/logo.png", true],
+        "Valid S3 URL with eu-west-1 region" => ["https://s3.eu-west-1.amazonaws.com/company-assets/banner.jpg", true],
+        "Valid S3 URL without region (global)" => ["https://s3.amazonaws.com/global-bucket/image.png", true],
+        "Valid S3 URL with complex path" => ["https://s3.ap-south-1.amazonaws.com/rzp-prod-merchant-assets/org_123/logo/company-logo.png", true],
+        "Valid S3 URL with query parameters" => ["https://s3.ap-south-1.amazonaws.com/bucket/image.jpg?version=1.0", true],
+        "Valid S3 URL with fragment" => ["https://s3.ap-south-1.amazonaws.com/bucket/image.jpg#section", true],
+
+        // Invalid URLs
+        "Invalid URL format" => ["not-a-url", false, "The image_url_80g must be a valid URL."],
+        "Invalid URL with spaces" => ["https://s3.ap-south-1.amazonaws.com/bucket name/image.jpg", false, "The image_url_80g must be a valid URL."],
+        "HTTP instead of HTTPS" => ["http://s3.ap-south-1.amazonaws.com/bucket/image.jpg", false, "The image_url_80g must use HTTPS protocol."],
+        "Non-S3 hostname" => ["https://example.com/image.jpg", false, "The image_url_80g must be a valid S3 URL (e.g., https://s3.ap-south-1.amazonaws.com/bucket-name)."],
+        "S3-like but wrong domain" => ["https://s3.ap-south-1.example.com/bucket/image.jpg", false, "The image_url_80g must be a valid S3 URL (e.g., https://s3.ap-south-1.amazonaws.com/bucket-name)."],
+        "Wrong S3 subdomain" => ["https://s3-bucket.ap-south-1.amazonaws.com/bucket/image.jpg", false, "The image_url_80g must be a valid S3 URL (e.g., https://s3.ap-south-1.amazonaws.com/bucket-name)."],
+        "Empty string" => ["", false, "The image_url_80g must be a valid URL."],
+        "Null value" => [null, true], // Should pass as it's nullable
     ]
 ];
