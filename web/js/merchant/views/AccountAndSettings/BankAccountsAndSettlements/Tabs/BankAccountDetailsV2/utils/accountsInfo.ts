@@ -24,7 +24,7 @@ const getBankDetailPayload = ({
   const user = getUser();
   const bankDetails = BANK_DATA.reduce((accumulator, each) => {
     const { id, title } = each;
-    if (!(id === 'ifsc' && user?.isCountrySingapore))
+    if (!(id === 'ifsc' && (user.isCountrySingapore || user.isOrgCurlec)))
       accumulator.push({
         id,
         name: title,
