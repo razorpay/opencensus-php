@@ -733,8 +733,11 @@ trait EmandateRecurring
         $experimentId = $app['config']->get('app.emandate_citi_sdn_identification');
 
         $properties = [
-            'merchant_id' => $merchantId,
+            'id'            => UniqueIdEntity::generateUniqueId(),
             'experiment_id' => $experimentId,
+            'request_data'  => json_encode([
+                'merchant_id' => $merchantId,
+            ]),
         ];
 
         $response = $app['splitzService']->evaluateRequest($properties);

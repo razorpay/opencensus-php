@@ -42,14 +42,14 @@ class NeedsClarificationProxyController extends MerchantOnboardingProxyControlle
     ];
 
     const ROUTES_URL_MAP    = [
-        self:: MERCHANT_ACTIVATION_CLARIFICATION_FETCH         => '/twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/GetClarificationReasons',
-        self:: MERCHANT_ACTIVATION_CLARIFICATIONS_SAVE         => '/twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/PostMerchantResponseToClarifications',
-        self:: MERCHANT_ACTIVATION_CLARIFICATIONS_FETCH_ADMIN  => '/twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/GetClarificationReasonsAdmin',
-        self:: MERCHANT_ACTIVATION_CLARIFICATIONS_SAVE_ADMIN   => '/twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/AdminSaveClarificationReasons',
-        self:: MERCHANT_NC_REVAMP_ELIGIBILITY                  => '/twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/GetMerchantNCRevampEligibility',
-        self:: MERCHANT_NC_REVAMP_ELIGIBILITY_ADMIN            => '/twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/GetMerchantNCRevampEligibility',
-        self:: MERCHANT_ACTIVATION_DOCUMENT_TYPE               => '/twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/GetNCAdditionalDocuments',
-        self:: MERCHANT_UPDATE_CLARIFICATIONS                  => '/twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/UpdateClarificationDetails',
+        self:: MERCHANT_ACTIVATION_CLARIFICATION_FETCH         => 'twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/GetClarificationReasons',
+        self:: MERCHANT_ACTIVATION_CLARIFICATIONS_SAVE         => 'twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/PostMerchantResponseToClarifications',
+        self:: MERCHANT_ACTIVATION_CLARIFICATIONS_FETCH_ADMIN  => 'twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/GetClarificationReasonsAdmin',
+        self:: MERCHANT_ACTIVATION_CLARIFICATIONS_SAVE_ADMIN   => 'twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/AdminSaveClarificationReasons',
+        self:: MERCHANT_NC_REVAMP_ELIGIBILITY                  => 'twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/GetMerchantNCRevampEligibility',
+        self:: MERCHANT_NC_REVAMP_ELIGIBILITY_ADMIN            => 'twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/GetMerchantNCRevampEligibility',
+        self:: MERCHANT_ACTIVATION_DOCUMENT_TYPE               => 'twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/GetNCAdditionalDocuments',
+        self:: MERCHANT_UPDATE_CLARIFICATIONS                  => 'twirp/rzp.pg_onboarding.needsclarification.v1.NeedsClarificationService/UpdateClarificationDetails',
     ];
 
     // timeout in seconds
