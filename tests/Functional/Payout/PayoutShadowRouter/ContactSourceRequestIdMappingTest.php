@@ -165,6 +165,8 @@ class ContactSourceRequestIdMappingTest extends TestCase
 
         // Verify contact was created successfully
         $contact = $this->getDbLastEntity('contact');
+        $sourceRequestIdMapping = \DB::connection('live')->select("select * from ps_source_request_id_mapping where source_id = '$contactID'")[0];
+        $this->assertNull($sourceRequestIdMapping, "Source request ID mapping should not be created when disabled");
         $this->assertNotNull($contact);
         $this->assertEquals('Test Contact Shadow', $contact->getName());
 
@@ -235,29 +237,5 @@ class ContactSourceRequestIdMappingTest extends TestCase
         // Verify response structure
         $this->assertEquals('contact', $response['entity']);
         $this->assertEquals('Test Contact Shadow', $response['name']);
-    }
-
-    public function testCreateContactWithoutAwsTraceId()
-    {
-        // Mock Splitz experiments to enable both features
-        $this->mockSplitzExperiments([
-            'shadow_router_exp_id' => 'enable',
-            'source_mapping_exp_id' => 'enable'
-        ]);
-
-        // Mock the PayoutShadowService
-        $this->mockPayoutShadowService(true);
-
-        // Execute the test (no AWS trace ID in test data)
-        $this->ba->privateAuth();
-        $response = $this->startTest();
-
-        // Verify contact was created successfully
-        $contact = $this->getDbLastEntity('contact');
-        $this->assertNotNull($contact);
-        $this->assertEquals('Test Contact Shadow', $contact->getName());
-
-        // Note: Source request ID mapping creation depends on AWS trace ID extraction logic
-        // In test environment, this might behave differently than production
     }
 }

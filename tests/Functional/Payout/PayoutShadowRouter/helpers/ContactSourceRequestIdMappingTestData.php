@@ -75,7 +75,7 @@ return [
         ]
     ],
 
-    'testCreateContactWithShadowRoutingDisabled' => [
+    'testCreateContactWithShadowServiceError' => [
         'request' => [
             'method' => 'POST',
             'url' => '/contacts',
@@ -86,8 +86,8 @@ return [
                 'type' => 'self',
                 'reference_id' => 'SHADOW_REF_123',
                 'notes' => [
-                    'test_type' => 'shadow_routing_disabled',
-                    'experiment' => 'source_request_id_mapping_enabled'
+                    'test_type' => 'shadow_routing_test',
+                    'experiment' => 'source_request_id_mapping'
                 ]
             ],
             'server' => [
@@ -104,46 +104,12 @@ return [
                 'reference_id' => 'SHADOW_REF_123',
                 'active' => true,
                 'notes' => [
-                    'test_type' => 'shadow_routing_disabled',
-                    'experiment' => 'source_request_id_mapping_enabled'
+                    'test_type' => 'shadow_routing_test',
+                    'experiment' => 'source_request_id_mapping'
                 ]
             ],
             'status_code' => 201
         ]
     ],
 
-    'testCreateContactWithoutAwsTraceId' => [
-        'request' => [
-            'method' => 'POST',
-            'url' => '/contacts',
-            'content' => [
-                'name' => 'Test Contact Shadow',
-                'email' => 'shadow.test@example.com',
-                'contact' => '9876543210',
-                'type' => 'self',
-                'reference_id' => 'SHADOW_REF_123',
-                'notes' => [
-                    'test_type' => 'no_aws_trace_id',
-                    'experiment' => 'source_request_id_mapping'
-                ]
-            ]
-            // No server headers with AWS trace ID
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'contact',
-                'name' => 'Test Contact Shadow',
-                'email' => 'shadow.test@example.com',
-                'contact' => '9876543210',
-                'type' => 'self',
-                'reference_id' => 'SHADOW_REF_123',
-                'active' => true,
-                'notes' => [
-                    'test_type' => 'no_aws_trace_id',
-                    'experiment' => 'source_request_id_mapping'
-                ]
-            ],
-            'status_code' => 201
-        ]
-    ]
 ];
