@@ -1494,8 +1494,6 @@ return array(
 
     'delete_card_metadata_after_reconciliation_for_paysecure_and_fulcrum' => env('DELETE_CARD_METADATA_AFTER_RECONCILIATION_FOR_PAYSECURE_AND_FULCRUM'),
 
-    'banking_org_id_moto_payments_via_pg_router' => env('BANKING_ORG_ID_MOTO_PAYMENTS_VIA_PGROUTER'),
-
     'pass_rejected_unused_tokens' => env('PASS_REJECTED_UNUSED_TOKENS'),
 
     'upi_auth_link_frequency_as_presented_default' => env('UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT'),
