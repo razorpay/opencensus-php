@@ -366,7 +366,7 @@ class CCRouter
         ]);
     }
 
-    private function shouldRouteRequestToChargeCollections($functionName, $planID): string {
+    public function shouldRouteRequestToChargeCollections($functionName, $planID): string {
 
         $routeName = null;
 
@@ -417,7 +417,7 @@ class CCRouter
             try {
                 $request = ['id' => $id, 'experiment_id' => $experimentId];
 
-                $response = $this->app['splitzService']->evaluateRequest($request);
+                $response = $this->app['splitzService']->evaluateRequestWithTimeout($request, 75);
                 $endTimeMs = round(microtime(true) * 1000);
                 $this->trace->histogram(Metric::CC_ROUTER_SPLITZ_RESPONSE_TIME, $endTimeMs - $startTimeMs);
 

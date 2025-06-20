@@ -326,7 +326,7 @@ class Service extends Base\Service
         $app = App::getFacadeRoot();
         $routeName = $app['request.ctx']->getRoute();
 
-        $this->trace->info($tracecode, [
+        $this->trace->debug($tracecode, [
             'key_id' => $keyId,
             'route_name' => $routeName,
             'action' => $action,
