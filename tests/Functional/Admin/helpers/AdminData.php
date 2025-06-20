@@ -2537,4 +2537,59 @@ return [
         ]
     ],
 
+    'testAdminOrgReplications_AddsMissingFeaturesOnly' => [
+        'request' => [
+            'url'    => '/admin/org/replications',
+            'method' => 'POST',
+            'content' => [
+                'from_org_id' => '100000razorpay',
+                'replications_type' => 'feature'
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testAdminOrgReplications_CopiesAllFeaturesWhenDestinationEmpty' => [
+        'request' => [
+            'url'    => '/admin/org/replications',
+            'method' => 'post',
+            'content' => [
+                'from_org_id' => '100000razorpay',
+                'replications_type' => 'feature'
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testAdminOrgReplications_ThrowsErrorWhenAllFeaturesExist' => [
+        'request' => [
+            'url'    => '/admin/org/replications',
+            'method' => 'post',
+            'content' => [
+                'from_org_id' => '100000razorpay',
+                'replications_type' => 'feature'
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_NEW_FEATURES
+        ],
+    ],
+
 ];
