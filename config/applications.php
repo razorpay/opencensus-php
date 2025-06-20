@@ -5,6 +5,7 @@ use RZP\Models\VirtualAccount;
 return [
     'dashboard' => [
         'url'       => env('APP_DASHBOARD_URL'),
+        'usl_url'   => env('APP_DASHBOARD_USL_URL'),
         'secret'    => env('APP_DASHBOARD_SECRET'),
         'pretend'   => env('APP_DASHBOARD_PRETEND'),
         'cloud'     => true,

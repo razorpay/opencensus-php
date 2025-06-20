@@ -18,8 +18,8 @@ class PartnerPGOSProxyController extends MerchantOnboardingProxyController
     ];
 
     const ROUTES_URL_MAP    = [
-        self::PARTNER_POS_DEVICE_CONFIG_CREATE => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/CreateDeviceConfig',
-        self::PARTNER_POS_DEVICE_CONFIG_UPDATE => '/twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/UpdateDeviceConfig',
+        self::PARTNER_POS_DEVICE_CONFIG_CREATE => 'twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/CreateDeviceConfig',
+        self::PARTNER_POS_DEVICE_CONFIG_UPDATE => 'twirp/rzp.pg_onboarding.external.pos.v1.DeviceManagementService/UpdateDeviceConfig',
     ];
 
     const PATH_TIMEOUT_MAP  = [
