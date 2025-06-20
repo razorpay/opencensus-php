@@ -12135,6 +12135,8 @@ class Processor
             $allowed = true;
         }
 
+        // In case of razorpaywallet split payments skip this check
+        // This is avoid duplicate payment_ID's in case of split payments
         if ($input[Payment\Entity::METHOD] === Payment\Method::WALLET &&
             isset($input[Payment\Entity::WALLET]) &&
             $input[Payment\Entity::WALLET] === Wallet::RAZORPAYWALLET) {
