@@ -2814,6 +2814,7 @@ class Route
         'user_all_roles'                           => ['get',      'users/{id}/roles/{merchant_id}',                 'UserController@getUserRoles'                                       ],
         'user_delete_incorrect_password_count'     => ['post',     'users/incorrect_password_count',                 'UserController@removeIncorrectPasswordCount'                       ],
         'user_fetch_by_verified_contact_internal'  => ['post',     'users_internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
+        'user_internal_fetch_by_email'             => ['post',     'users_internal/fetch_user_by_email',             'UserController@getUserByEmail'                              ],
         'user_internal_fetch_by_verified_contact'  => ['post',     'users/internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
         'user_edit_internal'                       => ['patch',    'users_internal/{id}',                            'UserController@editUserInternal'                                   ],
         'fetch_user_details'                       => ['get',      'users/details',                                  'UserController@getUserDetailsWithRelations'                                   ],
@@ -5851,6 +5852,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'user_internal_fetch_by_email',
         'fetch_user_details',
         'upsert_user_details',
         'delete_user_details',
@@ -18551,6 +18553,7 @@ class Route
         ],
 
         'pgos' => [
+            'user_internal_fetch_by_email',
             'pricing_fetch_plan_internal',
             'qr_code_merchant_create',
             'internal_fetch_merchant_users',
