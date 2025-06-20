@@ -387,50 +387,7 @@ class Service extends Base\Service
         return $this->merchantCore->isSplitzExperimentEnable($properties, 'enable');
     }
 
-    /**
-     * This function is used to regenerate the referral links to partners in bulk. This is a one time usage function.
-     *
-     * @param array $input - list of partners to which referral links to be migrated to new format
-     *
-     * @return array -
-     *             success_ids - list of valid partners whose referral link is regenerated
-     *             failure_ids - list of invalid ids provided in the input and no validation error is thrown
-     * @throws BadRequestException - in case of unauthorized merchant access, throw exception
-     */
-    public function regeneratePartnerReferralLinks(array $input): array
-    {
-        (new Validator())->validateInput('regenerateReferralLink', $input);
 
-        $properties = [
-            'id'            => $this->merchant->getId(),
-            'experiment_id' => $this->app['config']->get('app.partner_regenerate_referrals_links_exp_id'),
-        ];
-
-        $expEnabled = $this->merchantCore->isSplitzExperimentEnable($properties, 'enable',
-            TraceCode::REGENERATE_REFERRAL_LINKS_SPLITZ_ERROR);
-
-        if ($expEnabled === false)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
-                null, $input,
-                "Not authorized to regenerate partner referral links");
-        }
-
-        $partnerIds = $input['partner_ids'];
-
-        $partners = $this->repo->merchant->findMany($partnerIds);
-
-        (new Referral\Core())->regenerate($partners);
-
-        $successIds = $partners->pluck('id')->toArray();
-
-        $failureIds = array_values(array_diff($partnerIds, $successIds));
-
-        return [
-            'success_ids' => $successIds,
-            'failure_ids' => $failureIds
-        ];
-    }
 
     /**
      * creates a new migration request in partnership service
