@@ -18036,7 +18036,6 @@ class Route
             'merchant_associated_accounts_fetch',
             'internal_merchant_fetch',
             'internal_feature_get_all',
-            'reporting_config_list'
         ],
 
         'vajra' => [

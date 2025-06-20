@@ -331,16 +331,19 @@ class Reporting implements ExternalService
         $uuid = $this->generateUuidV4();
 
         //for api decomp recon
-        $input['unique_id'] = $uuid;
+        $headers = ['X-Unique-Id' => $uuid];
 
-        $configs = $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input);
+        $configs = $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input, $headers);
 
         $data = $this->filterConfigsByFeatureAndTags($configs);
 
         $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS_RECON,
             [
-                'configs'   => $data,
+                'configs'   => collect($data['items'])->pluck('id', 'name')->toArray(),
                 'unique_id' => $uuid,
+                'total_count' => $data['count'],
+                'input' => $input,
+                'headers' => $this->headers,
             ]);
 
         return $data;
