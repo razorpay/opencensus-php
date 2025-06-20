@@ -674,8 +674,7 @@ class Core extends Base\Core
         // dual write only for below merchants
         // merchants for whom pgos is serving onboarding requests
         // merchants who are not completely activated
-        if ($merchant->getService() === Merchant\Constants::PGOS and
-            $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
+        if ($merchant->getService() === Merchant\Constants::PGOS)
         {
             $validation = $this->repo->bvs_validation->find($data[Entity::VALIDATION_ID]);
 

@@ -122,6 +122,7 @@ class PublicErrorDescription
     const BAD_REQUEST_GATEWAY_TOKEN_EMPTY                                       = 'Invalid token has been passed for recurring payment';
     const BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING                           = 'Invalid token has been passed for recurring payment';
     const BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS                     = 'Request failed because another payment operation is in progress';
+    const BAD_REQUEST_ADMIN_ANOTHER_USER_CREATION_IN_PROGRESS                   = 'Request is failed because another user creation is in progress with same email and contact number. Please retry';
     const BAD_REQUEST_TOKEN_UPDATION_OPERATION_IN_PROGRESS                      = 'Request failed because token updation is in progress';
     const SERVER_ERROR_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY                 = 'Request failed because another request is in progress with the same Idempotency Key';
     const SERVER_ERROR_CACHE_DATA_MISSING_FOR_BANK_ACCOUNT_UPDATE               = 'Cache data missing for Bank Account Update';
@@ -1891,4 +1892,16 @@ class PublicErrorDescription
     const GATEWAY_VA_DEACTIVATION_FAILURE = "Gateway Failure in closing virtual account";
 
     const BAD_REQUEST_REFUND_BLOCKED_FOR_SMART_COLLECT_PAYMENTS = 'Refund is currently blocked for Smart Collect 2.0 payments';
+
+    const BAD_REQUEST_MERCHANT_NOT_COLLECTX = "Merchant doesn't belong to collectX";
+
+    const BAD_REQUEST_PAYMENT_ID_REQUIRED_FOR_COLLECTX_REFUND_PAYOUT = 'Payment Id not found in internal direct payout';
+
+    const BAD_REQUEST_NO_DIRECT_ACCOUNT_FOUND = 'No direct account was found to be linked with merchant';
+
+    const BAD_REQUEST_CHANNEL_NOT_FOUND_FOR_PAYMENT_ID = "Payment settled by channel doesn't belong to collectX";
+
+    const BAD_REQUEST_PAYMENT_NOT_COLLECTX = "Reference14 is not collectx";
+
+    const BAD_REQUEST_MERCHANT_USER_DOES_NOT_EXISTS  = 'Merchant User does not exits';
 }

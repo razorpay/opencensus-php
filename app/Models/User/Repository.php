@@ -239,6 +239,14 @@ class Repository extends Base\Repository
         return $this->getMultipleUsersByEmailsV2($userEmails)->toArray();
     }
 
+    public function getMultipleUsersByPhone($contactMobile): array
+    {
+        return $this->newQuery()
+            ->where(Entity::CONTACT_MOBILE, $contactMobile)
+            ->get()
+            ->toArray();
+    }
+
     public function getMultipleUsersByMobiles(array $mobileNumbers): array
     {
         return getMultipleUsersByMobilesV2($mobileNumbers)->toArray();
@@ -265,4 +273,10 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function getUsersById($user_id)
+    {
+        return $this->newQuery()
+            ->where(Entity::ID, '=', $user_id)
+            ->first();
+    }
 }

@@ -150,6 +150,8 @@ class Type
 
     const  HDFC_ONBOARDING  = 'hdfc_onboarding';
 
+    const HDFC_BANK_ACQUIRED_TERMINAL_ONBOARDING = 'hdfc_bank_acquired_terminal_onboarding';
+
     const PARTNER_REFERRAL_FETCH = 'partner_referral_fetch';
 
     const CONTACT               = 'contact';
@@ -412,6 +414,7 @@ class Type
         self::JAMMU_AND_KASHMIR_ONBOARDING,
         self::HDFC_SMS_PAY_ONBOARDING,
         self::HDFC_ONBOARDING,
+        self::HDFC_BANK_ACQUIRED_TERMINAL_ONBOARDING,
         self::MERCHANT_ACTIVATION,
         self::INTERNAL_INSTRUMENT_REQUEST,
         self::SUBMERCHANT_LINK,
@@ -730,6 +733,7 @@ class Type
         self::JAMMU_AND_KASHMIR_ONBOARDING,
         self::HDFC_SMS_PAY_ONBOARDING,
         self::HDFC_ONBOARDING,
+        self::HDFC_BANK_ACQUIRED_TERMINAL_ONBOARDING,
         self::EZETAP_SETTLEMENT,
         self::LOC_WITHDRAWAL,
         self::MERCHANT_CONFIG_INHERITANCE,
@@ -927,6 +931,7 @@ class Type
         self::CREATE_PAYMENT_FRAUD               => Name::ADMIN_BATCH_CREATE,
         self::ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS => Name::ADMIN_BATCH_CREATE,
         self::RBL_BULK_UPLOAD_COMMENTS           => Name::ADMIN_BATCH_CREATE,
+        self::HDFC_BANK_ACQUIRED_TERMINAL_ONBOARDING  => Name::ADMIN_BATCH_CREATE,
         self::ICICI_BULK_UPLOAD_COMMENTS              => Name::ADMIN_BATCH_CREATE,
         self::ICICI_VIDEO_KYC_BULK_UPLOAD             => Name::ADMIN_BATCH_CREATE,
         self::BANKING_ACCOUNT_ACTIVATION_COMMENTS     => Name::ADMIN_BATCH_CREATE,
