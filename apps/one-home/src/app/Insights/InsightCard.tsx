@@ -250,7 +250,6 @@ const InsightCardWithErrorBoundary = ({
     if (!componentData || componentData?.error) return;
 
     const items = [];
-
     // Only add items if not in locked or empty state
     if (!paymentLocked && !isEmptyDataSummary) {
       // Add view details action if available (desktop)

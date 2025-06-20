@@ -8,7 +8,7 @@ test.describe.parallel('One nav partners dashboard side nav tabs @project=oneNav
 
   test.beforeEach(async ({ page }) => {
     await page.goto(routes.PARTNER_DASHBOARD);
-    await page.locator('.layout--connected-navigation').waitFor({
+    await page.locator('.main-content--one-dashboard').waitFor({
       state: 'visible',
       timeout: 60000,
     });

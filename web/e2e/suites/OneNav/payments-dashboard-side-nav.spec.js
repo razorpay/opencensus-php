@@ -122,6 +122,10 @@ test.describe
 
   test.beforeEach(async ({ page }) => {
     await page.goto(routes.DASHBOARD);
+    await page.locator('.dashboard-home').waitFor({
+      state: 'visible',
+      timeout: 60000,
+    });
     await expandPaymentProductSideNav(page);
   });
 
