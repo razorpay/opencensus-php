@@ -1123,6 +1123,10 @@ return array(
 
     'onboarding_api_upi_terminal_creation_disabled' => env('ONBOARDING_API_UPI_TERMINAL_CREATION_DISABLED'),
 
+    'entity_relational_load_from_scrooge_experiment_id' => env('ENTITY_RELATIONAL_LOAD_FROM_SCROOGE_EXPERIMENT_ID'),
+
+    'settlement_notification_opt_out_experiment_id' => env('SETTLEMENT_NOTIFICATION_OPT_OUT_EXPERIMENT_ID'),
+    
     'settlements_processed_comms_experiment_id' => env('SETTLEMENTS_PROCESSED_COMMS_EXPERIMENT_ID'),
 
     'transfer_settlement_nss_experiment_id'=> env('TRANSFER_SETTLEMENT_NSS_EXPERIMENT_ID'),
