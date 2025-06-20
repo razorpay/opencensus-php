@@ -995,6 +995,34 @@ export const PARAMETERS: Parameter[] = [
       { value: 'VIJB', label: 'Vijaya Bank' },
       { value: 'YESB_C', label: 'Yes Bank Corporate Banking' },
       { value: 'ZCBL', label: 'Zoroastrian Co-operative Bank' },
+      {
+        value: "PUNB_C",
+        label: "Punjab National Bank - Corporate Banking",
+      },
+      {
+        value: "HDFC_C",
+        label: "HDFC Bank - Corporate Banking",
+      },
+      {
+        value: "UTIB_C",
+        label: "Axis Bank - Corporate Banking",
+      },
+      {
+        value: "KKBK_C",
+        label: "Kotak Mahindra Bank - Corporate Banking",
+      },
+      {
+        value: "ICIC_C",
+        label: "ICICI Bank - Corporate Banking",
+      },
+      {
+        value: "AUBL_C",
+        label: "AU Small Finance Bank - Corporate Banking",
+      },
+      {
+        value: "UJVN",
+        label: "Ujjivan Small Finance Bank",
+      },
     ],
     operators: {
       '==': {
