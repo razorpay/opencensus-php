@@ -1906,7 +1906,7 @@ class Service extends Base\Service
             ]);
         }
 
-        if ($virtualAccount->isDueToBeClosed() === True)
+        if ($virtualAccount->isDueToBeClosed() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CHALLAN_EXPIRED,
