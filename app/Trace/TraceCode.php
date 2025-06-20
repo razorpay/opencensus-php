@@ -13362,6 +13362,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVALID_PRODUCT_CONFIG_JSON                           = 'INVALID_PRODUCT_CONFIG_JSON';
     const MODIFY_CLOSE_BY_IF_APPLICABLE                         = 'MODIFY_CLOSE_BY_IF_APPLICABLE';
 
+    const ORG_FEATURE_REPLICATION = 'ORG_FEATURE_REPLICATION';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
