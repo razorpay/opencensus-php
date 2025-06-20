@@ -209,4 +209,11 @@ class EntityTest extends TestCase
         $payment->setAttribute('global_customer_id', $mockCustomerId);
         $this->assertEquals($mockCustomerEntity, $payment->globalCustomer);
     }
+
+    public function testIsInstalment()
+    {
+        $payment = $this->payment;
+        $payment->setMethod(Method::INSTALMENT);
+        $this->assertTrue($payment->isInstalment());
+    }
 }
