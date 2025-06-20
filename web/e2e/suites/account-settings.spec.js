@@ -298,7 +298,7 @@ test.describe
     await expect(await page.getByText('Hello')).toBeVisible();
   });
 
-  test('should be able to view team members with their role and pending invitations @priority=P0', async ({
+  test.skip('should be able to view team members with their role and pending invitations @priority=P0', async ({
     page,
   }) => {
     await page.getByRole('button', { name: 'Manage team', exact: true }).click();

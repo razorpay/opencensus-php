@@ -27,8 +27,8 @@ import {
   TPV_OPTIONS,
   SEAMLESS_PROVIDERS,
   PROVIDER_KEYS,
-  WALLET_AUTO_DEBIT_KEY,
   RAZORPAY_GATEWAY_KEY,
+  WALLET_AUTO_DEBIT_KEY,
 } from 'merchant/views/Navigator/constants';
 import { WALLETS_MAP } from 'merchant/views/Optimizer/AddProvider/components/IntegrationTesting/constants';
 import { trackOptimizerEvents } from 'merchant/views/Optimizer/track';
