@@ -32,7 +32,8 @@ class Indusind extends Base
 
         foreach ($data as $index => $row)
         {
-            if ($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+            if ($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE or
+                ($row['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
             {
                 $bankRefNo = $row['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
             }
