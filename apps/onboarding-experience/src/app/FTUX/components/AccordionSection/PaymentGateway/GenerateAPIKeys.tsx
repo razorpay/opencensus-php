@@ -15,6 +15,7 @@ import {
 } from 'apps/onboarding-experience/src/constants';
 import { ApiKeyDelay, ApiKeys } from '@OnboardingExperienceCommons/types/apiKeys';
 import { isMobileDevice } from '@libs/shared-utils';
+import { DASHBOARD_TEAMS } from '@libs/shared-types';
 
 const GenerateAPIKeys = () => {
   const { mode } = useStore((state) => state.session);
@@ -57,7 +58,10 @@ const GenerateAPIKeys = () => {
       downloadFile(csvDataUrl, API_KEYS_CSV_FILENAME, API_KEYS_CSV_MIME_TYPE);
     } catch (err) {
       errorService.captureError(err, {
-        tags: { module: 'FTUX_GENERATE_API_KEYS' },
+        tags: {
+          team: DASHBOARD_TEAMS.ONBOARDING_EXPERIENCE,
+          module: 'FTUX_GENERATE_API_KEYS',
+        },
         rank: errorService.ErrorRank.P0,
         extra: { info: err },
       });
@@ -80,7 +84,10 @@ const GenerateAPIKeys = () => {
       return response.merchantApiKeyRegenerate?.newApiKey;
     } catch (error: any) {
       errorService.captureError(error, {
-        tags: { module: 'FTUX_GENERATE_API_KEYS' },
+        tags: {
+          team: DASHBOARD_TEAMS.ONBOARDING_EXPERIENCE,
+          module: 'FTUX_GENERATE_API_KEYS',
+        },
         rank: errorService.ErrorRank.P0,
         extra: { info: error },
       });
@@ -116,7 +123,10 @@ const GenerateAPIKeys = () => {
       setActiveModal(null);
 
       errorService.captureError(error, {
-        tags: { module: 'FTUX_GENERATE_API_KEYS' },
+        tags: {
+          team: DASHBOARD_TEAMS.ONBOARDING_EXPERIENCE,
+          module: 'FTUX_GENERATE_API_KEYS',
+        },
         rank: errorService.ErrorRank.P0,
         extra: { info: error },
       });

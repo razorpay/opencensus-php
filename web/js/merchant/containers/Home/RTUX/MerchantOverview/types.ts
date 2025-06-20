@@ -1,3 +1,4 @@
+import { ModeT } from '@libs/shared-utils';
 import { OpenModalType, User } from 'common/typings';
 import { Currency } from 'merchant/views/Transactions/v2/Payments/types';
 
@@ -135,6 +136,7 @@ export interface IMerchantOverview {
   };
   type: string;
   user: User;
+  mode?: ModeT;
   bankUpdate: boolean;
   settlementConfig: settlementConfig | null;
   isFOHMerchant: boolean;
@@ -145,6 +147,22 @@ export interface IMerchantOverviewData {
   is_settlement: boolean;
   settlement_schedule?: string;
   settlement?: ISettlementData;
+  show_transaction_timeline?: boolean;
+  merchant_payments?: IMerchantPaymentsData;
+}
+
+interface IMerchantPaymentsData {
+  count: number;
+  hasMore: boolean;
+  items: IMerchantPayments[];
+}
+
+export interface IMerchantPayments {
+  id: string;
+  amount: string;
+  status: string;
+  createdAt: string;
+  currency?: Currency;
 }
 
 export interface INonSettlement {

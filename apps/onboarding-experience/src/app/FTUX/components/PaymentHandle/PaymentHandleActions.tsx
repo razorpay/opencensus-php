@@ -16,6 +16,7 @@ import useMerchantPaymentHandle from '@OnboardingExperienceCommons/hooks/useMerc
 import SharePaymentHandleModal from '@OnboardingExperienceCommons/components/SharePaymentHandleModal';
 import { removePaymentHandleSlugPrefix } from '@OnboardingExperienceCommons/utils/paymentHandle';
 import EditPaymentHandleModal from '@OnboardingExperienceCommons/components/EditPaymentHandleModal';
+import { DASHBOARD_TEAMS } from '@libs/shared-types';
 
 // Cache structure for storing encrypted amounts to prevent redundant API calls
 interface EncryptedAmountCache {
@@ -87,7 +88,10 @@ function PaymentHandleActions() {
         shareLink = `${activeHandleUrl}?amount=${encryptedAmount}`;
       } catch (error) {
         errorService.captureError(error, {
-          tags: { module: 'FTUX_PAYMENT_HANDLE' },
+          tags: {
+            team: DASHBOARD_TEAMS.ONBOARDING_EXPERIENCE,
+            module: 'FTUX_PAYMENT_HANDLE',
+          },
           rank: errorService.ErrorRank.P0,
           extra: {
             info: error,
@@ -130,7 +134,10 @@ function PaymentHandleActions() {
       return resp?.merchantPaymentHandleSuggestions?.suggestions || [];
     } catch (error) {
       errorService.captureError(error, {
-        tags: { module: 'FTUX_PAYMENT_HANDLE' },
+        tags: {
+          team: DASHBOARD_TEAMS.ONBOARDING_EXPERIENCE,
+          module: 'FTUX_PAYMENT_HANDLE',
+        },
         rank: errorService.ErrorRank.P0,
         extra: {
           info: error,
@@ -161,7 +168,10 @@ function PaymentHandleActions() {
       };
     } catch (err) {
       errorService.captureError(err, {
-        tags: { module: 'FTUX_PAYMENT_HANDLE' },
+        tags: {
+          team: DASHBOARD_TEAMS.ONBOARDING_EXPERIENCE,
+          module: 'FTUX_PAYMENT_HANDLE',
+        },
         rank: errorService.ErrorRank.P0,
         extra: {
           info: err,
@@ -186,7 +196,10 @@ function PaymentHandleActions() {
       }
     } catch (err) {
       errorService.captureError(err, {
-        tags: { module: 'FTUX_PAYMENT_HANDLE' },
+        tags: {
+          team: DASHBOARD_TEAMS.ONBOARDING_EXPERIENCE,
+          module: 'FTUX_PAYMENT_HANDLE',
+        },
         rank: errorService.ErrorRank.P0,
         extra: {
           info: err,

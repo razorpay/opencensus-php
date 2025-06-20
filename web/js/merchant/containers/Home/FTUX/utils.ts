@@ -7,12 +7,21 @@ import { User } from 'common/typings';
 interface FTUXHomepageEnabled {
   user: User;
   abExperiments: any;
+  mode?: 'test' | 'live';
 }
 
-export const isEligibleForFtuxV2 = ({ user, abExperiments }: FTUXHomepageEnabled): boolean => {
+export const isEligibleForFtuxTransactionTimeline = ({
+  user,
+  abExperiments,
+  mode,
+}: FTUXHomepageEnabled): boolean => {
   const isFtuxV2Enabled = isExperimentEnabled(abExperiments?.ftuxV2);
+  const isTransactionTimelineEnabled =
+    isExperimentEnabled(abExperiments?.ftuxV2_transaction_timeline) &&
+    !isExperimentEnabled(abExperiments?.plotline_milestone_widget) &&
+    !isExperimentEnabled(abExperiments?.plotline_milestone_whitelisted_mids);
 
-  if (!isFtuxV2Enabled) {
+  if (!isFtuxV2Enabled || !isTransactionTimelineEnabled) {
     return false;
   }
   const { physical_store } = user?.merchant_business_detail?.website_details ?? {};
@@ -25,12 +34,43 @@ export const isEligibleForFtuxV2 = ({ user, abExperiments }: FTUXHomepageEnabled
       !user.isSubMerchant &&
       !user?.isPartner?.() &&
       !isPOSMerchant &&
-      !user.isTransacted,
+      mode !== 'test', // Timeline is only visible in live mode
   );
 
-  //TODO: @mohitagrawal1305 if isTransacted is true then also check 5 settlements
-
   return isEnabled;
+};
+
+export const isEligibleForFtuxV2 = ({ user, abExperiments }: FTUXHomepageEnabled): boolean => {
+  const isFtuxV2Enabled = isExperimentEnabled(abExperiments?.ftuxV2);
+  // FTUX V2 experiment must be enabled
+  if (!isFtuxV2Enabled) {
+    return false;
+  }
+
+  // Experiment to check if RTUX is enabled
+  const isTransactionTimelineEnabled =
+    isExperimentEnabled(abExperiments?.ftuxV2_transaction_timeline) &&
+    !isExperimentEnabled(abExperiments?.plotline_milestone_widget) &&
+    !isExperimentEnabled(abExperiments?.plotline_milestone_whitelisted_mids);
+
+  // Check if user is a POS merchant
+  const { physical_store } = user?.merchant_business_detail?.website_details ?? {};
+  const isPOSMerchant = isExperimentEnabled(abExperiments?.omniChannelGtm) && !!physical_store;
+
+  // show_ftux_dashboard is a flag to determine if user still can see FTUX after transactions
+  // Check if Mx hasn't transacted or passes the transaction timeline checks
+  const hasAccessToFTUX =
+    !user.isTransacted || (isTransactionTimelineEnabled && !!user.show_ftux_dashboard);
+
+  // Check if user is eligible for FTUX V2
+  return Boolean(
+    user.isOrgRZP &&
+      user.isCountryIndia &&
+      !user.isSubMerchant &&
+      !user?.isPartner?.() &&
+      !isPOSMerchant &&
+      hasAccessToFTUX,
+  );
 };
 
 export const useIsFtuxV2Enabled = (): boolean => {

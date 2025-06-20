@@ -9,6 +9,7 @@ import {
   AvatarGroup,
   Avatar,
 } from '@razorpay/blade/components';
+import { useStore } from '@federated/apps/shell/commonStore';
 import { useMerchantContext } from '@FTUX/context/MerchantContext';
 import { getMerchantHeaderData, formatName } from '@FTUX/utils/homepage';
 import { isMobileDevice } from '@libs/shared-utils';
@@ -17,9 +18,12 @@ import { isMobileDevice } from '@libs/shared-utils';
  * Displays a personalized welcome message to the merchant at the top of the FTUX homepage.
  */
 const WelcomeHeader = () => {
+  const user = useStore((state) => state.session.user);
   const isMobile = isMobileDevice();
   const { merchantData } = useMerchantContext();
   const submittedName =
+    user.user?.name ||
+    user.name ||
     merchantData?.merchantById?.contactPerson?.name?.value ||
     merchantData?.merchantById?.name?.registered ||
     '';

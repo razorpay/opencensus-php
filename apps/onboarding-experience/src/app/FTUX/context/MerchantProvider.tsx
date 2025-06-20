@@ -15,6 +15,7 @@ import { AddMerchantSelectedPluginResponse } from '@OnboardingExperienceCommons/
 import { TwoFaAuthProps } from '@FTUX/types/common';
 import useMerchantApiKeys from '@OnboardingExperienceCommons/hooks/useMerchantApiKeys';
 import { ApiKeyDelay } from '@OnboardingExperienceCommons/types/apiKeys';
+import { DASHBOARD_TEAMS } from '@libs/shared-types';
 
 interface MerchantProviderProps {
   children: ReactNode;
@@ -54,7 +55,10 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children, triggerTw
 
   if (isMerchantError || merchantError || (!isLoadingMerchant && !merchantData?.merchantById?.id)) {
     errorService.captureError(merchantError || new Error('Unable to fetch merchant data!'), {
-      tags: { module: 'FTUX_HOMEPAGE' },
+      tags: {
+        team: DASHBOARD_TEAMS.ONBOARDING_EXPERIENCE,
+        module: 'FTUX_HOMEPAGE',
+      },
       // P2 error since, this will be catched by graphql also
       rank: errorService.ErrorRank.P2,
       extra: {
@@ -71,7 +75,10 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children, triggerTw
     errorService.captureError(
       onboardingError || new Error('Unable to fetch merchant onboarding data!'),
       {
-        tags: { module: 'FTUX_HOMEPAGE' },
+        tags: {
+          team: DASHBOARD_TEAMS.ONBOARDING_EXPERIENCE,
+          module: 'FTUX_HOMEPAGE',
+        },
         // P2 error since, this will be catched by graphql also
         rank: errorService.ErrorRank.P2,
         extra: {

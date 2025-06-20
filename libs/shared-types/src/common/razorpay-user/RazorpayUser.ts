@@ -528,6 +528,12 @@ type RazorpayUserType = {
     country_code: string;
     id: string;
   };
+
+  /** Flag for tracking if user still can see FTUX after transactions */
+  show_ftux_dashboard?: boolean;
+
+  /** Flag for switching from FTUX hero_card to transaction timeline */
+  show_transaction_timeline?: boolean;
 };
 
 // Making it as partial as we can't predict the exact response always.

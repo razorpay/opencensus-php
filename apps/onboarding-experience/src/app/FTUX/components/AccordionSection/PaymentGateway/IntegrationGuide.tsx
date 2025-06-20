@@ -21,6 +21,7 @@ import websiteIntegratedIcon from '@OnboardingExperienceAssets/WebsiteIntegrated
 import pluginWebsiteIntegrationIcon from '@OnboardingExperienceAssets/PluginWebsiteIntegrationIcon.svg';
 import WebsitePluginModal from '@OnboardingExperienceCommons/components/WebsitePluginModal';
 import AppIntegrationGuide from './AppIntegrationGuide';
+import { DASHBOARD_TEAMS } from '@libs/shared-types';
 
 const IntegrationGuide = () => {
   const isMobile = isMobileDevice();
@@ -91,7 +92,10 @@ const IntegrationGuide = () => {
       setSelectedWebsitePlugin(previouslySelectedPlugin);
 
       errorService.captureError(error, {
-        tags: { module: 'FTUX_INTEGRATION_GUIDE' },
+        tags: {
+          team: DASHBOARD_TEAMS.ONBOARDING_EXPERIENCE,
+          module: 'FTUX_INTEGRATION_GUIDE',
+        },
         rank: errorService.ErrorRank.P0,
         extra: {
           info: error,

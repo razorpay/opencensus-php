@@ -1108,6 +1108,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'ftuxV2_transaction_timeline',
+        experimentId: {
+          beta: 'QhjQfiHOcJEhkc',
+          production: 'QhjMDbtimXFWFH',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],

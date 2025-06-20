@@ -9,62 +9,70 @@ import TransactionBannerBgMobile from '@OnboardingExperienceAssets/TransactionBa
 import TransactionBannerIcon from '@OnboardingExperienceAssets/TransactionBannerIcon.svg';
 import { Wrapper } from 'apps/onboarding-experience/src/container';
 import { DASHBOARD_TEAMS } from '@libs/shared-types';
+import { analyticsTrackWithUserInfo } from '@libs/shared-utils';
 
-const TransactionBanner = () => {
+const FTUXTransactionsComplete = ({
+  moveToSettlementsView,
+}: {
+  moveToSettlementsView: () => void;
+}) => {
   const showNotification = useStore((state) => state.showNotification);
   const mode = useStore((state) => state.session.mode);
   const isMobile = isMobileDevice();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleMoveToTransactions = async () => {
+  const handleMoveToSettlements = async () => {
+    analyticsTrackWithUserInfo({
+      objectName: 'FTUX Move To Settlements',
+      actionName: 'Clicked',
+      screen: 'home page',
+    });
     setIsLoading(true);
     try {
       const response: { success: boolean; data: {} } = await dashboardFetch({
         url: `merchant/onboarding_custom_flags`,
         method: 'POST',
         data: {
-          show_ftux_dashboard: false,
+          show_transaction_timeline: false,
         },
         mode,
       });
       if (response && response.success) {
-        window.location.reload();
+        moveToSettlementsView();
       } else {
-        throw new Error('An error occurred while proceeding to transactions and settlements!');
+        throw new Error('An error occurred while proceeding to settlement balance!');
       }
     } catch (err) {
       errorService.captureError(err, {
         tags: {
           team: DASHBOARD_TEAMS.ONBOARDING_EXPERIENCE,
-          module: 'FTUX_PROCEED_TO_TRANSACTIONS',
+          module: 'FTUX_PROCEED_TO_SETTLEMENTS',
         },
         rank: errorService.ErrorRank.P0,
         extra: { info: err },
       });
       showNotification({
         type: 'error',
-        message: 'Unable to proceed to transactions and settlements! - Please try again later',
+        message: 'Unable to proceed to settlements! - Please try again later',
       });
       setIsLoading(false);
     }
   };
 
-  const TransactionBannerProps: BannerPropsType = {
-    title: 'Great news, you’ve received new transactions!',
+  const bannerData: BannerPropsType = {
+    title: 'You have accepted 5 transactions!',
     description:
-      'We’ve emailed your invoice. Your payment will be deposited into your bank account.',
-    subDescription:
-      'Go ahead and view your transactions, or explore other payment modes before continuing.',
+      'Great job! Now that you have gotten the hang of it, we would want to show you your settlements view.',
     CTA: () => (
       <Button
-        onClick={handleMoveToTransactions}
+        onClick={handleMoveToSettlements}
         size={isMobile ? 'small' : 'medium'}
         icon={ArrowRightIcon}
         iconPosition="right"
-        data-analytics-name="proceed-transactions-cta"
+        data-analytics-name="proceed-to-settlements-cta"
         isLoading={isLoading}
       >
-        Proceed to transactions and settlements
+        Show me my settlements balance
       </Button>
     ),
     iconSrc: TransactionBannerIcon,
@@ -74,9 +82,9 @@ const TransactionBanner = () => {
 
   return (
     <Wrapper>
-      <Banner {...TransactionBannerProps} />
+      <Banner {...bannerData} />
     </Wrapper>
   );
 };
 
-export default TransactionBanner;
+export default FTUXTransactionsComplete;

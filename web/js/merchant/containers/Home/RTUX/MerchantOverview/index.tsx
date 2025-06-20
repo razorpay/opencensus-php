@@ -16,9 +16,11 @@ import { CommonWidgetProps } from 'merchant/widgets/types';
 import MerchantOverviewData from './MerchantOverviewData';
 import { useIsSettlementHovered } from './MerchantOverviewData/store';
 import { getGreetingAndDate } from './utils';
+import TransactionTimeline from './TransactionTimeline';
+import { isEligibleForFtuxTransactionTimeline } from '../../FTUX/utils';
 
 const MerchantOverviewComponent: React.FC<IMerchantOverview & CommonWidgetProps> = (props) => {
-  const { user } = props;
+  const { user, mode, isLoading } = props;
   const username = user.user?.name || user.name;
   const settlementFeatures =
     props?.data?.hero_card_data?.settlement?.settlement_config_details?.features;
@@ -32,6 +34,25 @@ const MerchantOverviewComponent: React.FC<IMerchantOverview & CommonWidgetProps>
   const isEnabled = isSettlementSOHBlockEnabled(splitz) && blocked;
   const isFOHMerchant =
     isSettlementSOHBlockEnabled(splitz) && (isRiskFoh() || isRiskDisabled() || isEnabled);
+
+  const hasFTUXTimelineExperiment = isEligibleForFtuxTransactionTimeline({
+    user,
+    abExperiments: splitz?.abExperiments,
+    mode,
+  });
+  const showTransactionTimeline = user?.show_transaction_timeline;
+
+  if (hasFTUXTimelineExperiment && showTransactionTimeline) {
+    const merchantPaymentsData = props?.data?.hero_card_data?.merchant_payments?.items || [];
+
+    return (
+      <TransactionTimeline
+        transactions={[...merchantPaymentsData].reverse()}
+        settlementData={props?.data?.hero_card_data?.settlement}
+        isLoading={isLoading}
+      />
+    );
+  }
 
   return (
     <Box
@@ -88,6 +109,7 @@ const MerchantOverviewComponent: React.FC<IMerchantOverview & CommonWidgetProps>
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
+  mode: state.session.mode,
 });
 
 export const MerchantOverview = connect(mapStateToProps, null)(MerchantOverviewComponent);

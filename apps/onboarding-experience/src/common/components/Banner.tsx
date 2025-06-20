@@ -27,8 +27,8 @@ const Banner = ({
       display="flex"
       width="100%"
       paddingY={{
-        base: 'spacing.5',
-        m: 'spacing.7',
+        base: 'spacing.9',
+        m: 'spacing.10',
       }}
       flexDirection="column"
       justifyContent="center"
@@ -39,8 +39,7 @@ const Banner = ({
       }}
       borderRadius="large"
       backgroundImage={`url(${isMobile ? bgImageMobile : bgImage})`}
-      backgroundPosition="center"
-      backgroundSize="contain"
+      backgroundRepeat="round"
     >
       <Box
         display="flex"
