@@ -48,10 +48,11 @@ const useHomepageState = (): HOMEPAGE_ELEMENTS[] => {
       ?.isWorkflowExits;
   const isWebsiteAddInProgress = !!websiteStatus?.currentStatus || !!websiteWorkflowExists;
 
-  const pageElements = getLayoutByMerchantType({
+  let pageElements = getLayoutByMerchantType({
     isPgMerchant,
     isNoCodeMerchant,
     hasWebsite: hasAddedWebsite(paymentChannels) || isWebsiteAddInProgress,
+    isTestMode: mode === 'test',
   });
 
   // If merchant has completed a transaction, add the transaction banner at the top

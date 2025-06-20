@@ -7,8 +7,11 @@ import {
 import { NO_CODE_CHANNEL_OPTIONS } from '@OnboardingExperienceCommons/constants/merchant';
 import {
   NO_CODE_PAGE_LAYOUT,
+  NO_CODE_PAGE_LAYOUT_TEST,
   PG_PAGE_LAYOUT,
+  PG_PAGE_LAYOUT_TEST,
   PG_PLUS_NO_CODE_PAGE_LAYOUT,
+  PG_PLUS_NO_CODE_PAGE_LAYOUT_TEST,
 } from '@FTUX/constants/homepage';
 import { WebsiteVerificationUpdateStatus } from '@OnboardingExperienceCommons/types/onboarding';
 import { hasAddedWebsite } from '@OnboardingExperienceCommons/utils/merchant';
@@ -21,6 +24,7 @@ interface LayoutOptions {
   isPgMerchant: boolean;
   isNoCodeMerchant: boolean;
   hasWebsite: boolean;
+  isTestMode: boolean;
 }
 
 /**
@@ -35,15 +39,16 @@ export const getLayoutByMerchantType = ({
   isPgMerchant,
   isNoCodeMerchant,
   hasWebsite,
+  isTestMode,
 }: LayoutOptions): HOMEPAGE_ELEMENTS[] => {
   if ((isPgMerchant || hasWebsite) && isNoCodeMerchant) {
-    return [...PG_PLUS_NO_CODE_PAGE_LAYOUT];
+    return isTestMode ? [...PG_PLUS_NO_CODE_PAGE_LAYOUT_TEST] : [...PG_PLUS_NO_CODE_PAGE_LAYOUT];
   }
   if (isPgMerchant) {
-    return [...PG_PAGE_LAYOUT];
+    return isTestMode ? [...PG_PAGE_LAYOUT_TEST] : [...PG_PAGE_LAYOUT];
   }
 
-  return [...NO_CODE_PAGE_LAYOUT];
+  return isTestMode ? [...NO_CODE_PAGE_LAYOUT_TEST] : [...NO_CODE_PAGE_LAYOUT];
 };
 
 /**

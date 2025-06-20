@@ -52,7 +52,7 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children, triggerTw
     requestedData: FTUX_REQUIRED_DATA_REQUEST,
   });
 
-  if (isMerchantError || merchantError) {
+  if (isMerchantError || merchantError || (!isLoadingMerchant && !merchantData?.merchantById?.id)) {
     errorService.captureError(merchantError || new Error('Unable to fetch merchant data!'), {
       tags: { module: 'FTUX_HOMEPAGE' },
       // P2 error since, this will be catched by graphql also
@@ -63,7 +63,11 @@ const MerchantProvider: React.FC<MerchantProviderProps> = ({ children, triggerTw
     });
   }
 
-  if (isOnboardingError || onboardingError) {
+  if (
+    isOnboardingError ||
+    onboardingError ||
+    (!isLoadingOnboardingData && !onboardingData?.merchantOnboardingData)
+  ) {
     errorService.captureError(
       onboardingError || new Error('Unable to fetch merchant onboarding data!'),
       {

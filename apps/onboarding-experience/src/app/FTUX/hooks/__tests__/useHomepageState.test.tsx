@@ -96,10 +96,9 @@ describe('useHomepageState hook', () => {
     const mockPaymentChannels = { website: { accept: true } };
 
     // Mock payment channel detection for PG merchant
-    (hasAcceptedAnyPaymentChannel as jest.Mock).mockImplementation((channels, options) => {
-      // Return true only for PG_CHANNEL_OPTIONS
-      return options.includes('Websites');
-    });
+    (hasAcceptedAnyPaymentChannel as jest.Mock)
+      .mockReturnValueOnce(true) // For isPgMerchant
+      .mockReturnValueOnce(false); // For isNoCodeMerchant
 
     // Mock merchant data
     (useMerchantContext as jest.Mock).mockReturnValue({
@@ -110,6 +109,7 @@ describe('useHomepageState hook', () => {
             paymentAcceptanceChannels: mockPaymentChannels,
           },
           activation: {
+            isActivated: true,
             status: MerchantActivationStatusEnum.ACTIVATED,
             isTransacted: false,
           },
@@ -129,9 +129,10 @@ describe('useHomepageState hook', () => {
 
     // Verify getLayoutByMerchantType was called with correct parameters
     expect(getLayoutByMerchantType).toHaveBeenCalledWith({
-      isPgMerchant: false,
+      isPgMerchant: true,
       isNoCodeMerchant: false,
       hasWebsite: false,
+      isTestMode: false,
     });
   });
 
@@ -139,10 +140,9 @@ describe('useHomepageState hook', () => {
     const mockPaymentChannels = { social: { accept: true } };
 
     // Mock payment channel detection for no-code merchant
-    (hasAcceptedAnyPaymentChannel as jest.Mock).mockImplementation((channels, options) => {
-      // Return true only for NO_CODE_CHANNEL_OPTIONS
-      return options.includes('SocialMedia');
-    });
+    (hasAcceptedAnyPaymentChannel as jest.Mock)
+      .mockReturnValueOnce(false) // For isPgMerchant
+      .mockReturnValueOnce(true); // For isNoCodeMerchant
 
     // Mock merchant data
     (useMerchantContext as jest.Mock).mockReturnValue({
@@ -153,6 +153,7 @@ describe('useHomepageState hook', () => {
             paymentAcceptanceChannels: mockPaymentChannels,
           },
           activation: {
+            isActivated: true,
             status: MerchantActivationStatusEnum.ACTIVATED,
             isTransacted: false,
           },
@@ -173,8 +174,9 @@ describe('useHomepageState hook', () => {
     // Verify getLayoutByMerchantType was called with correct parameters
     expect(getLayoutByMerchantType).toHaveBeenCalledWith({
       isPgMerchant: false,
-      isNoCodeMerchant: false,
+      isNoCodeMerchant: true,
       hasWebsite: false,
+      isTestMode: false,
     });
   });
 
