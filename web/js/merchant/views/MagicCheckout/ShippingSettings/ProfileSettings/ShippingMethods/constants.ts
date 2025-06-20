@@ -45,13 +45,15 @@ export const getDefaultFormValues = () =>
       },
       estimated_delivery_details: {
         value: {
+          display: false,
           min_timeframe: '',
           max_timeframe: '',
           unit: 'days',
         },
         error: '',
         validation: (val: any): string => {
-          const { min_timeframe, max_timeframe } = val;
+          const { min_timeframe, max_timeframe, display } = val;
+          if (!display) return '';
           // if max_timeframe is present, min_timeframe should be present
           if (min_timeframe === '') return 'Please enter minimum shipping timeframe.';
           if (max_timeframe === '') return 'Please enter maximum shipping timeframe.';

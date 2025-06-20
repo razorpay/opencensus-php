@@ -44,9 +44,11 @@ const DeliveryIn = (): JSX.Element => {
   );
 
   return (
-    <>
+    <Box>
+      <Box display="flex" gap="spacing.5">
       <Label
-        value="DisplayDelivery in"
+        value="Display Delivery in"
+        tooltipContent='"Estimated date of delivery on checkout“ when set to true, delivery days will be displayed for the user on selection of address. Needs the following Delivery in Min and max values to be set mandatorily'
       />
       <Box display={'flex'} gap={'1rem'} height={'36px'}>
         <Box width={'60px'}>
@@ -60,8 +62,9 @@ const DeliveryIn = (): JSX.Element => {
           />
         </Box>
       </Box>
+      </Box>
       {values.estimated_delivery_details.value.display &&
-        <Box marginTop={'spacing.5'}>
+        <Box marginTop={'spacing.5'} display={'flex'}  gap={'spacing.5'}>
           <Label
             value="Delivery in"
             error={values.estimated_delivery_details.error}
@@ -116,7 +119,7 @@ const DeliveryIn = (): JSX.Element => {
           </Box>
         </Box>
       }
-    </>
+    </Box>
   );
 };
 

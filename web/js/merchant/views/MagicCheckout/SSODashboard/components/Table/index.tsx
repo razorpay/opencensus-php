@@ -7,6 +7,7 @@ export const DateCell = ({ value }) => <Text>{value ? getFormattedDate(value) : 
 export const BaseCell = ({ value }) => <Text color="surface.text.gray.normal">{value ?? '-'}</Text>;
 
 export const UTMSourceCell = ({ value }) => {
+  if (!value) return <Text color="surface.text.gray.normal">-</Text>;
   switch (value?.toLowerCase()) {
     case 'google':
       return <Badge color="notice">{value}</Badge>;

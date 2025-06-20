@@ -58,11 +58,26 @@ const renderComponent = (initialDisplayValue = true) => {
 };
 
 describe('DeliveryIn', () => {
-  test('should render display toggle switch correctly', () => {
-    const { getByLabelText, getByText } = renderComponent();
-    expect(getByLabelText('Toggle DarkMode')).toBeInTheDocument();
-    expect(getByText('DisplayDelivery in')).toBeInTheDocument();
+  test('should render the Display Delivery in label correctly', () => {
+    const { getByText } = renderComponent();
+    expect(getByText('Display Delivery in')).toBeInTheDocument();
   });
+  
+  test('should not allow negative values in min_timeframe input', async () => {
+    const { getByPlaceholderText, ensureToggleState } = renderComponent(true);
+    
+    // Ensure toggle is on
+    await ensureToggleState(true);
+    
+    const minInput = getByPlaceholderText('Min') as HTMLInputElement;
+    
+    // Try entering a negative value
+    fireEvent.change(minInput, { target: { value: '-5' } });
+    
+    // The value should be empty because negative values are not allowed
+    expect(minInput.value).toBe('');
+  });
+  
 
   test('should show delivery inputs when display is enabled', async () => {
     const { getByPlaceholderText, getByText, ensureToggleState } = renderComponent(true);
