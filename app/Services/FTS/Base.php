@@ -159,7 +159,6 @@ class Base
     const ADMIN_EMAIL   = 'admin_email';
     const CONTENT_TYPE  = 'Content-Type';
     const X_REQUEST_ID  = 'X-Request-ID';
-    const AWS_TRACE_ID  = 'Amzn-Trace-Id';
 
     const TRANSFER_RETRY = 'transfer_retry';
 
@@ -200,7 +199,7 @@ class Base
 
         $this->razorx = $app['razorx'];
 
-        $this->setHeaders($app);
+        $this->setHeaders();
     }
 
     /**
@@ -221,7 +220,20 @@ class Base
     {
         $request = $this->generateRequest($method, $endpoint, $data);
 
-        $this->attachRequestIDToHeader($data);
+        try
+        {
+            $this->attachRequestIDToHeader($data);
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTS_SHADOW_REQUEST_FAILURE,
+                [
+                    'message'      => "attaching request_id to FTS Headers failed",
+                ]);
+        }
 
         if ($this->mode === Mode::TEST)
         {
@@ -306,7 +318,7 @@ class Base
     /**
      * Method to set headers in the request
      */
-    protected function setHeaders($app = null)
+    protected function setHeaders()
     {
         $headers = [];
 
