@@ -40,6 +40,7 @@ class CardlessEmi
     const TVSC_IFSC = 'TVSC';
 
     const SHOPSE = 'shopse';
+    const SNAPMINT = 'snapmint';
 
     /** @var int[] The minimum order/transaction amount in paisa for each cardless emi provider. */
     public const MIN_AMOUNTS = [
@@ -71,6 +72,7 @@ class CardlessEmi
         self::LIQUILOANS   => 'Liquiloans',
         self::INSTANT_EMI  => 'InstantEMI',
         self::SHOPSE       => 'Shopse',
+        self::SNAPMINT     => 'Snapmint',
     ];
 
     // Add dashboard display names for providers which and are not banks and are not present in IFSC repo
