@@ -16,10 +16,9 @@ export const isEligibleForFtuxTransactionTimeline = ({
   mode,
 }: FTUXHomepageEnabled): boolean => {
   const isFtuxV2Enabled = isExperimentEnabled(abExperiments?.ftuxV2);
-  const isTransactionTimelineEnabled =
-    isExperimentEnabled(abExperiments?.ftuxV2_transaction_timeline) &&
-    !isExperimentEnabled(abExperiments?.plotline_milestone_widget) &&
-    !isExperimentEnabled(abExperiments?.plotline_milestone_whitelisted_mids);
+  const isTransactionTimelineEnabled = isExperimentEnabled(
+    abExperiments?.ftuxV2_transaction_timeline,
+  );
 
   if (!isFtuxV2Enabled || !isTransactionTimelineEnabled) {
     return false;
@@ -48,10 +47,9 @@ export const isEligibleForFtuxV2 = ({ user, abExperiments }: FTUXHomepageEnabled
   }
 
   // Experiment to check if RTUX is enabled
-  const isTransactionTimelineEnabled =
-    isExperimentEnabled(abExperiments?.ftuxV2_transaction_timeline) &&
-    !isExperimentEnabled(abExperiments?.plotline_milestone_widget) &&
-    !isExperimentEnabled(abExperiments?.plotline_milestone_whitelisted_mids);
+  const isTransactionTimelineEnabled = isExperimentEnabled(
+    abExperiments?.ftuxV2_transaction_timeline,
+  );
 
   // Check if user is a POS merchant
   const { physical_store } = user?.merchant_business_detail?.website_details ?? {};
@@ -60,7 +58,7 @@ export const isEligibleForFtuxV2 = ({ user, abExperiments }: FTUXHomepageEnabled
   // show_ftux_dashboard is a flag to determine if user still can see FTUX after transactions
   // Check if Mx hasn't transacted or passes the transaction timeline checks
   const hasAccessToFTUX =
-    !user.isTransacted || (isTransactionTimelineEnabled && !!user.show_ftux_dashboard);
+    user.isTransacted === false || (isTransactionTimelineEnabled && !!user.show_ftux_dashboard);
 
   // Check if user is eligible for FTUX V2
   return Boolean(

@@ -23,10 +23,9 @@ const FTUXHomepage = (): JSX.Element => {
   const { criticalFlow } = useTwoFactorVerificationContext();
   const { abExperiments } = useSplitzService();
 
-  const isTransactionTimelineEnabled =
-    isExperimentEnabled(abExperiments?.['ftuxV2_transaction_timeline']) &&
-    !isExperimentEnabled(abExperiments?.['plotline_milestone_widget']) &&
-    !isExperimentEnabled(abExperiments?.['plotline_milestone_whitelisted_mids']);
+  const isTransactionTimelineEnabled = isExperimentEnabled(
+    abExperiments?.['ftuxV2_transaction_timeline'],
+  );
 
   const triggerTwoFaAuth = ({
     enforceVerifyOtp,
@@ -52,7 +51,12 @@ const FTUXHomepage = (): JSX.Element => {
         not yet transacted and the flags are not yet set, set the flags
         to handle post transaction journey
     */
-    if (isTransactionTimelineEnabled && user && !user.isTransacted && !user.show_ftux_dashboard) {
+    if (
+      isTransactionTimelineEnabled &&
+      user &&
+      user.isTransacted === false &&
+      !user.show_ftux_dashboard
+    ) {
       try {
         const response: { success: boolean; data: {} } = await dashboardFetch({
           url: `merchant/onboarding_custom_flags`,
