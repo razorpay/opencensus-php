@@ -337,14 +337,22 @@ class Reporting implements ExternalService
 
         $data = $this->filterConfigsByFeatureAndTags($configs);
 
-        $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS_RECON,
-            [
-                'configs'   => collect($data['items'])->pluck('id', 'name')->toArray(),
-                'unique_id' => $uuid,
-                'total_count' => $data['count'],
-                'input' => $input,
-                'headers' => $this->headers,
-            ]);
+        //log filtered configs to coralogix for recon 
+        try {
+            $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS_RECON,
+                [
+                    'configs'   => collect($data['items'])->pluck('id', 'name')->toArray(),
+                    'unique_id' => $uuid,
+                    'total_count' => $data['count'],
+                    'input' => $input,
+                    'headers' => $this->headers,
+                ]);
+        } catch (\Exception $e) {
+            $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS_LOG_ERROR,
+                [
+                    'error' => $e->getMessage(),
+                ]);
+        }
 
         return $data;
     }
