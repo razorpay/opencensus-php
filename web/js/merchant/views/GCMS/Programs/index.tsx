@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, PlusIcon, Spinner, ToastContainer } from '@razorpay/blade/components';
-import { useQuery } from '@tanstack/react-query';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
+import { useStore } from '@federated/apps/shell/commonStore';
 import { ModeT } from 'common/services/mode';
 import EmptyList from 'merchant/components/EmptyList';
 import ProgramsListItem from 'merchant/views/GCMS/Programs/ProgramsListItem';
@@ -15,8 +15,10 @@ import { trackProgramsCardClicked, trackProgramsPageLoadSuccess } from './events
 import CreateProgram from './CreateProgram';
 import PageLayout from 'merchant/views/GCMS/shared/PageLayout';
 
-const Programs = ({ mode, merchantId }: { mode: ModeT }) => {
+const Programs = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const session = useStore((state) => state.session);
+  const mode = session.mode;
   const navigate = useNavigate();
   const {
     isLoading,
@@ -115,7 +117,6 @@ const Programs = ({ mode, merchantId }: { mode: ModeT }) => {
       {isOpen && (
         <CreateProgram
           submitText="Create Program"
-          merchantId={merchantId}
           mode={mode}
           onClose={() => setIsOpen(false)}
           refetch={refetch}
@@ -125,7 +126,4 @@ const Programs = ({ mode, merchantId }: { mode: ModeT }) => {
   );
 };
 
-export default connect((state) => ({
-  mode: state.session?.mode,
-  merchantId: state.session?.user?.current,
-}))(Programs);
+export default Programs;

@@ -1,3 +1,5 @@
+import { GC_CARD_TYPE, GC_CARD_TYPE_VALUES } from './constants';
+
 export const createFileObject = async () => {
   const file = new File(['Placeholder image file'], 'image.jpg', { type: 'plain/text' });
   return file;
@@ -20,6 +22,9 @@ export function translateToFormData(program) {
       gift_card_minimum_price,
       gift_card_maximum_price,
       gift_card_price_denominations,
+      gift_card_number_length,
+      gift_card_number_prefix,
+      gift_card_number_alphanumeric_enabled,
     },
     url,
   } = program;
@@ -34,9 +39,14 @@ export function translateToFormData(program) {
     terms_and_conditions: tnc || '',
     validity_quantity: String(gift_card_validity_period_count),
     validity_span: gift_card_validity_period,
-    url: url[1],
+    // url: url[1],
     brand_color: gift_card_brand_color,
     logo: gift_card_brand_logo,
+    card_length: gift_card_number_length,
+    prefix: gift_card_number_prefix,
+    card_type: gift_card_number_alphanumeric_enabled
+      ? GC_CARD_TYPE_VALUES.ALPHANUMERIC
+      : GC_CARD_TYPE_VALUES.NUMERIC,
   };
   if (gift_card_price_type === 'range') {
     data.denomination_values = {
@@ -50,4 +60,22 @@ export function translateToFormData(program) {
   data.upload_type = gift_card_brand_logo ? 'brand' : 'custom';
 
   return data;
+}
+
+export function generateRandomGiftCardNumber(
+  length = 16,
+  prefix = '',
+  cardType = GC_CARD_TYPE_VALUES.NUMERIC,
+) {
+  const restLength = length - prefix.length;
+  const numeric = '0123456789';
+  const alphanumeric = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + numeric;
+
+  const characters = cardType === GC_CARD_TYPE_VALUES.NUMERIC ? numeric : alphanumeric;
+
+  let result = '';
+  for (let i = 0; i < restLength; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return `${prefix.toUpperCase()}${result}`;
 }

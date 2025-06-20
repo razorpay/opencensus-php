@@ -5,7 +5,11 @@ import { fetch } from '@federated/apps/shell/rest-fetch';
 import { fetchDuplicate } from '../shared/utils';
 import { stringifyQueryParams } from 'common/utils/rzp-utils';
 import { Program, ProgramApiParams, SKU } from 'merchant/views/GCMS/Programs/types';
-import { getGCMSBasePath, WALLET_BASE_PATH } from 'merchant/views/GCMS/shared/constants';
+import {
+  GCOMS_WALLET_BASE,
+  getGCMSBasePath,
+  WALLET_BASE_PATH,
+} from 'merchant/views/GCMS/shared/constants';
 import * as types from 'merchant/views/GCMS/shared/types';
 import { ModeT } from 'common/services/mode';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -258,8 +262,9 @@ export const createProgram = async ({
   try {
     const programCreationPayload = transformStateToAPIPayload(formData);
     const data = await fetchDuplicate({
-      url: `${WALLET_BASE_PATH}/programs`,
+      url: `${GCOMS_WALLET_BASE}/programs`,
       method: 'post',
+      mode,
       data: {
         ...programCreationPayload,
         merchant_id: merchantId,
@@ -287,11 +292,12 @@ export const patchProgram = async ({
   try {
     const programUpdatePayload = transformStateToPatchAPIPayload(formData, urlUpdate);
     await fetch({
-      url: `${WALLET_BASE_PATH}/programs/${programId.split('iprog_')[1]}`,
+      url: `${GCOMS_WALLET_BASE}/programs/${programId.split('iprog_')[1]}`,
       method: 'patch',
       data: {
         ...programUpdatePayload,
         merchant_id: merchantId,
+        program_id: programId.split('iprog_')[1],
       },
     });
   } catch (e: any) {

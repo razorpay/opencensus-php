@@ -1,3 +1,4 @@
+import { DASHBOARD_MODE } from '@libs/shared-types';
 import { ModeT } from 'common/services/mode';
 
 export interface ListApiParams {
@@ -23,7 +24,9 @@ export interface LinkResellerToProgramParams {
 export interface AddProgramDetailsParams {
   merchantId: string;
   formData: object;
-  mode: string;
+  mode: DASHBOARD_MODE;
+  urlUpdate?: boolean;
+  programId?: string;
 }
 
 export interface ListApiResponse<T> {

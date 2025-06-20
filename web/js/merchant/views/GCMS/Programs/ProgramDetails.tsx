@@ -1,42 +1,25 @@
-import React, { memo, useEffect } from 'react';
-import {
-  Box,
-  ChevronLeftIcon,
-  Divider,
-  Link,
-  Text,
-  CardHeader,
-  CardHeaderLeading,
-  CardHeaderTrailing,
-  EditIcon,
-  Card,
-  CardBody,
-  CardHeaderLink,
-  Button,
-  CardHeaderIcon,
-  Skeleton,
-} from '@razorpay/blade/components';
-import { useQuery } from '@tanstack/react-query';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import React, { memo } from 'react';
+import { Box, Text, Skeleton } from '@razorpay/blade/components';
 
-import Spinner from 'common/ui/Spinner';
 import { capitalize } from 'common/utils/rzp-utils';
-import EmptyList from 'merchant/components/EmptyList';
 import {
   getProgramContentSections,
-  getProgramDenominationSections,
+  getProgramGiftCardConfiguration,
   getProgramGiftCardDetails,
 } from 'merchant/views/GCMS/Programs/constants';
-import { fetchProgramById } from 'merchant/views/GCMS/Programs/queries';
-import Wrapper from 'merchant/views/GCMS/shared/Wrapper';
 
-import { trackProgramsDetailsPageLoadSuccess } from './events';
-import { getFormattedAmountNewDenom } from '../shared/utils';
-import Details from 'merchant/views/QRCodes/QRCodes/Details/Details';
 import { DEFAULT_IMAGE } from '../shared/constants';
 import { Program } from './types';
 
-const ProgramDetails = ({ program, isImageLoading, programImage }: {program: Program, isImageLoading: boolean, programImage: string}) => {
+const ProgramDetails = ({
+  program,
+  isImageLoading,
+  programImage,
+}: {
+  program: Program;
+  isImageLoading: boolean;
+  programImage: string;
+}) => {
   const sections = [
     {
       title: 'Program Details',
@@ -45,6 +28,10 @@ const ProgramDetails = ({ program, isImageLoading, programImage }: {program: Pro
     {
       title: 'Gift Card Details',
       values: getProgramGiftCardDetails(program),
+    },
+    {
+      title: 'Gift Card Number Configuration',
+      values: getProgramGiftCardConfiguration(program),
     },
   ];
 
@@ -112,7 +99,7 @@ const ProgramDetails = ({ program, isImageLoading, programImage }: {program: Pro
           <Box>
             <Box padding={['spacing.0', 'spacing.0', 'spacing.5', 'spacing.0']}>
               <Box
-                width="350px"
+                // width="350px"
                 height="190px"
                 elevation="highRaised"
                 borderRadius={'medium'}

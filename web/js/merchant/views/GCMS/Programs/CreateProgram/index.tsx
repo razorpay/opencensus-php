@@ -12,9 +12,15 @@ import { useMutation } from '@tanstack/react-query';
 import { useToast } from '@razorpay/blade/components';
 import { addGCFile, createProgram, patchProgram } from '../queries';
 import { captureDivAsImage } from '../../shared/utils';
-import { MODE, FILE_UPLOAD_OPTIONS } from 'merchant/views/GCMS/Programs/CreateProgram/constants';
+import {
+  MODE,
+  FILE_UPLOAD_OPTIONS,
+  isGiftCardDesignEnabled,
+  DEFAULT_GIFT_CARD_LENGTH,
+} from 'merchant/views/GCMS/Programs/CreateProgram/constants';
 import { ProgramPriceType } from 'merchant/views/GCMS/Programs/types';
 import {
+  validateCardType,
   validateDenominationType,
   validateDenominationValues,
   validateDescription,
@@ -24,8 +30,11 @@ import {
   validateName,
   validateNotNull,
   validatePin,
+  validatePrefix,
 } from './validations';
 import { createFileObject, translateToFormData } from './utils';
+import GiftCardNumber from './Screens/GiftCardNumber';
+import { useStore } from '@apps/shell/src/client/store/commonStore';
 
 const errorValidators = {
   name: validateName,
@@ -37,6 +46,8 @@ const errorValidators = {
   validity_quantity: validateExpiryPeriod,
   validity_span: validateNotNull,
   image: validateImage,
+  prefix: validatePrefix,
+  card_type: validateCardType,
 };
 
 function CreateProgram({
@@ -47,13 +58,14 @@ function CreateProgram({
   submitText,
   errors,
   touched,
-  merchantId,
-  mode,
   editMode,
   program,
   refetch,
   setErrors,
 }) {
+  const session = useStore((state) => state.session);
+  const mode = session.mode;
+  const merchantId = session?.user?.current;
   const { show } = useToast();
   const imageRef = useRef();
   const { mutateAsync: createProgramMutation, isLoading } = useMutation({
@@ -63,7 +75,7 @@ function CreateProgram({
           let logoFileId = null,
             imageFileId = null;
 
-          if (logo && !values.url) {
+          if (isGiftCardDesignEnabled && logo && !values.url) {
             logoFileId = await addGCFile({
               file: logo,
               merchantId,
@@ -73,7 +85,7 @@ function CreateProgram({
             });
           }
 
-          if (!values.url) {
+          if (isGiftCardDesignEnabled && !values.url) {
             imageFileId = await addGCFile({
               file: values.image,
               merchantId,
@@ -86,18 +98,21 @@ function CreateProgram({
             formData: { ...values, image: imageFileId, logo: logoFileId },
             merchantId,
             mode,
-            urlUpdate: !values.url,
+            urlUpdate: isGiftCardDesignEnabled ? !values.url : false,
             programId: program.id,
           });
           return;
         }
 
-        let logoFileId = null;
-        if (logo) {
-          logoFileId = await addGCFile({ file: logo, merchantId, mode });
+        let logoFileId = null,
+          imageFileId = null;
+        if (isGiftCardDesignEnabled) {
+          if (logo) {
+            logoFileId = await addGCFile({ file: logo, merchantId, mode });
+          }
+          imageFileId = await addGCFile({ file: values.image, merchantId, mode });
         }
 
-        const imageFileId = await addGCFile({ file: values.image, merchantId, mode });
         await createProgram({
           formData: { ...values, image: imageFileId, logo: logoFileId },
           merchantId,
@@ -113,7 +128,10 @@ function CreateProgram({
         show({
           color: 'positive',
           type: 'informational',
-          content: 'Program Created Succesfully!',
+          content:
+            editMode === MODE.EDIT
+              ? 'Program updated Successfully.'
+              : 'Program Created Succesfully.',
         });
       }, 500);
       refetch();
@@ -217,7 +235,7 @@ function CreateProgram({
   }, []);
 
   const tabsData = useMemo(() => {
-    return [
+    let tabs = [
       {
         name: {
           boldText: 'Program',
@@ -240,7 +258,7 @@ function CreateProgram({
       {
         name: {
           boldText: 'Gift Card',
-          regularText: 'Configuration',
+          regularText: 'Details',
         },
         helpText: 'Set up the details for your gift cards',
         fields: [
@@ -264,15 +282,22 @@ function CreateProgram({
       {
         name: {
           boldText: 'Gift Card',
-          regularText: 'Design',
+          regularText: 'Configuration',
         },
-        helpText: 'Choose how your gift card should look',
-        fields: ['image'],
-        customRender: true,
+        panelText: '',
+        helpText: 'Enter details to be offered for this gift card program',
+        centerAlign: true,
+        fields: ['card_type', 'prefix'],
         render: () => (
-          <GiftCardDesign values={values} errors={errors} onChange={handleFormChange} />
+          <GiftCardNumber
+            errors={errors}
+            onChange={handleFormChange}
+            values={values}
+            touched={touched}
+          />
         ),
       },
+
       {
         name: {
           boldText: 'Review',
@@ -283,7 +308,23 @@ function CreateProgram({
         render: () => <GiftCardReview values={values} ref={imageRef} />,
       },
     ];
+    if (isGiftCardDesignEnabled) {
+      tabs.splice(3, 0, {
+        name: {
+          boldText: 'Gift Card',
+          regularText: 'Design',
+        },
+        helpText: 'Choose how your gift card should look',
+        fields: ['image'],
+        customRender: true,
+        render: () => (
+          <GiftCardDesign values={values} errors={errors} onChange={handleFormChange} />
+        ),
+      });
+    }
+    return tabs;
   }, [values, errors, touched, fixed_denomination_options]);
+
   return (
     <Wizard
       tabsData={tabsData}
@@ -300,7 +341,7 @@ export default withFormik({
   mapPropsToValues: ({ program, editMode }) => {
     if (editMode === MODE.EDIT) return translateToFormData(program);
 
-    return {};
+    return { card_length: DEFAULT_GIFT_CARD_LENGTH };
   },
   mapPropsToTouched: ({ program, editMode }) => {
     return editMode === MODE.EDIT
@@ -315,8 +356,11 @@ export default withFormik({
           terms_and_conditions: true,
           validity_quantity: true,
           validity_span: true,
-          image: false,
-          brand_color: false,
+          card_type: true,
+          prefix: true,
+          card_length: true,
+          // image: false,
+          // brand_color: false,
         }
       : {};
   },
@@ -332,7 +376,8 @@ export default withFormik({
           denomination_values: validateDenominationValues({}),
           validity_quantity: validateExpiryPeriod(undefined),
           validity_span: validateNotNull(undefined),
-          image: validateImage(undefined),
+          // image: isGiftCardDesignEnabled ? validateImage(undefined) : true,
+          card_type: validateCardType(undefined),
         };
   },
 

@@ -111,6 +111,26 @@ export const getProgramGiftCardDetails = (program: Program) => {
   ];
 };
 
+export const getProgramGiftCardConfiguration = (program: Program) => {
+  const {
+    policies: { gift_card_number_alphanumeric_enabled, gift_card_number_prefix },
+  } = program;
+  return [
+    {
+      name: 'Gift Card Length',
+      value: program.policies.gift_card_number_length,
+    },
+    {
+      name: 'Gift Card Type',
+      value: gift_card_number_alphanumeric_enabled ? 'Alphanumeric' : 'Numeric',
+    },
+    {
+      name: 'Gift Card Prefix',
+      value: gift_card_number_prefix || '-',
+    },
+  ];
+};
+
 export const getProgramDenominationSections = (program: Program) => {
   const sortedDenominations = Array.isArray(program.policies?.gift_card_price_denominations)
     ? program.policies?.gift_card_price_denominations.sort((a, b) => a - b)

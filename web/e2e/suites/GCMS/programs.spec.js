@@ -32,25 +32,6 @@ test.describe('Test GCMS Programs @flow=programs @project=payments ', () => {
     await expect(await page.getByText('Gift Card Details')).toBeVisible();
   });
 
-  test('should be able to navigate to reseller mapping tab', async ({ page }) => {
-   
-    // Simumlating user click on the first program card 
-    const firstCard = await page.locator('[data-blade-component="card-body"]')
-    await expect(firstCard).toBeVisible();
-    var box = await firstCard.boundingBox()
-    await page.mouse.click(box.x + box.width/2, box.y + box.height/2)
-
-    // Tabs to be visible
-    await expect(await page.getByText('Details').first()).toBeVisible();
-    await expect(await page.getByText('Resellers').first()).toBeVisible();
-    
-    const resellersTab = await page.locator("text=Resellers").locator("..");
-    // const resellersTab = await page.getByText("Resellers").first()
-    await resellersTab.click();
-
-    await expect(await page.getByText("No reseller added")).toBeVisible()
- 
-
-  });
+  
 
 });

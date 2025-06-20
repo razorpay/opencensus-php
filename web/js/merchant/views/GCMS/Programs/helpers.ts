@@ -1,4 +1,5 @@
 import { DENOMINATION_TYPE_ENUM } from '../shared/constants';
+import { GC_CARD_TYPE_VALUES, isGiftCardDesignEnabled } from './CreateProgram/constants';
 
 export const transformStateToPatchAPIPayload = (data, updateUrl) => {
   const {
@@ -14,6 +15,9 @@ export const transformStateToPatchAPIPayload = (data, updateUrl) => {
     image,
     logo,
     brand_color,
+    card_length,
+    prefix,
+    card_type,
   } = data;
   const payload = {
     program_name: name,
@@ -26,14 +30,19 @@ export const transformStateToPatchAPIPayload = (data, updateUrl) => {
       gift_card_validity_period_count: Number(validity_quantity),
       gift_card_validity_period: validity_span,
       gift_card_default_image_applicable: false,
+      gift_card_number_length: card_length,
+      gift_card_number_prefix: prefix,
+      gift_card_number_alphanumeric_enabled: card_type === GC_CARD_TYPE_VALUES.ALPHANUMERIC,
     },
   };
-  if (updateUrl && logo) {
+  if (isGiftCardDesignEnabled && updateUrl && logo) {
     payload.policies.gift_card_brand_logo = image;
     payload.policies.gift_card_brand_color = brand_color;
     payload.policies.gift_card_file_storage_id = logo;
-  } else if (updateUrl) {
+  } else if (isGiftCardDesignEnabled && updateUrl) {
     payload.policies.gift_card_file_storage_id = image;
+  } else if (!isGiftCardDesignEnabled) {
+    payload.policies.gift_card_default_image_applicable = true;
   }
 
   if (denomination_type === DENOMINATION_TYPE_ENUM.RANGE) {
@@ -60,6 +69,9 @@ export const transformStateToAPIPayload = (data) => {
     image,
     logo,
     brand_color,
+    card_length,
+    prefix,
+    card_type,
   } = data;
   const payload = {
     name,
@@ -77,13 +89,21 @@ export const transformStateToAPIPayload = (data) => {
       gift_card_validity_period_count: Number(validity_quantity),
       gift_card_validity_period: validity_span,
       gift_card_default_image_applicable: false,
-      gift_card_file_storage_id: image,
+      gift_card_number_length: card_length,
+      gift_card_number_prefix: prefix,
+      gift_card_number_alphanumeric_enabled: card_type === GC_CARD_TYPE_VALUES.ALPHANUMERIC,
     },
   };
-  if (logo) {
-    payload.policies.gift_card_brand_logo = image;
-    payload.policies.gift_card_brand_color = brand_color;
-    payload.policies.gift_card_file_storage_id = logo;
+
+  if (isGiftCardDesignEnabled) {
+    payload.policies.gift_card_file_storage_id = image;
+    if (logo) {
+      payload.policies.gift_card_brand_logo = image;
+      payload.policies.gift_card_brand_color = brand_color;
+      payload.policies.gift_card_file_storage_id = logo;
+    }
+  } else {
+    payload.policies.gift_card_default_image_applicable = true;
   }
 
   if (denomination_type !== 'fixed') {

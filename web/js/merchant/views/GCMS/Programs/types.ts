@@ -28,6 +28,9 @@ export type ProgramPolicy = {
   program_desc: string;
   program_distribution: string;
   program_type: string;
+  gift_card_number_length: number;
+  gift_card_number_prefix?: string;
+  gift_card_number_alphanumeric_enabled: boolean;
 };
 
 export type Program = {

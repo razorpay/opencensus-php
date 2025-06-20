@@ -3,8 +3,12 @@ import React, { forwardRef } from 'react';
 import { Box, Text } from '@razorpay/blade/components';
 import { get } from 'lodash';
 import { displayPriceDenominations } from '../../constants';
-import { FILE_UPLOAD_OPTIONS } from 'merchant/views/GCMS/Programs/CreateProgram/constants';
-import { DENOMINATION_TYPE_ENUM } from '../../../shared/constants';
+import {
+  FILE_UPLOAD_OPTIONS,
+  GC_CARD_TYPE_VALUES,
+  isGiftCardDesignEnabled,
+} from 'merchant/views/GCMS/Programs/CreateProgram/constants';
+import { DEFAULT_IMAGE, DENOMINATION_TYPE_ENUM } from '../../../shared/constants';
 
 const PROGRAM_DETAILS = [
   {
@@ -67,6 +71,25 @@ const GIFT_CARD_DETAILS = [
   },
 ];
 
+const GIFT_CARD_CONFIGURATION = [
+  {
+    key: 'Gift Card Length',
+    path: 'card_length',
+  },
+  {
+    key: 'Gift Card Type',
+    render: (values) => (
+      <Text>
+        {values.card_type == GC_CARD_TYPE_VALUES.ALPHANUMERIC ? 'Alphanumeric' : 'numeric'}
+      </Text>
+    ),
+  },
+  {
+    key: 'Prefix',
+    path: 'prefix',
+  },
+];
+
 const SECTIONS = [
   {
     title: 'Program Details',
@@ -75,6 +98,10 @@ const SECTIONS = [
   {
     title: 'Gift Card Details',
     values: GIFT_CARD_DETAILS,
+  },
+  {
+    title: 'Gift Card Configuration',
+    values: GIFT_CARD_CONFIGURATION,
   },
 ];
 
@@ -87,7 +114,7 @@ const Review = forwardRef(({ values }, ref) => {
         </Box>
         <Box>
           {pair.path ? (
-            <Text color="surface.text.gray.subtle">{get(values, pair.path)}</Text>
+            <Text color="surface.text.gray.subtle">{get(values, pair.path) || '-'}</Text>
           ) : (
             pair.render(values)
           )}
@@ -114,7 +141,7 @@ const Review = forwardRef(({ values }, ref) => {
   }
 
   return (
-    <React.Fragment>
+    <Box marginBottom="20px">
       <Box>
         <Text weight="semibold" size="medium">
           Preview
@@ -125,27 +152,35 @@ const Review = forwardRef(({ values }, ref) => {
           borderRadius="large"
           display="flex"
           flexDirection="row"
-          justifyContent="center"
           overflow="hidden"
           marginTop="24px"
-          borderColor="surface.border.gray.muted"
         >
-          {values.url && (
-            <img src={values.url} height="100%" width="100%" style={{ 'object-fit': 'contain' }} />
-          )}
-          {!values.url && values.upload_type === FILE_UPLOAD_OPTIONS.CUSTOM.value && (
+          {!isGiftCardDesignEnabled && (
             <img
-              src={URL.createObjectURL(values.image)}
+              src={DEFAULT_IMAGE}
               height="100%"
-              width="100%"
               style={{ 'object-fit': 'contain' }}
             />
           )}
-          {!values.url &&
+          {isGiftCardDesignEnabled && values.url && (
+            <img src={values.url} height="100%" width="100%" style={{ 'object-fit': 'contain' }} />
+          )}
+          {isGiftCardDesignEnabled &&
+            !values.url &&
+            values.upload_type === FILE_UPLOAD_OPTIONS.CUSTOM.value && (
+              <img
+                src={URL.createObjectURL(values.image)}
+                height="100%"
+                width="100%"
+                style={{ 'object-fit': 'contain' }}
+              />
+            )}
+          {isGiftCardDesignEnabled &&
+            !values.url &&
             values.image &&
             values.upload_type === FILE_UPLOAD_OPTIONS.BRAND_DESIGN.value && (
               <Box
-                backgroundColor={color}
+                backgroundColor={values.color}
                 display="flex"
                 width="100%"
                 height="100%"
@@ -166,7 +201,7 @@ const Review = forwardRef(({ values }, ref) => {
       <Box display="flex" flexDirection="column" gap="24px" marginTop="24px">
         {SECTIONS.map((_val, idx) => renderSection(SECTIONS[idx]))}
       </Box>
-    </React.Fragment>
+    </Box>
   );
 });
 

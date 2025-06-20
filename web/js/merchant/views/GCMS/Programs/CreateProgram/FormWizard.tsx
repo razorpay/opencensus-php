@@ -76,7 +76,7 @@ const FormWizard = ({ tabsData, allValid, errors, submitText, isLoading, onSubmi
     const selectedTab = tabsData[currentTab];
     return (
       <Fade motionTriggers={['in-view']} delay={'gentle'}>
-        <Box>
+        <Box marginBottom="spacing.9">
           <Box display="flex" flexDirection="column" marginBottom="spacing.6">
             <Heading weight="regular" size="large">
               <Heading weight="semibold" display="inline-flex" size="large">
@@ -136,7 +136,7 @@ const FormWizard = ({ tabsData, allValid, errors, submitText, isLoading, onSubmi
 
   return (
     <Box
-      zIndex="99999"
+      zIndex="1000"
       width="100vw"
       height="100vh"
       top="spacing.0"
@@ -189,31 +189,41 @@ const FormWizard = ({ tabsData, allValid, errors, submitText, isLoading, onSubmi
           justifyContent="center"
           alignItems={tabsData[currentTab].centerAlign ? 'center' : 'flex-start'}
           overflowY="scroll"
-          marginTop={tabsData[currentTab].centerAlign ? '0px' : '100px'}
+          marginTop={tabsData[currentTab].centerAlign ? '0px' : '50px'}
+          paddingTop={tabsData[currentTab].centerAlign ? '0px' : '50px'}
         >
           <Form>{renderForm()}</Form>
         </Box>
         <Box
-          paddingX="32px"
           paddingY="10px"
           display="flex"
-          justifyContent="flex-end"
+          justifyContent="center"
           borderTopColor="surface.border.gray.muted"
+          height="90px"
           width="100%"
         >
-          {currentTab !== 0 && (
-            <Button
-              variant="secondary"
-              marginRight="16px"
-              onClick={() => changeTab(-1)}
-              isDisabled={isLoading}
-            >
-              Back
+          <Box
+            width="450px"
+            display="flex"
+            justifyContent="flex-end"
+            height="100%"
+            alignItems="center"
+          >
+            {currentTab !== 0 && (
+              <Button
+                variant="secondary"
+                size="medium"
+                marginRight="16px"
+                onClick={() => changeTab(-1)}
+                isDisabled={isLoading}
+              >
+                Back
+              </Button>
+            )}
+            <Button onClick={handleNext} isLoading={isLoading} isDisabled={isNextDisabled}>
+              {currentTab === tabsData.length - 1 ? submitText : 'Next'}
             </Button>
-          )}
-          <Button onClick={handleNext} isLoading={isLoading} isDisabled={isNextDisabled}>
-            {currentTab === tabsData.length - 1 ? submitText : 'Next'}
-          </Button>
+          </Box>
         </Box>
       </Box>
     </Box>

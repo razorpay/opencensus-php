@@ -23,8 +23,7 @@ export const PROGRAM_TYPES = {
   },
 };
 
-export const DEFAULT_IMAGE =
-  'https://d1o7uku192uawx.cloudfront.net/mobile/media/catalog/product/a/m/amazon_312x200_21092022_2.png';
+export const DEFAULT_IMAGE = `${window.cdnBaseUrl}/static/assets/gift-card/default_program_image.png`;
 
 export const ORDERS_STATUS = {
   //For status in filters dropdown
@@ -114,3 +113,5 @@ export const DENOMINATION_TYPE_ENUM = {
   RANGE: 'range',
   FIXED: 'fixed',
 };
+
+export const GCOMS_WALLET_BASE = 'wallet/issuing';

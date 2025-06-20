@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import React, { memo, useMemo, useState } from 'react';
 import {
   Box,
   Text,
@@ -15,9 +15,8 @@ import {
   Link,
   ToastContainer,
 } from '@razorpay/blade/components';
-import { connect } from 'react-redux';
 import { useQuery } from '@tanstack/react-query';
-import { useLocation, useNavigate, useParams, Navlink } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import EmptyList from 'merchant/components/EmptyList';
 import { useStore } from '@federated/apps/shell/commonStore';
@@ -38,11 +37,11 @@ const TABS = [
     element: ProgramDetails,
     title: 'Details',
   },
-  {
-    value: TAB_VALUE.PROGRAM_RESELLERS,
-    element: LinkedResellers,
-    title: 'Resellers',
-  },
+  // {
+  //   value: TAB_VALUE.PROGRAM_RESELLERS,
+  //   element: LinkedResellers,
+  //   title: 'Resellers',
+  // },
 ];
 
 const ProgramPage = () => {
@@ -141,12 +140,7 @@ const ProgramPage = () => {
       <Box testID="program-page-container" paddingTop="24px">
         <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between">
           <Box display="flex" alignItems="center" gap="spacing.2">
-            <Link
-              onClick={() => navigate('/gcms/programs')}
-              icon={ArrowLeftIcon}
-              size="large"
-              color="neutral"
-            ></Link>
+            <Link onClick={handleGoBack} icon={ArrowLeftIcon} size="large" color="neutral"></Link>
 
             <Heading size="large" marginLeft="8px">
               {program.name}
@@ -158,7 +152,7 @@ const ProgramPage = () => {
             onClick={handleHeaderCTA}
             testID="program-creation-flow"
             size="medium"
-            isDisabled={isLoading || isImageLoading}
+            isDisabled={isLoading}
           >
             {selectedTab === TAB_VALUE.PROGRAM_DETAILS ? 'Edit' : 'Add Reseller'}
           </Button>
@@ -179,16 +173,11 @@ const ProgramPage = () => {
           refetch={refetch}
           refetchImage={refetchImage}
           editMode={2}
-          submitText="Edit Program"
+          submitText="Update Program"
         />
       )}
     </Wrapper>
   );
 };
 
-export default memo(
-  connect((state) => ({
-    mode: state.session?.mode,
-    merchantId: state.session?.user?.current,
-  }))(ProgramPage),
-);
+export default ProgramPage;

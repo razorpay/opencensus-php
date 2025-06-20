@@ -1,12 +1,11 @@
 import { DENOMINATION_TYPE } from './constants';
 
 const validateAlphaNumericSpace = /^[a-z0-9 ]+$/i;
+const validateUpperCaseAlphaNumeric = /^[A-Z0-9]*$/;
 
 export function validateName(val: string | undefined): string | boolean {
   if (!val) return 'Please fill out this field';
-  if (val.length < 1) {
-    return 'Short name should be at least of 1 character long';
-  } else if (!validateAlphaNumericSpace.test(val)) {
+  if (!validateAlphaNumericSpace.test(val)) {
     return 'Name should be alphanumeric.';
   }
   return false;
@@ -75,5 +74,17 @@ export function validatePin(val) {
 
 export function validateImage(val) {
   if (!val) return 'Please fill out this field';
+  return false;
+}
+
+export function validatePrefix(val) {
+  if (val && val.length > 4) return 'Prefix cannot be more than 4 characters';
+  else if (!validateUpperCaseAlphaNumeric.test(val))
+    return 'Only upper case alphabets and numbers are allowed';
+  return false;
+}
+
+export function validateCardType(val) {
+  if (!val) return 'Please select one of the card types';
   return false;
 }
