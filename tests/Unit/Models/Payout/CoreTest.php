@@ -15,7 +15,7 @@ class CoreTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->ba->privateAuth();
     }
 
@@ -40,6 +40,7 @@ class CoreTest extends TestCase
             'source_id' => $contact->getId(),
             'account_type' => 'bank_account',
         ]);
+
 
         $balance = $this->fixtures->create('balance', [
             'id' => '1000000balance',
@@ -166,7 +167,7 @@ class CoreTest extends TestCase
         $this->assertNull($result[Payout\Constants::NAME]);
         $this->assertNull($result[Payout\Constants::EMAIL]);
         $this->assertNull($result[Payout\Constants::CONTACT]);
-        
+
         // Base data should still be present
         $this->assertEquals($payout->getId(), $result[Payout\Constants::ENTITY_ID]);
         $this->assertEquals('TEST123456789', $result[Payout\Constants::UTR]);
@@ -228,7 +229,7 @@ class CoreTest extends TestCase
         $this->assertEquals('Statement Controller Contact', $result[Payout\Constants::NAME]);
         $this->assertEquals('statement@example.com', $result[Payout\Constants::EMAIL]);
         $this->assertEquals('9876543210', $result[Payout\Constants::CONTACT]);
-        
+
         // Verify base payout data
         $this->assertEquals('QLnondjZwtjPUL', $result[Payout\Constants::ENTITY_ID]);
         $this->assertEquals('TEST123456789', $result[Payout\Constants::UTR]);
@@ -350,4 +351,4 @@ class CoreTest extends TestCase
         Mockery::close();
         parent::tearDown();
     }
-} 
+}
