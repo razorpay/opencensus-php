@@ -6,16 +6,14 @@ use Mockery;
 use RZP\Models\FundAccount\Service;
 use RZP\Models\FundAccount\Entity;
 use RZP\Models\Vpa;
-use RZP\Models\Base;
 use RZP\Tests\TestCase;
-use RZP\Trace\TraceCode;
 
 class ServiceTest extends TestCase
 {
     protected $mockTrace;
     protected $mockLinkedNumberCore;
     protected $mockVpaCore;
-    protected $mockPayoutCore;
+    protected $mockPayoutEvents;
     protected $mockFundAccount;
     protected $mockVpa;
 
@@ -27,7 +25,7 @@ class ServiceTest extends TestCase
         $this->mockTrace = Mockery::mock()->shouldIgnoreMissing();
         $this->mockLinkedNumberCore = Mockery::mock('RZP\Models\LinkedNumber\Core');
         $this->mockVpaCore = Mockery::mock('RZP\Models\Vpa\Core');
-        $this->mockPayoutCore = Mockery::mock('RZP\Models\Payout\Core');
+        $this->mockPayoutEvents = Mockery::mock('RZP\Models\Payout\Events');
 
         // Mock entities with shouldIgnoreMissing to handle Laravel methods
         $this->mockFundAccount = Mockery::mock('RZP\Models\FundAccount\Entity')->shouldIgnoreMissing();
@@ -112,42 +110,16 @@ class ServiceTest extends TestCase
             ->with($mobileNumber, $accountHolderName, $merchantId)
             ->andReturn($mappedVpaData);
 
-        // Setup payoutCore mocks for sanitization
-        $sanitizedExistingData = [Entity::VPA => 'xxxxx@oldbank'];
-        $sanitizedUpdatedData = [
-            Entity::MOBILE => 'xxxxx43210',
-            Entity::VPA => 'xxxxx@newbank'
-        ];
-
-        $this->mockPayoutCore
-            ->shouldReceive('sanitizeDataForTracking')
-            ->once()
-            ->with([Entity::VPA => $existingUsername . '@' . $existingHandle])
-            ->andReturn($sanitizedExistingData);
-
-        $this->mockPayoutCore
-            ->shouldReceive('sanitizeDataForTracking')
-            ->once()
-            ->with([
-                Entity::MOBILE => $mobileNumber,
-                Entity::VPA => $mappedVpaData[Entity::VPA]
-            ])
-            ->andReturn($sanitizedUpdatedData);
-
-        // Setup payoutCore mock for event tracking
-        $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutEvents')
+        // Setup payoutEvents mock for event tracking
+        $this->mockPayoutEvents
+            ->shouldReceive('trackPayoutsToPhoneNumberVpaUpdatedEvent')
             ->once()
             ->with(
-                Service::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED,
-                [
-                    Base\PublicEntity::MERCHANT_ID => $merchantId,
-                    Entity::MOBILE => $sanitizedUpdatedData[Entity::MOBILE],
-                    Entity::CUSTOMER_NAME => $accountHolderName,
-                    'stored_vpa' => $sanitizedExistingData[Entity::VPA],
-                    'updated_vpa' => $sanitizedUpdatedData[Entity::VPA],
-                    'event_name' => Service::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED
-                ]
+                $merchantId,
+                $mobileNumber,
+                $accountHolderName,
+                $mappedVpaData[Entity::VPA],
+                $existingUsername . '@' . $existingHandle,
             );
 
         // Setup vpaCore mock for VPA update
@@ -173,9 +145,9 @@ class ServiceTest extends TestCase
         $vpaCoreProperty->setAccessible(true);
         $vpaCoreProperty->setValue($service, $this->mockVpaCore);
 
-        $payoutCoreProperty = $reflection->getProperty('payoutCore');
-        $payoutCoreProperty->setAccessible(true);
-        $payoutCoreProperty->setValue($service, $this->mockPayoutCore);
+        $payoutEventsProperty = $reflection->getProperty('payoutEvents');
+        $payoutEventsProperty->setAccessible(true);
+        $payoutEventsProperty->setValue($service, $this->mockPayoutEvents);
 
         // Execute the method
         $service->updateMappedVpaForFundAccount($this->mockFundAccount, $merchantId);
@@ -198,10 +170,10 @@ class ServiceTest extends TestCase
         $this->assertSame($this->mockVpaCore, $vpaCoreProperty->getValue($service),
             'VpaCore dependency should be properly injected');
 
-        $payoutCoreProperty = $reflection->getProperty('payoutCore');
-        $payoutCoreProperty->setAccessible(true);
-        $this->assertSame($this->mockPayoutCore, $payoutCoreProperty->getValue($service),
-            'PayoutCore dependency should be properly injected');
+        $payoutEventsProperty = $reflection->getProperty('payoutEvents');
+        $payoutEventsProperty->setAccessible(true);
+        $this->assertSame($this->mockPayoutEvents, $payoutEventsProperty->getValue($service),
+            'PayoutEvents dependency should be properly injected');
     }
 
     /**
@@ -278,8 +250,7 @@ class ServiceTest extends TestCase
             ->andReturn($mappedVpaData);
 
         // No event tracking should happen since VPA hasn't changed
-        $this->mockPayoutCore->shouldNotReceive('trackPhoneNumberPayoutEvents');
-        $this->mockPayoutCore->shouldNotReceive('sanitizeDataForTracking');
+        $this->mockPayoutEvents->shouldNotReceive('trackPayoutsToPhoneNumberVpaUpdatedEvent');
 
         // Setup vpaCore mock for VPA update - even though VPA hasn't changed, the method is still called
         $expectedVpaInput = [
@@ -304,9 +275,9 @@ class ServiceTest extends TestCase
         $vpaCoreProperty->setAccessible(true);
         $vpaCoreProperty->setValue($service, $this->mockVpaCore);
 
-        $payoutCoreProperty = $reflection->getProperty('payoutCore');
-        $payoutCoreProperty->setAccessible(true);
-        $payoutCoreProperty->setValue($service, $this->mockPayoutCore);
+        $payoutEventsProperty = $reflection->getProperty('payoutEvents');
+        $payoutEventsProperty->setAccessible(true);
+        $payoutEventsProperty->setValue($service, $this->mockPayoutEvents);
 
         // Execute the method
         $service->updateMappedVpaForFundAccount($this->mockFundAccount, $merchantId);
@@ -329,10 +300,10 @@ class ServiceTest extends TestCase
         $this->assertSame($this->mockVpaCore, $vpaCoreProperty->getValue($service),
             'VpaCore dependency should be properly injected');
 
-        $payoutCoreProperty = $reflection->getProperty('payoutCore');
-        $payoutCoreProperty->setAccessible(true);
-        $this->assertSame($this->mockPayoutCore, $payoutCoreProperty->getValue($service),
-            'PayoutCore dependency should be properly injected');
+        $payoutEventsProperty = $reflection->getProperty('payoutEvents');
+        $payoutEventsProperty->setAccessible(true);
+        $this->assertSame($this->mockPayoutEvents, $payoutEventsProperty->getValue($service),
+            'PayoutEvents dependency should be properly injected');
     }
 
     /**
@@ -410,46 +381,19 @@ class ServiceTest extends TestCase
             ->with($mobileNumber, $accountHolderName, $merchantId)
             ->andReturn($mappedVpaData);
 
-        // Setup payoutCore mocks for sanitization
-        $sanitizedExistingData = [Entity::VPA => 'xxxxx@oldbank'];
-        $sanitizedUpdatedData = [
-            Entity::MOBILE => 'xxxxx43210',
-            Entity::VPA => 'xxxxx@newbank'
-        ];
-
-        $this->mockPayoutCore
-            ->shouldReceive('sanitizeDataForTracking')
-            ->once()
-            ->with([Entity::VPA => $existingUsername . '@' . $existingHandle])
-            ->andReturn($sanitizedExistingData);
-
-        $this->mockPayoutCore
-            ->shouldReceive('sanitizeDataForTracking')
-            ->once()
-            ->with([
-                Entity::MOBILE => $mobileNumber,
-                Entity::VPA => $mappedVpaData[Entity::VPA]
-            ])
-            ->andReturn($sanitizedUpdatedData);
-
-        // Setup payoutCore mock for event tracking - make it throw an exception
-        $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutEvents')
-            ->once()
-            ->andThrow(new \Exception('Event tracking failed'));
-
-        // Setup trace mock to verify error is logged
-        $this->mockTrace
-            ->shouldReceive('error')
+        // Setup payoutEvents mock for event tracking - Events class handles exceptions internally
+        $this->mockPayoutEvents
+            ->shouldReceive('trackPayoutsToPhoneNumberVpaUpdatedEvent')
             ->once()
             ->with(
-                TraceCode::PAYOUT_TO_PHONE_NUMBER_EVENT_TRACKING_FAILED,
-                [
-                    'error_message' => 'Event tracking failed',
-                    'merchant_id' => $merchantId,
-                    'context' => Service::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED
-                ]
+                $merchantId,
+                $mobileNumber,
+                $accountHolderName,
+                $mappedVpaData[Entity::VPA],
+                $existingUsername . '@' . $existingHandle,
             );
+
+        // No trace error should be called since Events class handles errors internally
 
         // Setup vpaCore mock for VPA update
         $expectedVpaInput = [
@@ -474,9 +418,9 @@ class ServiceTest extends TestCase
         $vpaCoreProperty->setAccessible(true);
         $vpaCoreProperty->setValue($service, $this->mockVpaCore);
 
-        $payoutCoreProperty = $reflection->getProperty('payoutCore');
-        $payoutCoreProperty->setAccessible(true);
-        $payoutCoreProperty->setValue($service, $this->mockPayoutCore);
+        $payoutEventsProperty = $reflection->getProperty('payoutEvents');
+        $payoutEventsProperty->setAccessible(true);
+        $payoutEventsProperty->setValue($service, $this->mockPayoutEvents);
 
         // Execute the method
         $service->updateMappedVpaForFundAccount($this->mockFundAccount, $merchantId);
@@ -499,10 +443,10 @@ class ServiceTest extends TestCase
         $this->assertSame($this->mockVpaCore, $vpaCoreProperty->getValue($service),
             'VpaCore dependency should be properly injected');
 
-        $payoutCoreProperty = $reflection->getProperty('payoutCore');
-        $payoutCoreProperty->setAccessible(true);
-        $this->assertSame($this->mockPayoutCore, $payoutCoreProperty->getValue($service),
-            'PayoutCore dependency should be properly injected');
+        $payoutEventsProperty = $reflection->getProperty('payoutEvents');
+        $payoutEventsProperty->setAccessible(true);
+        $this->assertSame($this->mockPayoutEvents, $payoutEventsProperty->getValue($service),
+            'PayoutEvents dependency should be properly injected');
     }
 
     /**
@@ -555,8 +499,7 @@ class ServiceTest extends TestCase
             ->andReturn($mappedVpaData);
 
         // No event tracking or VPA update should happen
-        $this->mockPayoutCore->shouldNotReceive('trackPhoneNumberPayoutEvents');
-        $this->mockPayoutCore->shouldNotReceive('sanitizeDataForTracking');
+        $this->mockPayoutEvents->shouldNotReceive('trackPayoutsToPhoneNumberVpaUpdatedEvent');
         $this->mockVpaCore->shouldNotReceive('updateVpaWithPublicId');
         $this->mockFundAccount->shouldNotReceive('setCustomerName');
         $this->mockFundAccount->shouldNotReceive('saveOrFail');
@@ -573,9 +516,9 @@ class ServiceTest extends TestCase
         $vpaCoreProperty->setAccessible(true);
         $vpaCoreProperty->setValue($service, $this->mockVpaCore);
 
-        $payoutCoreProperty = $reflection->getProperty('payoutCore');
-        $payoutCoreProperty->setAccessible(true);
-        $payoutCoreProperty->setValue($service, $this->mockPayoutCore);
+        $payoutEventsProperty = $reflection->getProperty('payoutEvents');
+        $payoutEventsProperty->setAccessible(true);
+        $payoutEventsProperty->setValue($service, $this->mockPayoutEvents);
 
         // Execute the method
         $service->updateMappedVpaForFundAccount($this->mockFundAccount, $merchantId);
@@ -598,10 +541,10 @@ class ServiceTest extends TestCase
         $this->assertSame($this->mockVpaCore, $vpaCoreProperty->getValue($service),
             'VpaCore dependency should be properly injected');
 
-        $payoutCoreProperty = $reflection->getProperty('payoutCore');
-        $payoutCoreProperty->setAccessible(true);
-        $this->assertSame($this->mockPayoutCore, $payoutCoreProperty->getValue($service),
-            'PayoutCore dependency should be properly injected');
+        $payoutEventsProperty = $reflection->getProperty('payoutEvents');
+        $payoutEventsProperty->setAccessible(true);
+        $this->assertSame($this->mockPayoutEvents, $payoutEventsProperty->getValue($service),
+            'PayoutEvents dependency should be properly injected');
     }
 
     /**
@@ -656,73 +599,25 @@ class ServiceTest extends TestCase
             ->shouldReceive('getHandle')
             ->andReturn($existingHandle);
 
-        // Setup linkedNumberCore mock - return mapped VPA data with invalid format
-        $mappedVpaData = [
-            Entity::VPA => $invalidVpa,
-            Entity::CUSTOMER_NAME => 'Updated Customer Name'
-        ];
-
+        // Setup linkedNumberCore mock - throw exception for invalid VPA format
+        // With the new validation in LinkedNumber\Core, invalid VPA format should throw exception
         $this->mockLinkedNumberCore
             ->shouldReceive('FetchMappedVpaFromLinkedNumber')
             ->once()
             ->with($mobileNumber, $accountHolderName, $merchantId)
-            ->andReturn($mappedVpaData);
+            ->andThrow(new \RZP\Exception\BadRequestException(
+                \RZP\Error\ErrorCode::BAD_REQUEST_ERROR,
+                \RZP\Models\FundAccount\Entity::MOBILE,
+                null,
+                \RZP\Error\PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_NOT_FOUND
+            ));
 
-        // Setup vpaCore mock for VPA update - when explode is used on invalid VPA format
-        // explode('@', 'invalid-vpa-format') will return ['invalid-vpa-format']
-        // So username = 'invalid-vpa-format' and handle = null
-        $expectedVpaInput = [
-            Vpa\Entity::USERNAME => $invalidVpa,
-            Vpa\Entity::HANDLE => null,
-        ];
-
-        $this->mockVpaCore
-            ->shouldReceive('updateVpaWithPublicId')
-            ->once()
-            ->with($this->mockVpa, $expectedVpaInput);
-
-        // Event tracking should happen since VPA is different (invalid format != existing VPA)
-        $sanitizedExistingData = [Entity::VPA => $existingUsername . '@' . $existingHandle];
-        $sanitizedUpdatedData = [
-            Entity::MOBILE => $mobileNumber,
-            Entity::VPA => $invalidVpa
-        ];
-
-        $this->mockPayoutCore
-            ->shouldReceive('sanitizeDataForTracking')
-            ->twice()
-            ->andReturnUsing(function($data) use ($sanitizedExistingData, $sanitizedUpdatedData) {
-                if (isset($data[Entity::VPA]) && !isset($data[Entity::MOBILE])) {
-                    return $sanitizedExistingData;
-                } else {
-                    return $sanitizedUpdatedData;
-                }
-            });
-
-        $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutEvents')
-            ->once()
-            ->with(
-                Service::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED,
-                [
-                    Base\PublicEntity::MERCHANT_ID => $merchantId,
-                    Entity::MOBILE => $mobileNumber,
-                    Entity::CUSTOMER_NAME => $accountHolderName,
-                    'stored_vpa' => $existingUsername . '@' . $existingHandle,
-                    'updated_vpa' => $invalidVpa,
-                    'event_name' => Service::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED
-                ]
-            );
-
-        // Customer name should still be updated
-        $this->mockFundAccount
-            ->shouldReceive('setCustomerName')
-            ->once()
-            ->with('Updated Customer Name');
-
-        $this->mockFundAccount
-            ->shouldReceive('saveOrFail')
-            ->once();
+        // Since LinkedNumber\Core will throw exception for invalid VPA format,
+        // no further processing should happen - no VPA updates, no event tracking, no customer name updates
+        $this->mockVpaCore->shouldNotReceive('updateVpaWithPublicId');
+        $this->mockPayoutEvents->shouldNotReceive('trackPayoutsToPhoneNumberVpaUpdatedEvent');
+        $this->mockFundAccount->shouldNotReceive('setCustomerName');
+        $this->mockFundAccount->shouldNotReceive('saveOrFail');
 
         // Create service instance and inject mocked dependencies
         $service = new Service();
@@ -736,11 +631,14 @@ class ServiceTest extends TestCase
         $vpaCoreProperty->setAccessible(true);
         $vpaCoreProperty->setValue($service, $this->mockVpaCore);
 
-        $payoutCoreProperty = $reflection->getProperty('payoutCore');
-        $payoutCoreProperty->setAccessible(true);
-        $payoutCoreProperty->setValue($service, $this->mockPayoutCore);
+        $payoutEventsProperty = $reflection->getProperty('payoutEvents');
+        $payoutEventsProperty->setAccessible(true);
+        $payoutEventsProperty->setValue($service, $this->mockPayoutEvents);
 
-        // Execute the method
+        // Execute the method - expect BadRequestException for invalid VPA format
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+        $this->expectExceptionMessage('No linked account details found');
+
         $service->updateMappedVpaForFundAccount($this->mockFundAccount, $merchantId);
 
         // Verify all mock expectations were satisfied
@@ -761,10 +659,10 @@ class ServiceTest extends TestCase
         $this->assertSame($this->mockVpaCore, $vpaCoreProperty->getValue($service),
             'VpaCore dependency should be properly injected');
 
-        $payoutCoreProperty = $reflection->getProperty('payoutCore');
-        $payoutCoreProperty->setAccessible(true);
-        $this->assertSame($this->mockPayoutCore, $payoutCoreProperty->getValue($service),
-            'PayoutCore dependency should be properly injected');
+        $payoutEventsProperty = $reflection->getProperty('payoutEvents');
+        $payoutEventsProperty->setAccessible(true);
+        $this->assertSame($this->mockPayoutEvents, $payoutEventsProperty->getValue($service),
+            'PayoutEvents dependency should be properly injected');
     }
 
     protected function tearDown(): void

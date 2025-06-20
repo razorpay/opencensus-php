@@ -39,7 +39,7 @@ class Service extends Base\Service
     const FA_CONTACT_MUTEX_RESOURCE        = 'FUND_ACCOUNT_CONTACT_%s_%s';
     const FA_CUSTOMER_MUTEX_RESOURCE        = 'FUND_ACCOUNT_CUSTOMER_%s_%s';
 
-    const PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED   = 'PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED';
+//    const PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED   = 'PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED';
 
     use Base\Traits\ServiceHasCrudMethods;
 
@@ -76,7 +76,12 @@ class Service extends Base\Service
     /**
      * @var Payout\Core
      */
-    protected $payoutCore;
+//    protected $payoutCore;
+
+    /**
+     * @var Payout\Events
+     */
+    protected $payoutEvents;
 
     public function __construct()
     {
@@ -94,7 +99,9 @@ class Service extends Base\Service
 
         $this->vpaCore = new Vpa\Core;
 
-        $this->payoutCore = new Payout\Core;
+//        $this->payoutCore = new Payout\Core;
+
+        $this->payoutEvents = new Payout\Events;
     }
 
     public function create(array $input): array
@@ -625,34 +632,13 @@ class Service extends Base\Service
             $vpa = $fundAccount->account;
 
             if($vpa->getUsername()!= $username || $vpa->getHandle() != $handle) {
-                try{
-                    $sanitizedExistingData = $this->payoutCore->sanitizeDataForTracking([
-                        Entity::VPA    => $vpa->getUsername() . '@' . $vpa->getHandle()
-                    ]);
-
-                    $sanitizedUpdatedData = $this->payoutCore->sanitizeDataForTracking([
-                        Entity::MOBILE => $mobileNumber,
-                        Entity::VPA    => $mappedVpa[Entity::VPA]
-                    ]);
-
-                    $this->payoutCore->trackPhoneNumberPayoutEvents(
-                        self::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED,
-                        [
-                            Base\PublicEntity::MERCHANT_ID      => $merchantId,
-                            Entity::MOBILE                      => $sanitizedUpdatedData[Entity::MOBILE],
-                            Entity::CUSTOMER_NAME               => $accountHolderName,
-                            'stored_vpa'                        => $sanitizedExistingData[Entity::VPA],
-                            'updated_vpa'                       => $sanitizedUpdatedData[Entity::VPA],
-                            'event_name'                        => self::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED
-                        ]
-                    );
-                }catch (\Throwable $e){
-                    $this->trace->error(TraceCode::PAYOUT_TO_PHONE_NUMBER_EVENT_TRACKING_FAILED, [
-                        'error_message' => $e->getMessage(),
-                        'merchant_id'   => $merchantId,
-                        'context'       => self::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED
-                    ]);
-                }
+                $this->payoutEvents->trackPayoutsToPhoneNumberVpaUpdatedEvent(
+                    $merchantId,
+                    $mobileNumber,
+                    $accountHolderName,
+                    $mappedVpa[Entity::VPA],
+                    $vpa->getUsername() . '@' . $vpa->getHandle(),
+                );
             }
 
             $this->vpaCore->updateVpaWithPublicId($vpa, $vpaInput);

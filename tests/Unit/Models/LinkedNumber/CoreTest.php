@@ -17,7 +17,7 @@ class CoreTest extends TestCase
     protected $mockPayoutService;
     protected $mockFavCore;
     protected $mockTrace;
-    protected $mockPayoutCore;
+    protected $mockPayoutEvents;
 
     protected function setUp(): void
     {
@@ -28,7 +28,7 @@ class CoreTest extends TestCase
         $this->mockPayoutService = Mockery::mock();
         $this->mockFavCore = Mockery::mock();
         $this->mockTrace = Mockery::mock()->shouldIgnoreMissing();
-        $this->mockPayoutCore = Mockery::mock();
+        $this->mockPayoutEvents = Mockery::mock();
 
         // Inject mocked dependencies into app container
         $this->app->instance(VpaMapperFetch::MAPPED_VPA_FETCH, $this->mockMappedVpaFetchClient);
@@ -38,31 +38,33 @@ class CoreTest extends TestCase
     protected function createCoreWithMocks(): Core
     {
         $core = new Core();
-
-        // Use reflection to inject mocked dependencies
         $reflection = new \ReflectionClass($core);
-
-        $payoutServiceProperty = $reflection->getProperty('payoutService');
-        $payoutServiceProperty->setAccessible(true);
-        $payoutServiceProperty->setValue($core, $this->mockPayoutService);
 
         $favCoreProperty = $reflection->getProperty('favCore');
         $favCoreProperty->setAccessible(true);
         $favCoreProperty->setValue($core, $this->mockFavCore);
 
-        $payoutCoreProperty = $reflection->getProperty('payoutCore');
-        $payoutCoreProperty->setAccessible(true);
-        $payoutCoreProperty->setValue($core, $this->mockPayoutCore);
+        $mappedVpaFetchClientProperty = $reflection->getProperty('mappedVpaFetchClient');
+        $mappedVpaFetchClientProperty->setAccessible(true);
+        $mappedVpaFetchClientProperty->setValue($core, $this->mockMappedVpaFetchClient);
+
+        $payoutServiceProperty = $reflection->getProperty('payoutService');
+        $payoutServiceProperty->setAccessible(true);
+        $payoutServiceProperty->setValue($core, $this->mockPayoutService);
+
+        $payoutEventsProperty = $reflection->getProperty('payoutEvents');
+        $payoutEventsProperty->setAccessible(true);
+        $payoutEventsProperty->setValue($core, $this->mockPayoutEvents);
 
         return $core;
     }
 
     /**
-     * Test 1.1: VPA Not Found - Verifies main business logic and successful event tracking
+     * Test 1.1: VPA Not Found - Empty VPA array
      */
     public function testFetchMappedVpaFromLinkedNumberVpaNotFoundThrowsException()
     {
-        // Setup: VPA fetch returns empty data
+        // Setup: VPA fetch returns empty array
         $this->mockMappedVpaFetchClient
             ->shouldReceive('fetchMappedVpaViaMicroservice')
             ->once()
@@ -75,25 +77,14 @@ class CoreTest extends TestCase
             ->once()
             ->with(Metric::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND_COUNT);
 
-        // Setup: Mock sanitizeDataForTracking method on payoutCore
-        $this->mockPayoutCore
-            ->shouldReceive('sanitizeDataForTracking')
-            ->once()
-            ->with([FundAccount\Entity::MOBILE => '9876543210'])
-            ->andReturn([FundAccount\Entity::MOBILE => 'xxxxx43210']);
-
-        // Setup: Event tracking should succeed - payoutCore service called
-        $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutEvents')
+        // Setup: Event tracking should succeed - Events service called
+        $this->mockPayoutEvents
+            ->shouldReceive('trackPayoutsToPhoneNumberVpaNotFoundEvent')
             ->once()
             ->with(
-                Core::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND,
-                [
-                    'merchant_id' => 'test_merchant_123',
-                    'mobile' => 'xxxxx43210',
-                    'customer_name' => 'Test Customer',
-                    'failure_reason' => Core::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND
-                ]
+                'test_merchant_123',
+                '9876543210',
+                'Test Customer'
             );
 
         // Main business logic: Should throw BadRequestException
@@ -124,25 +115,14 @@ class CoreTest extends TestCase
             ->once()
             ->with(Metric::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND_COUNT);
 
-        // Setup: Mock sanitizeDataForTracking method on payoutCore
-        $this->mockPayoutCore
-            ->shouldReceive('sanitizeDataForTracking')
-            ->once()
-            ->with([FundAccount\Entity::MOBILE => '9876543210'])
-            ->andReturn([FundAccount\Entity::MOBILE => 'xxxxx43210']);
-
         // Event tracking should succeed
-        $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutEvents')
+        $this->mockPayoutEvents
+            ->shouldReceive('trackPayoutsToPhoneNumberVpaNotFoundEvent')
             ->once()
             ->with(
-                Core::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND,
-                [
-                    'merchant_id' => 'test_merchant_123',
-                    'mobile' => 'xxxxx43210',
-                    'customer_name' => 'Test Customer',
-                    'failure_reason' => Core::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND
-                ]
+                'test_merchant_123',
+                '9876543210',
+                'Test Customer'
             );
 
         $this->expectException(BadRequestException::class);
@@ -152,7 +132,44 @@ class CoreTest extends TestCase
     }
 
     /**
-     * Test 1.3: VPA Found - Success Path with Above Threshold Match
+     * Test 1.3: VPA Invalid Format - Missing @ symbol
+     */
+    public function testFetchMappedVpaFromLinkedNumberInvalidVpaFormatThrowsException()
+    {
+        // Setup: VPA fetch returns data but VPA doesn't contain '@' symbol
+        $this->mockMappedVpaFetchClient
+            ->shouldReceive('fetchMappedVpaViaMicroservice')
+            ->once()
+            ->with('9876543210')
+            ->andReturn([
+                FundAccount\Entity::VPA => 'invalid-vpa-format', // Missing '@' symbol
+                FundAccount\Entity::CUSTOMER_NAME => 'Some Customer'
+            ]);
+
+        $this->mockTrace
+            ->shouldReceive('count')
+            ->once()
+            ->with(Metric::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND_COUNT);
+
+        // Event tracking should succeed
+        $this->mockPayoutEvents
+            ->shouldReceive('trackPayoutsToPhoneNumberVpaNotFoundEvent')
+            ->once()
+            ->with(
+                'test_merchant_123',
+                '9876543210',
+                'Test Customer'
+            );
+
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage('No linked account details found');
+
+        $core = $this->createCoreWithMocks();
+        $core->FetchMappedVpaFromLinkedNumber('9876543210', 'Test Customer', 'test_merchant_123');
+    }
+
+    /**
+     * Test 1.4: VPA Found - Success Path with Above Threshold Match
      */
     public function testFetchMappedVpaFromLinkedNumberSuccessfulFlow()
     {
@@ -232,35 +249,18 @@ class CoreTest extends TestCase
             ->once()
             ->with(Metric::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_THRESHOLD_FAILURE_COUNT);
 
-        // Setup: Mock sanitizeDataForTracking method on payoutCore
-        $this->mockPayoutCore
-            ->shouldReceive('sanitizeDataForTracking')
-            ->once()
-            ->with([
-                FundAccount\Entity::MOBILE => '9876543210',
-                FundAccount\Entity::VPA => 'test@upi'
-            ])
-            ->andReturn([
-                FundAccount\Entity::MOBILE => 'xxxxx43210',
-                FundAccount\Entity::VPA => 'xxxx@upi'
-            ]);
-
-        // Setup: Event tracking should succeed - payoutCore service called
-        $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutEvents')
+        // Setup: Event tracking should succeed - Events service called
+        $this->mockPayoutEvents
+            ->shouldReceive('trackPayoutsToPhoneNumberNameMatchingBelowThresholdEvent')
             ->once()
             ->with(
-                Core::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD,
-                [
-                    'merchant_id' => 'test_merchant_123',
-                    'mobile' => 'xxxxx43210',
-                    'customer_name' => 'Test Customer',
-                    'vpa' => 'xxxx@upi',
-                    'bank_customer_name' => 'Bank Customer Name',
-                    'match_score' => 0.6,
-                    'threshold' => 0.8,
-                    'failure_reason' => Core::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD
-                ]
+                'test_merchant_123',
+                '9876543210',
+                'Test Customer',
+                'Bank Customer Name',
+                'test@upi',
+                0.6,
+                0.8
             );
 
         // Execute test - should throw BadRequestException
@@ -379,35 +379,18 @@ class CoreTest extends TestCase
             ->once()
             ->with(Metric::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_THRESHOLD_FAILURE_COUNT);
 
-        // Setup: Mock sanitizeDataForTracking method on payoutCore
-        $this->mockPayoutCore
-            ->shouldReceive('sanitizeDataForTracking')
-            ->once()
-            ->with([
-                FundAccount\Entity::MOBILE => '9876543210',
-                FundAccount\Entity::VPA => 'test@upi'
-            ])
-            ->andReturn([
-                FundAccount\Entity::MOBILE => 'xxxxx43210',
-                FundAccount\Entity::VPA => 'xxxx@upi'
-            ]);
-
         // Event tracking should succeed
-        $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutEvents')
+        $this->mockPayoutEvents
+            ->shouldReceive('trackPayoutsToPhoneNumberNameMatchingBelowThresholdEvent')
             ->once()
             ->with(
-                Core::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD,
-                [
-                    'merchant_id' => 'test_merchant_123',
-                    'mobile' => 'xxxxx43210',
-                    'customer_name' => 'Different Name',
-                    'vpa' => 'xxxx@upi',
-                    'bank_customer_name' => 'Bank Customer Name',
-                    'match_score' => 0.5,
-                    'threshold' => 0.8,
-                    'failure_reason' => Core::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD
-                ]
+                'test_merchant_123',
+                '9876543210',
+                'Different Name',
+                'Bank Customer Name',
+                'test@upi',
+                0.5,
+                0.8
             );
 
         // Should throw exception for name mismatch
@@ -419,7 +402,7 @@ class CoreTest extends TestCase
     }
 
     /**
-     * Test 4.1: Event Tracking Failure Scenario - PayoutCore Service Throws Exception
+     * Test 4.1: Event Tracking Failure Scenario - Events Service Throws Exception
      */
     public function testEventTrackingFailureIsHandledGracefully()
     {
@@ -434,39 +417,14 @@ class CoreTest extends TestCase
             ->once()
             ->with(Metric::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND_COUNT);
 
-        // Setup: Mock sanitizeDataForTracking method on payoutCore
-        $this->mockPayoutCore
-            ->shouldReceive('sanitizeDataForTracking')
-            ->once()
-            ->with([FundAccount\Entity::MOBILE => '9876543210'])
-            ->andReturn([FundAccount\Entity::MOBILE => 'xxxxx43210']);
-
-        // Setup: PayoutCore service throws exception
-        $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutEvents')
+        // Setup: Events service handles exceptions internally
+        $this->mockPayoutEvents
+            ->shouldReceive('trackPayoutsToPhoneNumberVpaNotFoundEvent')
             ->once()
             ->with(
-                Core::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND,
-                [
-                    'merchant_id' => 'test_merchant_123',
-                    'mobile' => 'xxxxx43210',
-                    'customer_name' => 'Test Customer',
-                    'failure_reason' => Core::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND
-                ]
-            )
-            ->andThrow(new \Exception('PayoutCore service failed'));
-
-        // Setup: Error should be logged when event tracking fails
-        $this->mockTrace
-            ->shouldReceive('error')
-            ->once()
-            ->with(
-                TraceCode::PAYOUT_TO_PHONE_NUMBER_EVENT_TRACKING_FAILED,
-                [
-                    'error_message' => 'PayoutCore service failed',
-                    'merchant_id' => 'test_merchant_123',
-                    'context' => Core::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND
-                ]
+                'test_merchant_123',
+                '9876543210',
+                'Test Customer'
             );
 
         // Main business logic should still work - exception should be thrown

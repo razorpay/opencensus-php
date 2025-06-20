@@ -17,7 +17,7 @@ class ValidatorTest extends TestCase
     protected $mockDiag;
     protected $mockBasicAuth;
     protected $mockMerchant;
-    protected $mockPayoutCore;
+    protected $mockPayoutEvents;
 
     protected function setUp(): void
     {
@@ -28,7 +28,7 @@ class ValidatorTest extends TestCase
         $this->mockDiag = Mockery::mock();
         $this->mockMerchant = Mockery::mock();
         $this->mockBasicAuth = Mockery::mock()->shouldIgnoreMissing();
-        $this->mockPayoutCore = Mockery::mock('RZP\Models\Payout\Core')->shouldIgnoreMissing();
+        $this->mockPayoutEvents = Mockery::mock('RZP\Models\Payout\Events')->shouldIgnoreMissing();
 
         // Setup merchant mock
         $this->mockMerchant->shouldReceive('getId')->andReturn('test_merchant_123');
@@ -47,32 +47,18 @@ class ValidatorTest extends TestCase
      */
     public function testValidateMobileNumberFormatWithInvalidNumberThrowsExceptionAndTracksEvent()
     {
-        // Mock the sanitizeDataForTracking method
-        $this->mockPayoutCore
-            ->shouldReceive('sanitizeDataForTracking')
+        // Setup: Event tracking should succeed - Events class method called
+        $this->mockPayoutEvents
+            ->shouldReceive('trackPayoutsToPhoneNumberMobileNumberInvalidEvent')
             ->once()
-            ->with([FundAccount\Entity::MOBILE => '123456789'])
-            ->andReturn([FundAccount\Entity::MOBILE => 'xxxxx43210']);
+            ->with('123456789');
 
-        // Setup: Event tracking should succeed - payoutCore method called
-        $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutEvents')
-            ->once()
-            ->with(
-                Validator::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID,
-                [
-                    FundAccount\Entity::MOBILE => 'xxxxx43210',
-                    Payout\Entity::MERCHANT_ID => 'test_merchant_123',
-                    'failure_reason' => Validator::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID
-                ]
-            );
-
-        // Create validator instance and inject mocked payoutCore
+        // Create validator instance and inject mocked payoutEvents
         $validator = new Validator();
         $reflection = new \ReflectionClass($validator);
-        $property = $reflection->getProperty('payoutCore');
+        $property = $reflection->getProperty('payoutEvents');
         $property->setAccessible(true);
-        $property->setValue($validator, $this->mockPayoutCore);
+        $property->setValue($validator, $this->mockPayoutEvents);
 
         // Should throw BadRequestException for invalid mobile number
         $this->expectException(BadRequestException::class);
@@ -86,39 +72,22 @@ class ValidatorTest extends TestCase
      */
     public function testValidateMobileNumberFormatEventTrackingFailureIsHandledGracefully()
     {
-        // Mock the sanitizeDataForTracking method
-        $this->mockPayoutCore
-            ->shouldReceive('sanitizeDataForTracking')
+        // Setup: Events service throws exception but handles it internally
+        // The Events class should catch exceptions internally and not propagate them
+        $this->mockPayoutEvents
+            ->shouldReceive('trackPayoutsToPhoneNumberMobileNumberInvalidEvent')
             ->once()
-            ->with([FundAccount\Entity::MOBILE => 'abcd123456'])
-            ->andReturn([FundAccount\Entity::MOBILE => 'xxxxx23456']);
+            ->with('abcd123456');
+            // Not throwing exception since Events class handles it internally
 
-        // Setup: PayoutCore service throws exception
-        $this->mockPayoutCore
-            ->shouldReceive('trackPhoneNumberPayoutEvents')
-            ->once()
-            ->andThrow(new \Exception('PayoutCore service failed'));
-
-        // Setup: Error should be logged when event tracking fails
-        $this->mockTrace
-            ->shouldReceive('error')
-            ->once()
-            ->with(
-                TraceCode::PAYOUT_TO_PHONE_NUMBER_EVENT_TRACKING_FAILED,
-                [
-                    'error_message' => 'PayoutCore service failed',
-                    'context' => Validator::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID
-                ]
-            );
-
-        // Create validator instance and inject mocked payoutCore
+        // Create validator instance and inject mocked payoutEvents
         $validator = new Validator();
         $reflection = new \ReflectionClass($validator);
-        $property = $reflection->getProperty('payoutCore');
+        $property = $reflection->getProperty('payoutEvents');
         $property->setAccessible(true);
-        $property->setValue($validator, $this->mockPayoutCore);
+        $property->setValue($validator, $this->mockPayoutEvents);
 
-        // Main business logic should still work - exception should be thrown
+        // Main business logic should still work - validation exception should be thrown
         $this->expectException(BadRequestException::class);
         $this->expectExceptionMessage('Mobile number should be 10 digit long');
 
@@ -131,16 +100,14 @@ class ValidatorTest extends TestCase
     public function testValidateMobileNumberFormatWithValidNumberPasses()
     {
         // No event tracking calls should happen for valid numbers
-        $this->mockPayoutCore->shouldNotReceive('trackPhoneNumberPayoutEvents');
-        $this->mockPayoutCore->shouldNotReceive('sanitizeDataForTracking');
-        $this->mockTrace->shouldNotReceive('error')->with(TraceCode::PAYOUT_TO_PHONE_NUMBER_EVENT_TRACKING_FAILED, Mockery::any());
+        $this->mockPayoutEvents->shouldNotReceive('trackPayoutsToPhoneNumberMobileNumberInvalidEvent');
 
-        // Create validator instance and inject mocked payoutCore
+        // Create validator instance and inject mocked payoutEvents
         $validator = new Validator();
         $reflection = new \ReflectionClass($validator);
-        $property = $reflection->getProperty('payoutCore');
+        $property = $reflection->getProperty('payoutEvents');
         $property->setAccessible(true);
-        $property->setValue($validator, $this->mockPayoutCore);
+        $property->setValue($validator, $this->mockPayoutEvents);
 
         // Test valid mobile numbers - should not throw any exception
         $validMobileNumbers = [
@@ -162,9 +129,9 @@ class ValidatorTest extends TestCase
     {
         $validator = new Validator();
         $reflection = new \ReflectionClass($validator);
-        $property = $reflection->getProperty('payoutCore');
+        $property = $reflection->getProperty('payoutEvents');
         $property->setAccessible(true);
-        $property->setValue($validator, $this->mockPayoutCore);
+        $property->setValue($validator, $this->mockPayoutEvents);
 
         $invalidFormats = [
             '123456789',    // 9 digits
@@ -176,23 +143,10 @@ class ValidatorTest extends TestCase
 
         foreach ($invalidFormats as $invalidNumber) {
             // Setup fresh mocks for each iteration
-            $this->mockPayoutCore
-                ->shouldReceive('sanitizeDataForTracking')
+            $this->mockPayoutEvents
+                ->shouldReceive('trackPayoutsToPhoneNumberMobileNumberInvalidEvent')
                 ->once()
-                ->with([FundAccount\Entity::MOBILE => $invalidNumber])
-                ->andReturn([FundAccount\Entity::MOBILE => 'xxxxx' . substr($invalidNumber, -5)]);
-
-            $this->mockPayoutCore
-                ->shouldReceive('trackPhoneNumberPayoutEvents')
-                ->once()
-                ->with(
-                    Validator::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID,
-                    [
-                        FundAccount\Entity::MOBILE => 'xxxxx' . substr($invalidNumber, -5),
-                        Payout\Entity::MERCHANT_ID => 'test_merchant_123',
-                        'failure_reason' => Validator::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID
-                    ]
-                );
+                ->with($invalidNumber);
 
             try {
                 $this->callPrivateMethod($validator, 'validateMobileNumberFormat', [$invalidNumber]);
@@ -213,19 +167,20 @@ class ValidatorTest extends TestCase
         $mockBasicAuthWithoutMerchant->shouldReceive('getMerchant')->andReturn(null);
         $this->app->instance('basicauth', $mockBasicAuthWithoutMerchant);
 
-        // No event tracking should happen
-        $this->mockPayoutCore->shouldNotReceive('trackPhoneNumberPayoutEvents');
-        $this->mockPayoutCore->shouldNotReceive('sanitizeDataForTracking');
-        $this->mockTrace->shouldNotReceive('error')->with(TraceCode::PAYOUT_TO_PHONE_NUMBER_EVENT_TRACKING_FAILED, Mockery::any());
+        // Event tracking should still happen
+        $this->mockPayoutEvents
+            ->shouldReceive('trackPayoutsToPhoneNumberMobileNumberInvalidEvent')
+            ->once()
+            ->with('123456789');
 
-        // Create validator instance and inject mocked payoutCore
+        // Create validator instance and inject mocked payoutEvents
         $validator = new Validator();
         $reflection = new \ReflectionClass($validator);
-        $property = $reflection->getProperty('payoutCore');
+        $property = $reflection->getProperty('payoutEvents');
         $property->setAccessible(true);
-        $property->setValue($validator, $this->mockPayoutCore);
+        $property->setValue($validator, $this->mockPayoutEvents);
 
-        // Should still throw exception but without event tracking
+        // Should still throw exception
         $this->expectException(BadRequestException::class);
         $this->expectExceptionMessage('Mobile number should be 10 digit long');
 
