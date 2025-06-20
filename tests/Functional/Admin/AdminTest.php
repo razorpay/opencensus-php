@@ -3118,4 +3118,75 @@ class AdminTest extends TestCase
 
     }
 
+    public function testAdminOrgReplications_AddsMissingFeaturesOnly()
+    {
+        $testData = $this->testData[__FUNCTION__];
+        $org = $this->createOrg();
+        $this->testData[__FUNCTION__]['request']['content']['to_org_id'] = $org->getId();
+
+        $this->fixtures->create(
+            'feature', ['entity_id' => $org->getId(), 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
+        // Source org has two features (one same + one new)
+        $this->fixtures->create(
+            'feature', ['entity_id' => '100000razorpay', 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
+        $this->fixtures->create(
+            'feature', ['entity_id' => '100000razorpay', 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::DUMMY]);
+
+        $token = $this->createAdminWithRedisConfigPermissions([
+            'admin_org_replications'
+        ]);
+
+        $this->ba->adminAuth('test', $token);
+
+        $this->startTest($testData);
+    }
+
+    public function testAdminOrgReplications_CopiesAllFeaturesWhenDestinationEmpty()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $org = $this->createOrg();
+        $this->testData[__FUNCTION__]['request']['content']['to_org_id'] = $org->getId();
+
+        $token = $this->createAdminWithRedisConfigPermissions([
+            'admin_org_replications'
+        ]);
+
+        $this->ba->adminAuth('test', $token);
+
+        // Source org has multiple features
+        $this->fixtures->create(
+            'feature', ['entity_id' => '100000razorpay', 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
+        $this->fixtures->create(
+            'feature', ['entity_id' => '100000razorpay', 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::DUMMY]);
+
+        $this->startTest($testData);
+    }
+
+    public function testAdminOrgReplications_ThrowsErrorWhenAllFeaturesExist()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $org = $this->createOrg();
+        $this->testData[__FUNCTION__]['request']['content']['to_org_id'] = $org->getId();
+
+        $token = $this->createAdminWithRedisConfigPermissions([
+            'admin_org_replications'
+        ]);
+
+        $this->ba->adminAuth('test', $token);
+
+        // Destination org has the same features as source org
+        $this->fixtures->create(
+            'feature', ['entity_id' => $org->getId(), 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
+        $this->fixtures->create(
+            'feature', ['entity_id' => '100000razorpay', 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
+        $this->startTest($testData);
+    }
+
 }
