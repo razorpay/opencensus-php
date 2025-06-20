@@ -13,7 +13,6 @@ use RZP\Exception;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\VirtualAccountsAutoCloseInactive;
 use RZP\Models\Base;
-use Rzp\Pg\Merchant\Checkout\GPBMetadata\Truecaller;
 use RZP\Trace\Tracer;
 use RZP\Models\Feature;
 use RZP\Models\Base\PublicCollection;
@@ -105,7 +104,7 @@ class Service extends Base\Service
         $this->modifyRequestFromOldFormat($input);
 
         (new Validator)->validateDefaultCloseBy($input);
-        
+
         if ($this->merchant->isFeatureEnabled(FeatureConstants::RAAS) === true)
         {
             try
@@ -118,9 +117,9 @@ class Service extends Base\Service
                             'merchant_id' => $this->merchant->getId(),
                         ]),
                 ]);
-        
+
                 $variant = $splitzResponse['response']['variant']['name'] ?? '';
-        
+
                 $this->trace->info(TraceCode::OPTIMIZER_BANK_TRANSFER_SPLITZ_RESPONSE, [
                     'merchant_id' => $this->merchant->getId(),
                     'response' => $splitzResponse,
@@ -150,7 +149,7 @@ class Service extends Base\Service
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                
+
                 // Continue with regular flow if optimizer service fails
             }
         }
@@ -1906,7 +1905,7 @@ class Service extends Base\Service
             ]);
         }
 
-        if ($virtualAccount->isDueToBeClosed() === True)
+        if ($virtualAccount->isDueToBeClosed() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CHALLAN_EXPIRED,
