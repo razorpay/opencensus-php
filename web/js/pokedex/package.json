@@ -13,7 +13,7 @@
   "dependencies": {
     "@razorpay/universe-cli": "20.2.13",
     "browser-detect": "0.2.28",
-    "@razorpay/blade": "12.17.1",
+    "@razorpay/blade": "12.31.5",
     "@razorpay/blade-old": "npm:@razorpay/blade-old@0.0.6-hotfix-styled-components",
     "@razorpay/blade-old-for-new-auth": "npm:@razorpay/blade-old@0.0.1",
     "@razorpay/frontend-care": "0.9.34",

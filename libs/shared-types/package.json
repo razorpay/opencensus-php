@@ -26,7 +26,7 @@
   "license": "ISC",
   "devDependencies": {
     "@libs/shared-core": "workspace:*",
-    "@razorpay/blade": "12.17.1",
+    "@razorpay/blade": "12.31.5",
     "@razorpay/i18nify-js": "1.12.3",
     "@types/graphql": "^14.5.0",
     "@types/react": "17.0.39",
