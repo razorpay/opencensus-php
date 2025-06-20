@@ -72,6 +72,7 @@ import { DashboardLoader } from '@libs/shared-ui';
 import { isRTUXHomepageEnabled } from 'merchant/containers/Home/RTUX/utils';
 import { isEligibleForFtuxV2 } from './Home/FTUX/utils';
 import { prefetchInsightsData } from 'merchant/views/Insights/utils/insightsDataManager';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
 
@@ -894,7 +895,9 @@ class App extends Component {
         this.props.fetchTrustedBadgeStatus(),
         this.props.fetchMerchantReferralDetail(),
         this.props.fetchGST(),
-        prefetchInsightsData(), //this is for prefetch insights sidenav data
+        ...(isExperimentEnabled(this.props.splitz?.abExperiments?.insights_experiment ?? false) 
+           ? [prefetchInsightsData()] 
+           : [])
       ]);
     } catch (error) {
       console.error('Error fetching APIs:', error);

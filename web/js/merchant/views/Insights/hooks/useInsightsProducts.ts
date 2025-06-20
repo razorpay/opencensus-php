@@ -8,24 +8,37 @@ import {
   getInsightsDataWithFlags
 } from 'merchant/views/Insights/utils/insightsDataManager';
 import { useQuery } from '@tanstack/react-query';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from 'common/splitz/utils';
 
 const useInsightsProducts = () => {
-  const { data: actualData , isLoading, isError } = useQuery({
+  const { abExperiments } = useSplitzService();
+  const isInsightsExpEnabled = abExperiments ? isExperimentEnabled(abExperiments['insights_experiment']) : false;
+
+  const { data: actualData, isLoading, isError } = useQuery({
     queryKey: ['insights_dashboard_data'],
     queryFn: fetchInsightsData,
     staleTime: 15 * 60 * 1000,
     cacheTime: 24 * 60 * 60 * 1000,
+    enabled: isInsightsExpEnabled,
     retry: 3,
     retryOnMount: false, 
     refetchOnWindowFocus: false, 
   });
-  const insightsData = isError || isLoading ? FALLBACK_INSIGHTS_DATA : actualData;
+  
+  const insightsData = useMemo(() => {
+    if (!isInsightsExpEnabled) {
+      return FALLBACK_INSIGHTS_DATA;
+    }
+    return isError || isLoading ? FALLBACK_INSIGHTS_DATA : (actualData || FALLBACK_INSIGHTS_DATA);
+  }, [isInsightsExpEnabled, isError, isLoading, actualData]);
+
   const {
-    hasMagicX,
-    hasCheckoutData,
-    hasSuccessRateData,
-    hasApiData,
-  } = getInsightsDataWithFlags();
+    hasMagicX = false,
+    hasCheckoutData = false,
+    hasSuccessRateData = false,
+    hasApiData = false,
+  } = isInsightsExpEnabled ? getInsightsDataWithFlags() : {};
 
   const productsData = useMemo(() => {
     return getInsightsL1ProductsFromData(insightsData);
