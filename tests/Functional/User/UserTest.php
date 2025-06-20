@@ -17844,8 +17844,7 @@ class UserTest extends TestCase
             ],
         ];
 
-        $authServiceConfig = \Config::get('applications.auth_service');
-        $this->ba->appAuth('rzp_test', $authServiceConfig['secret']);
+        $this->ba->appAuth();
 
         $this->startTest();
     }
