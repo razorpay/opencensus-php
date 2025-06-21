@@ -43,8 +43,8 @@ class EventsTest extends TestCase
         foreach ($testCases as [$input, $expected, $description]) {
             $data = [Constants::MOBILE => $input];
             $result = $this->events->sanitizeDataForTracking($data);
-            
-            $this->assertEquals($expected, $result[Constants::MOBILE], 
+
+            $this->assertEquals($expected, $result[Constants::MOBILE],
                 "Failed for mobile: $description");
         }
     }
@@ -70,8 +70,8 @@ class EventsTest extends TestCase
         foreach ($testCases as [$input, $expected, $description]) {
             $data = [Constants::VPA => $input];
             $result = $this->events->sanitizeDataForTracking($data);
-            
-            $this->assertEquals($expected, $result[Constants::VPA], 
+
+            $this->assertEquals($expected, $result[Constants::VPA],
                 "Failed for VPA: $description");
         }
     }
@@ -87,18 +87,18 @@ class EventsTest extends TestCase
             Constants::VPA => 'user@domain'
         ];
         $result = $this->events->sanitizeDataForTracking($data);
-        
+
         $this->assertEquals('xxxxx43210', $result[Constants::MOBILE]);
         $this->assertEquals('xxxx@domain', $result[Constants::VPA]);
 
         // Test with unknown data types (should pass through unchanged)
         $data = [
             'unknown_field' => 'some_value',
-            'another_field' => 'another_value', 
+            'another_field' => 'another_value',
             Constants::MOBILE => '9876543210'
         ];
         $result = $this->events->sanitizeDataForTracking($data);
-        
+
         $this->assertEquals('some_value', $result['unknown_field']);
         $this->assertEquals('another_value', $result['another_field']);
         $this->assertEquals('xxxxx43210', $result[Constants::MOBILE]);
@@ -121,9 +121,9 @@ class EventsTest extends TestCase
 
         // Setup basic expectations - just verify methods are called
         $mockDiag->shouldReceive('trackPhoneNumberPayoutEvents')
-            ->times(3) // We'll test 3 methods 
+            ->times(3)
             ->withAnyArgs();
-        
+
         $mockTrace->shouldReceive('info')
             ->times(3)
             ->withAnyArgs();
@@ -133,10 +133,11 @@ class EventsTest extends TestCase
         // Test VPA Updated Event
         $events->trackPayoutsToPhoneNumberVPAUpdatedEvent(
             'merchant_123',
-            '9876543210', 
+            '9876543210',
             'John Doe',
             'john.doe@paytm',
-            'old.john@upi'
+            'old.john@upi',
+            'fund_account_123'
         );
 
         // Test VPA Not Found Event
@@ -151,7 +152,7 @@ class EventsTest extends TestCase
             'merchant_123',
             '9876543210',
             'John Doe',
-            'Johnny Doe', 
+            'Johnny Doe',
             'john.doe@paytm',
             65,
             75
@@ -171,7 +172,7 @@ class EventsTest extends TestCase
         $mockTrace = Mockery::mock();
         $mockBasicAuth = Mockery::mock();
         $mockMerchant = Mockery::mock();
-        
+
         $mockTrace->shouldIgnoreMissing();
         $this->app->instance('diag', $mockDiag);
         $this->app->instance('trace', $mockTrace);
@@ -210,11 +211,11 @@ class EventsTest extends TestCase
         $mockTrace->shouldReceive('error')->once();
 
         $events = new Events();
-        
+
         // Should not throw exception - should handle gracefully
         $events->trackPayoutsToPhoneNumberVpaNotFoundEvent(
             'merchant_123',
-            '9876543210', 
+            '9876543210',
             'John Doe'
         );
 
@@ -226,4 +227,4 @@ class EventsTest extends TestCase
         parent::tearDown();
         Mockery::close();
     }
-} 
+}

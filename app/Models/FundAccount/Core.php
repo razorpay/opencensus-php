@@ -67,11 +67,18 @@ class Core extends Base\Core
 
     protected $vendorPaymentService;
 
+    /**
+     * @var Payout\Events
+     */
+    protected $payoutEvents;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->vendorPaymentService = $this->app['vendor-payment'];
+
+        $this->payoutEvents = new Payout\Events;
     }
 
     /**
@@ -265,6 +272,13 @@ class Core extends Base\Core
             ]);
 
         Metric::pushCreateMetrics($fundAccount);
+
+        if ($input[Entity::ACCOUNT_TYPE] === Entity::VPA) {
+            $this->payoutEvents->trackFundAccountCreatedEvent(
+                $merchant->getId(),
+                $fundAccount->getId(),
+            );
+        }
 
         return $fundAccount;
     }

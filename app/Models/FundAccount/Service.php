@@ -39,8 +39,6 @@ class Service extends Base\Service
     const FA_CONTACT_MUTEX_RESOURCE        = 'FUND_ACCOUNT_CONTACT_%s_%s';
     const FA_CUSTOMER_MUTEX_RESOURCE        = 'FUND_ACCOUNT_CUSTOMER_%s_%s';
 
-//    const PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED   = 'PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED';
-
     use Base\Traits\ServiceHasCrudMethods;
 
     /**
@@ -74,11 +72,6 @@ class Service extends Base\Service
     protected $vpaCore;
 
     /**
-     * @var Payout\Core
-     */
-//    protected $payoutCore;
-
-    /**
      * @var Payout\Events
      */
     protected $payoutEvents;
@@ -98,8 +91,6 @@ class Service extends Base\Service
         $this->linkedNumberCore = new LinkedNumber\Core;
 
         $this->vpaCore = new Vpa\Core;
-
-//        $this->payoutCore = new Payout\Core;
 
         $this->payoutEvents = new Payout\Events;
     }
@@ -638,6 +629,7 @@ class Service extends Base\Service
                     $accountHolderName,
                     $mappedVpa[Entity::VPA],
                     $vpa->getUsername() . '@' . $vpa->getHandle(),
+                    $fundAccount->getId()
                 );
             }
 

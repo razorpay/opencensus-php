@@ -16,6 +16,8 @@ class Events
 
     const PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED = 'PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED';
 
+    const PAYOUTS_TO_PHONE_NUMBER_FUND_ACCOUNT_CREATED = 'PAYOUTS_TO_PHONE_NUMBER_FUND_ACCOUNT_CREATED';
+
 
     protected $app;
     protected $trace;
@@ -78,6 +80,9 @@ class Events
             case self::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED:
                 $eventDataGroup = EventCode::PAYOUTS_TO_PHONE_NUMBER_EVENT_VPA_UPDATED;
                 break;
+            case self::PAYOUTS_TO_PHONE_NUMBER_FUND_ACCOUNT_CREATED:
+                $eventDataGroup = EventCode::PAYOUTS_TO_PHONE_NUMBER_EVENT_FUND_ACCOUNT_CREATED;
+                break;
         }
 
         $this->app['diag']->trackPhoneNumberPayoutEvents(
@@ -98,6 +103,7 @@ class Events
         string $accountHolderName,
         string $updatedVpa,
         string $storedVpa,
+        string $fundAccountId
     ): void
     {
         try{
@@ -118,14 +124,15 @@ class Events
                     Constants::CUSTOMER_NAME   => $accountHolderName,
                     'stored_vpa'               => $sanitizedExistingData[Entity::VPA],
                     'updated_vpa'              => $sanitizedUpdatedData[Entity::VPA],
-                    'event_name'               => self::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED
+                    'event_name'               => self::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED,
+                    'fund_account_id'          => $fundAccountId,
                 ]
             );
         }catch (\Throwable $e){
             $this->trace->error(TraceCode::PAYOUT_TO_PHONE_NUMBER_EVENT_TRACKING_FAILED, [
-                'error_message' => $e->getMessage(),
-                'merchant_id'   => $merchantId,
-                'context'       => self::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED
+                'error_message'     => $e->getMessage(),
+                'merchant_id'       => $merchantId,
+                'context'           => self::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED
             ]);
         }
     }
@@ -220,6 +227,29 @@ class Events
                 'error_message'         => $e->getMessage(),
                 'merchant_id'           => $merchantId,
                 'context'               => self::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD
+            ]);
+        }
+    }
+
+    public function trackFundAccountCreatedEvent(
+        string $merchantId,
+        string $fundAccountId
+    ): void
+    {
+        try {
+            $this->trackPhoneNumberPayoutEvents(
+                self::PAYOUTS_TO_PHONE_NUMBER_FUND_ACCOUNT_CREATED,
+                [
+                    Constants::MERCHANT_ID     => $merchantId,
+                    "fund_account_id"          => $fundAccountId,
+                    'event_name'               => self::PAYOUTS_TO_PHONE_NUMBER_FUND_ACCOUNT_CREATED
+                ]
+            );
+        } catch (\Throwable $e) {
+            $this->trace->error(TraceCode::PAYOUT_TO_PHONE_NUMBER_EVENT_TRACKING_FAILED, [
+                'error_message'         => $e->getMessage(),
+                'merchant_id'           => $merchantId,
+                'context'               => self::PAYOUTS_TO_PHONE_NUMBER_FUND_ACCOUNT_CREATED
             ]);
         }
     }
