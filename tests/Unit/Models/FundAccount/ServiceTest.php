@@ -49,6 +49,7 @@ class ServiceTest extends TestCase
         $newUsername = 'newuser';
         $newHandle = 'newbank';
         $newCustomerName = 'Updated Customer Name';
+        $fundAccountId = 'fa_1234567890';
 
         // Setup fund account mock - directly mock the methods
         $this->mockFundAccount
@@ -64,7 +65,7 @@ class ServiceTest extends TestCase
         // Mock getAttribute comprehensively for all possible Laravel attribute access
         $this->mockFundAccount
             ->shouldReceive('getAttribute')
-            ->andReturnUsing(function($attribute) use ($mobileNumber, $accountHolderName) {
+            ->andReturnUsing(function($attribute) use ($mobileNumber, $accountHolderName, $fundAccountId) {
                 switch ($attribute) {
                     case 'linked_number':
                         return $mobileNumber;
@@ -72,12 +73,13 @@ class ServiceTest extends TestCase
                         return $accountHolderName;
                     case 'account':
                         return $this->mockVpa;
+                    case 'id':
+                        return $fundAccountId;
                     default:
                         return null;
                 }
             });
 
-        // Also handle direct property access
         $this->mockFundAccount->account = $this->mockVpa;
 
         $this->mockFundAccount
@@ -89,7 +91,11 @@ class ServiceTest extends TestCase
             ->shouldReceive('saveOrFail')
             ->once();
 
-        // Setup VPA mock - return different values to trigger VPA change
+        $this->mockFundAccount
+            ->shouldReceive('getId')
+            ->once()
+            ->andReturn($fundAccountId);
+
         $this->mockVpa
             ->shouldReceive('getUsername')
             ->andReturn($existingUsername);
@@ -98,7 +104,6 @@ class ServiceTest extends TestCase
             ->shouldReceive('getHandle')
             ->andReturn($existingHandle);
 
-        // Setup linkedNumberCore mock - return mapped VPA data
         $mappedVpaData = [
             Entity::VPA => $newUsername . '@' . $newHandle,
             Entity::CUSTOMER_NAME => $newCustomerName
@@ -120,9 +125,9 @@ class ServiceTest extends TestCase
                 $accountHolderName,
                 $mappedVpaData[Entity::VPA],
                 $existingUsername . '@' . $existingHandle,
+                $fundAccountId
             );
 
-        // Setup vpaCore mock for VPA update
         $expectedVpaInput = [
             Vpa\Entity::USERNAME => $newUsername,
             Vpa\Entity::HANDLE => $newHandle,
@@ -133,7 +138,6 @@ class ServiceTest extends TestCase
             ->once()
             ->with($this->mockVpa, $expectedVpaInput);
 
-        // Create service instance and inject mocked dependencies
         $service = new Service();
         $reflection = new \ReflectionClass($service);
 
@@ -149,16 +153,12 @@ class ServiceTest extends TestCase
         $payoutEventsProperty->setAccessible(true);
         $payoutEventsProperty->setValue($service, $this->mockPayoutEvents);
 
-        // Execute the method
         $service->updateMappedVpaForFundAccount($this->mockFundAccount, $merchantId);
 
-        // Verify all mock expectations were satisfied
         $this->addToAssertionCount(Mockery::getContainer()->mockery_getExpectationCount());
 
-        // Additional behavioral assertions
         $this->assertInstanceOf(Service::class, $service, 'Service instance should be properly created');
 
-        // Verify the dependency injection worked correctly
         $reflection = new \ReflectionClass($service);
         $linkedNumberCoreProperty = $reflection->getProperty('linkedNumberCore');
         $linkedNumberCoreProperty->setAccessible(true);
@@ -181,7 +181,6 @@ class ServiceTest extends TestCase
      */
     public function testUpdateMappedVpaForFundAccountWithOnlyCustomerNameChange()
     {
-        // Setup test data
         $merchantId = 'test_merchant_123';
         $mobileNumber = '9876543210';
         $accountHolderName = 'Test User';
@@ -189,7 +188,6 @@ class ServiceTest extends TestCase
         $existingHandle = 'samebank';
         $newCustomerName = 'Updated Customer Name';
 
-        // Setup fund account mock - directly mock the methods
         $this->mockFundAccount
             ->shouldReceive('getLinkedNumber')
             ->once()
@@ -200,7 +198,6 @@ class ServiceTest extends TestCase
             ->once()
             ->andReturn($accountHolderName);
 
-        // Mock getAttribute comprehensively for all possible Laravel attribute access
         $this->mockFundAccount
             ->shouldReceive('getAttribute')
             ->andReturnUsing(function($attribute) use ($mobileNumber, $accountHolderName) {
@@ -216,7 +213,6 @@ class ServiceTest extends TestCase
                 }
             });
 
-        // Also handle direct property access
         $this->mockFundAccount->account = $this->mockVpa;
 
         $this->mockFundAccount
@@ -228,7 +224,6 @@ class ServiceTest extends TestCase
             ->shouldReceive('saveOrFail')
             ->once();
 
-        // Setup VPA mock - return same values to indicate no VPA change
         $this->mockVpa
             ->shouldReceive('getUsername')
             ->andReturn($existingUsername);
@@ -237,7 +232,6 @@ class ServiceTest extends TestCase
             ->shouldReceive('getHandle')
             ->andReturn($existingHandle);
 
-        // Setup linkedNumberCore mock - return mapped VPA data with same VPA but new customer name
         $mappedVpaData = [
             Entity::VPA => $existingUsername . '@' . $existingHandle,
             Entity::CUSTOMER_NAME => $newCustomerName
@@ -249,10 +243,8 @@ class ServiceTest extends TestCase
             ->with($mobileNumber, $accountHolderName, $merchantId)
             ->andReturn($mappedVpaData);
 
-        // No event tracking should happen since VPA hasn't changed
         $this->mockPayoutEvents->shouldNotReceive('trackPayoutsToPhoneNumberVpaUpdatedEvent');
 
-        // Setup vpaCore mock for VPA update - even though VPA hasn't changed, the method is still called
         $expectedVpaInput = [
             Vpa\Entity::USERNAME => $existingUsername,
             Vpa\Entity::HANDLE => $existingHandle,
@@ -263,7 +255,6 @@ class ServiceTest extends TestCase
             ->once()
             ->with($this->mockVpa, $expectedVpaInput);
 
-        // Create service instance and inject mocked dependencies
         $service = new Service();
         $reflection = new \ReflectionClass($service);
 
@@ -279,16 +270,12 @@ class ServiceTest extends TestCase
         $payoutEventsProperty->setAccessible(true);
         $payoutEventsProperty->setValue($service, $this->mockPayoutEvents);
 
-        // Execute the method
         $service->updateMappedVpaForFundAccount($this->mockFundAccount, $merchantId);
 
-        // Verify all mock expectations were satisfied
         $this->addToAssertionCount(Mockery::getContainer()->mockery_getExpectationCount());
 
-        // Additional behavioral assertions
         $this->assertInstanceOf(Service::class, $service, 'Service instance should be properly created');
 
-        // Verify the dependency injection worked correctly
         $reflection = new \ReflectionClass($service);
         $linkedNumberCoreProperty = $reflection->getProperty('linkedNumberCore');
         $linkedNumberCoreProperty->setAccessible(true);
@@ -311,7 +298,6 @@ class ServiceTest extends TestCase
      */
     public function testUpdateMappedVpaForFundAccountHandlesEventTrackingFailure()
     {
-        // Setup test data
         $merchantId = 'test_merchant_123';
         $mobileNumber = '9876543210';
         $accountHolderName = 'Test User';
@@ -320,8 +306,8 @@ class ServiceTest extends TestCase
         $newUsername = 'newuser';
         $newHandle = 'newbank';
         $newCustomerName = 'Updated Customer Name';
+        $fundAccountId = 'fa_1234567890';
 
-        // Setup fund account mock - directly mock the methods
         $this->mockFundAccount
             ->shouldReceive('getLinkedNumber')
             ->once()
@@ -332,10 +318,9 @@ class ServiceTest extends TestCase
             ->once()
             ->andReturn($accountHolderName);
 
-        // Mock getAttribute comprehensively for all possible Laravel attribute access
         $this->mockFundAccount
             ->shouldReceive('getAttribute')
-            ->andReturnUsing(function($attribute) use ($mobileNumber, $accountHolderName) {
+            ->andReturnUsing(function($attribute) use ($mobileNumber, $accountHolderName, $fundAccountId) {
                 switch ($attribute) {
                     case 'linked_number':
                         return $mobileNumber;
@@ -343,12 +328,13 @@ class ServiceTest extends TestCase
                         return $accountHolderName;
                     case 'account':
                         return $this->mockVpa;
+                    case 'id':
+                        return $fundAccountId;
                     default:
                         return null;
                 }
             });
 
-        // Also handle direct property access
         $this->mockFundAccount->account = $this->mockVpa;
 
         $this->mockFundAccount
@@ -357,10 +343,14 @@ class ServiceTest extends TestCase
             ->with($newCustomerName);
 
         $this->mockFundAccount
+            ->shouldReceive('getId')
+            ->once()
+            ->andReturn($fundAccountId);
+
+        $this->mockFundAccount
             ->shouldReceive('saveOrFail')
             ->once();
 
-        // Setup VPA mock - return different values to trigger VPA change
         $this->mockVpa
             ->shouldReceive('getUsername')
             ->andReturn($existingUsername);
@@ -369,7 +359,6 @@ class ServiceTest extends TestCase
             ->shouldReceive('getHandle')
             ->andReturn($existingHandle);
 
-        // Setup linkedNumberCore mock - return mapped VPA data
         $mappedVpaData = [
             Entity::VPA => $newUsername . '@' . $newHandle,
             Entity::CUSTOMER_NAME => $newCustomerName
@@ -391,11 +380,9 @@ class ServiceTest extends TestCase
                 $accountHolderName,
                 $mappedVpaData[Entity::VPA],
                 $existingUsername . '@' . $existingHandle,
+                $fundAccountId
             );
 
-        // No trace error should be called since Events class handles errors internally
-
-        // Setup vpaCore mock for VPA update
         $expectedVpaInput = [
             Vpa\Entity::USERNAME => $newUsername,
             Vpa\Entity::HANDLE => $newHandle,
@@ -406,7 +393,6 @@ class ServiceTest extends TestCase
             ->once()
             ->with($this->mockVpa, $expectedVpaInput);
 
-        // Create service instance and inject mocked dependencies
         $service = new Service();
         $reflection = new \ReflectionClass($service);
 
@@ -422,16 +408,12 @@ class ServiceTest extends TestCase
         $payoutEventsProperty->setAccessible(true);
         $payoutEventsProperty->setValue($service, $this->mockPayoutEvents);
 
-        // Execute the method
         $service->updateMappedVpaForFundAccount($this->mockFundAccount, $merchantId);
 
-        // Verify all mock expectations were satisfied
         $this->addToAssertionCount(Mockery::getContainer()->mockery_getExpectationCount());
 
-        // Additional behavioral assertions
         $this->assertInstanceOf(Service::class, $service, 'Service instance should be properly created');
 
-        // Verify the dependency injection worked correctly
         $reflection = new \ReflectionClass($service);
         $linkedNumberCoreProperty = $reflection->getProperty('linkedNumberCore');
         $linkedNumberCoreProperty->setAccessible(true);
@@ -454,12 +436,10 @@ class ServiceTest extends TestCase
      */
     public function testUpdateMappedVpaForFundAccountWithEmptyMappedVpa()
     {
-        // Setup test data
         $merchantId = 'test_merchant_123';
         $mobileNumber = '9876543210';
         $accountHolderName = 'Test User';
 
-        // Setup fund account mock - directly mock the methods
         $this->mockFundAccount
             ->shouldReceive('getLinkedNumber')
             ->once()
@@ -470,7 +450,6 @@ class ServiceTest extends TestCase
             ->once()
             ->andReturn($accountHolderName);
 
-        // Mock getAttribute comprehensively for all possible Laravel attribute access
         $this->mockFundAccount
             ->shouldReceive('getAttribute')
             ->andReturnUsing(function($attribute) use ($mobileNumber, $accountHolderName) {
@@ -486,10 +465,8 @@ class ServiceTest extends TestCase
                 }
             });
 
-        // Also handle direct property access
         $this->mockFundAccount->account = $this->mockVpa;
 
-        // Setup linkedNumberCore mock - return empty mapped VPA data
         $mappedVpaData = [];
 
         $this->mockLinkedNumberCore
@@ -498,13 +475,11 @@ class ServiceTest extends TestCase
             ->with($mobileNumber, $accountHolderName, $merchantId)
             ->andReturn($mappedVpaData);
 
-        // No event tracking or VPA update should happen
         $this->mockPayoutEvents->shouldNotReceive('trackPayoutsToPhoneNumberVpaUpdatedEvent');
         $this->mockVpaCore->shouldNotReceive('updateVpaWithPublicId');
         $this->mockFundAccount->shouldNotReceive('setCustomerName');
         $this->mockFundAccount->shouldNotReceive('saveOrFail');
 
-        // Create service instance and inject mocked dependencies
         $service = new Service();
         $reflection = new \ReflectionClass($service);
 
@@ -520,16 +495,12 @@ class ServiceTest extends TestCase
         $payoutEventsProperty->setAccessible(true);
         $payoutEventsProperty->setValue($service, $this->mockPayoutEvents);
 
-        // Execute the method
         $service->updateMappedVpaForFundAccount($this->mockFundAccount, $merchantId);
 
-        // Verify all mock expectations were satisfied
         $this->addToAssertionCount(Mockery::getContainer()->mockery_getExpectationCount());
 
-        // Additional behavioral assertions
         $this->assertInstanceOf(Service::class, $service, 'Service instance should be properly created');
 
-        // Verify the dependency injection worked correctly
         $reflection = new \ReflectionClass($service);
         $linkedNumberCoreProperty = $reflection->getProperty('linkedNumberCore');
         $linkedNumberCoreProperty->setAccessible(true);
@@ -552,7 +523,6 @@ class ServiceTest extends TestCase
      */
     public function testUpdateMappedVpaForFundAccountWithInvalidVpaFormat()
     {
-        // Setup test data
         $merchantId = 'test_merchant_123';
         $mobileNumber = '9876543210';
         $accountHolderName = 'Test User';
@@ -560,7 +530,6 @@ class ServiceTest extends TestCase
         $existingHandle = 'oldbank';
         $invalidVpa = 'invalid-vpa-format'; // Missing @ symbol
 
-        // Setup fund account mock - directly mock the methods
         $this->mockFundAccount
             ->shouldReceive('getLinkedNumber')
             ->once()
@@ -571,7 +540,6 @@ class ServiceTest extends TestCase
             ->once()
             ->andReturn($accountHolderName);
 
-        // Mock getAttribute comprehensively for all possible Laravel attribute access
         $this->mockFundAccount
             ->shouldReceive('getAttribute')
             ->andReturnUsing(function($attribute) use ($mobileNumber, $accountHolderName) {
@@ -587,10 +555,8 @@ class ServiceTest extends TestCase
                 }
             });
 
-        // Also handle direct property access
         $this->mockFundAccount->account = $this->mockVpa;
 
-        // Setup VPA mock - return different values to trigger VPA change
         $this->mockVpa
             ->shouldReceive('getUsername')
             ->andReturn($existingUsername);
@@ -599,8 +565,6 @@ class ServiceTest extends TestCase
             ->shouldReceive('getHandle')
             ->andReturn($existingHandle);
 
-        // Setup linkedNumberCore mock - throw exception for invalid VPA format
-        // With the new validation in LinkedNumber\Core, invalid VPA format should throw exception
         $this->mockLinkedNumberCore
             ->shouldReceive('FetchMappedVpaFromLinkedNumber')
             ->once()
@@ -612,14 +576,11 @@ class ServiceTest extends TestCase
                 \RZP\Error\PublicErrorDescription::BAD_REQUEST_LINKED_ACCOUNT_NOT_FOUND
             ));
 
-        // Since LinkedNumber\Core will throw exception for invalid VPA format,
-        // no further processing should happen - no VPA updates, no event tracking, no customer name updates
         $this->mockVpaCore->shouldNotReceive('updateVpaWithPublicId');
         $this->mockPayoutEvents->shouldNotReceive('trackPayoutsToPhoneNumberVpaUpdatedEvent');
         $this->mockFundAccount->shouldNotReceive('setCustomerName');
         $this->mockFundAccount->shouldNotReceive('saveOrFail');
 
-        // Create service instance and inject mocked dependencies
         $service = new Service();
         $reflection = new \ReflectionClass($service);
 
@@ -635,19 +596,15 @@ class ServiceTest extends TestCase
         $payoutEventsProperty->setAccessible(true);
         $payoutEventsProperty->setValue($service, $this->mockPayoutEvents);
 
-        // Execute the method - expect BadRequestException for invalid VPA format
         $this->expectException(\RZP\Exception\BadRequestException::class);
         $this->expectExceptionMessage('No linked account details found');
 
         $service->updateMappedVpaForFundAccount($this->mockFundAccount, $merchantId);
 
-        // Verify all mock expectations were satisfied
         $this->addToAssertionCount(Mockery::getContainer()->mockery_getExpectationCount());
 
-        // Additional behavioral assertions
         $this->assertInstanceOf(Service::class, $service, 'Service instance should be properly created');
 
-        // Verify the dependency injection worked correctly
         $reflection = new \ReflectionClass($service);
         $linkedNumberCoreProperty = $reflection->getProperty('linkedNumberCore');
         $linkedNumberCoreProperty->setAccessible(true);

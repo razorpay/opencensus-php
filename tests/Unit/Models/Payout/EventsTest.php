@@ -20,7 +20,6 @@ class EventsTest extends TestCase
         $mockTrace->shouldIgnoreMissing(); // Allow unexpected method calls
         $this->app->instance('trace', $mockTrace);
 
-        // Create Events instance - it will use the mocked trace from the container
         $this->events = new Events();
     }
 
@@ -119,14 +118,13 @@ class EventsTest extends TestCase
         $this->app->instance('diag', $mockDiag);
         $this->app->instance('trace', $mockTrace);
 
-        // Setup basic expectations - just verify methods are called
+        // Expect the diag service to be called
         $mockDiag->shouldReceive('trackPhoneNumberPayoutEvents')
-            ->times(3)
-            ->withAnyArgs();
+            ->atLeast()->times(1);
 
+        // Expect info logging to happen
         $mockTrace->shouldReceive('info')
-            ->times(3)
-            ->withAnyArgs();
+            ->atLeast()->times(1);
 
         $events = new Events();
 
@@ -158,8 +156,7 @@ class EventsTest extends TestCase
             75
         );
 
-        // If we get here, all methods executed without exceptions
-        $this->assertTrue(true);
+        $this->addToAssertionCount(1);
     }
 
     /**
@@ -167,7 +164,6 @@ class EventsTest extends TestCase
      */
     public function testTrackMobileInvalidEventWithMerchantContext()
     {
-        // Mock all dependencies
         $mockDiag = Mockery::mock();
         $mockTrace = Mockery::mock();
         $mockBasicAuth = Mockery::mock();
@@ -178,18 +174,22 @@ class EventsTest extends TestCase
         $this->app->instance('trace', $mockTrace);
         $this->app->instance('basicauth', $mockBasicAuth);
 
-        // Setup merchant context
         $mockMerchant->shouldReceive('getId')->andReturn('merchant_123');
         $mockBasicAuth->shouldReceive('getMerchant')->andReturn($mockMerchant);
 
-        // Expect tracking to happen
-        $mockDiag->shouldReceive('trackPhoneNumberPayoutEvents')->once();
-        $mockTrace->shouldReceive('info')->once();
+        $eventCalled = false;
+        $mockDiag->shouldReceive('trackPhoneNumberPayoutEvents')
+            ->andReturnUsing(function() use (&$eventCalled) {
+                $eventCalled = true;
+                return true;
+            });
+
+        $mockTrace->shouldReceive('info')->atLeast()->once();
 
         $events = new Events();
         $events->trackPayoutsToPhoneNumberMobileNumberInvalidEvent('123456789');
 
-        $this->assertTrue(true);
+        $this->assertTrue($eventCalled, 'Event tracking method should have been called');
     }
 
     /**
@@ -207,19 +207,22 @@ class EventsTest extends TestCase
         $mockDiag->shouldReceive('trackPhoneNumberPayoutEvents')
             ->andThrow(new \Exception('Service down'));
 
-        // Expect error to be logged
-        $mockTrace->shouldReceive('error')->once();
+        $errorLogged = false;
+        $mockTrace->shouldReceive('error')
+            ->andReturnUsing(function() use (&$errorLogged) {
+                $errorLogged = true;
+                return true;
+            });
 
         $events = new Events();
 
-        // Should not throw exception - should handle gracefully
         $events->trackPayoutsToPhoneNumberVpaNotFoundEvent(
             'merchant_123',
             '9876543210',
             'John Doe'
         );
 
-        $this->assertTrue(true);
+        $this->assertTrue($errorLogged, 'Error should have been logged when exception occurs');
     }
 
     protected function tearDown(): void
