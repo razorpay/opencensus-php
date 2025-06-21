@@ -549,4 +549,44 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    /**
+     * Fetch fund account with contact details for statement enrichment
+     *
+     * @param string $fundAccountId
+     * @return array|null
+     */
+    public function fetchFundAccountWithContactForStatementEnrichment(string $fundAccountId): ?array
+    {
+        $faTable = $this->getTableName();
+        $contactTable = $this->repo->contact->getTableName();
+
+        $faIdColumn = $this->dbColumn(Entity::ID);
+        $faSourceIdColumn = $this->dbColumn(Entity::SOURCE_ID);
+        $faSourceTypeColumn = $this->dbColumn(Entity::SOURCE_TYPE);
+
+        $contactIdColumn = $this->repo->contact->dbColumn(Contact\Entity::ID);
+        $contactNameColumn = $this->repo->contact->dbColumn(Contact\Entity::NAME);
+        $contactContactColumn = $this->repo->contact->dbColumn(Contact\Entity::CONTACT);
+        $contactEmailColumn = $this->repo->contact->dbColumn(Contact\Entity::EMAIL);
+        $contactTypeColumn = $this->repo->contact->dbColumn(Contact\Entity::TYPE);
+
+        $result = $this->newQuery()
+            ->select([
+                $faIdColumn . ' as fund_account_id',
+                $contactIdColumn . ' as contact_id',
+                $contactNameColumn . ' as name',
+                $contactContactColumn . ' as contact',
+                $contactEmailColumn . ' as email',
+                $contactTypeColumn . ' as contact_type'
+            ])
+            ->leftJoin($contactTable, function($join) use ($faSourceIdColumn, $faSourceTypeColumn, $contactIdColumn) {
+                $join->on($faSourceIdColumn, '=', $contactIdColumn)
+                     ->where($faSourceTypeColumn, '=', E::CONTACT);
+            })
+            ->where($faIdColumn, $fundAccountId)
+            ->first();
+
+        return $result ? $result->toArray() : null;
+    }
 }
