@@ -591,34 +591,55 @@ trait ExternalScroogeRepo
 
         if ($keyStatus === true)
         {
-            $mode = $this->app['rzp.mode'] ?? 'live';
+            try {
+                // $mode = $this->app['rzp.mode'] ?? 'live'; // todo: to check how to handle this in splitz
 
-            // ramp up will be based on percentage so it will not be having any merchant_id
-            $result = $this->app['razorx']->getTreatment(
-                UniqueIdEntity::generateUniqueId(),
-                RazorxTreatment::ENTITY_RELATIONAL_LOAD_FROM_SCROOGE,
-                $mode);
+                $experimentId = $this->app['config']->get('app.entity_relational_load_from_scrooge_experiment_id');
 
-            $this->trace->info(
-                TraceCode::SCROOGE_ENTITY_FETCH_RAZORX_EXPERIMENT_RESPONSE,
-                [
-                    'result'    => $result,
-                    'mode'      => $mode,
-                    'key_status'=> $keyStatus,
+                if (empty($experimentId))
+                {
+                    return false;
+                }
+
+                $this->trace->info(TraceCode::ENTITY_RELATIONAL_LOAD_FROM_SCROOGE_EXPERIMENT_REQUEST_LOG, [
+                    'experiment_id' => $experimentId,
+                ]);
+    
+                $properties = [
+                    'id'            => UniqueIdEntity::generateUniqueId(),
+                    'experiment_id' => $experimentId,
+                ];
+        
+                $response = $this->app['splitzService']->evaluateRequest($properties);
+            
+                $variant = $response['response']['variant']['name'] ?? '';
+    
+                $this->trace->info(TraceCode::ENTITY_RELATIONAL_LOAD_FROM_SCROOGE_EXPERIMENT_RESPONSE_LOG, [
+                    'experiment_id' => $experimentId,
+                    'splitz_output' => $response,
                 ]);
 
-            if ($result === 'on')
-            {
-                return true;
+                if ($variant === 'enabled')
+                {
+                    return true;
+                }
+    
+                $ftaRoutes =  \RZP\Http\Route::$loadRefundsFromScroogeForFtaRoutes;
+    
+                $routeName = $this->route->getCurrentRouteName();
+    
+                if (empty($id) === false and in_array($routeName, $ftaRoutes, true) === true){
+                    // fta source loading from scrooge for this route
+                    return true;
+                }
             }
+            catch( \Throwable $ex)
+            {
+                $this->trace->error(TraceCode::ENTITY_RELATIONAL_LOAD_FROM_SCROOGE_EXPERIMENT_FAILURE, [
+                    'message' => $ex->getMessage(),
+                ]);
 
-            $ftaRoutes =  \RZP\Http\Route::$loadRefundsFromScroogeForFtaRoutes;
-
-            $routeName = $this->route->getCurrentRouteName();
-
-            if (empty($id) === false and in_array($routeName, $ftaRoutes, true) === true){
-                // fta source loading from scrooge for this route
-                return true;
+                return false;
             }
         }
 
