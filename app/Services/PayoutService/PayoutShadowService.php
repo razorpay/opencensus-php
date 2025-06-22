@@ -149,7 +149,6 @@ class PayoutShadowService
                 'url' => $url ?? 'unknown_url',
                 'exception' => $e->getMessage(),
                 'duration_ms' => $duration,
-                'exception_class' => get_class($e),
                 'stack_trace' => $e->getTraceAsString(),
             ]);
         }

@@ -39,6 +39,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\WalletAccount\Validator as WalletAccountValidator;
 use RZP\Models\FundAccount\DetailsPropagator\Core as DetailsPropagator;
 use \RZP\Models\Payout\SourceRequestIDMapping\Core as SourceRequestIDMappingCore;
+use Throwable;
 
 /**
  * Class Core
@@ -267,8 +268,19 @@ class Core extends Base\Core
 
         Metric::pushCreateMetrics($fundAccount);
 
-        // Capture source request ID for fund account
-        $this->captureSourceRequestId($fundAccount);
+        try
+        {
+            // Capture source request ID for fund account
+            $this->captureSourceRequestId($fundAccount);
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->info(TraceCode::FA_CREATE_SOURCE_REQUEST_ID_CAPTURE_FAILED, [
+                'error' => $e->getMessage(),
+                'fund_account_id' => $fundAccount->getId()
+            ]);
+        }
+
 
         return $fundAccount;
     }
@@ -361,8 +373,18 @@ class Core extends Base\Core
 
             Metric::pushCreateMetrics($fundAccount);
 
-            // Capture source request ID for fund account in composite payout flow
-            $this->captureSourceRequestId($fundAccount);
+            try
+            {
+                // Capture source request ID for fund account
+                $this->captureSourceRequestId($fundAccount);
+            }
+            catch (Throwable $e)
+            {
+                $this->trace->info(TraceCode::FA_CREATE_SOURCE_REQUEST_ID_CAPTURE_FAILED, [
+                    'error'            => $e->getMessage(),
+                    'fund_account_id' => $fundAccount->getId()
+                ]);
+            }
         }
         else
         {

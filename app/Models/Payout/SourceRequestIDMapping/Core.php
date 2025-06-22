@@ -94,11 +94,6 @@ class Core extends Base
             Entity::UPDATED_AT  => Carbon::now(Timezone::IST)->getTimestamp(),
         ];
 
-        //$this->trace->info(
-        //    'source_request_id.mapping_create',
-        //    ['source_id' => $sourceId, 'source_type' => $sourceType,]
-        //);
-
         (new SourceRequestIDMappingRepository)->insertSourceRequestIdMapping($data);
     }
 

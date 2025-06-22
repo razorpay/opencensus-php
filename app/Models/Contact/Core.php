@@ -141,8 +141,18 @@ class Core extends Base\Core
 
         $this->PushVendorEvent($contact, Contact\Constants::CONTACT_CREATED_MESSAGE);
 
-        // Capture source request ID for contact
-        $this->captureSourceRequestId($contact);
+        try
+        {
+            // Capture source request ID for contact
+            $this->captureSourceRequestId($contact);
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->info(TraceCode::CONTACT_CREATE_SOURCE_REQUEST_ID_CAPTURE_FAILED, [
+                'error' => $e->getMessage(),
+                'contact_id' => $contact->getId()
+            ]);
+        }
 
         return $contact;
     }
@@ -277,7 +287,18 @@ class Core extends Base\Core
                            ]);
 
 
-        $this->captureSourceRequestId($contact);
+        try
+        {
+            // Capture source request ID for contact
+            $this->captureSourceRequestId($contact);
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->info(TraceCode::CONTACT_CREATE_SOURCE_REQUEST_ID_CAPTURE_FAILED, [
+                'error' => $e->getMessage(),
+                'contact_id' => $contact->getId()
+            ]);
+        }
 
         return $contact;
     }
