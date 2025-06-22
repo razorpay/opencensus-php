@@ -1,7 +1,6 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import errorService from '@razorpay/universe-cli/errorService';
 import { connect } from 'react-redux';
-import { useLocation } from 'react-router-dom';
 
 import { Modal, ModalBody } from 'common/components/Modal';
 import { withRouter } from 'common/deprecated/withRouter';
@@ -50,10 +49,8 @@ const HelpSection = ({
   fetchTicketsRaisedByAgents: _fetchTickets,
   isHelpWidgetVisible,
 }) => {
-  const location = useLocation();
   const splitz = useSplitzService();
   const { fohTicketStatus } = useFohTicket();
-  const [hideHelpWidget, setHideHelpWidget] = useState(false);
   const hideTicketCreation =
     isSettlementSOHBlockEnabled(splitz) && blockTicketCreationFoh(user, fohTicketStatus);
   const isRiskFohMerchant = isRiskFoh() || isRiskDisabled();
@@ -124,8 +121,6 @@ const HelpSection = ({
     (history.location.pathname.includes('onboarding') && !getCookie('ftuxSession')) ||
     history.location.pathname.includes('tncform');
   const DASHBOARD_HOST_REGEX = /(dashboard.*\.razorpay\.(com|in)|localhost)$/;
-  const isPosCartRoute =
-    location.pathname.includes('/pos/catalog') || location.pathname.includes('/pos/orders');
 
   // Don't show support for Axis org
   if (
@@ -135,7 +130,7 @@ const HelpSection = ({
     return null;
   }
 
-  if (isOnBoardingRevampScreen || isPosCartRoute) {
+  if (isOnBoardingRevampScreen) {
     return null;
   }
 
@@ -205,7 +200,7 @@ const HelpSection = ({
           splitzHost={splitzHost}
           isDev={isDev}
           isPartnerDashboard={isPartnerDashboard}
-          hideSupportIcon={!isHelpWidgetVisible || isPosCartRoute}
+          hideSupportIcon={!isHelpWidgetVisible}
           hideTicketCreationCTA={
             checkEligibilityForFeeBasedGating(user) || !user.activation_status || hideTicketCreation
           }
