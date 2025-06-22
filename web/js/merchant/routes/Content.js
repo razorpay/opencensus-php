@@ -2698,7 +2698,7 @@ class Content extends Component {
       >
         <ErrorBoundary resetOnProps>
           <Suspense fallback={<DashboardLoader loaderType="wrt-product" />}>
-            {currentMode === 'test' && (isOpenedInOneDashboard || isConnectedNavigation) ? (
+            {currentMode === 'test' && (isOpenedInOneDashboard || isConnectedNavigation) ? ( //check the current mode condition
               <TestModeBanner
                 title={getTestModeTitle(isMobile)}
                 tooltip={getTestModeTooltip(isMobile)}
