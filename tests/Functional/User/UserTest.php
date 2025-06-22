@@ -17812,4 +17812,42 @@ class UserTest extends TestCase
         $this->assertEquals($user->getEmail(), 'udittest@rzp.com');
     }
 
+    public function testGetUserByEmailInternal()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $user->merchants()->first();
+
+        $this->testData[__FUNCTION__] = [
+            'request'  => [
+                'method' => 'POST',
+                'url'    => '/users_internal/fetch_user_by_email',
+                'content' => [
+                    'email' => $user->getEmail(),
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'id'                      => $user->getId(),
+                    'name'                    => $user->getName(),
+                    'contact_mobile'          => $user->getContactMobile(),
+                    'contact_mobile_verified' => $user->isContactMobileVerified(),
+                    'email_verified'          => $user->getEmailVerifiedAttribute(),
+                    'email'                   => $user->getEmail(),
+                    'merchants'               => [
+                        [
+                            'id'   => $merchant->getId(),
+                            'role' => 'owner'
+                        ]
+                    ],
+                ],
+            ],
+        ];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+
 }

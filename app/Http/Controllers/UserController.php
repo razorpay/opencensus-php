@@ -696,6 +696,13 @@ class UserController extends Controller
         return $this->service()->getDetailsUnified($input);
     }
 
+    public function getUserByEmail()
+    {
+        $input = Request::all();
+
+        return $this->service()->getUserByEmail($input);
+    }
+
     public function getUserRoles($Id, $merchantId)
     {
         return $this->service()->getUserRoles($Id, $merchantId);
