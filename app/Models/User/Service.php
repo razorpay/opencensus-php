@@ -4344,6 +4344,13 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function getUserByEmail(array $input)
+    {
+        (new Validator)->validateInput('get_details', $input);
+
+        return $this->core->getUserByEmail($input);
+    }
+
     public function getUserRoles(string $userID, string $merchantID)
     {
         (new Validator)->validateInput('get_user_roles', [
