@@ -50,7 +50,7 @@ describe('PaymentsTable', () => {
 
   test('Should render correct columns for desktop for VAS org', () => {
     const items = mockFetchPaymentItems();
-    renderApp({ items, isVASOrg: true });
+    renderApp({ items, isPosOrderIDEnabled: true });
     [
       'Payment ID',
       'POS Order ID',

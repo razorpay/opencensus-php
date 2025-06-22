@@ -428,7 +428,7 @@ export const getDesktopColumns = ({
   selectedColumnsList,
   shouldDisplayOptimizerColumn,
   isJnKOmniEnabled,
-  isVASOrg,
+  isPosOrderIDEnabled,
 }: DesktopColumns) => {
   const isFailedPaymentView = window.location.pathname.includes(FAILED_PAYMENTS);
   let updatedDesktopColumns = isFailedPaymentView ? failedPaymentDesktopColumns : desktopColumns;
@@ -457,7 +457,7 @@ export const getDesktopColumns = ({
     );
   }
 
-  if (isVASOrg) {
+  if (isPosOrderIDEnabled) {
     return vasDesktopColumns;
   }
 

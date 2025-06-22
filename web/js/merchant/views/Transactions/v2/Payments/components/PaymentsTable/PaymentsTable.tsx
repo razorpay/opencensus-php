@@ -17,7 +17,7 @@ const PaymentsTable = (props: PaymentsTableProps): JSX.Element => {
     selectedColumnsList,
     shouldDisplayOptimizerColumn,
     isJnKOmniEnabled,
-    isVASOrg,
+    isPosOrderIDEnabled,
     isMarketplacePayments = false,
   } = props;
   const isMobile = useMobile(mobileBreakoints);
@@ -32,7 +32,7 @@ const PaymentsTable = (props: PaymentsTableProps): JSX.Element => {
         selectedColumnsList,
         shouldDisplayOptimizerColumn,
         isJnKOmniEnabled,
-        isVASOrg,
+        isPosOrderIDEnabled,
       });
 
   return (

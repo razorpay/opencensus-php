@@ -522,4 +522,5 @@ export interface PaymentsDashboardUserGetters {
   isProductTourScreenHidden: boolean;
   isVASOrg: boolean;
   isPaymentReceiptCustomizerEnabled: boolean;
+  isPosOrderIDEnabled: boolean;
 }

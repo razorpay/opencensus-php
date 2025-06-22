@@ -390,7 +390,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                   tooltipType="bankRRN"
                 />
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                {user?.isVASOrg && posOrderId ? (
+                {user?.isPosOrderIDEnabled && posOrderId ? (
                   <DetailRow
                     label="POS Order ID"
                     data-testid="pos-order-id-row"

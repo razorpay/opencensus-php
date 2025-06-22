@@ -88,7 +88,7 @@ describe('Payment Details Section component', () => {
     test('should render Order Id', () => {
       const globalState = store.getState();
       const user = globalState.session.user;
-      jest.spyOn(user, 'isVASOrg', 'get').mockReturnValue(false);
+      jest.spyOn(user, 'isPosOrderIDEnabled', 'get').mockReturnValue(false);
       
       render(<App props={happyFlowProps} />);
 
@@ -99,7 +99,7 @@ describe('Payment Details Section component', () => {
     test('should render POS Order ID when VAS org feature flag is enabled', () => {
       const globalState = store.getState();
       const user = globalState.session.user;
-      jest.spyOn(user, 'isVASOrg', 'get').mockReturnValue(true);
+      jest.spyOn(user, 'isPosOrderIDEnabled', 'get').mockReturnValue(true);
       
       render(<App props={happyFlowProps} />);
       

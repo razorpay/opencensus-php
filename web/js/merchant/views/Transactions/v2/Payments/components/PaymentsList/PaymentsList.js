@@ -107,7 +107,7 @@ class PaymentsList extends ListContainer {
         isOmniEnabledMerchant,
         isCustomTransactionTabView,
         isJnKOmniEnabled,
-        isVASOrg,
+        isPosOrderIDEnabled,
       },
       orgName,
       terminalProviders,
@@ -158,7 +158,7 @@ class PaymentsList extends ListContainer {
           shouldDisplayOptimizerColumn={shouldDisplayOptimizerColumn}
           isOmniView={isOmniView}
           isJnKOmniEnabled={isJnKOmniEnabled}
-          isVASOrg={isVASOrg}
+          isPosOrderIDEnabled={isPosOrderIDEnabled}
           isMarketplacePayments={isMarketplacePayments}
           onRowClick={({ id, rowData }) =>
             handleDetailsClick({

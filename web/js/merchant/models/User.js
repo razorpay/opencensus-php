@@ -2126,6 +2126,10 @@ export default class User {
   get isPaymentReceiptCustomizerEnabled() {
     return ((isOrgFeatureExist('enable_cust_rcpt_org') || this.isFeatureEnabled('enable_cust_rcpt_mrchnt')) && !this.isFeatureEnabled('disable_cust_rcpt_mrchnt'));
   }
+
+  get isPosOrderIDEnabled() {
+    return this.orgCustomCode === ORG_CUSTOM_CODE_MAP.HDFC_COLLECT_NOW  && this.isVASOrg;
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap, shouldSkipRoleCheck = false) {

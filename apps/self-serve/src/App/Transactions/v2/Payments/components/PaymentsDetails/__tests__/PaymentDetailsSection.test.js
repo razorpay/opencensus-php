@@ -54,7 +54,7 @@ describe('Payment Details Section component', () => {
 
     test('should render POS Order ID when VAS org feature flag is enabled', () => {
       render(<App props={happyFlowProps} />, {
-        initialState: { session: { user: { isVASOrg: true } } },
+        initialState: { session: { user: { isPosOrderIDEnabled: true } } },
       });
 
       const posOrderRow = screen.getByTestId('pos-order-id-row');

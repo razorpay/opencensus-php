@@ -4,11 +4,11 @@ import { useMobile } from '@libs/shared-utils';
 import EntityTable from '@dashboards/payments/components/EntityTable';
 import { useStore } from '@federated/apps/shell/commonStore';
 
-import { StyledTable } from 'apps/self-serve/src/App/Transactions/v2/common/styled';
-import { mobileBreakoints } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import EmptyComponent from './EmptyComponent';
 import { getDesktopColumns, mobileColumns } from './columns';
 import { PaymentsTableProps } from './types';
+import { mobileBreakoints } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
+import { StyledTable } from 'apps/self-serve/src/App/Transactions/v2/common/styled';
 
 const PaymentsTable = (props: PaymentsTableProps): JSX.Element => {
   const {
@@ -17,7 +17,7 @@ const PaymentsTable = (props: PaymentsTableProps): JSX.Element => {
     shouldShowCustomTransactionTabView,
     selectedColumnsList,
     shouldDisplayOptimizerColumn,
-    isVASOrg,
+    isPosOrderIDEnabled,
   } = props;
   const isMobile = useMobile(mobileBreakoints);
   const { user, app } = useStore((state) => ({ user: state.session.user, app: state.app }));
@@ -29,7 +29,7 @@ const PaymentsTable = (props: PaymentsTableProps): JSX.Element => {
         shouldShowCustomTransactionTabView,
         selectedColumnsList,
         shouldDisplayOptimizerColumn,
-        isVASOrg,
+        isPosOrderIDEnabled,
       );
 
   return (

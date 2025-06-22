@@ -115,7 +115,7 @@ class PaymentsList extends ListContainer {
           isOmniEnabledMerchant,
           isCustomTransactionTabView,
           isOptimizerEnabled,
-          isVASOrg,
+          isPosOrderIDEnabled,
         },
       },
     } = store;
@@ -160,7 +160,7 @@ class PaymentsList extends ListContainer {
           }
           selectedColumnsList={selectedColumnsList}
           shouldShowCustomTransactionTabView={isCustomTransactionTabView}
-          isVASOrg={isVASOrg}
+          isPosOrderIDEnabled={isPosOrderIDEnabled}
           shouldDisplayOptimizerColumn={shouldDisplayOptimizerColumn}
           isOmniView={isOmniView}
           onRowClick={({ id, paymentMethod, sourceChannel }) =>

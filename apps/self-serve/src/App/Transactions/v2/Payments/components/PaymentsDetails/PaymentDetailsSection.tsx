@@ -17,7 +17,7 @@ import React, { useEffect, useState } from 'react';
 import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
 
 import { PaymentsDashboardUser } from '@libs/shared-types/payments';
-import  SuspenseWithLoader  from '@libs/web-nexus/common/new-ui/SuspenseWithLoader';
+import SuspenseWithLoader from '@libs/web-nexus/common/new-ui/SuspenseWithLoader';
 import { useStore } from '@federated/apps/shell/commonStore';
 import { noop, copyToClipboard, useMobile, lazyImport } from '@libs/shared-utils';
 import { fetchEncodedPaymentReceipt } from '../PaymentsList/model';
@@ -35,8 +35,8 @@ import {
 import Tooltip from './Tooltip';
 import { ApplicationDetails, IPaymentDetails, TooltipKeys } from './types';
 import { isPosTransaction, onCopy } from './utils';
-import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import PaymentPagePaymentReceipt from './PaymentPagePaymentReceipt';
+import type { RouteComponentProps } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 
 const PaymentReceipt = lazyImport(
   () =>
@@ -131,7 +131,7 @@ function PaymentDetailsSection({
     device_detail,
     upi,
   } = paymentDetails;
-  const {showNotification, openModal} = useStore((state) => state);
+  const { showNotification, openModal } = useStore((state) => state);
 
   const isOmniChannelMerchant =
     isPosTransaction(source_channel) &&
@@ -177,7 +177,7 @@ function PaymentDetailsSection({
         'batchpaymentpages',
       ];
 
-      return allowedModules.indexOf(module) > -1;
+      return allowedModules.includes(module);
     }
     return false;
   };
@@ -232,7 +232,7 @@ function PaymentDetailsSection({
                   tooltipType="bankRRN"
                 />
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                {user?.isVASOrg && posOrderId ? (
+                {user?.isPosOrderIDEnabled && posOrderId ? (
                   <DetailRow
                     label="POS Order ID"
                     data-testid="pos-order-id-row"
@@ -244,16 +244,16 @@ function PaymentDetailsSection({
                     )}
                   />
                 ) : (
-                <DetailRow
-                  label="Order ID"
-                  value={order_id || '--'}
-                  tooltipType="orderId"
-                  copyable
-                  onCopyAction={onCopy('Order ID', { transactionIDActual, orderId: order_id }).bind(
-                    null,
-                    order_id,
-                  )}
-                />
+                  <DetailRow
+                    label="Order ID"
+                    value={order_id || '--'}
+                    tooltipType="orderId"
+                    copyable
+                    onCopyAction={onCopy('Order ID', {
+                      transactionIDActual,
+                      orderId: order_id,
+                    }).bind(null, order_id)}
+                  />
                 )}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow
@@ -339,12 +339,12 @@ function PaymentDetailsSection({
                     </Box>
                   }
                 />
-                {user?.isPayerNameEnabled && (
+                {user?.isPayerNameEnabled ? (
                   <>
                     <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                     <DetailRow label="Payer Name" value={upi?.payer_name || '--'} />
                   </>
-                )}
+                ) : null}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow
                   label="Fee bearer"

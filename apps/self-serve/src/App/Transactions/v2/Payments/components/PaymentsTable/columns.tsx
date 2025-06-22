@@ -4,10 +4,13 @@ import React from 'react';
 import Amount from '@libs/web-nexus/common//ui/Amount';
 import { maskContact } from '@libs/shared-utils';
 import { PaymentsDashboardUser } from '@libs/shared-types/payments';
+import CustomClipboard from '@libs/web-nexus/common/ui/Clipboard/Custom';
+import { createCustomColumnView } from '../PaymentsList/utils';
+import { getPaymentMethod, getSourceChannelType } from './utils';
+import { getPaymentStatusVariantMap } from './constants';
 import { Item } from 'apps/self-serve/src/App/Transactions/v2/Payments/types';
 import CreatedOn from 'apps/self-serve/src/App/Transactions/v2/common/components/CreatedOn';
 import Details from 'apps/self-serve/src/App/Transactions/v2/common/components/Details';
-import CustomClipboard from '@libs/web-nexus/common/ui/Clipboard/Custom';
 import PaymentOptimizerProvider from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentOptimizerProvider';
 // eslint-disable-next-line
 
@@ -17,9 +20,6 @@ import {
   TransactionsPagesMap,
 } from 'apps/self-serve/src/App/Transactions/v2/common/constants';
 import { getCreatedOnTime } from 'apps/self-serve/src/App/Transactions/v2/common/utils';
-import { createCustomColumnView } from '../PaymentsList/utils';
-import { getPaymentMethod, getSourceChannelType } from './utils';
-import { getPaymentStatusVariantMap } from './constants';
 
 const { FAILED_PAYMENTS, PAYMENTS } = TransactionsEntityRoute;
 
@@ -257,7 +257,7 @@ export const getDesktopColumns = (
   shouldShowCustomTransactionTabView: boolean,
   selectedColumnsList: string[],
   shouldDisplayOptimizerColumn: boolean,
-  isVASOrg: boolean,
+  isPosOrderIDEnabled: boolean,
 ) => {
   let updatedDesktopColumns = desktopColumns;
   if (isOmniView) {
@@ -274,7 +274,7 @@ export const getDesktopColumns = (
     updatedDesktopColumns = createCustomColumnView(updatedDesktopColumns, selectedColumnsList);
   }
 
-  if (isVASOrg) {
+  if (isPosOrderIDEnabled) {
     return vasDesktopColumns;
   }
 

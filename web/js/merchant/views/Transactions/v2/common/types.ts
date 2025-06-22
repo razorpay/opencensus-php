@@ -27,7 +27,7 @@ export interface ListContainerProps<T> {
   selectedColumnsList: string[];
   isOmniView: boolean;
   isJnKOmniEnabled: boolean;
-  isVASOrg: boolean;
+  isPosOrderIDEnabled: boolean;
 }
 
 export interface Collection<T> {
