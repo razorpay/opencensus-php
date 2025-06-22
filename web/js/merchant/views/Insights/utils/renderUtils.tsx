@@ -1,6 +1,31 @@
 import React from 'react';
-import { Box, Spinner } from '@razorpay/blade/components';
+import { Box, Spinner, LayoutIcon } from '@razorpay/blade/components';
 import { EmptyState } from '../EmptyState';
+import { TAB_ICONS, DOCUMENTATION_ROUTES } from '../constants';
+
+export const renderDashboardIcon = (activeTab: string) => {
+  const IconComponent = TAB_ICONS[activeTab] || LayoutIcon;
+  return <IconComponent marginRight="spacing.3" size="xlarge" />;
+};
+
+export const getDisplayName = (tab: string): string => {
+  return tab === 'MagicX' ? 'Magic' : tab;
+};
+
+export const getDocumentationUrl = (activeTab: string): string => {
+  return DOCUMENTATION_ROUTES[activeTab] || DOCUMENTATION_ROUTES['Overview'];
+};
+
+export const trackDocumentationClick = (
+  activeTab: string,
+  trackAnalytics: (event: string, data: any) => void,
+): string => {
+  const documentationUrl = getDocumentationUrl(activeTab);
+  trackAnalytics(`${activeTab} Documentation Clicked`, {
+    documentation_link: documentationUrl,
+  });
+  return documentationUrl;
+};
 
 export const renderLoadingOrErrorState = (
   isLoading: boolean,
@@ -10,7 +35,7 @@ export const renderLoadingOrErrorState = (
   activeTab: string,
   showEmptyState: boolean,
   retryHandler: () => void,
-  Insights_Dashboard: string,
+  insightsDashboard: string,
   baseAnalyticsProps: Record<string, unknown>,
 ) => {
   if (isLoading || !guestToken) {
@@ -28,15 +53,14 @@ export const renderLoadingOrErrorState = (
       <>
         <Box display="flex" alignContent="center" justifyContent="center">
           <EmptyState
-            text={`${Insights_Dashboard} - ${activeTab}`}
+            text={`${insightsDashboard} - ${activeTab}`}
             retryHandler={retryHandler}
-            Insights_Dashboard={Insights_Dashboard}
             analyticsProperties={{
-              objectName: `Insights - ${Insights_Dashboard}`,
+              objectName: `Insights - ${insightsDashboard}`,
               actionName: 'error',
-              screen: `${Insights_Dashboard} - ${activeTab}`,
+              screen: `${insightsDashboard} - ${activeTab}`,
               ...(error ? { error: `Error while fetching guest token : ${error}` } : {}),
-              event_name: `insights.${Insights_Dashboard}.${activeTab}.error`,
+              event_name: `insights.${insightsDashboard}.${activeTab}.error`,
               ...baseAnalyticsProps,
               button_text: 'Try Again',
             }}

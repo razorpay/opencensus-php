@@ -1,7 +1,17 @@
 import moment from 'moment';
 import { INSIGHTS_SUPERSET_CONFIGS_KEYS } from 'merchant/views/Insights/configs/INSIGHTS_SUPERSET_CONFIGS_KEYS';
 import { InsightsApiResponse } from 'merchant/components/SidebarV2/Products/Insights/types';
-import { SparklesIcon, LayoutIcon } from '@razorpay/blade/components';
+import { 
+  SparklesIcon, 
+  LayoutIcon,
+  SubscriptionsIcon,
+  PieChartIcon,
+  CreditCardIcon,
+  MagicCheckoutIcon,
+  UpiIcon,
+  WalletIcon,
+  PaymentLinkIcon,
+} from '@razorpay/blade/components';
 
 export const INSIGHTS_DASHBOARDS = [
   {
@@ -121,4 +131,15 @@ export const getFallbackInsightsOnError = () => {
     console.error('Error creating simple fallback insights:', error);
     return [];
   }
+};
+
+export const TAB_ICONS = {
+  Overview: PieChartIcon,
+  UPI: UpiIcon,
+  Card: CreditCardIcon,
+  Netbanking: PaymentLinkIcon,
+  Wallet: WalletIcon,
+  Emandate: SubscriptionsIcon,
+  Magic: MagicCheckoutIcon,
+  MagicX: MagicCheckoutIcon,
 };

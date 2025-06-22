@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { Box, Button, Heading, RefreshIcon, Link, DownloadIcon } from '@razorpay/blade/components';
+import { Box, Divider } from '@razorpay/blade/components';
 import { embedDashboard } from '@superset-ui/embedded-sdk';
 import moment from 'moment';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '@federated/apps/shell/commonStore';
-import { useMobile } from 'common/hooks/useMobile';
 import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
 import { trackInsightsAnalytics } from 'merchant/views/Insights/utils/trackInsightsAnalytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -15,7 +14,6 @@ import FilteredSection from 'merchant/views/Insights/components/FilteredSection'
 import {
   SUPERSET_DASHBOARD_IDS,
   SUCCESS_RATE_TABS,
-  DOCUMENTATION_ROUTES,
   SUPERSET_URL,
   dashboardHeights,
   CHECKOUT_TABS,
@@ -26,9 +24,9 @@ import { SuperSetDashboardWrapper } from 'merchant/views/Insights/styled';
 import { renderLoadingOrErrorState } from 'merchant/views/Insights/utils/renderUtils';
 import { mobileBreakoints } from 'merchant/views/Transactions/v2/common/constants';
 import { useTimeSpentOnScreen } from '@libs/shared-utils';
-import { queryClient } from 'merchant/ProductDashboard';
 import { getInsightsDataWithFlags } from 'merchant/views/Insights/utils/insightsDataManager';
 import useInsightsProducts from 'merchant/views/Insights/hooks/useInsightsProducts';
+import { useMobile } from '@libs/shared-utils';
 
 type DateRange = {
   from?: number;
@@ -55,9 +53,18 @@ const Insights: React.FC = () => {
   const { data, refetch, isLoading, isError, error } = useSupersetDashboard();
   const [guestToken, setGuestToken] = useState<string | undefined>();
   const { activetab, insights_dashboard } = useParams();
-  const { hasMagicX, insightsData } = getInsightsDataWithFlags();
+  const { hasMagicX, insightsData, hasCheckoutData, hasSuccessRateData } =
+    getInsightsDataWithFlags();
   const { hasApiData } = useInsightsProducts();
-  const { activeTab, displayActiveTab, Insights_Dashboard, currentDashboard, experiment_name } =
+
+  const getDefaultDashboardAndTab = useCallback(() => {
+    if (hasApiData && hasCheckoutData && !hasSuccessRateData) {
+      return { dashboard: 'checkout', tab: 'magic' };
+    }
+    return { dashboard: 'success-rate', tab: 'overview' };
+  }, [hasSuccessRateData, hasCheckoutData, hasApiData]);
+
+  const { activeTab, displayActiveTab, insightsDashboard, currentDashboard, experiment_name } =
     useMemo(() => {
       let activeTab =
         [...SUCCESS_RATE_TABS, ...CHECKOUT_TABS].find((tab) => tab.link === activetab)?.name ||
@@ -66,28 +73,28 @@ const Insights: React.FC = () => {
       if (activeTab === 'Magic' && insights_dashboard === 'checkout' && hasMagicX) {
         activeTab = 'MagicX';
       }
-      if (!INSIGHTS_DASHBOARDS.find((dashboard) => dashboard.link === insights_dashboard)) {
-        activeTab = 'Overview';
-      }
 
       const displayActiveTab = activeTab === 'MagicX' ? 'Magic' : activeTab;
-
       const currentDashboard = INSIGHTS_DASHBOARDS.find(
         (dashboard) => dashboard.link === insights_dashboard,
       );
 
+      const insightsDashboard = currentDashboard?.name || 'Success Rate';
+
       return {
         activeTab,
         displayActiveTab,
-        Insights_Dashboard: currentDashboard?.name || 'Success Rate',
+        insightsDashboard,
         currentDashboard,
         experiment_name: currentDashboard?.experiment_name,
       };
     }, [activetab, insights_dashboard, hasMagicX]);
 
   useEffect(() => {
+    const defaultDashboard = getDefaultDashboardAndTab();
+
     if (!INSIGHTS_DASHBOARDS.find((dashboard) => dashboard.link === insights_dashboard)) {
-      navigate('/insights/success-rate/overview');
+      navigate(`/insights/${defaultDashboard.dashboard}/${defaultDashboard.tab}`);
       return;
     }
 
@@ -97,9 +104,9 @@ const Insights: React.FC = () => {
     );
 
     if (!isTabPresentInInsightDashboardItems) {
-      navigate('/insights/success-rate/overview');
+      navigate(`/insights/${defaultDashboard.dashboard}/${defaultDashboard.tab}`);
     }
-  }, [activeTab, insightsData, insights_dashboard, navigate, hasApiData]);
+  }, [activeTab, insightsData, insights_dashboard, navigate, getDefaultDashboardAndTab]);
 
   const baseAnalyticsProps = useMemo(
     () => ({
@@ -120,7 +127,7 @@ const Insights: React.FC = () => {
   const trackAnalytics = useCallback(
     (actionName: string, additionalProps = {}) => {
       trackInsightsAnalytics(
-        Insights_Dashboard,
+        insightsDashboard,
         activeTab,
         insights_dashboard,
         baseAnalyticsProps,
@@ -128,7 +135,7 @@ const Insights: React.FC = () => {
         additionalProps,
       );
     },
-    [Insights_Dashboard, insights_dashboard, activeTab, baseAnalyticsProps],
+    [insightsDashboard, insights_dashboard, activeTab, baseAnalyticsProps],
   );
 
   const selectedDateCallback = async (date: DateRange) => {
@@ -222,7 +229,7 @@ const Insights: React.FC = () => {
     activeTab,
     shouldShowEmptyState,
     retryHandler,
-    Insights_Dashboard,
+    insightsDashboard,
     baseAnalyticsProps,
   );
   if (renderState) {
@@ -232,24 +239,24 @@ const Insights: React.FC = () => {
   return (
     <InsightsErrorBoundary>
       <Box
-        paddingTop="spacing.5"
-        backgroundColor="surface.background.gray.intense"
-        paddingX="spacing.7"
+        paddingX="spacing.6"
+        paddingBottom="spacing.6"
         marginRight={isMobile ? 'spacing.0' : 'spacing.2'}
       >
         <HeaderSection
-          activeTab={activeTab}
-          Insights_Dashboard={Insights_Dashboard}
+          selectedDateCallback={selectedDateCallback}
+          insightsDashboard={insightsDashboard}
           trackAnalytics={trackAnalytics}
         />
         <Box gap="spacing.4">
           <FilteredSection
-            selectedDateCallback={selectedDateCallback}
+            activeTab={activeTab}
             trackAnalytics={trackAnalytics}
             embedSupersetDashboard={embedSupersetDashboard}
             refetch={refetch}
             setGuestToken={setGuestToken}
           />
+          <Divider marginY="spacing.5" />
           <SuperSetDashboardWrapper
             id="superset-wrapper"
             ref={supersetRef}

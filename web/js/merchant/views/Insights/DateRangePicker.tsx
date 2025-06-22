@@ -1,28 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DatePicker } from '@razorpay/blade/components';
 import moment from 'moment';
-import { insightsDateRangePresets } from 'merchant/views/Insights/constants';
 
-const DateRangePicker = ({
+interface DateRange {
+  from: number;
+  to: number;
+}
+
+interface DateRangePickerProps {
+  selectedDateCallback: (date: DateRange) => void;
+  selectedDates?: DateRange;
+  isLoading?: boolean;
+}
+
+const DateRangePicker: React.FC<DateRangePickerProps> = ({
   selectedDateCallback,
-}: {
-  selectedDateCallback: (date: { from: number; to: number }) => void;
+  selectedDates,
+  isLoading = false,
 }) => {
-  const [selectedPreset, setSelectedPreset] = useState<{
-    value: { from: Date; to: Date };
-  }>({
-    value: {
+  const [internalSelectedDates, setInternalSelectedDates] = useState<{
+    from: Date;
+    to: Date;
+  }>(() => {
+    if (selectedDates) {
+      return {
+        from: moment.unix(selectedDates.from).toDate(), // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
+        to: moment.unix(selectedDates.to).toDate(), // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
+      };
+    }
+
+    return {
       from: moment().clone().subtract(0, 'days').startOf('day').toDate(), // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
       to: moment().clone().endOf('day').toDate(), // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
-    },
+    };
   });
 
-  const onDatesChange = (from: Date, to: Date) => {
-    setSelectedPreset({ value: { from, to } });
+  useEffect(() => {
+    if (selectedDates) {
+      setInternalSelectedDates({
+        from: moment.unix(selectedDates.from).toDate(), // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
+        to: moment.unix(selectedDates.to).toDate(), // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
+      });
+    }
+  }, [selectedDates]);
+
+  const handleDatesChange = (from: Date, to: Date) => {
+    setInternalSelectedDates({ from, to }); // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
   };
 
-  const onApply = (from: Date, to: Date) => {
-    setSelectedPreset({ value: { from, to } });
+  const handleApply = (from: Date, to: Date) => {
+    const newDateRange = {
+      from,
+      to,
+    };
+
+    setInternalSelectedDates(newDateRange);
+
     selectedDateCallback({
       from: moment(from).clone().unix(), // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
       to: moment(to).clone().add(1, 'day').startOf('day').unix(), // nosemgrep: ssc-1e99e462-0fc5-4109-ad52-d2b5a7048232
@@ -32,21 +65,20 @@ const DateRangePicker = ({
   return (
     <DatePicker
       // @ts-ignore
-      label={{ start: 'Start Date', end: 'End Date' }}
-      // @ts-ignore
       selectionType="range"
-      value={[selectedPreset.value.from, selectedPreset.value.to]}
-      presets={insightsDateRangePresets}
+      value={[internalSelectedDates.from, internalSelectedDates.to]}
       minDate={moment().clone().subtract(30, 'days').startOf('day').toDate()}
       maxDate={moment().clone().endOf('day').toDate()}
+      isDisabled={isLoading}
       onChange={(date) => {
-        onDatesChange(date[0], date[1]);
+        handleDatesChange(date[0], date[1]);
       }}
       onApply={(date) => {
-        onApply(date[0], date[1]);
+        handleApply(date[0], date[1]);
       }}
     />
   );
 };
 
 export { DateRangePicker };
+export type { DateRangePickerProps };
