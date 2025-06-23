@@ -65,6 +65,21 @@ class FundTransferAttemptController extends Controller
     {
         $input = Request::all();
 
+        try
+        {
+            // call shadow router to mirror the request
+            PayoutShadowService::mirrorRequest(
+                'POST',
+                Request::path(),
+                $input,
+                Request::header()
+            );
+        }
+        catch (Throwable $e)
+        {
+            // ignore error
+        }
+
         // If the source type is FAV, then call the FAV service
         if ($input[FTSConstants::SOURCE_TYPE] === FTSConstants::FUND_ACCOUNT_VALIDATION)
         {
