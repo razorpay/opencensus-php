@@ -122,7 +122,6 @@ class RequestHeader
 
     const X_RAZORPAY_REQUEST_ID          = 'X-Razorpay-Request-Id';
 
-    const X_MIRROR_REQUEST_ID            = 'X-Mirror-Request-Id';
 
     const X_CASE_TYPE                    = 'X-Case-type';
 
