@@ -16,7 +16,7 @@ class Events
 
     const PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED = 'PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED';
 
-    const PAYOUTS_TO_PHONE_NUMBER_FUND_ACCOUNT_CREATED = 'PAYOUTS_TO_PHONE_NUMBER_FUND_ACCOUNT_CREATED';
+    const VPA_TYPE_FUND_ACCOUNT_CREATED = 'VPA_TYPE_FUND_ACCOUNT_CREATED';
 
 
     protected $app;
@@ -80,8 +80,8 @@ class Events
             case self::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED:
                 $eventDataGroup = EventCode::PAYOUTS_TO_PHONE_NUMBER_EVENT_VPA_UPDATED;
                 break;
-            case self::PAYOUTS_TO_PHONE_NUMBER_FUND_ACCOUNT_CREATED:
-                $eventDataGroup = EventCode::PAYOUTS_TO_PHONE_NUMBER_EVENT_FUND_ACCOUNT_CREATED;
+            case self::VPA_TYPE_FUND_ACCOUNT_CREATED:
+                $eventDataGroup = EventCode::PAYOUTS_TO_PHONE_NUMBER_EVENT_VPA_TYPE_FUND_ACCOUNT_CREATED;
                 break;
         }
 
@@ -231,25 +231,25 @@ class Events
         }
     }
 
-    public function trackFundAccountCreatedEvent(
+    public function trackVPAFundAccountCreatedEvent(
         string $merchantId,
         string $fundAccountId
     ): void
     {
         try {
             $this->trackPhoneNumberPayoutEvents(
-                self::PAYOUTS_TO_PHONE_NUMBER_FUND_ACCOUNT_CREATED,
+                self::VPA_TYPE_FUND_ACCOUNT_CREATED,
                 [
                     Constants::MERCHANT_ID     => $merchantId,
                     "fund_account_id"          => $fundAccountId,
-                    'event_name'               => self::PAYOUTS_TO_PHONE_NUMBER_FUND_ACCOUNT_CREATED
+                    'event_name'               => self::VPA_TYPE_FUND_ACCOUNT_CREATED
                 ]
             );
         } catch (\Throwable $e) {
             $this->trace->error(TraceCode::PAYOUT_TO_PHONE_NUMBER_EVENT_TRACKING_FAILED, [
                 'error_message'         => $e->getMessage(),
                 'merchant_id'           => $merchantId,
-                'context'               => self::PAYOUTS_TO_PHONE_NUMBER_FUND_ACCOUNT_CREATED
+                'context'               => self::VPA_TYPE_FUND_ACCOUNT_CREATED
             ]);
         }
     }

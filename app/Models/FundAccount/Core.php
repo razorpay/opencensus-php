@@ -274,7 +274,7 @@ class Core extends Base\Core
         Metric::pushCreateMetrics($fundAccount);
 
         if ($input[Entity::ACCOUNT_TYPE] === Entity::VPA) {
-            $this->payoutEvents->trackFundAccountCreatedEvent(
+            $this->payoutEvents->trackVPAFundAccountCreatedEvent(
                 $merchant->getId(),
                 $fundAccount->getId(),
             );

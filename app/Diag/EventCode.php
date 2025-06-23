@@ -1241,9 +1241,9 @@ class EventCode
         'name'   => 'payouts_to_phone_number_event.vpa_updated'
     ];
 
-    const PAYOUTS_TO_PHONE_NUMBER_EVENT_FUND_ACCOUNT_CREATED = [
+    const PAYOUTS_TO_PHONE_NUMBER_EVENT_VPA_TYPE_FUND_ACCOUNT_CREATED = [
         'group'  => 'payouts_to_phone_number_event',
-        'name'   => 'payouts_to_phone_number_event.fund_account_created'
+        'name'   => 'payouts_to_phone_number_event.vpa_type_fund_account_created'
     ];
 
     const PAYOUT_FETCH_REQUESTS = [

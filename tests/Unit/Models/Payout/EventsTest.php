@@ -225,6 +225,117 @@ class EventsTest extends TestCase
         $this->assertTrue($errorLogged, 'Error should have been logged when exception occurs');
     }
 
+    /**
+     * Test VPA Fund Account Created Event
+     */
+    public function testTrackVPAFundAccountCreatedEvent()
+    {
+        // Mock dependencies
+        $mockDiag = Mockery::mock();
+        $mockTrace = Mockery::mock();
+        $mockTrace->shouldIgnoreMissing();
+        $this->app->instance('diag', $mockDiag);
+        $this->app->instance('trace', $mockTrace);
+
+        // Track that the event method is called
+        $eventCalled = false;
+        $mockDiag->shouldReceive('trackPhoneNumberPayoutEvents')
+            ->andReturnUsing(function($eventCode, $properties) use (&$eventCalled) {
+                $eventCalled = true;
+                // Verify the correct event properties are passed
+                $this->assertEquals('merchant_123', $properties[Constants::MERCHANT_ID]);
+                $this->assertEquals('fund_account_456', $properties['fund_account_id']);
+                $this->assertEquals(Events::VPA_TYPE_FUND_ACCOUNT_CREATED, $properties['event_name']);
+                return true;
+            });
+
+        $mockTrace->shouldReceive('info')->atLeast()->once();
+
+        $events = new Events();
+        $events->trackVPAFundAccountCreatedEvent('merchant_123', 'fund_account_456');
+
+        // Assert that the event was actually called
+        $this->assertTrue($eventCalled, 'VPA Fund Account Created event should have been tracked');
+    }
+
+    /**
+     * Test VPA Fund Account Created Event with error handling
+     */
+    public function testTrackVPAFundAccountCreatedEventErrorHandling()
+    {
+        // Mock dependencies that will cause errors
+        $mockDiag = Mockery::mock();
+        $mockTrace = Mockery::mock();
+        $this->app->instance('diag', $mockDiag);
+        $this->app->instance('trace', $mockTrace);
+
+        // Make diag service throw an exception
+        $mockDiag->shouldReceive('trackPhoneNumberPayoutEvents')
+            ->andThrow(new \Exception('Service unavailable'));
+
+        // Track that error logging happens
+        $errorLogged = false;
+        $mockTrace->shouldReceive('error')
+            ->andReturnUsing(function($traceCode, $data) use (&$errorLogged) {
+                $errorLogged = true;
+                // Verify error logging contains expected data
+                $this->assertEquals('Service unavailable', $data['error_message']);
+                $this->assertEquals('merchant_123', $data['merchant_id']);
+                $this->assertEquals(Events::VPA_TYPE_FUND_ACCOUNT_CREATED, $data['context']);
+                return true;
+            });
+
+        $events = new Events();
+
+        // Should not throw exception - should handle gracefully
+        $events->trackVPAFundAccountCreatedEvent('merchant_123', 'fund_account_456');
+
+        // Assert that error was properly logged
+        $this->assertTrue($errorLogged, 'Error should have been logged when VPA Fund Account Created event fails');
+    }
+
+    /**
+     * Test the central trackPhoneNumberPayoutEvents method with all event types
+     */
+    public function testTrackPhoneNumberPayoutEventsAllEventTypes()
+    {
+        // Mock dependencies
+        $mockDiag = Mockery::mock();
+        $mockTrace = Mockery::mock();
+        $mockTrace->shouldIgnoreMissing();
+        $this->app->instance('diag', $mockDiag);
+        $this->app->instance('trace', $mockTrace);
+
+        $events = new Events();
+        $testProperties = ['test_property' => 'test_value'];
+
+        // Test all event types
+        $eventTypes = [
+            Events::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND,
+            Events::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD,
+            Events::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID,
+            Events::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED,
+            Events::VPA_TYPE_FUND_ACCOUNT_CREATED,
+        ];
+
+        foreach ($eventTypes as $eventType) {
+            // Track calls for each event type
+            $mockDiag->shouldReceive('trackPhoneNumberPayoutEvents')
+                ->once()
+                ->withAnyArgs();
+
+            $mockTrace->shouldReceive('info')
+                ->once()
+                ->withAnyArgs();
+
+            // Call the method
+            $events->trackPhoneNumberPayoutEvents($eventType, $testProperties);
+        }
+
+        // Test passes if all event types are handled without errors
+        $this->addToAssertionCount(count($eventTypes));
+    }
+
     protected function tearDown(): void
     {
         parent::tearDown();
