@@ -55,13 +55,6 @@ final class Constants
         self::BENEFIT_TYPE_VOUCHER                      => 'vouchers',
     ];
 
-
-    const DISCOUNT_BENEFIT_TYPE = [
-        self::BENEFIT_TYPE_DISCOUNT,
-        self::BENEFIT_TYPE_NO_COST_EMI,
-        self::BENEFIT_TYPE_LOW_COST_EMI
-    ];
-
     const METADATA = 'metadata';
 
     const NAME = 'name';
