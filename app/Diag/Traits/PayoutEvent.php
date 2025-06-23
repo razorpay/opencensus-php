@@ -120,7 +120,7 @@ trait PayoutEvent
         $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $eventData, $properties);
     }
 
-    public function trackPhoneNumberPayoutFailureEvents(
+    public function trackPhoneNumberPayoutEvents(
         array $eventData,
         array $customProperties = [],
         \Throwable $ex = null,
