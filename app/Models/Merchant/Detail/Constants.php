@@ -273,7 +273,9 @@ class Constants
 
     // Payment Gateway Competitors constants
     const ONBOARDED_TO_COMPETITORS_PREVIOUSLY = 'onboarded_to_competitors_previously';
-    const PAYMENT_GATEWAY_COMPETITORS = 'payment_gateway_competitors';
+    const PAYMENT_GATEWAY_COMPETITORS         = 'payment_gateway_competitors';
+    const SHOW_FTUX_DASHBOARD                 = 'show_ftux_dashboard';
+    const SHOW_TRANSACTION_TIMELINE           = 'show_transaction_timeline';
 
     //PG Onboarding For X Interests Constants
     const PG_ONBOARDING_CA = 'pg_onboarding_ca';
