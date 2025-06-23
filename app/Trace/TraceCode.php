@@ -13371,6 +13371,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TNC_LOG_UPDATE_FAILED                                 = 'TNC_LOG_UPDATE_FAILED';
     const INVALID_PRODUCT_CONFIG_JSON                           = 'INVALID_PRODUCT_CONFIG_JSON';
     const MODIFY_CLOSE_BY_IF_APPLICABLE                         = 'MODIFY_CLOSE_BY_IF_APPLICABLE';
+    const TOKENISED_REARCH_STATUS                               = 'TOKENISED_REARCH_STATUS';
 
     const ORG_FEATURE_REPLICATION = 'ORG_FEATURE_REPLICATION';
 

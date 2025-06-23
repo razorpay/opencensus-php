@@ -2780,18 +2780,42 @@ class Processor
 
                             if ($card->getVault() === Card\Vault::PROVIDERS || $card->getVault() === Card\Vault::AXIS)
                             {
-                                $networkToken = (new TokenCore())->fetchToken($token, false);
-                                // Adding this check to route issuer or dual token payments on rearch.
-                                // In this case we would fetch cryptogram on the CPS service & this is how it should be for all network tokenised payments
-                                $issuer_result = 'off';
-                                if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
-                                    $issuer_result = 'on';
-                                }
-                                if ($issuer_result === 'on') {
+                                if($this->mode!==MODE::LIVE && !app()->isEnvironmentProduction()){
+                                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                                        'reason' => "vault_providers_or_axis",
+                                        'merchant_id' => $merchant->getId(),
+                                    ]);
 
-                                    $cardInput = [
+                                    return false;
+                                }
+
+                                if($this->inputCurrencyNotINR($input)){
+                                    return false;
+                                }
+
+                                $cardInput = [];
+
+                                $tokenRearchIssuerExperimentName = 'app.saved_card_token_payments_rearch_issuer';
+                                $tokenRearchIssuerResult = (new Payment\Service())->getSplitzExpResponseForTokenFetchFromTokenService($merchant->getId(), $card->getVault(), $tokenRearchIssuerExperimentName);
+
+                                // Allowing CPS Cryptogram source on Domestic Payments and where Merchant is not RAAS enabled
+                                if($tokenRearchIssuerResult=='enable'
+                                    && $this->merchant->isFeatureEnabled(FeatureConstants::RAAS) === false
+                                    && $this->merchant->getCountry() == "IN"
+                                ){
+                                    $cardInput += [
+                                        "cryptogram_source" => "cps",
+                                    ];
+                                    $this->trace->info(TraceCode::TOKENISED_REARCH_STATUS,[
+                                        'message'=>'Issuer Result is on',
+                                    ]);
+                                } else {
+                                    $cardInput += [
                                         Card\Entity::NAME                   => Card\Entity::DUMMY_NAME,
                                         Card\Entity::NUMBER                 => Card\Entity::DUMMY_CARD_NUMBER,
+                                        Card\Entity::CVV                    => $input['card']['cvv'] ?? Card\Entity::DUMMY_CVV,
+                                        Card\Entity::TOKENISED              => true,
+                                        Card\Entity::REWARD                 => $input['card']['reward'],
                                         Card\Entity::COUNTRY                => $card->getCountry(),
                                         Card\Entity::ISSUER                 => $card->getIssuer(),
                                         Card\Entity::TYPE                   => $card->getType(),
@@ -2801,54 +2825,49 @@ class Processor
                                         Card\Entity::INTERNATIONAL          => $card->isInternational(),
                                         Card\Entity::EXPIRY_MONTH           => $card->getTokenExpiryMonth(),
                                         Card\Entity::EXPIRY_YEAR            => $card->getTokenExpiryYear(),
-                                        Card\Entity::CVV                    => $input['card']['cvv'] ?? Card\Entity::DUMMY_CVV,
                                         Card\Entity::VAULT_TOKEN            => $card->getVaultToken(),
                                         Card\Entity::TOKEN_IIN              => $card->getTokenIin(),
                                         Card\Entity::LAST4                  => $card->getLast4(),
-                                        Card\Entity::TOKENISED              => true,
-                                        Card\Entity::REWARD                 => $input['card']['reward']
                                     ];
-                                    if($this->inputCurrencyNotINR($input)){
-                                        return false;
-                                    }
+
+                                    $this->trace->info(TraceCode::TOKENISED_REARCH_STATUS,[
+                                        'message'=>'Issuer Result is off',
+                                    ]);
+
                                     $input[Payment\Entity::CARD] = $cardInput;
                                     $input[Payment\Entity::API_VAULT] = $card->getVault();   // We are passing API_VALUT key to CPS to send it to router so that it can provide us terminals acc.
                                     // explicitly adding token_id in token since for global customer we add token instead of token_id
-                                    $input[Payment\Entity::TOKEN] = $token->getId();
-
-                                    //Iterating over fetched token array to extract trid and token reference number for hdfc_issuer payments
-                                    foreach ($networkToken as $index => $element) {
-                                        if (isset($element['provider_name']) && $element['provider_name'] == 'hdfc') {
-                                            $tokenisedTerminalId = $element[E::TOKENISED_TERMINAL_ID] ?? '';
-                                            $tokenisedTerminal = $this->app['terminals_service']->fetchTerminalById($tokenisedTerminalId);
-
-
-                                            assertTrue(empty($tokenisedTerminal) === false); //trid is needed for hdfc issuer token
-
-                                            $trid = !empty($tokenisedTerminal) ? $tokenisedTerminal[E::GATEWAY_MERCHANT_ID] : '';
-                                            $trn = $element[E::PROVIDER_DATA][E::TOKEN_REFERENCE_NUMBER] ?? '';
-
-                                            $cardInput[E::TOKEN_REFERENCE_NUMBER ]=  $trn;
-                                            $cardInput[E::TOKEN_REFERENCE_ID ]= $trid;
-
-                                        }
-                                    }
-                                    $input[Payment\Entity::CARD] = $cardInput;
-                                    $this->trace->info(
-                                        TraceCode::DUAL_TOKENISATION_REARCH,
-                                        [
-                                            'token_id' => $input[Payment\Entity::TOKEN],
-                                            'card_number' => $input[Payment\Entity::CARD],
-                                        ]);
-                                    return true;
                                 }
 
-                                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                                    'reason' => "vault_providers_or_axis",
-                                    'merchant_id' => $merchant->getId(),
-                                ]);
+                                // Explicitly Setting Token ID here since Token ID is not same as Token we get
+                                $input[Payment\Entity::TOKEN] = $token->getId();
+                                $networkToken = (new TokenCore())->fetchToken($token, false);
+                                //Iterating over fetched token array to extract trid and token reference number for hdfc_issuer payments
+                                foreach ($networkToken as $index => $element) {
+                                    if (isset($element['provider_name']) && $element['provider_name'] == 'hdfc') {
+                                        $tokenisedTerminalId = $element[E::TOKENISED_TERMINAL_ID] ?? '';
+                                        $tokenisedTerminal = $this->app['terminals_service']->fetchTerminalById($tokenisedTerminalId);
 
-                                return false;
+
+                                        assertTrue(empty($tokenisedTerminal) === false); //trid is needed for hdfc issuer token
+
+                                        $trid = !empty($tokenisedTerminal) ? $tokenisedTerminal[E::GATEWAY_MERCHANT_ID] : '';
+                                        $trn = $element[E::PROVIDER_DATA][E::TOKEN_REFERENCE_NUMBER] ?? '';
+
+                                        $cardInput[E::TOKEN_REFERENCE_NUMBER ]=  $trn;
+                                        $cardInput[E::TOKEN_REFERENCE_ID ]= $trid;
+
+                                    }
+                                }
+                                $input[Payment\Entity::CARD] = $cardInput;
+                                $this->trace->info(
+                                    TraceCode::DUAL_TOKENISATION_REARCH,
+                                    [
+                                        'token_id' => $input[Payment\Entity::TOKEN],
+                                        'card_number' => $input[Payment\Entity::CARD],
+                                        'card'=> $cardInput
+                                    ]);
+                                return true;
                             }
 
                             if ($card->isNetworkTokenisedCard() === true)
@@ -2939,6 +2958,8 @@ class Processor
                         } else {
                             $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                                 'reason' => "saved_card_not_network_tokenized",
+                                'isLocal'=> $token->isLocal(),
+                                'isRecurring'=> $token->isRecurring(),
                                 'merchant_id' => $merchant->getId(),
                             ]);
                             return false;
@@ -12162,7 +12183,7 @@ class Processor
         // In case of optimizer merchants, if api bypass payment header is passed, avoid regenating payment ID
         // ref: https://razorpay.slack.com/archives/CVBG8G5HP/p1713776445121129?thread_ts=1713333452.554889&cid=CVBG8G5HP
         if ($this->merchant->isFeatureEnabled(Feature::RAAS) === true) {
-            $this->setPaymentIdForOptimizer($payment);
+            $this->setPaymentIdForOptimizer($payment, $input);
         }
 
         if($transferPaymentId !== null ){
@@ -12193,7 +12214,7 @@ class Processor
 
     // In case of optimizer merchants, if api bypass payment header is passed, avoid regenating payment ID
     // ref: https://razorpay.slack.com/archives/CVBG8G5HP/p1713776445121129?thread_ts=1713333452.554889&cid=CVBG8G5HP
-    protected function setPaymentIdForOptimizer(Payment\Entity $payment )
+    protected function setPaymentIdForOptimizer(Payment\Entity $payment, array $input)
     {
         $apiBypassPaymentId = $this->app['request']->header(RequestHeader::X_API_BYPASS_PAYMENT_ID);
 
@@ -12212,6 +12233,14 @@ class Processor
             ($requestHost === "prod-api-int.razorpay.com" || $requestHost === "api-dark-int.razorpay.com"))
         {
             $allowed = true;
+        }
+
+        // In case of razorpaywallet split payments skip this check
+        // This is avoid duplicate payment_ID's in case of split payments
+        if ($input[Payment\Entity::METHOD] === Payment\Method::WALLET &&
+            isset($input[Payment\Entity::WALLET]) &&
+            $input[Payment\Entity::WALLET] === Wallet::RAZORPAYWALLET) {
+            $allowed = false;
         }
 
         if (empty($apiBypassPaymentId) === false && $allowed === true)
