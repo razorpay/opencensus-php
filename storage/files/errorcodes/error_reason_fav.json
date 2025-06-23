@@ -1,0 +1,711 @@
+{
+  "INVALID_VPA": {
+    "failed": {
+      "source": "business",
+      "reason": "beneficiary_vpa_invalid",
+      "description": "UPI validation failed. If the UPI ID is valid, please retry after sometime."
+    }
+  },
+  "TXN_REJECTED_BENE_BANK": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Account Validation rejected by the beneficiary bank. Please contact the beneficiary bank."
+    }
+  },
+  "TXN_REJECTED_BENE_BANK_RETRIABLE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_technical_error",
+      "description": "Account Validation failed due to a technical issue at the beneficiary bank. Please retry after 30 min."
+    }
+  },
+  "INVALID_ACCOUNT_NUMBER": {
+    "failed": {
+      "source": "business",
+      "reason": "beneficiary_account_invalid",
+      "description": "Account Validation failed due to invalid beneficiary account number."
+    }
+  },
+  "BBANK_OFFLINE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_offline",
+      "description": "Beneficiary bank systems are offline. Please retry after 30 min."
+    }
+  },
+  "FAILURE": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "MERCHANT_INSUFFICIENT_FUND": {
+    "failed": {
+      "source": "business",
+      "reason": "insufficient_funds",
+      "description": "Account Validation failed due to insufficient funds in your account."
+    }
+  },
+  "BBANK_TECHNICAL_FAILURE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_technical_error",
+      "description": "Account Validation failed due to a technical issue at the beneficiary bank. Please retry after 30 min."
+    }
+  },
+  "FTS_CHANNEL_AUTH_FAILED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "PSP_OFFLINE_PENDING": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_psp_offline",
+      "description": "Beneficiary PSP systems are offline. Please retry after 30 min."
+    }
+  },
+  "CUSTOMER_DOES_NOT_EXIST": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_beneficiary",
+      "description": "Customer account does not exist with the wallet provider for the given phone number."
+    }
+  },
+  "FROZEN_ACCOUNT": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "bank_account_frozen",
+      "description": "Account Validation failed as beneficiary account is frozen. Please contact the beneficiary bank."
+    }
+  },
+  "EXCEEDED_AMOUNT_LIMIT": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "transaction_limit_exceeded",
+      "description": "Account Validation amount greater than the limit supported by the beneficiary account."
+    }
+  },
+  "REQUEST_NOT_FOUND": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Account Validation pending at partner bank. Status will be updated after 48 working hours."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "REQUEST_NOT_FOUND_RETRIABLE": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Account Validation pending at partner bank. Status will be updated after 48 working hours."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_timeout",
+      "description": "Account Validation timed out at the partner bank. Please retry after 30 min."
+    }
+  },
+  "REQUEST_NOT_FOUND_PENDING": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Account Validation pending at partner bank. Status will be updated after 48 working hours."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_timeout",
+      "description": "Account Validation timed out at the partner bank. Please retry after 30 min."
+    }
+  },
+  "REQ_NOT_FOUND_RECON_PENDING": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Account Validation pending at partner bank. Status will be updated after 48 working hours."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_timeout",
+      "description": "Account Validation timed out at the partner bank. Please retry after 30 min."
+    }
+  },
+  "PBANK_REQUEST_NOT_FOUND": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Account Validation pending at partner bank. Status will be updated after 48 working hours."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_timeout",
+      "description": "Account Validation timed out at the partner bank. Please retry after 30 min."
+    }
+  },
+  "TXN_REJECTED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "BENE_PSP_OFFLINE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_psp_offline",
+      "description": "Beneficiary PSP systems are offline. Please retry after 30 min."
+    }
+  },
+  "Invalid_PSP": {
+    "failed": {
+      "source": "business",
+      "reason": "beneficiary_vpa_invalid",
+      "description": "UPI validation failed. If the UPI ID is valid, please retry after sometime."
+    }
+  },
+  "AUTHORIZATION_FAILED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "AUTHORIZATION_FAILED_RETRIABLE": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "CLOSED_ACCOUNT": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "bank_account_closed",
+      "description": "Account Validation failed as the beneficiary account is closed. Please contact the beneficiary bank."
+    }
+  },
+  "TXN_TIMEOUT_FAILURE": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "MERCHANT_VALIDATION_ERROR": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "bank_account_invalid",
+      "description": "Account Validation failed due to invalid beneficiary account details."
+    }
+  },
+  "CAPPED_DEBIT": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "TXN_NOT_ALLOWED": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Account Validation rejected by the beneficiary bank. Please contact the beneficiary bank."
+    }
+  },
+  "TXN_NOT_ALLOWED_RETRIABLE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_technical_error",
+      "description": "Account Validation failed due to a technical issue at the beneficiary bank. Please retry after 30 min."
+    }
+  },
+  "REASON_UNKNOWN": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "INVALID_IFSC": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "invalid_ifsc_code",
+      "description": "Account Validation failed as the IFSC code is invalid. Please correct the IFSC code and retry."
+    }
+  },
+  "VERIFICATION_FAILED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "INSUFFICIENT_FUND": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "TECHNICAL_ERROR_FAILURE": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "TXN_TIMEOUT_PENDING": {
+    "initiated": {
+      "source": "beneficiary_bank",
+      "reason": "deemed_success",
+      "description": "Account Validation confirmation is pending from beneficiary bank. Account Validation status will be updated after 48 working hours."
+    }
+  },
+  "BATCH_LIMIT_EXHAUSTED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "AUTHENTICATION_FAILED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "BENE_AUTHENTICATION_FAILED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "IMPS_NOT_ENABLED": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "imps_not_allowed",
+      "description": "IMPS is not enabled on beneficiary account. Please retry with different mode."
+    }
+  },
+  "TXN_ON_HOLD": {
+    "initiated": {
+      "source": "beneficiary_bank",
+      "reason": "deemed_success",
+      "description": "Account Validation confirmation is pending from beneficiary bank. Status will be updated after 48 working hours."
+    }
+  },
+  "TXN_DATE_EXPIRED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "NRE_ACCOUNT": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Account Validation rejected by the beneficiary bank. Please contact the beneficiary bank."
+    }
+  },
+  "TXN_LIMIT_EXCEEDED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "INVALID_AMOUNT": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Account Validation rejected by the beneficiary bank. Please contact the beneficiary bank.."
+    }
+  },
+  "GATEWAY_504": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Account Validation pending at partner bank. Status will be updated after 48 working hours."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_timeout",
+      "description": "Account Validation timed out at the partner bank. Please retry after 30 min."
+    }
+  },
+  "PENDING": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Account Validation pending at partner bank. Status will be updated after 48 working hours."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_timeout",
+      "description": "Account Validation timed out at the partner bank. Please retry after 30 min."
+    }
+  },
+  "RETURNED": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_failure",
+      "description": "Account Validation failed at the beneficiary bank due to a technical issue. Please retry after 30 min."
+    },
+    "reversed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_failure",
+      "description": "Account Validation failed at the beneficiary bank due to a technical issue. Please retry after 30 min."
+    }
+  },
+  "INVALID_BENEFICIARY_DETAILS": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "bank_account_invalid",
+      "description": "Account Validation failed due to invalid beneficiary account details."
+    }
+  },
+  "FRAUD_DECLINE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Account Validation rejected by the beneficiary bank. Please contact the beneficiary bank."
+    }
+  },
+  "CARD_VALIDATION_FAILED": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "bank_account_invalid",
+      "description": "Account Validation failed due to invalid beneficiary account details."
+    }
+  },
+  "DUPLICATE_TXN": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Account Validation pending at partner bank. Status will be updated after 48 working hours."
+    }
+  },
+  "TXN_TIMEOUT": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Account Validation pending at partner bank. Status will be updated after 48 working hours."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_timeout",
+      "description": "Account Validation timed out at the partner bank. Please retry after 30 min."
+    }
+  },
+  "GATEWAY_ERROR_UNKNOWN_ERROR": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Account Validation pending at partner bank. Status will be updated after 48 working hours."
+    }
+  },
+  "RZP_FAILURE": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Account Validation failed. Contact support for help."
+    }
+  },
+  "BENE_INCORRECT_IFSC": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "invalid_ifsc_code",
+      "description": "Account Validation failed as the IFSC code is invalid. Please correct the IFSC code and retry."
+    }
+  },
+  "PBANK_BENE_NOT_REGISTERED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "BANK_CBS_OFFLINE_FAILURE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_offline",
+      "description": "Beneficiary bank systems are offline. Please retry after 30 min."
+    }
+  },
+  "PBANK_VALIDATION_ERROR": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "PBANK_VALIDATION_ERROR_RETRIABLE": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "DORMANT_ACCOUNT": {
+    "failed": {
+      "source": "business",
+      "reason": "beneficiary_account_dormant",
+      "description": "Account Validation failed as beneficiary account is dormat. Please contact the beneficiary bank."
+    }
+  },
+  "NPCI_TIMEOUT_FAILURE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "npci_beneficiary_timeout",
+      "description": "Temporary technical issue between NPCI and the beneficiary bank. Please retry after 30 min."
+    }
+  },
+  "BBANK_GATEWAY_THROTTLED_FAILURE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_failure",
+      "description": "Account Validation failed at the beneficiary bank due to a technical issue. Please retry after 30 min."
+    }
+  },
+  "PBANK_CBS_REJECTED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "FTS_ATTEMPT_INITIATE_FAILED": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Account Validation failed due to technical failure. Please retry after 30 min."
+    }
+  },
+  "REJECTED": {
+    "reversed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Account Validation rejected by the beneficiary bank. Please contact the beneficiary bank."
+    }
+  },
+  "YB_RETURNED_FROM_BENEFICIARY": {
+    "reversed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Account Validation rejected by the beneficiary bank. Please contact the beneficiary bank."
+    }
+  },
+  "YB_SENT_TO_BENEFICIARY": {
+    "reversed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Account Validation rejected by the beneficiary bank. Please contact the beneficiary bank."
+    }
+  },
+  "FTS_ATTEMPT_CREATE_FAILED": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Account Validation failed due to technical failure. Please retry after 30 min."
+    }
+  },
+  "BENEFICIARY_NAME_MISMATCH": {
+    "failed": {
+      "source": "business",
+      "reason": "bank_account_invalid",
+      "description": "Account Validation failed due to invalid beneficiary account details."
+    }
+  },
+  "FTS_BANK_TXN_LIMIT_CROSSED": {
+    "failed": {
+      "source": "business",
+      "reason": "gateway_down",
+      "description": "Account Validation failed as the partner bank is facing technical issues. Please retry."
+    }
+  },
+  "FTS_MERCHANT_TXN_LIMIT_CROSSED": {
+    "failed": {
+      "source": "business",
+      "reason": "amount_limit_exhausted_neft",
+      "description": "The NEFT 24*7 limits for your account has been exhausted. Please retry after sometime."
+    }
+  },
+  "DEFAULT": {
+    "source": "internal",
+    "reason": "server_error",
+    "description": "Account Validation failed. Contact support for help."
+  },
+  "internal_account_validation_error": {
+    "BAD_REQUEST_ACCOUNT_VALIDATION_FAILED_UNKNOWN_ERROR": {
+      "description": "Account Validation failed. Contact support for help.",
+      "source": "internal",
+      "reason": "server_error"
+    },
+    "BAD_REQUEST_ACCOUNT_VALIDATION_NOT_ENOUGH_BALANCE_BANKING": {
+      "description": "Account Validation failed due to insufficient funds in your account.",
+      "source": "business",
+      "reason": "insufficient_funds"
+    }
+  },
+  "PBANK_VALIDATION_ERROR_PENDING": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Account Validation pending at partner bank. Status will be updated after 30 min."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "PARTNER_BANK_DOWN": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_down",
+      "description": "Account Validation failed as the partner bank is facing technical issues. Please retry."
+    }
+  },
+  "GATEWAY_DOWNTIME": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_down",
+      "description": "Account Validation failed as the partner bank is facing technical issues. Please retry."
+    }
+  },
+  "VAULT_SERVER_NOT_AVAILABLE": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Account Validation failed. Contact support for help."
+    }
+  },
+  "VAULT_RESPONSE_EXPIRED": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Account Validation failed. Contact support for help."
+    }
+  },
+  "VAULT_GENERIC_ERROR": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Account Validation failed. Contact support for help."
+    }
+  },
+  "VAULT_INVALID_FORMAT": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Account Validation failed. Contact support for help."
+    }
+  },
+  "VAULT_INVALID_VALUE": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Account Validation failed. Contact support for help."
+    }
+  },
+  "VAULT_TOKEN_NOT_FOUND": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Account Validation failed. Contact support for help."
+    }
+  },
+  "VAULT_TOKEN_INVALID_STATE": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Account Validation failed. Contact support for help."
+    }
+  },
+  "VAULT_INVALID_HASH": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Account Validation failed. Contact support for help."
+    }
+  },
+  "VAULT_TOKEN_EXPIRED": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Account Validation failed. Contact support for help."
+    }
+  },
+  "VAULT_PANREF_NOT_FOUND": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Account Validation failed. Contact support for help."
+    }
+  },
+  "GATEWAY_ERROR_VAULT_FAILURE": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Account Validation failed. Contact support for help."
+    }
+  },
+  "CARD_NUMBER_UNAVAILABLE": {
+    "failed": {
+      "source": "internal",
+      "reason": "card_number_unavailable",
+      "description": "Account Validation failed as the card number is not available. Please retry"
+    }
+  },
+  "PBANK_TECHNICAL_ERROR_PENDING": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Account Validation confirmation is pending from partner bank."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Account Validation failed due to a temporary technical issue at the partner bank. Please retry after 30 min."
+    }
+  },
+  "OTP_RETRIES_EXHAUSTED": {
+    "failed": {
+      "source": "business",
+      "reason": "max_otp_attempts_exceeded",
+      "description": "Account Validation failed due to multiple incorrect OTP(s). Please retry."
+    }
+  },
+  "FTS_OTP_NOT_FOUND": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Account Validation failed due to technical failure. Please retry after 30 min"
+    }
+  },
+  "FTS_GATEWAY_REF_NUM_NOT_FOUND": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Account Validation failed due to technical failure. Please retry after 30 min"
+    }
+  },
+  "PARTNER_BANK_OFFLINE": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_down",
+      "description": "Account Validation failed as the partner bank is facing technical issues. Please retry."
+    }
+  }
+}
