@@ -130,6 +130,7 @@ export enum MODULES {
   ADDITIONAL_DETAILS = 'Additional Details',
   DEVICE_DEPLOYMENT = 'Device Deployment',
   POS_SELF_SERVE = 'POS Self Serve',
+  POS_SELF_SERVE_AGREEMENT_SIGNING = 'POS Self Serve Agreement Signing',
 }
 
 export type AllBadgeTypes =
