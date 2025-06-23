@@ -3142,6 +3142,27 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
+    private function createSelfServeReKYCWorkflow($merchantId, $oldStatus, $nextStatus) {
+        $workflowService = new MakerCheckerWorkflowService();
+
+        $workflowInput = [
+            "permission_name" =>  DetailConstants::MERCHANT_SELF_SERVE_REKYC_UPDATE,
+            "route_name" =>  DetailConstants::MERCHANT_DETAILS_PATCH,
+            "entity_name" => DetailConstants::MERCHANT,
+            "entity_id"=> $merchantId,
+            "admin_id" => $this->app['basicauth']->getAdmin()->getPublicId(),
+            "input" =>  [
+                "rekyc_status"=> $nextStatus,
+            ],
+            "input_old" => [
+                "rekyc_status"=> $oldStatus,
+            ],
+            "tags" => [DetailConstants::SELF_SERVE_REKYC_UPDATE_TAG]
+        ];
+
+        // Call the createWorkflow method
+        $workflowService->createWorkflow($workflowInput);
+    }
     /**
      * This function is used to patch merchant details fields
      *
@@ -3159,7 +3180,13 @@ class Core extends Base\Core
         $service = new Merchant\Service();
         $isRekycMerchant = $service->isRekycMerchant($merchantId, $activationStatus);
         $nextStatus =  $input[DetailConstants::REKYC_STATUS];
-
+        if (isset($input[DetailConstants::SELF_SERVE_REKYC_MERCHANT]) === true) {
+            $this->trace->info(TraceCode::SELF_SERVE_REKYC_MERCHANT, [
+                '$merchantId' => $merchantId
+            ]);
+            $this->createSelfServeReKYCWorkflow($merchantId, $input[DetailConstants::CURRENT_REKYC_STATUS] , $nextStatus);
+            return $merchant->getMerchantDetail();
+        }
         if ($isRekycMerchant && $nextStatus!=null)
         {
             $details = $service->getAdditionalDetailsFromASV($merchantId);
@@ -11597,7 +11624,7 @@ class Core extends Base\Core
             $merchantBusinessType = $merchant->merchantDetail->getBusinessType();
             $userDeviceDetails = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
         }
-       
+
         foreach (BusinessType::$businessTypeBuckets as $bucketName => $businessTypes)
         {
             $result[$bucketName] = [];
@@ -11680,7 +11707,7 @@ class Core extends Base\Core
                 "merchant_id"          => $merchantId,
                 "business_types"       => $businessTypes
             ]);
-            
+
             foreach ($businessTypes as $businessType) {
                 array_push($result[BusinessType::REGISTERED],
                            [
@@ -13979,9 +14006,9 @@ class Core extends Base\Core
 
         return ($isExperimentEnabled and $isModularMerchant);
     }
-    
+
     private function shouldAddNewBusinessTypes(MerchantEntity $merchant) : bool {
-       
+
         $isExperimentEnabled = (new MerchantCore)->isSplitzExperimentEnable(
             [
                 'id' => $merchant->getId(),
@@ -13989,11 +14016,11 @@ class Core extends Base\Core
             ],
             DetailConstants::ENABLE
         );
-       
+
         $isModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
-        
+
         return ($isExperimentEnabled and $isModularMerchant);
-        
+
     }
 
     public function createVCIPEntity($input)
