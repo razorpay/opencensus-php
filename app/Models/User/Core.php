@@ -4490,12 +4490,6 @@ class Core extends Base\Core
 
     private function fetchUserPermissions($merchant)
     {
-        // handling it because of user-service request
-        if(isset($merchant[Entity::ID]) === false)
-        {
-            $merchant[Entity::ID] = $merchant['Id'];
-        }
-
         /** @var Merchant\Entity $merchantEntity */
         $merchantEntity = $this->repo->merchant->find($merchant[Entity::ID]);
 
