@@ -44,6 +44,10 @@ const ReportsAndAnalytics: React.FC<ReportsAndAnalyticsProps> = ({ magicCheckout
       return false;
     }
 
+    if (item.label === 'Customer Analytics' && platform !== PLATFORMS.VALUES.SHOPIFY) {
+      return false;
+    }
+
     return true;
   };
 
