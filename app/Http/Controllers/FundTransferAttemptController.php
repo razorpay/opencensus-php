@@ -65,6 +65,14 @@ class FundTransferAttemptController extends Controller
     {
         $input = Request::all();
 
+        // If the source type is FAV, then call the FAV service
+        if ($input[FTSConstants::SOURCE_TYPE] === FTSConstants::FUND_ACCOUNT_VALIDATION)
+        {
+            $response = (new FavService())->updateFavWithFtsWebhook($input);
+
+            return ApiResponse::json($response);
+        }
+
         try
         {
             // call shadow router to mirror the request
@@ -78,14 +86,6 @@ class FundTransferAttemptController extends Controller
         catch (Throwable $e)
         {
             // ignore error
-        }
-
-        // If the source type is FAV, then call the FAV service
-        if ($input[FTSConstants::SOURCE_TYPE] === FTSConstants::FUND_ACCOUNT_VALIDATION)
-        {
-            $response = (new FavService())->updateFavWithFtsWebhook($input);
-
-            return ApiResponse::json($response);
         }
 
         $response = $this->service()->updateFundTransferAttempt($input);
