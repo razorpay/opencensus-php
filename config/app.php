@@ -1329,6 +1329,8 @@ return array(
 
     'enable_rearch_card_recurring_flow_initial_mandatehq' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_INITIAL_MANDATEHQ'),
 
+    'enable_rearch_card_recurring_pdn_decoupling' => env('ENABLE_REARCH_CARD_RECURRING_PDN_DECOUPLING'),
+
     'merchant_checkout_optimizer_affordability_emi_enabled_exp_id' => env('MERCHANT_CHECKOUT_OPTIMIZER_AFFORDABILITY_EMI_ENABLED_EXP_ID'),
 
     'append_gateway_payment_id_payu_exp_id' => env('APPEND_GATEWAY_PAYMENT_ID_PAYU_EXP_ID'),
