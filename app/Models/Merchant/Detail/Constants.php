@@ -157,7 +157,9 @@ class Constants
     const CROSS_BORDER_ONBOARDING           = 'cross_border_onboarding';
     const MANUAL_REKYC                      = "manual_rekyc";
     const REKYC_STATUS                      = "rekyc_status";
+    const CURRENT_REKYC_STATUS              = "current_rekyc_status";
     const BDD_VERIFICATION_STATUS           = "bdd_verification_status";
+    const SELF_SERVE_REKYC_MERCHANT         = "self_serve_rekyc_merchant";
     const BDD_VERIFICATION                  = "bdd_verification";
     const BDD_VERIFICATION_STATUS_UPDATE    = "bdd_verification_status_update";
 
@@ -646,10 +648,12 @@ class Constants
 
     const MERCHANT_REKYC_UPDATE = 'merchant_rekyc_update';
     const MERCHANT_DETAILS_PATCH = 'merchant_details_patch';
+    const MERCHANT_SELF_SERVE_REKYC_UPDATE = 'merchant_self_serve_rekyc_update';
 
     const MERCHANT_BDD_VERIFICATION_STATUS_UPDATE = 'merchant_bdd_verification_status_update';
 
     const REKYC_UPDATE_TAG = 'rekyc_update';
+    const SELF_SERVE_REKYC_UPDATE_TAG = 'self_serve_rekyc_update';
 
     const BDD_VERIFICATION_STATUS_UPDATE_TAG = 'bdd_verification_status_update';
 
