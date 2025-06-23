@@ -124,6 +124,7 @@ class MerchantExperienceProxyController extends BaseProxyController {
         $mesResponse = $this->handleMESProxyRequests(self::MERCHANT_KYC_DETAILS_UPDATE, [
             'merchant_id' => $merchantId,
             'status' => $status,
+            'kyc_type' => 'rekyc'
         ]);
 
         $this->app['trace']->info(TraceCode::SELF_SERVE_REKYC_UPDATE_RESPONSE, [
