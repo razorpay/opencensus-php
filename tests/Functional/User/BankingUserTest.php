@@ -387,7 +387,7 @@ class BankingUserTest extends TestCase
             'org_id' => '100000razorpay'
         ]);
 
-        // 2. set mocks - 100customRole3 should be read from authz
+        // 2. set mocks - 100customRole3 should be read from authz.
         $authzAdminClientMock = \Mockery::mock(\AuthzAdmin\Client\Api\AdminAPIApi::class);
 
         $authzAdminClientMock->shouldReceive('adminAPIListRole')
