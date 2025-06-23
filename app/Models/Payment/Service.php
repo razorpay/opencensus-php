@@ -6004,44 +6004,7 @@ class Service extends Base\Service
 
         $payment->setExternal(true);
 
-        if (isset($input['payment']['offers']) === true)
-        {
-            // Calculate total discount amount from all offers
-            $totalDiscountAmount = 0;
-            $offerId = null;
-
-            foreach ($input['payment']['offers'] as $offer) {
-                // Check if benefit type is discount-related
-                $benefitType = $offer['benefit_type'] ?? null;
-                $benefitApplied = $offer['benefit_applied'] ?? 0;
-
-                // Only process if benefit type is discount and benefit_applied > 0
-                if (in_array($benefitType, \RZP\Models\Offer\Constants::DISCOUNT_BENEFIT_TYPE)
-                    && $benefitApplied > 0) {
-                    $totalDiscountAmount += $benefitApplied;
-                    if ($offerId === null) {
-                        $offerId = $offer['id'] ?? null;
-                    }
-                }
-            }
-
-            if ($totalDiscountAmount > 0 && $offerId !== null) {
-                $discountArray = [
-                    'payment_id' => $input['payment']['id'],
-                    'offer_id' => $offerId,
-                    'amount' => $totalDiscountAmount,
-                    // this is only to maintain backward compatibility with api code,
-                    // these values should not be used anywhere
-                    'id' => $input['payment']['id'],
-                    'order_id' => $input['payment']['order_id'] ?? $input['payment']['id'],
-                ];
-
-                $discount = (new \RZP\Models\Discount\Entity)->forcefill($discountArray);
-
-                // Set the discount relation on the payment
-                $payment->setRelation('discount', $discount);
-            }
-        }
+        $this->app['pg_router']->associateOfferDiscountIfApplicable($payment, $input);
 
         $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
 
