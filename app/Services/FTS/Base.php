@@ -220,21 +220,6 @@ class Base
     {
         $request = $this->generateRequest($method, $endpoint, $data);
 
-        try
-        {
-            $this->attachRequestIDToHeader($data);
-        }
-        catch (Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::FTS_SHADOW_REQUEST_FAILURE,
-                [
-                    'message'      => "attaching request_id to FTS Headers failed",
-                ]);
-        }
-
         if ($this->mode === Mode::TEST)
         {
             $response = $this->getMockResponseByEndpoint($endpoint);
@@ -369,29 +354,6 @@ class Base
         return $response;
     }
 
-
-    protected function attachRequestIDToHeader($data)
-    {
-        try
-        {
-            $sourceID = $data[Constants::TRANSFER][Constants::SOURCE_ID];
-            $requestID = (new SourceRequestIDMappingCore())->getRequestIDByPayout($sourceID);
-
-            $tempHeaders = $this->headers;
-            $tempHeaders[RequestHeader::X_MIRROR_REQUEST_ID] = $requestID;
-            $this->headers = $tempHeaders;
-        }
-        catch (Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::FTS_SHADOW_REQUEST_FAILURE,
-                [
-                    'message'      => "attaching request_id to FTS Headers failed",
-                ]);
-        }
-    }
     /**
      * Method to parse response from FTS
      *
