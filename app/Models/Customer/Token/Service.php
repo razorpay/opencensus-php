@@ -2668,14 +2668,26 @@ class Service extends Base\Service
         }
 
         $core = (new Token\Core());
-
         $core->updateTokenStatus($token->getId(), Token\Constants::INITIATED);
+        if(isset($input['additional_data']['international']) && $input['additional_data']['international'])
+        {
+            $this->trace->info(TraceCode::CROSS_BORDER_RECURRING_TOKEN, [
+                'international_card_recurring_token'     =>  $token->getId(),
+                'international_recurring_token_input' => $input,
+                'paymentId'   => $payment->getId(),
+                'newCard'     => $tokenCard,
+                'card'        => $card,
+                'token'       => $token
+            ]);
+            $core->updateTokenStatus($token->getId(), Token\Constants::ACTIVE);
+            $token->setRecurring(true);
+            $token->setRecurringStatus(Token\RecurringStatus::CONFIRMED);
+        }
 
         if ($customer !== null)
         {
             $customer->merchant()->associate($this->repo->merchant->getSharedAccount());
         }
-
         $token->incrementUsedCount();
 
         $token->setUsedAt(Carbon::now(Timezone::IST)->getTimestamp());
@@ -2683,6 +2695,11 @@ class Service extends Base\Service
         $token->setAcknowledgedAt(Carbon::now(Timezone::IST)->getTimestamp());
 
         $this->repo->saveOrFail($token);
+
+        if(isset($input['additional_data']['international']) && $input['additional_data']['international'])
+        {
+            return $token->toArrayPublic();
+        }
 
 
         $isSync =  isset($input['additional_data']['sync']) && $input['additional_data']['sync'] === true;
@@ -2903,15 +2920,28 @@ class Service extends Base\Service
                         'response'=>$terminal_response
                     ]);
 
-                    $currentMerchantID = $terminal_response[0]['merchant_id'];
-                    $merchantPushProvisioning = $this->repo->merchant->fetchMerchantFromId($currentMerchantID);
+                    $isPushProvisioningEnabled = false;
+                    foreach ($terminal_response as $currentMerchant)
+                    {
+                        $currentMerchantID = $currentMerchant['merchant_id'];
+                        $merchantPushProvisioning = $this->repo->merchant->fetchMerchantFromId($currentMerchantID);
 
-                    $this->trace->info(TraceCode::MISC_TRACE_CODE,[
-                        'message'=>'Merchant Info',
-                        'merchant'=>$merchantPushProvisioning,
-                    ]);
+                        $this->trace->info(TraceCode::MISC_TRACE_CODE,[
+                            'message'=>'Merchant Info',
+                            'merchant'=>$merchantPushProvisioning,
+                        ]);
 
-                    $this->merchant = $merchantPushProvisioning;
+                        $this->merchant = $merchantPushProvisioning;
+                        if ($this->merchant->isFeatureEnabled(Feature\Constants::PUSH_PROVISIONING_LIVE) === true)
+                        {
+                            $isPushProvisioningEnabled = true;
+                            break;
+                        }
+                    }
+
+                    if ($isPushProvisioningEnabled === false) {
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "push provisioning is not enabled for this gateway terminal id");
+                    }
 
                     // find existing customer or create a new one if not available
                     $customer =  $this->getCustomerByMerchantPP($input);
