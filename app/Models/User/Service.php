@@ -4913,9 +4913,6 @@ class Service extends Base\Service
                 }
             } else if (isset($input['merchant_id']) === true) {
                 $invitations = $this->repo->invitation->getInvitationsForMerchantId($input['merchant_id']);
-                foreach ($invitations as $invitation) {
-                    $invitation->id = intval($invitation->id);
-                }
                 if (isset($invitations) === true and empty($invitations) === false) {
                     $response['invitations'] = array_merge($response['invitations'], $invitations);
                 }
