@@ -38,6 +38,7 @@ export const DOCS_LINKS = {
   COD: 'https://razorpay.com/docs/payments/cod-magic-checkout/shopify/configure-cod/',
   RTO: 'https://razorpay.com/docs/payments/cod-magic-checkout/shopify/rto-intelligence/ ',
   CHECKOUT: 'https://razorpay.com/docs/payments/cod-magic-checkout/shopify/magic-checkout/',
+  SSO: 'https://razorpay.com/docs/payments/cod-magic-checkout/shopify/login-with-razorpay/',
 };
 
 export const WELCOME_SECTION_TITLE = 'What does this all-in-one solution give you?';

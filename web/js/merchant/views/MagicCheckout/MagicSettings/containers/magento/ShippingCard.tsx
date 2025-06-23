@@ -8,7 +8,7 @@ import { useMagicExperiment } from 'merchant/views/MagicCheckout/utils/useMagicE
 import { MAGIC_DASHBOARD_REVAMP_EXPERIMENT } from 'merchant/views/MagicCheckout/constants';
 
 const ShippingCard = ({
-  settings: { shipping_info, one_cc_international_shipping, one_cc_capture_billing_address },
+  settings: { one_cc_international_shipping, one_cc_capture_billing_address },
   onEdit,
 }) => {
   const getSettingValue = useCallback((value) => (value ? 'Enabled' : 'Disabled'), []);
@@ -21,7 +21,6 @@ const ShippingCard = ({
       <div className="platform-settings-card-wrapper">
         <div className="platform-settings-card bg-white">
           <div className="platform-settings-card-info flex--column flex gap--12 p--14">
-            <SettingsCard.Item label="API For Shipping Info" value={shipping_info} />
             <SettingsCard.Item
               label="International Shipping"
               value={getSettingValue(one_cc_international_shipping)}

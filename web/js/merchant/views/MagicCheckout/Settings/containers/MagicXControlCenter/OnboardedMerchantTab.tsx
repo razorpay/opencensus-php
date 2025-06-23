@@ -223,7 +223,7 @@ export const OnboardedMerchantTab = () => {
             <Link
               icon={ExternalLinkIcon}
               iconPosition="left"
-              href={DOCS_LINKS.CHECKOUT}
+              href={DOCS_LINKS.SSO}
               target="_blank"
             >
               User Manual
