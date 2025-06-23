@@ -268,6 +268,7 @@ class Constants
     const SHADOW                     = 'shadow';
     const REVERSE_SHADOW             = 'reverse-shadow';
     const LIABILITY                  = "liability";
+    const ACCOUNTDETAIL              = "AccountDetail";
 
     const ACCOUNT_DISCOVERY_CONFIG   = "account_discovery_config";
     const ACCOUNT_CATEGORY           = "account_category";

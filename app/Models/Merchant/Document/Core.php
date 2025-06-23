@@ -828,8 +828,7 @@ class Core extends Base\Core
         $details = $service->getAdditionalDetailsFromASV($merchant->getMerchantId());
         $latestBddVerificationStatus = $service->getLatestBddVerificationStatus($details);
 
-
-        if (($merchant->getService() === Merchant\Constants::PGOS and $activationStatus != Detail\Status::ACTIVATED) or
+        if (($merchant->getService() === Merchant\Constants::PGOS) or
             (new Detail\Core())->AllowDualWritingForPosActivationForm($merchant) or $isRekycMerchant or $latestBddVerificationStatus === Detail\Status::NEEDS_CLARIFICATION)
             {
                 $document = $this->repo->merchant_document->findDocumentByFileStoreId($data[Entity::FILE_STORE_ID]);
@@ -881,19 +880,13 @@ class Core extends Base\Core
 
         return $validateLock;
     }
-    
+
     public function shouldRouteToDocumentUploadV2(Merchant\Entity $merchant) : bool {
-        $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
-            [
-                'id' => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.migrate_mkyc_to_document_upload_v2')
-            ],
-            DetailConstants::ENABLE
-        );
+        
         $isMkycMerchant = $this->pgosProxyController->isIndiaPgModularMerchant($merchant);
+
+        $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ["isMkycMerchant"=>$isMkycMerchant]);
         
-        $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['isExperimentEnabled' => $isExperimentEnabled,"isMkycMerchant"=>$isMkycMerchant]);
-        
-        return ($isExperimentEnabled and $isMkycMerchant);
+        return $isMkycMerchant;
     }
 }

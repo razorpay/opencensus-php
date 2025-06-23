@@ -10,6 +10,7 @@ class Constants
 
     const EASY_ONBOARDING             = 'easy_onboarding';
     const ASSISTED_ONBOARDING         = 'assisted_onboarding';
+    const ACTIVATE_MERCHANT           = 'activate_merchant';
     const PARTNER_ASSISTED_ONBOARDING = 'partner_assisted_onboarding';
     const PHANTOM_ONBOARDING  = 'phantom_onboarding';
     const UNBOUNCE              = 'unbounce';

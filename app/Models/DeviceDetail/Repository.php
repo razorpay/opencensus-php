@@ -144,4 +144,51 @@ class Repository extends Base\Repository
             ->where(Entity::USER_ID, '=', $userId)
             ->first();
     }
+
+    public function getDeviceDetailsForUserId($userId): array
+    {
+        return $this->newQuery()
+            ->where(Entity::USER_ID, $userId)
+            ->get()
+            ->toArray();
+    }
+
+    public function updateDeviceDetailForUser($user)
+    {
+        $this->newQuery()
+            ->where(Entity::USER_ID, '=', array_get($user, Entity::USER_ID))
+            ->where(Entity::MERCHANT_ID, '=', array_get($user, Entity::MERCHANT_ID))
+            ->update([
+                Entity::SIGNUP_CAMPAIGN => array_get($user, Entity::SIGNUP_CAMPAIGN),
+                Entity::SIGNUP_SOURCE => array_get($user, Entity::SIGNUP_SOURCE),
+                Entity::METADATA => array_get($user, Entity::METADATA),
+                Entity::APPSFLYER_ID => array_get($user, Entity::APPSFLYER_ID),
+            ]);
+
+        return $this->newQuery()
+            ->where(Entity::USER_ID, '=', array_get($user, Entity::USER_ID))
+            ->where(Entity::MERCHANT_ID, '=', array_get($user, Entity::MERCHANT_ID))
+            ->first();
+    }
+
+    public function createDeviceDetailForUser(array $user)
+    {
+        return $this->create([
+            Entity::APPSFLYER_ID        => array_get($user, Entity::APPSFLYER_ID),
+            Entity::USER_ID             =>array_get($user, Entity::USER_ID),
+            Entity::MERCHANT_ID         => array_get($user, Entity::MERCHANT_ID),
+            Entity::SIGNUP_CAMPAIGN     => array_get($user, Entity::SIGNUP_CAMPAIGN),
+            Entity::SIGNUP_SOURCE       => array_get($user, Entity::SIGNUP_SOURCE),
+            Entity::METADATA            => array_get($user, Entity::METADATA),
+        ]);
+    }
+
+    public function deleteByMerchantIdAndUserId(string $merchantId, string $userId)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::USER_ID, '=', $userId)
+            ->delete();
+    }
+
 }

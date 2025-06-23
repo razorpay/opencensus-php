@@ -170,6 +170,26 @@ final class ElfinWrapper
         return $resultHash;
     }
 
+    public function updateLongUrlByHash(string $hash, string $longUrl): array
+    {
+        if (empty($hash) === true)
+        {
+            throw new \RZP\Exception\BadRequestValidationFailureException("Hash cannot be empty");
+        }
+
+        if (empty($longUrl) === true)
+        {
+            throw new \RZP\Exception\BadRequestValidationFailureException("Long URL cannot be empty");
+        }
+
+        $gimliUpdateResponse = $this->elfin->updateLongUrlByHash($hash, $longUrl);
+
+        // this will cache the response
+        $this->expand($hash);
+
+        return $gimliUpdateResponse;
+    }
+
     /**
      * @param $slug
      *
@@ -223,7 +243,7 @@ final class ElfinWrapper
      *
      * @return string|null
      */
-    private function getHashFromUrl(string $url): ?string
+    public function getHashFromUrl(string $url): ?string
     {
         $parts = explode('/', $url);
 

@@ -27,7 +27,7 @@ class Service extends Base\Service
 
     public function createRequestForSubMerchantKyc($input)
     {
-        // Inject partner id from auth 
+        // Inject partner id from auth
         $partner = $this->fetchPartner();
         $prtsInput = array_merge($input, [
             'partner_id' => $partner->getId()
@@ -52,6 +52,13 @@ class Service extends Base\Service
 
     public function confirmRequestForSubMerchantKyc($input)
     {
+        $this->trace->info(
+            TraceCode::APPROVE_REJECT_REQUEST,
+            [
+                'merchant_id' => $input[Entity::ENTITY_ID],
+                'partner_id' => $input[Entity::PARTNER_ID],
+            ]
+        );
         $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
         (new Entity)->getValidator()->validateInput('token', $input);
         $partner = (new MerchantRepo())->getMerchant($input[Entity::PARTNER_ID]);

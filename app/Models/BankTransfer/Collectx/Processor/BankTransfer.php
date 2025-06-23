@@ -40,8 +40,10 @@ class BankTransfer extends Base
 
             $this->performValidations($this->input, $this->provider);
 
-            // if current call is validation call for axis or notification callback of mode Transfer, we return response without creating any entity
-            if ($this->isAxisValidationOrTransferModeNotificationCallback($this->input, $this->provider) === false)
+            // If the current request is a validation callback (for Axis or IDFC)
+            // or a notification callback with mode=Transfer (for Axis),
+            // we return response without creating any entity
+            if ($this->isValidationCallbackOrTransferModeNotificationCallback($this->input, $this->provider) === false)
             {
                 $this->pushToCollectxWorker($this->input, $this->provider, $bankTransferRequest, Constants::BANK_TRANSFER);
             }
@@ -236,12 +238,20 @@ class BankTransfer extends Base
         return $bankTransferRequest;
     }
 
-    protected function isAxisValidationOrTransferModeNotificationCallback(array $input, string $provider): bool
+    protected function isValidationCallbackOrTransferModeNotificationCallback(array $input, string $provider): bool
     {
-        return $provider === Provider::AXIS &&
-            (($input[Entity::REQUEST_TYPE] === Constants::VALIDATION_CALLBACK) ||
-                ($input[Entity::REQUEST_TYPE] === Constants::NOTIFICATION_CALLBACK && $input[Entity::MODE] == Constants::TRANSFER_TYPE_TRANSFER));
-    }
+        switch ($provider)
+        {
+            case Provider::AXIS:
+                return ($input[Entity::REQUEST_TYPE] === Constants::VALIDATION_CALLBACK) ||
+                    ($input[Entity::REQUEST_TYPE] === Constants::NOTIFICATION_CALLBACK && $input[Entity::MODE] == Constants::TRANSFER_TYPE_TRANSFER);
 
+            case Provider::IDFC:
+                return $input[Entity::REQUEST_TYPE] === Constants::VALIDATION_CALLBACK;
+
+            default:
+                return false;
+        }
+    }
 
 }

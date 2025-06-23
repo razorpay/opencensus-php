@@ -80,6 +80,7 @@ use RZP\Models\Merchant\Cron as CronJobHandler;
 use RZP\Models\Merchant\Document;
 use RZP\Services\Mock\KafkaProducerClient as KafkaProducerClientMock;
 use RZP\Services\Mock\DataLakePresto as DataLakePrestoMock;
+use RZP\Models\DeviceDetail\Core as DeviceDetailCore;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
 
@@ -9325,6 +9326,156 @@ class CoreTest extends TestCase
         $statusChangedBy = $actionState['updated_by'];
 
         Queue::assertPushed(CrossBorderCommonUseCases::class);
+
+        $this->assertEquals('activated', $merchantDetailData['activation_status']);
+
+        $this->assertEquals('system', $statusChangedBy);
+    }
+
+    public function testSegmentEventInUpdateActivationStatusFromEDDPendingToActivatedForCrossBorderOnboarding()
+    {
+        Mail::fake();
+
+        Queue::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'edd_pending',
+            'submitted'                 => true,
+            'business_Website'          => null,
+            'iec_code'                  => '1234567890'
+        ]);
+
+        $merchantUser = $this->fixtures->connection('live')->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->connection('live')->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service'       => 'pgos',
+                'workflow_type' => 'modular_onboarding',
+                "workflow_details" => [
+                    "cross_border_onboarding_workflow_type" =>"MODULAR_ONBOARDING"
+                ]
+            ]
+        ]);
+
+        $merchantAttribute = [
+            'purpose_code' => 'P0104',
+        ];
+        $this->fixtures->edit('merchant', $merchantDetails->getId(), $merchantAttribute);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $actionState = $this->getDbLastEntity('action_state', 'live');
+
+        $statusChangedBy = $actionState['updated_by'];
+
+        Queue::assertPushed(CrossBorderCommonUseCases::class, 2);
+
+        $this->assertEquals('activated', $merchantDetailData['activation_status']);
+
+        $this->assertEquals('system', $statusChangedBy);
+    }
+
+    public function testSegmentEventInUpdateActivationStatusFromEDDPendingToActivatedForNonCrossBorderOnboarding()
+    {
+        Mail::fake();
+
+        Queue::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'edd_pending',
+            'submitted'                 => true,
+            'business_Website'          => null,
+            'iec_code'                  => '1234567890'
+        ]);
+
+        $merchantUser = $this->fixtures->connection('live')->user->createUserForMerchant($merchantDetails->getId());
+
+        $this->fixtures->connection('live')->create('user_device_detail', [
+            'merchant_id'     => $merchantDetails->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding',
+            'metadata' => [
+                'service'       => 'pgos',
+                'workflow_type' => 'modular_onboarding',
+                "workflow_details" => [
+                    "pg_onboarding_workflow_type" =>"MODULAR_ONBOARDING"
+                ]
+            ]
+        ]);
+
+        $merchantAttribute = [
+            'purpose_code' => 'P0104',
+        ];
+        $this->fixtures->edit('merchant', $merchantDetails->getId(), $merchantAttribute);
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $actionState = $this->getDbLastEntity('action_state', 'live');
+
+        $statusChangedBy = $actionState['updated_by'];
+
+        Queue::assertPushed(CrossBorderCommonUseCases::class, 0);
 
         $this->assertEquals('activated', $merchantDetailData['activation_status']);
 
@@ -19561,4 +19712,198 @@ class CoreTest extends TestCase
         $this->assertTrue($merchantDetail->isLocked());
     }
 
+    public function testcreateDeviceDetailsForOmniMerchantsIfNotExist_NoMerchantUserFound()
+    {
+        $merchantId = 'OlyFnGyZQeEKrF';
+
+        $merchant = $this->fixtures->create('merchant', ['id' => $merchantId]);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_MERCHANT_USER_DOES_NOT_EXISTS);
+
+        (new DeviceDetailCore)->createDeviceDetailsForOmniMerchantsIfNotExist($merchantId);
+    }
+
+    public function testcreateDeviceDetailsForOmniMerchantsIfNotExist_CreateDeviceDetailsSuccessfully()
+    {
+        $merchantId = 'OlyFnGyZQeEKrF';
+        
+        $merchant = $this->fixtures->create('merchant', ['id' => $merchantId]);
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        (new DeviceDetailCore)->createDeviceDetailsForOmniMerchantsIfNotExist($merchantId);
+
+        $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
+        $this->assertNotNull($userDeviceDetail);
+    }
+    
+    public function testGetBusinessTypesWithEmptyMerchantId()
+    {
+        $core = new Core();
+        
+        $result = $core->getBusinessTypes('');
+        
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('registered', $result);
+        $this->assertArrayHasKey('unregistered', $result);
+        
+        $this->assertNotEmpty($result['registered']);
+        $this->assertNotEmpty($result['unregistered']);
+        $newBusinessTypes = ['Government', 'Judicial Person', 'Local Authority', 'Section 8 Company'];
+        foreach ($newBusinessTypes as $businessTypeLabel) {
+            $found = false;
+            foreach ($result['registered'] as $businessType) {
+                if ($businessType['label'] === $businessTypeLabel) {
+                    $found = true;
+                    break;
+                }
+            }
+            $this->assertFalse($found, "New business type '{$businessTypeLabel}' should not be present for non-modular merchant");
+        }
+    }
+    
+    public function testGetBusinessTypesWithNewBusinessTypes()
+    {
+        $merchantId = 'test_merchant_123';
+        
+        $merchantDetail = Mockery::mock('RZP\Models\Merchant\Detail\Entity');
+        $merchantDetail->shouldReceive('getBusinessType')->andReturn('proprietorship');
+        $merchantDetail->shouldReceive('getMerchantId')->andReturn($merchantId);
+        
+        $merchant = Mockery::mock('RZP\Models\Merchant\Entity');
+        $merchant->shouldReceive('setAttribute')->andReturnSelf();
+        $merchant->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($merchantDetail);
+        $merchant->shouldReceive('getId')->andReturn($merchantId);
+        $merchant->shouldReceive('isPartner')->andReturn(false);
+        $merchant->shouldReceive('isLinkedAccount')->andReturn(false);
+        $merchant->shouldReceive('getMerchantId')->andReturn($merchantId);
+        
+        $merchant->merchantDetail = $merchantDetail;
+        
+        $merchantDetail->shouldReceive('getAttribute')->with('merchant')->andReturn($merchant);
+        
+        $merchantRepo = Mockery::mock('RZP\Models\Merchant\Repository');
+        $merchantRepo->shouldReceive('findOrFailPublic')->with($merchantId)->andReturn($merchant);
+        
+        $userDeviceEntity = Mockery::mock('RZP\Models\UserDeviceDetail\Entity');
+        $userDeviceEntity->shouldReceive('isAssistedOnboardedMerchant')->andReturn(false);
+        
+        $userDeviceRepo = Mockery::mock('RZP\Models\UserDeviceDetail\Repository');
+        $userDeviceRepo->shouldReceive('fetchByMerchantId')->with($merchantId)->andReturn($userDeviceEntity);
+        
+        $repoManager = Mockery::mock('RZP\Repositories\RepositoryManager');
+        $repoManager->merchant = $merchantRepo;
+        $repoManager->user_device_detail = $userDeviceRepo;
+        
+        $configMock = Mockery::mock('Illuminate\Config\Repository');
+        $configMock->shouldReceive('get')->with('app.add_new_business_types')->andReturn('test_experiment');
+        
+        $merchantCore = Mockery::mock('RZP\Models\Merchant\Core');
+        $merchantCore->shouldReceive('isSplitzExperimentEnable')->andReturn(true);
+        $merchantCore->shouldReceive('isBlockedMerchantType')->andReturn(false);
+        $merchantCore->shouldReceive('isMerchantEligibleForComplianceCheck')->andReturn(false);
+        
+        $pgosProxyController = Mockery::mock('RZP\Http\Controllers\MerchantOnboardingProxyController');
+        $pgosProxyController->shouldReceive('getIndiaModularMerchantResult')->andReturn([
+                                                                                            'is_modular' => true
+                                                                                        ]);
+        
+        $traceMock = Mockery::mock('RZP\Trace\Trace');
+        $traceMock->shouldReceive('info')->andReturn();
+        
+        $core = new \RZP\Models\Merchant\Detail\Core();
+        
+        $this->assignValueThroughReflection($core, $repoManager, 'repo');
+        $this->assignValueThroughReflection($core, $merchantCore, 'mcore');
+        $this->assignValueThroughReflection($core, $pgosProxyController, 'pgosProxyController');
+        $this->assignValueThroughReflection($core, $configMock, 'config');
+        $this->assignValueThroughReflection($core, $traceMock, 'trace');
+        
+        $result = $core->getBusinessTypes($merchantId);
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('registered', $result);
+        
+        $newBusinessTypes = ['Government', 'Judicial Person', 'Local Authority', 'Section 8 Company'];
+        
+        foreach ($newBusinessTypes as $label) {
+            $found = collect($result['registered'])->contains('label', $label);
+            $this->assertTrue($found, "Expected new business type '{$label}' to be present in 'registered'");
+        }
+    }
+    /**
+     * Test getBusinessTypes method with non-modular merchant
+     */
+    public function testGetBusinessTypesWithNonModularMerchant()
+    {
+        $merchantId = 'test_merchant_123';
+
+        $merchantDetail = Mockery::mock('RZP\Models\Merchant\Detail\Entity');
+        $merchantDetail->shouldReceive('getBusinessType')->andReturn('proprietorship');
+        $merchantDetail->shouldReceive('getMerchantId')->andReturn($merchantId);
+        
+        $merchant = Mockery::mock('RZP\Models\Merchant\Entity');
+        $merchant->shouldReceive('setAttribute')->andReturnSelf();
+        $merchant->shouldReceive('getAttribute')->with('merchantDetail')->andReturn($merchantDetail);
+        $merchant->shouldReceive('getId')->andReturn($merchantId);
+        $merchant->shouldReceive('isPartner')->andReturn(false);
+        $merchant->shouldReceive('isLinkedAccount')->andReturn(false);
+        $merchant->shouldReceive('getMerchantId')->andReturn($merchantId);
+        
+        $merchant->merchantDetail = $merchantDetail;
+        
+        $merchantDetail->shouldReceive('getAttribute')->with('merchant')->andReturn($merchant);
+        
+        $merchantRepo = Mockery::mock('RZP\Models\Merchant\Repository');
+        $merchantRepo->shouldReceive('findOrFailPublic')->with($merchantId)->andReturn($merchant);
+        
+        $userDeviceEntity = Mockery::mock('RZP\Models\UserDeviceDetail\Entity');
+        $userDeviceEntity->shouldReceive('isAssistedOnboardedMerchant')->andReturn(false);
+        
+        $userDeviceRepo = Mockery::mock('RZP\Models\UserDeviceDetail\Repository');
+        $userDeviceRepo->shouldReceive('fetchByMerchantId')->with($merchantId)->andReturn($userDeviceEntity);
+        
+        $repoManager = Mockery::mock('RZP\Repositories\RepositoryManager');
+        $repoManager->merchant = $merchantRepo;
+        $repoManager->user_device_detail = $userDeviceRepo;
+
+        $configMock = Mockery::mock('Illuminate\Config\Repository');
+        $configMock->shouldReceive('get')->with('app.add_new_business_types')->andReturn('test_experiment');
+        
+        $merchantCore = Mockery::mock('RZP\Models\Merchant\Core');
+        $merchantCore->shouldReceive('isSplitzExperimentEnable')->andReturn(true);
+        $merchantCore->shouldReceive('isBlockedMerchantType')->andReturn(false);
+        $merchantCore->shouldReceive('isMerchantEligibleForComplianceCheck')->andReturn(false);
+        
+      
+        $pgosProxyController = Mockery::mock('RZP\Http\Controllers\MerchantOnboardingProxyController');
+        $pgosProxyController->shouldReceive('getIndiaModularMerchantResult')->andReturn([
+                                                                                            'is_modular' => false
+                                                                                        ]);
+        $traceMock = Mockery::mock('RZP\Trace\Trace');
+        $traceMock->shouldReceive('info')->andReturn();
+    
+        $core = new \RZP\Models\Merchant\Detail\Core();
+        
+        $this->assignValueThroughReflection($core, $repoManager, 'repo');
+        $this->assignValueThroughReflection($core, $merchantCore, 'mcore');
+        $this->assignValueThroughReflection($core, $pgosProxyController, 'pgosProxyController');
+        $this->assignValueThroughReflection($core, $configMock, 'config');
+        $this->assignValueThroughReflection($core, $traceMock, 'trace');
+      
+        $result = $core->getBusinessTypes($merchantId);
+
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('registered', $result);
+        
+        $newBusinessTypes = ['Government', 'Judicial Person', 'Local Authority', 'Section 8 Company'];
+        
+        foreach ($newBusinessTypes as $label) {
+            $found = collect($result['registered'])->contains('label', $label);
+            $this->assertFalse($found, "Expected new business type '{$label}' not to be present in 'registered'");
+        }
+    }
 }

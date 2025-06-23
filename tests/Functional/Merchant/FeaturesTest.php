@@ -67,6 +67,42 @@ class FeaturesTest extends OAuthTestCase
     const DEFAULT_MERCHANT_ID    = '10000000000000';
     const ONBOARDING_MERCHANT_ID = '10000000001017';
     const LIVE_AUTH_KEY          = 'rzp_live_TheLiveAuthKey';
+    const LEDGER_ACCOUNT_RESPONSE  = [
+        [
+            "AccountDetail" => [
+                "account_category" => "liability",
+                "account_id" => "PhdnFCITX6VHMn",
+                "account_name" => "PG Merchant GMV Account - sampleMercha17",
+                "entities" => [
+                    "account_type" => ["payable"],
+                    "fund_account_type" => ["merchant_gmv"]
+                ],
+                "id" => "PhdnFCbJKKRdO7",
+                "merchant_id" => "sampleMercha17",
+                "onboarding_events" => ["pg_merchant_onboarding"],
+            ],
+            "balance" => "0",
+            "created_at" => 1736490328,
+            "id" => "PhdnFCITX6VHMn",
+        ],
+        [
+            "AccountDetail" => [
+                "account_category" => "liability",
+                "account_id" => "PhdnFDrKTYupe7",
+                "account_name" => "PG Merchant Balance Account - sampleMercha17",
+                "entities" => [
+                    "account_type" => ["payable"],
+                    "fund_account_type" => ["merchant_balance"]
+                ],
+                "id" => "PhdnFDtoDoUFaX",
+                "merchant_id" => "sampleMercha17",
+                "onboarding_events" => ["pg_merchant_onboarding"],
+            ],
+            "balance" => "5000000",
+            "created_at" => 1736490328,
+            "id" => "PhdnFDrKTYupe7",
+        ]
+    ];
 
     protected function setUp(): void
     {
@@ -3507,7 +3543,7 @@ Regards,
             ->andReturn([
                 'body' => [
                         "accounts" => [
-                            "pg_merchant_onboarding" => null
+                            "pg_merchant_onboarding" => self::LEDGER_ACCOUNT_RESPONSE
                         ]
                 ],
                 'code' => 200
@@ -4071,7 +4107,7 @@ Regards,
             ->andReturn([
                 'body' => [
                     "accounts" => [
-                        "pg_merchant_onboarding" => null
+                        "pg_merchant_onboarding" => self::LEDGER_ACCOUNT_RESPONSE
                     ]
                 ],
                 'code' => 200
@@ -4142,7 +4178,7 @@ Regards,
             ->andReturn([
                 'body' => [
                     "accounts" => [
-                        "pg_merchant_onboarding" => null
+                        "pg_merchant_onboarding" => self::LEDGER_ACCOUNT_RESPONSE
                     ]
                 ],
                 'code' => 200
@@ -4211,7 +4247,7 @@ Regards,
             ->andReturn([
                 'body' => [
                     "accounts" => [
-                        "pg_merchant_onboarding" => null
+                        "pg_merchant_onboarding" => self::LEDGER_ACCOUNT_RESPONSE
                     ]
                 ],
                 'code' => 200

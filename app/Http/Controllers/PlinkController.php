@@ -305,6 +305,27 @@ class PlinkController extends Controller
             $headers['X-Razorpay-Requester'] = $requester;
         }
 
+        $posDeviceID = $request->header('X-Pos-Device-Id');
+
+        if (empty($posDeviceID) === false)
+        {
+            $headers['X-Pos-Device-Id'] = $posDeviceID;
+        }
+
+        $posUserName = $request->header('X-Pos-Username');
+
+        if (empty($posUserName) === false)
+        {
+            $headers['X-Pos-Username'] = $posUserName;
+        }
+
+        $posNonce = $request->header('X-Pos-Nonce');
+
+        if (empty($posNonce) === false)
+        {
+            $headers['X-Pos-Nonce'] = $posNonce;
+        }
+
         $partnerMerchantId = $this->ba->getPartnerMerchantId();
 
         if (empty($partnerMerchantId) === false)

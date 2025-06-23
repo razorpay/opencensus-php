@@ -5043,7 +5043,7 @@ class Base extends BaseCore
                 Product::BANKING);
 
             [$fetchFundAccountInfoSuccess, $fundAccountInfo, $fundAccount] =
-                (new FundAccount\Core)->fetchFundAccountForPayoutServiceProcessing($this->merchant->getId(),
+                (new FundAccount\Core)->fetchFundAccountForPayoutService($this->merchant->getId(),
                     $input);
 
             [$beneficiaryFundAccountMerchantId, $isBeneficiaryVpaFundAccountVirtualAccount] =

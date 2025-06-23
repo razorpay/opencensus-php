@@ -22,6 +22,9 @@ final class Constant
     const EXCLUDED_LINKED_ACCOUNTS = 'excluded_linked_accounts';
     const INCLUDED_LINKED_ACCOUNTS = 'included_linked_accounts';
 
+    const ORIGIN_API = 'api';
+
+    const ORIGIN_ROUTE = 'route';
 
     // Attempts
     const MAX_ALLOWED_PAYMENT_TRANSFER_PROCESS_ATTEMPTS = 1;

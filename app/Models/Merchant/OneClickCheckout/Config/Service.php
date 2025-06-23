@@ -73,7 +73,6 @@ class Service extends Base\Service
         {
             (new Validator())->setStrictFalse()->validateInput(Constants::NATIVE, $input);
         }
-
         global $shippingProvider;
         $this->repo->transaction(
             function () use ($input)
@@ -382,11 +381,15 @@ class Service extends Base\Service
                     }
                 }
 
-                if (isset($input[Constants::COD_ENGINE_TYPE]) && ($updatePlatform === Constants::SHOPIFY || $updatePlatform === Constants::WOOCOMMERCE)) {
+                if (isset($input[Constants::COD_ENGINE_TYPE]) && ($updatePlatform === Constants::SHOPIFY || $updatePlatform === Constants::WOOCOMMERCE || $updatePlatform === Constants::MAGENTO)) {
                     (new Core)->associateMerchant1ccConfig(
                         Constants::COD_ENGINE_TYPE,
                         $input[Constants::COD_ENGINE_TYPE]
                     );
+                }
+
+                if (isset($input[Constants::COD_ENGINE]) && $updatePlatform === Constants::MAGENTO) {
+                    $this->add1ccConfigFlags($input, Constants::COD_ENGINE);
                 }
             }
         );
@@ -438,6 +441,7 @@ class Service extends Base\Service
             }
         }
         $this->updateRazorpayCodConfigsIfApplicable($input);
+        $this->writeToMCS($input);
     }
 
     protected function updateRazorpayCodConfigsIfApplicable($input)
@@ -1207,7 +1211,7 @@ class Service extends Base\Service
             }
             catch (Exception $e)
             {
-                $this->trace->info(TraceCode::ONE_CC_CLEAR_MERCHANT_CONFIGS_FAILED, $e->getMessage());
+                $this->trace->info(TraceCode::ONE_CC_CLEAR_MERCHANT_CONFIGS_FAILED, ['error' => $e->getMessage()]);
             }
         }
     }
@@ -1934,11 +1938,13 @@ class Service extends Base\Service
       $merchantId = $input['merchant_id'];
       $this->getModeAndSetDBConnectionForConfigs($input);
       $this->merchant = $this->repo->merchant->findOrFail($merchantId);
-      
-      $platform = $this->merchant->getMerchantPlatformConfig();
-      if ($platform !== null && isset($platform['value']))
+
+      $platformConfig = $this->merchant->getMerchantPlatformConfig();
+      $platform = '';
+      if ($platformConfig !== null)
       {
-          $result['platform'] = $platform['value'];
+          $platform = $platformConfig->getValue();
+          $result['platform'] = $platform;
       }
 
       if ($platform === 'shopify')
@@ -1994,4 +2000,25 @@ class Service extends Base\Service
       return $result;
     }
   
+    // Dual write merchant configs to MCS.
+    protected function writeToMCS($input)
+    {
+        $keys = array_keys($input);
+        try
+        {
+            (new MagicCheckoutService())->updateMerchantConfigs($input);
+            $this->trace->info(TraceCode::MAGIC_CONFIGS_DUAL_WRITE_SUCCESS,['keys '=> $keys, 'input' => $input]);
+        }
+        catch (Exception $ex)
+        {
+            $this->trace->error(TraceCode::MAGIC_CONFIGS_DUAL_WRITE_ERROR,
+                [
+                    'code'    => $ex->getCode(),
+                    'message' => $ex->getMessage(),
+                    'keys'    => $keys,
+                    'input'   => $input,
+                ]
+            );
+        }
+    }
 }

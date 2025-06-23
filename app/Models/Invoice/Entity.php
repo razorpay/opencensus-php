@@ -39,8 +39,11 @@ use RZP\Constants\Entity as ConstantsEntity;
  */
 class Entity extends Base\PublicEntity
 {
-    use NotesTrait, AsvGetAttribute, AsvLoad, CmsGetAttribute;
+    use NotesTrait, AsvGetAttribute, CmsGetAttribute;
     use SoftDeletes;
+    use AsvLoad {
+        load as asvLoad;
+    }
 
     const ASV_RELATIONS = [
         'merchant'
@@ -2093,6 +2096,25 @@ class Entity extends Base\PublicEntity
     public function getValidOperations(): array
     {
         return $this->validOperations;
+    }
+
+    public function load($relations)
+    {
+        if (in_array('customer', $relations))
+        {
+            $shouldReadViaCms = (new Customer\Account\SplitzExperimentEvaluator())->isLazyReadOverrideToCmsEnabled($this->entity);
+            if ($shouldReadViaCms)
+            {
+                parent::unsetRelation('customer');
+                // load relation again
+                $this->customer;
+
+                // remove customer relation from array as it's been already loaded
+                $relations = array_diff($relations, ['customer']);
+            }
+        }
+
+        return $this->asvLoad($relations);
     }
 
     // -------------------------------------- Serializations ---------

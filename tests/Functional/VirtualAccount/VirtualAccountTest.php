@@ -61,6 +61,8 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\BankAccount\Constants as BankAccountConstants;
 use RZP\Models\OfflineChallan\Repository as OfflineChallanRepo;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
+use RZP\Services\PgRouter\Service as PgRouterService;
+use RZP\Models\Base\UniqueIdEntity;
 
 class VirtualAccountTest extends TestCase
 {
@@ -1007,6 +1009,27 @@ class VirtualAccountTest extends TestCase
         $card = $this->getLastEntity('card', true);
 
         $this->assertEquals('Random Name', $card['name']);
+    }
+
+    public function testGetVaPayments()
+    {
+        $this->createVirtualAccount();
+
+        $va = $this->getDbLastEntity('virtual_account');
+
+        $this->payVirtualAccount('va_'.$va['id'], ['amount' => 50]);
+
+        $dbPayment = $this->getDbLastPayment();
+
+        $this->ba->proxyAuth();
+        $request = [
+            'url' => '/virtual_accounts/va_'.$va->getId().'/payments',
+            'method' => 'get'
+        ];
+
+        $res = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('pay_'.$dbPayment->getId(), $res['items'][0]['id']);
     }
 
     public function testPayVirtualAccountWithPastCloseBy()
@@ -3154,7 +3177,7 @@ class VirtualAccountTest extends TestCase
 
         $this->app['config']->set('gateway.mock_bt_rbl', true);
 
-        $this->app['config']->set('rbl_create_virtual_account.error_code', ErrorCode::ER002);
+        $this->app['config']->set('rbl_create_virtual_account.error_code', 'ER002');
 
         $metricsMock = $this->createMetricsMock();
 
@@ -3231,7 +3254,7 @@ class VirtualAccountTest extends TestCase
 
         $virtualAccount = $this->getDbLastEntity('virtual_account', 'live');
 
-        $this->app['config']->set('rbl_close_virtual_account.error_code', ErrorCode::ER002);
+        $this->app['config']->set('rbl_close_virtual_account.error_code', 'ER002');
 
         $metricsMock = $this->createMetricsMock();
 
@@ -4116,9 +4139,155 @@ class VirtualAccountTest extends TestCase
 
         $payment = $this->getDbLastEntity('payment');
 
+
         //Verifying the mock response of smart routing request by terminal id
 
         $this->assertEquals('Oc3KkqYe4LjpdA', $payment['terminal_id']);
+
+    }
+
+    public function testOfflinePaymentCreditWithMerchantChallanForemptyPaymentInstrumentDetailsAndPaymentDetailsForFileSource()
+    {
+        $this->testValidateOfflineChallanPresentInNotes();
+
+        $challanNumber = $this->testData['testValidateOfflineChallanPresentInNotes']['request']['content']['challan_no'];
+
+        $content = $this->createPricingPlan();
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'method'  => 'post',
+            'content' => [
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $resp['plan_id']]);
+
+        $paymentData = [
+            'challan_no' =>  $challanNumber,
+            'amount' => 1000,
+            'mode' => 'cash',
+            'status' => 'processed',
+            'payment_date' => '01-sep-2024',
+            'payment_time' => '21:30:45',
+            'client_code'  =>  '12345678',
+            'description' => 'Received INR 1000 through Cheque',
+            "payment_instrument_details" => "",
+            "payer_details" => "",
+            // "source" => "callback",
+            "source" => "file",
+        ];
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/credit/ecollect/offline',
+            'method'  => 'post',
+            'content' => $paymentData,
+        ];
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'challan_no' => $challanNumber,
+                'status' => 0
+            ],
+        ];
+
+        $this->startTest();
+
+        $offlinePayment = $this->getDbLastEntityPublic('offline_payment');
+
+        //Verifying the mock response of offline payment
+        print_r($offlinePayment);
+        $this->assertEquals('{}',  $offlinePayment['payment_instrument_details']);
+        $this->assertEquals('{}',  $offlinePayment['payer_details']);
+
+    }
+
+    public function testOfflinePaymentCreditWithMerchantChallanForemptyPaymentInstrumentDetailsAndPaymentDetailsForSourceCallback()
+    {
+        $this->testValidateOfflineChallanPresentInNotes();
+
+        $challanNumber = $this->testData['testValidateOfflineChallanPresentInNotes']['request']['content']['challan_no'];
+
+        $content = $this->createPricingPlan();
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'method'  => 'post',
+            'content' => [
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'offline',
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
+
+        $resp = $this->startTest();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $resp['plan_id']]);
+
+        $paymentData = [
+            'challan_no' =>  $challanNumber,
+            'amount' => 1000,
+            'mode' => 'cash',
+            'status' => 'processed',
+            'payment_date' => '01-sep-2024',
+            'payment_time' => '21:30:45',
+            'client_code'  =>  '12345678',
+            'description' => 'Received INR 1000 through Cheque',
+            "payment_instrument_details" => "",
+            "payer_details" => "",
+            "source" => "callback",
+        ];
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/credit/ecollect/offline',
+            'method'  => 'post',
+            'content' => $paymentData,
+        ];
+
+        $this->ba->hdfcOtcAuth();
+
+        $this->testData[__FUNCTION__]['request']['headers']['X-Amzn-Mtls-Clientcert'] = [self::CERT_HEADER];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'challan_no' => $challanNumber,
+                'status' => 0
+            ],
+        ];
+
+        $this->startTest();
+
+        $offlinePayment = $this->getDbLastEntityPublic('offline_payment');
+
+        //Verifying the mock response of offline payment
+
+        $this->assertEquals('""',  $offlinePayment['payment_instrument_details']);
+        $this->assertEquals('""',  $offlinePayment['payer_details']);
 
     }
 
@@ -5883,5 +6052,59 @@ class VirtualAccountTest extends TestCase
             return;
         }
 
+    }
+
+    public function testCreateVirtualAccountWithRaasAndOptimizerBankTransfer()
+    {
+        // Enable RAAS feature for merchant
+        $this->fixtures->merchant->addFeatures([Feature\Constants::RAAS]);
+
+        // Mock splitz service response
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn([
+                'response' => [
+                    'variant' => [
+                        'name' => 'variant_on'
+                    ]
+                ]
+            ]);
+
+        // Mock pg router response
+        $this->mockPgRouter();
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['id']);
+        $this->assertEquals('active', $response['status']);
+        $this->assertEquals(10000, $response['amount_expected']);
+        $this->assertEquals('INR', $response['currency']);
+        $this->assertArrayHasKey('receivers', $response);
+        $this->assertEquals('bank_account', $response['receivers'][0]['entity']);
+    }
+
+    protected function mockPgRouter()
+    {
+        $pgRouterMock = Mockery::mock('RZP\Services\PgRouter\Service')->makePartial();
+        $this->app->instance('pg_router', $pgRouterMock);
+
+        $pgRouterMock->shouldReceive('validateAndCreatePayment')
+            ->andReturn([
+                'data' => [
+                    'payment' => [
+                        'id' => 'pay_' . UniqueIdEntity::generateUniqueId(),
+                        'amount' => 10000,
+                        'bank_transfer' => [
+                            'beneficiary_ifsc' => 'RAZR0000001',
+                            'beneficiary_bank_name' => 'Razorpay Bank',
+                            'beneficiary_name' => 'Razorpay',
+                            'beneficiary_account_number' => '1234567890'
+                        ]
+                    ]
+                ]
+            ]);
     }
 }
