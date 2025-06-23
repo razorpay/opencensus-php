@@ -24,6 +24,7 @@ class Feature
     const UPI_INAPP               = 'upi_inapp';
     const REWARD                  = 'reward';
     const BUYER_PROTECTION        = 'buyer_protection';
+    const BUYER_PROTECTION_CUSTOMER    = 'buyer_protection_customer';
 
     // vas specific pricing features
     const SMS                     = 'sms';
@@ -36,6 +37,7 @@ class Feature
     const FEATURE_LIST = [
         self::MAGIC_CHECKOUT,
         self::BUYER_PROTECTION,
+        self::BUYER_PROTECTION_CUSTOMER,
         self::PAYMENT,
         self::PAYOUT,
         self::RECURRING,
@@ -81,6 +83,7 @@ class Feature
         self::OPTIMIZER,
         self::NOCODEAPPS,
         self::BUYER_PROTECTION,
+        self::BUYER_PROTECTION_CUSTOMER,
     ];
 
     public static function validateFeature($feature)

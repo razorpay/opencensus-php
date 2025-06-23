@@ -128,6 +128,7 @@ class NeedsClarificationMetaData
         DocumentType::HUF_DEED                              => [ReasonList::ILLEGIBLE_DOC],
         DocumentType::SOCIETY_REGISTRATION_CERTIFICATE      => [ReasonList::ILLEGIBLE_DOC],
         DocumentType::POWER_OF_ATTORNEY                     => [ReasonList::ILLEGIBLE_DOC],
+        DocumentType::GAZETTE_NOTIFICATION                     => [ReasonList::ILLEGIBLE_DOC],
 
         // Curlec documents
         DocumentType::FIMM_OR_SC_REGISTRATION_FORM                          => [ReasonList::ILLEGIBLE_DOC],

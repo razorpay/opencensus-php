@@ -649,6 +649,7 @@ class Entity extends Base\PublicEntity
             CardlessEmiProvider::LIQUILOANS,
             CardlessEmiProvider::INSTANT_EMI,
             CardlessEmiProvider::SHOPSE,
+            CardlessEmiProvider::SNAPMINT,
         ],
         self::PAYLATER => [
             Paylaterprovider::GETSIMPL,
@@ -2321,7 +2322,7 @@ class Entity extends Base\PublicEntity
     public function getEnabledCardlessEmiProviders(): array
     {
         $addon_methods = $this->getAddonMethods();
-        
+
         $all_addon_methods = Entity::getAllAddonMethodsNames();
 
         return CardlessEmiProvider::getEnabledProviders($all_addon_methods, $addon_methods);

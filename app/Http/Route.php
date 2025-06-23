@@ -510,7 +510,7 @@ class Route
         'merchant_create_terminal_v3'              => ['post',     'merchants/{id}/terminals/v3',                    'MerchantController@postCreateTerminalV3'                           ],
         'merchant_create_terminal_internal'        => ['post',     'merchants/{id}/terminals/internal',              'MerchantController@postCreateTerminalWithId',                      ],
         'merchant_info_fetch'                      => ['get',      'internal/merchant_info_fetch/{mid}',             'MerchantController@fetchUserIdAndOrgIdFromMerchantId',             ],
-        'merchant_list_by_org_and_category'        => ['get',      'merchant_list/org/{orgid}/category/{category}',        'MerchantController@fetchMidAndNameFromOrgAndCategoryFromTiDB'                       ],
+        'merchant_list_by_org_and_category'        => ['get',      'merchant_list/org/{orgid}/category/{category}',        'MerchantController@fetchMidAndNameFromOrgAndCategoryFromLiveConnection'                       ],
         'merchant_get_terminals'                   => ['get',      'merchants/{id}/terminals',                       'MerchantController@getTerminals'                                   ],
         'proxy_merchant_get_terminals'             => ['get',      'proxy/merchant/terminals',                       'MerchantController@proxyGetTerminals'                              ],
         'admin_merchant_get_terminals'             => ['post',     'admin/merchant/terminals',                       'TerminalController@proxyV2TerminalService'                        ],
@@ -2223,6 +2223,7 @@ class Route
         'payout_create'                            => ['post',     'payouts',                                        'PayoutController@postFundAccountPayout'                            ],
         'payout_validate'                          => ['post',     'validate_payouts',                               'PayoutController@validatePayout'                            ],
         'payout_create_internal'                   => ['post',     'payouts_internal',                               'PayoutController@postFundAccountPayout'                            ],
+        'payout_create_internal_direct'            => ['post',     'payouts_internal_direct',                         'PayoutController@postFundAccountDirectBankingPayout'                            ],
         'payout_create_on_internal_contact'        => ['post',     'internalContactPayout',                          'PayoutController@postFundAccountOnInternalContact'                 ],
         'payouts_batch_create'                     => ['post',     'payouts_batch',                                  'PayoutsBatchController@create'                                     ],
         'payouts_batch_create_x_demo_cron'         => ['post',     'payouts_batch_x_demo_cron',                      'PayoutsBatchController@createXDemoPayoutCron'                      ],
@@ -2813,6 +2814,7 @@ class Route
         'user_all_roles'                           => ['get',      'users/{id}/roles/{merchant_id}',                 'UserController@getUserRoles'                                       ],
         'user_delete_incorrect_password_count'     => ['post',     'users/incorrect_password_count',                 'UserController@removeIncorrectPasswordCount'                       ],
         'user_fetch_by_verified_contact_internal'  => ['post',     'users_internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
+        'user_internal_fetch_by_email'             => ['post',     'users_internal/fetch_user_by_email',             'UserController@getUserByEmail'                              ],
         'user_internal_fetch_by_verified_contact'  => ['post',     'users/internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
         'user_edit_internal'                       => ['patch',    'users_internal/{id}',                            'UserController@editUserInternal'                                   ],
         'fetch_user_details'                       => ['get',      'users/details',                                  'UserController@getUserDetailsWithRelations'                                   ],
@@ -3650,7 +3652,6 @@ class Route
         'update_partner_intent'                    => ['patch',    'merchant/partner-intent',                        'MerchantController@updatePartnerIntent'                            ],
         'update_partner_type'                      => ['patch',    'merchant/partner_type',                          'MerchantController@updatePartnerType'                              ],
         'partner_referral_fetch'                   => ['get',      'merchant/referral',                              'MerchantController@fetchReferral'                                  ],
-        'partner_referral_regenerate'              => ['post',     'merchant/referral/regenerate',                   'PartnershipsAdhocMigrationsController@regenerateReferralLinks'     ],
         'partner_referral_create'                  => ['post',     'merchant/referral',                              'MerchantController@createReferral'                                 ],
         'backfill_merchant_applications'           => ['post',     'merchant/backfill_merchant_apps',                'MerchantController@backFillMerchantApplications'                   ],
         'backfill_referred_application'            => ['post',     'merchant/backfill_referred_app',                 'MerchantController@backFillReferredApplication'                    ],
@@ -5715,7 +5716,6 @@ class Route
         'update_submerchant_user_contact',
         'update_bucket_name_region',
 
-        'partner_referral_regenerate',
         'fetch_partner_sub_mtu',
 
         // webhooks for onboarding APIs
@@ -5852,6 +5852,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'user_internal_fetch_by_email',
         'fetch_user_details',
         'upsert_user_details',
         'delete_user_details',
@@ -6380,6 +6381,7 @@ class Route
         'fund_account_get_internal',
         'fund_account_list_internal',
         'payout_create_internal',
+        'payout_create_internal_direct',
         'payout_create_2FA_internal',
         'payout_fetch_multiple_internal',
         'payout_links_send_email',
@@ -17914,6 +17916,7 @@ class Route
             'refund_scrooge_transaction_create',
             'refund_scrooge_reverse_transfers',
             'payout_create_internal',
+            'payout_create_internal_direct',
             'payout_create_2FA_internal',
             'refund_edit_internal',
             'scrooge_refund_back_write',
@@ -18550,6 +18553,7 @@ class Route
         ],
 
         'pgos' => [
+            'user_internal_fetch_by_email',
             'pricing_fetch_plan_internal',
             'qr_code_merchant_create',
             'internal_fetch_merchant_users',
@@ -19096,6 +19100,7 @@ class Route
         'payout_2fa_approve'                   => [Feature::PAYOUT],
         'payout_reject'                        => [Feature::PAYOUT],
         'payout_create_internal'               => [Feature::PAYOUT],
+        'payout_create_internal_direct'        => [Feature::PAYOUT],
         'payout_create_2FA_internal'           => [Feature::PAYOUT],
         'bulk_payouts_reject_owner'            => [Feature::PAYOUT],
         'bulk_payouts_bulk_approve'            => [Feature::PAYOUT],
@@ -19309,6 +19314,12 @@ class Route
             IdempotencyKey\Constants::IKEY_MANDATORY                  => true,
         ],
         'payout_create_internal' => [
+            IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
+            IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+            IdempotencyKey\Constants::IKEY_MANDATORY => true,
+            IdempotencyKey\Constants::FEATURE_FLAG_FOR_MANDATORY_IKEY => Feature::PAYOUT_IDEM_KEY_REQUIRED,
+        ],
+        'payout_create_internal_direct' => [
             IdempotencyKey\Entity::SOURCE_TYPE       => Entity::PAYOUT,
             IdempotencyKey\Entity::HEADER_KEY        => RequestHeader::X_PAYOUT_IDEMPOTENCY,
             IdempotencyKey\Constants::IKEY_MANDATORY => true,
@@ -19704,6 +19715,7 @@ class Route
         'payouts_merchant_smart_routing_rules_modify',
         'payout_validate',
         'payout_create_internal',
+        'payout_create_internal_direct',
         'payout_create_2FA_internal',
         'payouts_batch_create',
         'payout_create_with_otp',
