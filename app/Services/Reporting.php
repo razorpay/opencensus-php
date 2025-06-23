@@ -339,15 +339,17 @@ class Reporting implements ExternalService
 
         //log filtered configs to coralogix for recon 
         try {
+            $requestHeaders = $this->headers;
+            unset($requestHeaders[self::ADMIN_TOKEN_HEADER]);
             $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS_RECON,
                 [
                     'configs'   => collect($data['items'])->pluck('id', 'name')->toArray(),
                     'unique_id' => $uuid,
                     'total_count' => $data['count'],
                     'input' => $input,
-                    'headers' => $this->headers,
+                    'headers' => $requestHeaders,
                 ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS_LOG_ERROR,
                 [
                     'error' => $e->getMessage(),
@@ -1817,13 +1819,21 @@ class Reporting implements ExternalService
     }
 
     protected function generateUuidV4(): string {
-        $data = random_bytes(16);
-        // Set version to 0100
-        $data[6] = chr((ord($data[6]) & 0x0f) | 0x40);
+        try {
+            $data = random_bytes(16);
+            // Set version to 0100
+            $data[6] = chr((ord($data[6]) & 0x0f) | 0x40);
     
-        // Set bits 6-7 to 10
-        $data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
+            // Set bits 6-7 to 10
+            $data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
 
-        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+            return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+        } catch (\Throwable $e) {
+            $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS_LOG_ERROR,
+                [
+                    'error' => $e->getMessage(),
+                ]);
+            return '';
+        }
     }
 }
