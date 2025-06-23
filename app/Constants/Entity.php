@@ -288,6 +288,8 @@ class Entity
     // free payout migration - free payout supported modes - settings attributes
     const FREE_PAYOUT_SUPPORTED_MODES_CREATED_AT  = 'free_payout_supported_modes_created_at';
 
+    const Description                = 'description';
+
     //
     // Workflow Entities
     //
@@ -827,6 +829,8 @@ class Entity
     const INSURANCE = 'insurance';
 
     const PAYMENT_METHOD_TRANSFER = 'payment_method_transfer';
+
+    const AMAZON_PAYOUT = 'AMAZON.';
 
     /**
      * Defines a map of entites which are currently
@@ -1695,6 +1699,7 @@ class Entity
         self::TRANSFER   => 'route',
         self::PAYMENT_METHOD_TRANSFER   => 'route',
         self::TRANSFER_PAYMENT => 'route',
+        self::REVERSAL => 'route',
         self::CARD_MANDATE => 'card.payments',
     ];
 

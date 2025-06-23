@@ -11,11 +11,11 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Country;
 use RZP\Http\RequestHeader;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\SplitzConstant;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Admin\Permission\Name as PermissionName;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailsCore;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\Workflow\Service\Workflow\Service as MakerCheckerWorkflowService;
@@ -332,7 +332,7 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->validateBusinessTypeForBankingMerchants($input, $merchant);
 
-        if ((new Detail\Core)->isIndianMerchant($merchant) === true)
+        if (((new Detail\Core)->isIndianMerchant($merchant) === true) && ($merchant->isLinkedAccount() === false))
         {
             $merchantDetails->getValidator()->validateMerchantFieldsForBankingCompliance($input, $merchant);
         }
@@ -5000,8 +5000,23 @@ class Core extends Base\Core
         $fromActivationStatus = $oldMerchantDetails->getActivationStatus();
         $toActivationStatus = $newMerchantDetails->getActivationStatus();
         $this->pushMetricOnManualActivationStatusChangeForRegularIndiaPgMerchants($merchant, $fromActivationStatus, $toActivationStatus);
+        $this->pushCrossBorderSegmentEventIfApplicable($merchant, $properties);
 
         return $merchantDetails;
+    }
+
+    private function pushCrossBorderSegmentEventIfApplicable(MerchantEntity $merchant, $properties)
+    {
+        if((new MerchantOnboardingProxyController())->isCrossBorderIndiaModularMerchant($merchant) === false) {
+            return;
+        }
+        $payload = [
+            'action' => CrossBorderCommonUseCases::CROSS_BORDER_MERCHANT_ACTIVATION_STATUS_CHANGE,
+            'merchant_id' => $merchant->getId(),
+            'properties' => $properties,
+            'mode' =>  Mode::LIVE,
+        ];
+        CrossBorderCommonUseCases::dispatch($payload)->delay(rand(0, 5));
     }
 
     private function pushMetricOnManualActivationStatusChangeForRegularIndiaPgMerchants(MerchantEntity $merchant, $fromActivationStatus, $toActivationStatus) : void
@@ -5122,12 +5137,32 @@ class Core extends Base\Core
 
     public function getActivationStatusMappingForModularMerchants(): array
     {
+        $merchant = $this->app['basicauth']->getMerchant();
+        if (empty($merchant) === false)
+        {
+            $merchantId = $merchant->getId();
+            $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
+            $workflowDetails = $userDeviceDetail ? $userDeviceDetail->getValueFromMetadata(DDConstants::WORKFLOW_DETAILS) : [];
+        }
+
         $allowedNextActivationStatusMap = Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_EDD_PENDING;
 
         if ($this->app['basicauth']->isAdminAuth() === true)
         {
             $allowedNextActivationStatusMap[Status::EDD_PENDING] = [];
         }
+
+        if (empty($workflowDetails) === false and
+            isset($workflowDetails[DetailConstants::PG_ONBOARDING_WORKFLOW_VERSION]) and
+            $workflowDetails[DetailConstants::PG_ONBOARDING_WORKFLOW_VERSION] === DetailConstants::MODULAR_VERSION_V2
+        )
+        {
+            $allowedNextActivationStatusMap = Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_FOR_EO_TO_MO_MERCHANTS;
+        }
+
+        $this->app->trace->info(TraceCode::ALLOWABLE_ACITVATION_STATUS_MAP_FOR_MODULAR_MERCHANT, [
+            'allowed_next_activation_status_map' => $allowedNextActivationStatusMap,
+        ]);
 
         return $allowedNextActivationStatusMap;
     }
@@ -5792,7 +5827,8 @@ class Core extends Base\Core
 
         $merchantId = $this->app['request']->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
         $merchant = $this->repo->merchant->find($merchantId);
-        if( $merchant != null and $this->pgosProxyController->isCurlecModularMerchant($merchant)){
+        $isModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
+        if(($merchant !== null and $this->pgosProxyController->isCurlecModularMerchant($merchant)) || ($isModularMerchant)){
             $pgosResponse = $this->pgosProxyController->handlePGOSProxyRequests(MerchantOnboardingProxyController::ACTIVATION_DOCUMENT_TYPES, [], $merchant);
             return $pgosResponse['data'];
         }
@@ -6849,6 +6885,10 @@ class Core extends Base\Core
             $response[DEConstants::REKYC_STATUS]                      = $rekycStatus;
             $response[DEConstants::ALLOWED_NEXT_REKYC_STATUSES]       = $this->getAllowedNextRekycStatus($rekycStatus);
             $response[DEConstants::MANUAL_REKYC]                      = $additionalDetailsFromASV[DEConstants::MANUAL_REKYC] ?? null;
+
+            $pgOnboardingAdditionalDetails = $additionalDetailsFromASV[DEConstants::PG_ONBOARDING] ?? [];
+            $response[DEConstants::SHOW_FTUX_DASHBOARD] = $pgOnboardingAdditionalDetails[DEConstants::SHOW_FTUX_DASHBOARD] ?? null;
+            $response[DEConstants::SHOW_TRANSACTION_TIMELINE] = $pgOnboardingAdditionalDetails[DEConstants::SHOW_TRANSACTION_TIMELINE] ?? null;
 
             if (empty($merchantDetails->getKycClarificationReasons()) === false)
             {
@@ -11557,6 +11597,7 @@ class Core extends Base\Core
             $merchantBusinessType = $merchant->merchantDetail->getBusinessType();
             $userDeviceDetails = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
         }
+       
         foreach (BusinessType::$businessTypeBuckets as $bucketName => $businessTypes)
         {
             $result[$bucketName] = [];
@@ -11568,7 +11609,6 @@ class Core extends Base\Core
                 {
                     continue;
                 }
-
 //              If the merchant is sales assisted skip adding individual or not_yet_registered as business type
                 if (empty($merchantId) ===  false and ($businessType === BusinessType::INDIVIDUAL or $businessType === BusinessType::NOT_YET_REGISTERED) and !empty($userDeviceDetails) and $userDeviceDetails->isAssistedOnboardedMerchant())
                 {
@@ -11626,7 +11666,31 @@ class Core extends Base\Core
                 }
             }
         }
-
+        $this->trace->info(TraceCode::ADD_NEW_BUSINESS_TYPE, [
+            "merchant_id"       => $merchantId
+        ]);
+        if (!empty($merchant) and $this->shouldAddNewBusinessTypes($merchant) === true) {
+            $businessTypes = [
+                BusinessType::GOVERNMENT,
+                BusinessType::JUDICIAL_PERSON,
+                BusinessType::LOCAL_AUTHORITY,
+                BusinessType::SECTION_8_COMPANY
+            ];
+            $this->trace->info(TraceCode::ADD_NEW_BUSINESS_TYPE, [
+                "merchant_id"          => $merchantId,
+                "business_types"       => $businessTypes
+            ]);
+            
+            foreach ($businessTypes as $businessType) {
+                array_push($result[BusinessType::REGISTERED],
+                           [
+                               "id"      => strval(BusinessType::getIndexFromKey($businessType)),
+                               "label" => BusinessType::getDisplayNameFromKey($businessType),
+                               "status"  => 'active'
+                           ]
+                );
+            }
+        }
         return $result;
     }
 
@@ -12609,8 +12673,7 @@ class Core extends Base\Core
         // merchants for whom pgos is serving onboarding requests
         // merchants who are not completely activated
         if (($merchant->getService() === Merchant\Constants::PGOS or
-            array_intersect_key(array_flip($skipPGOSCheckForFields), $data)) and
-            $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
+            array_intersect_key(array_flip($skipPGOSCheckForFields), $data)))
             {
                 $merchantDetails = $this->repo->merchant_detail->getByMerchantId($data['merchant_id']);
 
@@ -13915,6 +13978,22 @@ class Core extends Base\Core
         $isModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
 
         return ($isExperimentEnabled and $isModularMerchant);
+    }
+    
+    private function shouldAddNewBusinessTypes(MerchantEntity $merchant) : bool {
+       
+        $isExperimentEnabled = (new MerchantCore)->isSplitzExperimentEnable(
+            [
+                'id' => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.add_new_business_types')
+            ],
+            DetailConstants::ENABLE
+        );
+       
+        $isModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
+        
+        return ($isExperimentEnabled and $isModularMerchant);
+        
     }
 
     public function createVCIPEntity($input)

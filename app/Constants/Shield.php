@@ -132,6 +132,8 @@ final class Shield
     const FINGERPRINT_PAYLOAD         = 'fingerprint_payload';
     const SEALED_FINGERPRINT_DATA     = 'sealed_fingerprint_data';
 
+    const USER_RISK_PROVIDERS_TOKEN     = 'user_risk_providers_token';
+
     const CUSTOMER_ORDER_DATA         = 'customer_order_data';
     const CUSTOMER                    = 'customer';
     const LINE_ITEMS                  = 'line_items';

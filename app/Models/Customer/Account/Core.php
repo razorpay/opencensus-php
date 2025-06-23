@@ -2080,6 +2080,11 @@ class Core extends Base\Core
 
         $email = $truecallerResponse['user_profile']['email'] ?? null;
 
+        // Add + prefix if contact doesn't have it. Truecaller does not send + prefix in contact.
+        if (!empty($contact) && !str_starts_with($contact, '+')) {
+            $contact = '+' . $contact;
+        }
+
         $contact = Customer\Validator::validateAndParseContact($contact);
 
         // override any contact passed in prefill as truecaller's contact takes precedence.

@@ -238,7 +238,7 @@ class SettlementOndemandTest extends TestCase
         return $response;
     }
 
-    public function mockWebHook($settlementOndemandAttempt, $settlementOndemandTransfer, bool $isSinglePayout = false)
+    public function mockWebHook($settlementOndemandAttempt, $settlementOndemandTransfer, bool $isSinglePayout = false, $source = null)
     {
         $input = [
             'entity' => 'event',
@@ -280,6 +280,12 @@ class SettlementOndemandTest extends TestCase
             $input['payload']['payout']['entity']['failure_reason'] = 'dummy_reason';
         }
 
+        if ($source !== null) {
+            $input['payload']['payout']['entity']['notes'] = [
+                'source' => $source
+            ];
+        }
+
         $rawContent = 'dummy_raw_content';
 
         $key = Config::get('applications.razorpayx_client.live.ondemand_x_merchant.webhook_key');
@@ -288,7 +294,7 @@ class SettlementOndemandTest extends TestCase
 
         $headers =['x-razorpay-signature' => [$signature]];
 
-        (new OndemandPayout\Service)->statusUpdate($input, $headers, $rawContent);
+        return (new OndemandPayout\Service)->statusUpdate($input, $headers, $rawContent);
     }
 
     private function parseDate($date)
@@ -6479,6 +6485,62 @@ class SettlementOndemandTest extends TestCase
 
         $fundAccount = $this->getDbLastEntity('settlement.ondemand_fund_account');
         $this->assertNull($fundAccount->fund_account_id);
+    }
+
+    public function testCreateOdsViaMicroservice()
+    {
+        $this->ba->capitalEarlySettlementAuth(Mode::LIVE);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'ods_microservice']);
+
+        $capitalEsMock = Mockery::mock(CapitalEarlySettlementClient::class, [$this->app])->makePartial();
+        $this->app->instance('capital_early_settlements', $capitalEsMock);
+
+        $capitalEsMock->allows('createODS')
+            ->andReturns([
+                'id' => 'setlod_FNj7g2YS5J67Rz',
+            ]);
+
+        $result = (new \RZP\Models\Settlement\Ondemand\Service())->create([
+            'settle_full_balance' => false,
+            'scheduled' => true,
+            'amount' => 1000,
+            'description'=> 'debangan_test_1',
+        ], [
+            'scheduled' => true,
+            'mode' => Mode::LIVE,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->assertEquals('setlod_FNj7g2YS5J67Rz', $result['id']);
+    }
+
+    public function testHandlePayoutWebhookViaMicroservice()
+    {
+        $this->app['rzp.mode'] = Mode::LIVE;
+
+        $capitalEsMock = Mockery::mock(CapitalEarlySettlementClient::class, [$this->app])->makePartial();
+        $this->app->instance('capital_early_settlements', $capitalEsMock);
+
+        $capitalEsMock->allows('payoutsWebhook')
+            ->andReturns([]);
+
+        $response = $this->mockWebHook(
+            [
+                'payout_id' => 'pout_N76WDGIgvIvw4g',
+                'id' => 'N76WDBxgjuSuvH',
+                'settlement_ondemand_transfer_id' => 'N88gH0dXJepqQE'
+            ],
+            [
+                'amount' => 100000,
+                'mode' => 'NEFT'
+            ],
+            true,
+            'capital-es'
+        );
+
+        $this->assertEquals('success', $response['response']);
     }
 
     public function testMakePayoutRequest()

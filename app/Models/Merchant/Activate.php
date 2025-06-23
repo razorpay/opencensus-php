@@ -164,6 +164,8 @@ class Activate extends Base\Core
         {
             $merchant->activate();
 
+            $this->activateMerchantViaPgos($merchant);
+
             //Automatic Terminal Onboarding
             $this->app['terminals_service']->automaticIIROnboarding($merchant);
 
@@ -184,6 +186,8 @@ class Activate extends Base\Core
             if($isEnablePaymentsForNoDocMerchants === true)
             {
                 $merchant->activate();
+
+                $this->activateMerchantViaPgos($merchant);
 
                 //Automatic Terminal Onboarding
                 $this->app['terminals_service']->automaticIIROnboarding($merchant);
@@ -208,8 +212,8 @@ class Activate extends Base\Core
         $merchantCore = new Core();
 
         $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
-      
-        $this->activateCrossBorderProductsIfApplicable($merchant);      
+
+        $this->activateCrossBorderProductsIfApplicable($merchant);
 
         $balanceId = $this->updateLedger($merchant);
 
@@ -509,6 +513,9 @@ class Activate extends Base\Core
         $this->sendMerchantActivatedEvents($merchant);
 
         $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_POST_TRANSCACTION,$merchant->toArrayPublic());
+
+        // Notify PGOS after KYC is marked as verified
+        $this->activateMerchantViaPgos($merchant);
 
         return $merchantDetail;
     }
@@ -1452,7 +1459,7 @@ class Activate extends Base\Core
      */
     private function sendTerminalCreationRequestForUPI($paymentMethod, $merchant, $action, $merchantGenre, $instrument): void
     {
-        if ((new MethodsCore())->isUPIPaymentMethodAllowed($merchant) === true && $this->shouldDispatchTerminalCreationEvent($merchant))
+        if ((((new MethodsCore())->isUPIPaymentMethodAllowed($merchant) === true) or ($merchant->org->isFeatureEnabled(Feature\Constants::UPI_DMO_FOR_VAS))) and ($this->shouldDispatchTerminalCreationEvent($merchant)))
         {
             $topic = env('PAYMENT_METHOD_ENABLE_KAFKA_TOPIC_NAME');
 
@@ -1553,5 +1560,42 @@ class Activate extends Base\Core
 
         return  (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable') === false;
 
+    }
+
+    /**
+     * Triggers PGOS proxy activation for SG and MY (curlec) signups if applicable.
+     *
+     * @param Entity $merchant
+     */
+    private function activateMerchantViaPgos($merchant)
+    {
+        try {
+            $deviceDetail = $this->app['repo']->user_device_detail->fetchByMerchantIdAndUserRole($merchant->getId());
+            $signupCampaign = optional($deviceDetail)->getSignupCampaign();
+
+            $this->trace->debug(TraceCode::MERCHANT_ACTIVATION_PGOS_PROXY_REQUEST, [
+                'merchant_id' => $merchant->getId(),
+                'signup_campaign' => $signupCampaign
+            ]);
+
+            // If signupCampaign is empty, do not call PGOS proxy
+            if (empty($signupCampaign)) {
+                return;
+            }
+
+            if ($signupCampaign !== \RZP\Models\DeviceDetail\Constants::EASY_ONBOARDING) {
+                $payload = ['merchant_id' => $merchant->getId()];
+                $this->trace->info(TraceCode::MERCHANT_ACCOUNT_ACTIVATED, [
+                    'merchant_id' => $merchant->getId()
+                ]);
+                (new \RZP\Http\Controllers\MerchantOnboardingProxyController())
+                    ->handlePGOSProxyRequests(\RZP\Models\DeviceDetail\Constants::ACTIVATE_MERCHANT, $payload, $merchant, true);
+            }
+        } catch (\Exception $e) {
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                'merchant_id' => $merchant->getId(),
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 }

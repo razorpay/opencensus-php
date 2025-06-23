@@ -2278,6 +2278,7 @@ class Service extends Base\Service
     private function handleUpdateActivationStatusInternal(string $merchantId, array $input): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $this->app['basicauth']->setMerchant($merchant);
 
         $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS_INTERNAL, [
             DetailConstants::INPUT => $input,
@@ -4995,6 +4996,10 @@ class Service extends Base\Service
         if($this->ba->isAdminAuth()===false)
         {
             $merchant_id = $this->merchant->getId();
+        }
+        if($this->ba->isAdminAuth()===true)
+        {
+            $merchant_id = $this->app['request']->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
         }
 
         return $core->getBusinessTypes($merchant_id);

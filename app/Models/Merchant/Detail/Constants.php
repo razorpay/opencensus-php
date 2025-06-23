@@ -149,8 +149,10 @@ class Constants
     const RISK_DETAILS                      = 'risk_details';
     const ADDITIONAL_ONBOARDING_DETAILS     = 'additional_onboarding_details';
     const PG_ONBOARDING                     = 'pg_onboarding';
+    const PG_ONBOARDING_WORKFLOW_VERSION    = 'pg_onboarding_workflow_version';
     const NON_MODULAR_VERSION               = 'non-modular';
     const MODULAR_VERSION_V1                = 'v1';
+    const MODULAR_VERSION_V2                = 'v2';
     const PRODUCT                           = 'PRODUCT';
     const CROSS_BORDER_ONBOARDING           = 'cross_border_onboarding';
     const MANUAL_REKYC                      = "manual_rekyc";
@@ -271,7 +273,9 @@ class Constants
 
     // Payment Gateway Competitors constants
     const ONBOARDED_TO_COMPETITORS_PREVIOUSLY = 'onboarded_to_competitors_previously';
-    const PAYMENT_GATEWAY_COMPETITORS = 'payment_gateway_competitors';
+    const PAYMENT_GATEWAY_COMPETITORS         = 'payment_gateway_competitors';
+    const SHOW_FTUX_DASHBOARD                 = 'show_ftux_dashboard';
+    const SHOW_TRANSACTION_TIMELINE           = 'show_transaction_timeline';
 
     //PG Onboarding For X Interests Constants
     const PG_ONBOARDING_CA = 'pg_onboarding_ca';

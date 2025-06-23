@@ -83,6 +83,7 @@ class MailTags
     const BATCH_MERCHANT_ONBOARDING_FILE   = 'batch_merchant_onboarding_file';
 
     const BATCH_HDFC_MERCHANT_ONBOARING_FILE = 'batch_hdfc_merchant_onboarding_file';
+    const BATCH_HDFC_BANK_ACQUIRED_TERMINAL_ONBOARDING_FILE = "batch_hdfc_bank_acquired_terminal_onboarding_file";
 
     const BATCH_BANKING_ACCOUNT_ACTIVATION_COMMENTS_FILE         = 'batch_banking_account_activation_comments_file';
     const BATCH_ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS_FILE      = 'batch_icici_lead_account_activation_comments_file';

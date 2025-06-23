@@ -749,8 +749,6 @@ final class RazorxTreatment
     //Experiment used to ramp up requests for edge url created for scrooge
     const SCROOGE_EDGE_MIGRATION = 'scrooge_edge_migration';
 
-    const PP_MAGIC_SETTING = 'pp_magic_setting';
-
 
     //Experiment used to control whether requests route to DCS or NOT
     const DCS_EDIT_ENABLED = 'dcs_edit_enabled';
@@ -1056,6 +1054,10 @@ final class RazorxTreatment
 
     const BANK_DATA_VIA_NPCI_API = 'bank_data_via_npci_api';
     const Axis_VA_MIGRATION = 'axis_va_migration';
+
+    // Experiment Variant for Bene Bank Downtime Webhook Notification
+    const DOWNTIME_V2_WEBHOOK_ENABLED = 'v2_webhook_enabled';
+    const DOWNTIME_V2_EXPERIMENT = 'downtime_v2_experiment';
 
     const COLLECTX_RBL_MERCHANTS_VA_CLOSE_BLOCK = "collectx_rbl_merchants_va_close_block";
 

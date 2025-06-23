@@ -56,4 +56,14 @@ class Constant
     const SETTLEMENT_ONHOLD = 'settlement_onhold';
 
     const COLLECTX  = 'collectx';
+
+    const YESBANK   = 'yesbank';
+    const RBL       = 'rbl';
+    const AXIS      = 'axis';
+
+    const CHANNEL_SETTLED_BY_MAPPING = [
+        'yesb' => self::YESBANK,
+        'rbl'  => self::RBL,
+        'axis' => self::AXIS,
+    ];
 }

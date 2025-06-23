@@ -6775,6 +6775,28 @@ class Core extends Base\Core
         ];
     }
 
+    public function getUserByEmail(array $input): array
+    {
+        $user = $this->repo
+            ->user
+            ->getUserFromEmailOrFail($input['email']);
+
+        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
+            $merchantEntities = $user->getNonSuspendedMerchants(1000);
+        } else {
+            $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take(1000)->get();
+        }
+
+        $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
+
+        $merchantDetails = $this->getUnifiedMerchants($merchants);
+
+        $response = $user->toArrayPublic();
+        $response['merchants'] = $merchantDetails;
+
+        return $response;
+    }
+
     public function getUserAllRoles($userID, $merchantID)
     {
         $products   = [Product::BANKING, Product::PRIMARY];
@@ -7479,8 +7501,7 @@ class Core extends Base\Core
         // merchants for whom pgos is serving onboarding requests
         // merchants who are not completely activated
         if ($merchant->getService() === Merchant\Constants::PGOS and
-            empty($users) === false and
-            $merchant->merchantDetail->getActivationStatus() != Merchant\Detail\Status::ACTIVATED)
+            empty($users) === false)
             {
                 $user = $this->repo->user->find($users[0]);
 

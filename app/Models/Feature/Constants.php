@@ -988,6 +988,11 @@ class Constants
     const ENABLE_B2B_EXPORT = 'enable_b2b_export';
 
     /**
+     * Enables Skipping of Invoices for B2B export transactions
+     */
+    const CB_SKIP_B2B_EXPORT_INVOICE = 'skip_b2b_export_invoice';
+
+    /**
      * Enabled Global Bank Account solution (Temporary)
      */
     const ENABLE_GLOBAL_ACCOUNT = 'enable_global_account';
@@ -2260,6 +2265,13 @@ class Constants
      */
     const ENABLE_INTL_PRICING_AMEX = 'enable_intl_pricing_amex';
 
+   /** Enable auto assignment of terminal as merchant onboards
+    in vas
+    */
+
+    const UPI_DMO_FOR_VAS = 'upi_dmo_for_vas';
+
+
     /**
      * Enable payment via reward_points for merchant.
      */
@@ -2448,6 +2460,8 @@ class Constants
      * This allows wallet tokens to be stored, and allows paying directly if their wallet is already linked
      */
     const WALLET_LINK_AND_PAY = 'wallet_link_and_pay';
+
+    const ODS_MICROSERVICE = 'ods_microservice';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -3150,6 +3164,7 @@ class Constants
         self::INTER_ACCOUNT_TEST_PAYOUT                    => true,
         self::CART_API_AMOUNT_CHECK                        => true,
         self::ENABLE_B2B_EXPORT                            => true,
+        self::CB_SKIP_B2B_EXPORT_INVOICE                   => true,
         self::ENABLE_GLOBAL_ACCOUNT                        => true,
         self::ENABLE_INTL_BANK_TRANSFER                    => true,
         self::ENABLE_SETTLEMENT_FOR_B2B                    => true,
@@ -3161,6 +3176,7 @@ class Constants
         self::LRSNonStandardCheckout                       => true,
         self::RazorpayTaxOnboarding                        => true,
         self::RazorpayTaxProcessing                        => true,
+        self::UPI_DMO_FOR_VAS                             => true,
         self::RazorpayTaxInclusiveTaxPricing               => true,
         DcsConstants::LRSImportFeeBreakup                  => true,
         self::ONE_CLICK_OVERRIDE_THEME                     => true,
@@ -3391,7 +3407,7 @@ class Constants
         self::ENABLE_IMPORT_FLOW           => true,
         self::AUTO_CLOSURE_CBK_MF_MX       => true,
         self::HIDE_RX_PAYROLL_PAYOUTS   => true,
-
+        self::ODS_MICROSERVICE => true,
     ];
 
     // Entity type constants
@@ -4958,6 +4974,16 @@ class Constants
             'display_name' => 'Feature flag to hide payroll payouts in payouts view',
             'documentation' => ''
         ],
+        self::CB_SKIP_B2B_EXPORT_INVOICE => [
+            'feature'       => self::CB_SKIP_B2B_EXPORT_INVOICE,
+            'display_name'  => 'Feature to enable skipping of invoice for B2B Export Merchants',
+            'documentation' => '',
+        ],
+        self::ODS_MICROSERVICE => [
+            'feature' => self::ODS_MICROSERVICE,
+            'display_name' => 'Feature flag to indicate that the merchant has been migrated to the microservice for ondemand settlements',
+            'documentation' => ''
+        ]
     ];
 
     /**

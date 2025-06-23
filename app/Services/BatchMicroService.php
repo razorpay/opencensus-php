@@ -309,7 +309,7 @@ class BatchMicroService
 
             if ($input['type'] == Batch\Type::JAMMU_AND_KASHMIR_ONBOARDING) {
                 $headers['X-Entity-Id'] = self::JK_ORG;
-            } else if ($input['type'] == Batch\Type::HDFC_ONBOARDING) {
+            } else if ($input['type'] == Batch\Type::HDFC_ONBOARDING || $input['type'] == Batch\Type::HDFC_SMS_PAY_ONBOARDING) {
                 $headers['X-Entity-Id'] = self::HDFC_ORG;
             }else {
                 $headers['X-Entity-Id'] = $merchant->getId();
