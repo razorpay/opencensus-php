@@ -379,7 +379,7 @@ class Core extends Base\Core
     public function dispatchDataToMethodQueues($data, $payment) {
         if ($this->app->runningUnitTests() === false)
         {
-            if ($payment->isCard() === true)
+            if ($payment->isCard() === true || $payment->isInstalment() === true)
             {
                 CardsPaymentTransaction::dispatch($data);
             }

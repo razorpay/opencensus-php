@@ -124,6 +124,7 @@ class Core extends Base\Core
             CardlessEmiProvider::LIQUILOANS=>'0',
             CardlessEmiProvider::INSTANT_EMI => '0',
             CardlessEmiProvider::SHOPSE => '0',
+            CardlessEmiProvider::SNAPMINT => '0',
         ]
     ];
     const defaultPaylaterProvidersWhitelisted =[

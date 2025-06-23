@@ -1417,19 +1417,19 @@ class UserTest extends TestCase
 
         Mail::assertQueued(Otp::class, function ($mail)
         {
-            $this->assertEquals('x_verify_email', $mail->input['action']);
+            $this->assertEquals('verify_email', $mail->input['action']);
 
             $this->assertNotEmpty($mail->user);
 
             $this->assertNotEmpty($mail->otp);
 
-            $this->assertEquals('emails.user.razorpayx.otp_email_verify', $mail->view);
+            $this->assertEquals('emails.user.otp_email_verify', $mail->view);
 
-            $mailSubject = "Verify your Email for RazorpayX";
+            $mailSubject = "Razorpay | OTP to Verify Email";
 
             $this->assertEquals($mailSubject, $mail->subject);
 
-            $this->assertEquals('x.support@razorpay.com', $mail->from[0]['address']);
+            $this->assertEquals('support@razorpay.com', $mail->from[0]['address']);
 
             return true;
         });
@@ -17811,5 +17811,43 @@ class UserTest extends TestCase
         $this->assertTrue($user->confirmed);
         $this->assertEquals($user->getEmail(), 'udittest@rzp.com');
     }
+
+    public function testGetUserByEmailInternal()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $user->merchants()->first();
+
+        $this->testData[__FUNCTION__] = [
+            'request'  => [
+                'method' => 'POST',
+                'url'    => '/users_internal/fetch_user_by_email',
+                'content' => [
+                    'email' => $user->getEmail(),
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'id'                      => $user->getId(),
+                    'name'                    => $user->getName(),
+                    'contact_mobile'          => $user->getContactMobile(),
+                    'contact_mobile_verified' => $user->isContactMobileVerified(),
+                    'email_verified'          => $user->getEmailVerifiedAttribute(),
+                    'email'                   => $user->getEmail(),
+                    'merchants'               => [
+                        [
+                            'id'   => $merchant->getId(),
+                            'role' => 'owner'
+                        ]
+                    ],
+                ],
+            ],
+        ];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
 
 }
