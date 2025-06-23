@@ -270,6 +270,10 @@ class ValidationFields
         BusinessType::TRUST                  => self::DEFAULT_REGISTERED_GROUP,
         BusinessType::SOCIETY                => self::DEFAULT_REGISTERED_GROUP,
         BusinessType::EDUCATIONAL_INSTITUTES => self::DEFAULT_REGISTERED_GROUP,
+        BusinessType::LOCAL_AUTHORITY         => self::DEFAULT_REGISTERED_GROUP,
+        BusinessType::JUDICIAL_PERSON         => self::DEFAULT_REGISTERED_GROUP,
+        BusinessType::GOVERNMENT         => self::DEFAULT_REGISTERED_GROUP,
+        BusinessType::SECTION_8_COMPANY         => self::DEFAULT_REGISTERED_GROUP,
 
         BusinessType::NGO                => self::NGO_FIELD_GROUP,
 
