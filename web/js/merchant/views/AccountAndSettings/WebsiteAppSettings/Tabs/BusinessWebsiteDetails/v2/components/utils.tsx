@@ -85,6 +85,7 @@ export const getInitialPolicyPagesFormState = (
     {} as PolicyPageFormData;
   const verifiedPagesKeys: WebsitePolicyPages[] = [];
   const missingPagesKeys: WebsitePolicyPages[] = [];
+  const notApplicablePagesKeys: WebsitePolicyPages[] = [];
 
   for (const field in initalFormState) {
     /* istanbul ignore else */
@@ -95,21 +96,28 @@ export const getInitialPolicyPagesFormState = (
         verifiedPages[field] = page;
         verifiedPagesKeys.push(policyPageKey);
       } else {
-        const initValue =
-          page.verified === WebsiteVerificationStatus.NOT_APPLICABLE
-            ? PolicyPagesSelection.NA
-            : undefined;
+        const isNotApplicable = page.verified === WebsiteVerificationStatus.NOT_APPLICABLE;
+        const initValue = isNotApplicable ? PolicyPagesSelection.NA : undefined;
         missingPages[field] = {
           ...page,
           value: '',
           radioValue: initValue,
         };
         missingPagesKeys.push(policyPageKey);
+        if (isNotApplicable) {
+          notApplicablePagesKeys.push(policyPageKey);
+        }
       }
     }
   }
 
-  return { verifiedPages, missingPages, verifiedPagesKeys, missingPagesKeys };
+  return {
+    verifiedPages,
+    missingPages,
+    verifiedPagesKeys,
+    missingPagesKeys,
+    notApplicablePagesKeys,
+  };
 };
 
 interface FormField {

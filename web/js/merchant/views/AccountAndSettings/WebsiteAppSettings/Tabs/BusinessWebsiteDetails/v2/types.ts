@@ -67,6 +67,7 @@ export interface InitialPolicyPagesFormStateData {
   missingPages: Record<WebsitePolicyPages, MissingPagesFormFieldType>;
   verifiedPagesKeys: WebsitePolicyPages[];
   missingPagesKeys: WebsitePolicyPages[];
+  notApplicablePagesKeys: WebsitePolicyPages[];
 }
 
 export enum WebsiteUpdateActionOn {

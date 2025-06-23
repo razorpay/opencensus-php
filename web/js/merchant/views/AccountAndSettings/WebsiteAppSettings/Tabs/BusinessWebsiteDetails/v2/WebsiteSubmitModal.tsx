@@ -92,7 +92,13 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
   const [mainPageFormState, setMainPageFormState] =
     useState<MainPageFormData>(mainPageFormDefaultValue);
 
-  const { missingPages, missingPagesKeys, verifiedPages, verifiedPagesKeys } = useMemo(
+  const {
+    missingPages,
+    missingPagesKeys,
+    verifiedPages,
+    verifiedPagesKeys,
+    notApplicablePagesKeys,
+  } = useMemo(
     () => getInitialPolicyPagesFormState(website_verification_page_status),
     [website_verification_page_status],
   );
@@ -517,8 +523,11 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
   }
 
   const onCreateAllPolicyPagesButtonClick = (formState: PolicyPageFormData) => {
-    const newPolicyPagesToBeMade = Object.keys(formState) as PartialPolicyPages;
-    setPagesBeingVerified(Object.keys(formState) as WebsitePolicyPages[]);
+    const newPolicyPagesToBeMade = Object.keys(formState)
+      .filter((key) => !notApplicablePagesKeys.includes(key as WebsitePolicyPages))
+      .map((key) => key as WebsitePolicyPages) as PartialPolicyPages;
+
+    setPagesBeingVerified(newPolicyPagesToBeMade);
     setNextStepForPolicyPages({ newPolicyPagesToBeMade });
   };
 
