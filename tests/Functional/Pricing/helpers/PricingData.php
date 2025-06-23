@@ -6135,4 +6135,107 @@ return [
             ],
         ],
     ],
+
+    // buyer protection data
+    'testAddPricingPlanRuleForBuyerProtectionCustomer' => [
+        'request' => [
+            'content' => [
+                'product'             => 'primary',
+                'feature'             => 'buyer_protection_customer',
+                'payment_method'      => null,
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'fixed_rate'          => 100000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'   => 'TestPlan1',
+                'product'     => 'primary',
+                'feature'     => 'buyer_protection_customer',
+                'fixed_rate'  => 100000
+            ],
+        ],
+    ],
+    'testAddPricingPlanRuleForBuyerProtectionCustomerWithMethod' => [
+        'request' => [
+            'content' => [
+                'product'             => 'primary',
+                'feature'             => 'buyer_protection_customer',
+                'payment_method'      => 'emi',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'fixed_rate'          => 100000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'    => 'TestPlan1',
+                'product'      => 'primary',
+                'payment_method'      => 'emi',
+                'feature'      => 'buyer_protection_customer',
+                'fixed_rate'   => 100000
+            ],
+        ],
+    ],
+    'testAddPricingPlanRuleForBuyerProtectionCustomerMaxFixedRate' => [
+        'request' => [
+            'content' => [
+                'product'             => 'primary',
+                'feature'             => 'buyer_protection_customer',
+                'payment_method'      => null,
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'fixed_rate'          => 3000000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The fixed rate may not be greater than 2500000.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testAddDuplicatePricingPlanRulesForBuyerProtectionCustomer' => [
+        'request'   => [
+            'content' => [
+                'product'             => 'primary',
+                'feature'             => 'buyer_protection_customer',
+                'payment_method'      => 'emi',
+                'percent_rate'        => 0,
+                'international'       => 0,
+                'amount_range_active' => 1,
+                'amount_range_max'    => 1500,
+                'amount_range_min'    => 0,
+                'fixed_rate'          => 2000000
+            ],
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The new rule matches with an active existing rule',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+        ],
+    ],
 ];
