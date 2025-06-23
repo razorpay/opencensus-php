@@ -39,7 +39,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REMOVE_NGO_BUSINESS_TYPE                  = 'REMOVE_NGO_BUSINESS_TYPE';
 
     const REMOVE_INDIVIDUAL_BUSINESS_TYPE           = 'REMOVE_INDIVIDUAL_BUSINESS_TYPE';
-
+    
+    const ADD_NEW_BUSINESS_TYPE                     = 'ADD_NEW_BUSINESS_TYPE';
     const MERCHANT_COMPLIANCE_CHECK_ELIGIBLE        = 'MERCHANT_COMPLIANCE_CHECK_ELIGIBLE';
     const MERCHANT_WEBSITE_DETAILS                  = 'MERCHANT_WEBSITE_DETAILS';
     const FETCH_DOCUMENTS_DETAILS                   = 'FETCH_DOCUMENTS_DETAILS';

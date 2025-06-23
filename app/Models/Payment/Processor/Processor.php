@@ -11373,6 +11373,42 @@ class Processor
         {
             $gatewayData['card_mandate']['recurring_frequency'] = CardMandate\MandateHubs\MandateHQ\Constants::FREQUENCY_AS_PRESENTED;
 
+            if ($this->payment->getSubscriptionId() === null)
+            {
+                return;
+            }
+
+            //$this subscription data is not being initialize for the initial payment. if subscription is not present do fetching.
+            if ($this->subscription == null)
+            {
+                $this->subscription = $this->app['module']
+                    ->subscription
+                    ->fetchSubscriptionInfo(
+                        [
+                            Payment\Entity::AMOUNT          => $this->payment->getAmount(),
+                            Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($this->payment->getSubscriptionId()),
+                            Payment\Entity::METHOD          => $input['method'],
+                        ],
+                        $this->payment->merchant,
+                    );
+            }
+
+            if ($this->subscription !== null)
+            {
+                $gatewayData['card_mandate']['end_date'] = $this->subscription->getEndAt();
+                $gatewayData['card_mandate']['recurring_count'] = $this->subscription->getTotalCount();
+                $gatewayData['card_mandate']['start_date'] = $this->subscription->getStartAt();
+
+                //for initial payment and token is not available, so the max amount is hardcoded match with the max amount value in subscription.
+                if($token == null)
+                {
+                    $gatewayData['card_mandate']['max_debit_amount'] = 3500000;
+                }
+                else
+                {
+                    $gatewayData['card_mandate']['max_debit_amount'] = $token->getMaxAmount();
+                }
+            }
         }
     }
 
