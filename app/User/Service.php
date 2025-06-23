@@ -4618,9 +4618,31 @@ class Service extends Base\Service
         return AppResponse::jsonResponse($error);
     }
 
+    // Usl redirection skip for oauth
+    public function isUSLRedirectionSkipForOauth()
+    {
+        $uuid = $this->getUUID();
+        
+        $isUSLRedirectionSkipForOauthExpId = \Config::get('splitz.experiments')[Constants::USL_REDIRECTION_SKIP_FOR_OAUTH];
+        
+        $experimentData = (new SplitzService())->getVariantBulk($uuid, [$isUSLRedirectionSkipForOauthExpId], [], "splitz/bulkEvaluate");
+
+        return ($experimentData[$isUSLRedirectionSkipForOauthExpId]['variables']['result'] ?? null) === 'on';
+    }
+    
     public function isDashboardHomepageRedirectionEnabledtoUSL($currentRouteName, $data, $org): bool {
 
         try {
+    
+            if (($this->isUSLRedirectionSkipForOauth() === true) and
+                (str_contains(request()->fullUrl(), 'authorize-multi-token') === true))
+            {
+                $this->trace->info(TraceCode::USL_REDIRECTION_SKIP_FOR_OAUTH_URL, [
+                    'currentRouteName'          => $currentRouteName,
+                    'request_url'               => request()->fullUrl()
+                ]);
+                return false;
+            }
 
             $uuid = $this->getUUID();
 

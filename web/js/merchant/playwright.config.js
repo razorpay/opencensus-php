@@ -1,6 +1,6 @@
 const { withDashboardCore, DASHBOARD_FEDERATED_MODULES } = require('@libs/shared-core');
 
-// dummy 1
+// dummy 2
 module.exports = withDashboardCore({
   playwrightOptions: {
     moduleName: DASHBOARD_FEDERATED_MODULES.PAYMENTS_DASHBOARD,

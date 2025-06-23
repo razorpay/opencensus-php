@@ -76,6 +76,8 @@ class Constants
     const DEFAULT_MERCHANT_ID = 'default_merchant_id';
 
     const DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED = 'DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED';
+    
+    const USL_REDIRECTION_SKIP_FOR_OAUTH = "USL_REDIRECTION_SKIP_FOR_OAUTH";
 
     /**
      * determines the 2fa verification state of user in session

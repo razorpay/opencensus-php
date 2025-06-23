@@ -301,6 +301,8 @@ class TraceCode
     const UNIFIED_LOGIN_REDIRECTION                 = 'UNIFIED_LOGIN_REDIRECTION';
     // Different from the above entries as they also have intent, this doesn't
     const USL_REDIRECTION                           = 'USL_REDIRECTION';
+    
+    const USL_REDIRECTION_SKIP_FOR_OAUTH_URL            = 'USL_REDIRECTION_SKIP_FOR_OAUTH_URL';
     const GET_CONFIG_STORE_KEYS_FAILED              = 'GET_CONFIG_STORE_KEYS_FAILED';
 
     const FETCH_OAUTH_ACTION_FOR_MERCHANT           = 'FETCH_OAUTH_ACTION_FOR_MERCHANT';
