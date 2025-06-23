@@ -3142,7 +3142,7 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
-    private function createWorkflow($merchantId, $oldStatus, $nextStatus) {
+    private function createSelfServeReKYCWorkflow($merchantId, $oldStatus, $nextStatus) {
         $workflowService = new MakerCheckerWorkflowService();
 
         $workflowInput = [
@@ -3184,7 +3184,7 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::SELF_SERVE_REKYC_MERCHANT, [
                 '$merchantId' => $merchantId
             ]);
-            $this->createWorkflow($merchantId, $input[DetailConstants::CURRENT_REKYC_STATUS] , $nextStatus);
+            $this->createSelfServeReKYCWorkflow($merchantId, $input[DetailConstants::CURRENT_REKYC_STATUS] , $nextStatus);
             return $merchant->getMerchantDetail();
         }
         if ($isRekycMerchant && $nextStatus!=null)
@@ -11624,7 +11624,7 @@ class Core extends Base\Core
             $merchantBusinessType = $merchant->merchantDetail->getBusinessType();
             $userDeviceDetails = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
         }
-       
+
         foreach (BusinessType::$businessTypeBuckets as $bucketName => $businessTypes)
         {
             $result[$bucketName] = [];
@@ -11707,7 +11707,7 @@ class Core extends Base\Core
                 "merchant_id"          => $merchantId,
                 "business_types"       => $businessTypes
             ]);
-            
+
             foreach ($businessTypes as $businessType) {
                 array_push($result[BusinessType::REGISTERED],
                            [
@@ -14006,9 +14006,9 @@ class Core extends Base\Core
 
         return ($isExperimentEnabled and $isModularMerchant);
     }
-    
+
     private function shouldAddNewBusinessTypes(MerchantEntity $merchant) : bool {
-       
+
         $isExperimentEnabled = (new MerchantCore)->isSplitzExperimentEnable(
             [
                 'id' => $merchant->getId(),
@@ -14016,11 +14016,11 @@ class Core extends Base\Core
             ],
             DetailConstants::ENABLE
         );
-       
+
         $isModularMerchant = $this->pgosProxyController->getIndiaModularMerchantResult($merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false;
-        
+
         return ($isExperimentEnabled and $isModularMerchant);
-        
+
     }
 
     public function createVCIPEntity($input)
