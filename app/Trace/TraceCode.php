@@ -151,6 +151,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SELF_SERVE_REKYC_UPDATE_SUCCESS                       = 'SELF_SERVE_REKYC_UPDATE_SUCCESS';
     const SELF_SERVE_REKYC_UPDATE_FAILED                        = 'SELF_SERVE_REKYC_UPDATE_FAILED';
     const SELF_SERVE_REKYC_UPDATE_RESPONSE                      = 'SELF_SERVE_REKYC_UPDATE_RESPONSE';
+    const SELF_SERVE_REKYC_MERCHANT                             = 'SELF_SERVE_REKYC_MERCHANT';
 
     const CREDITS_EXPIRE_REQUEST                                = 'CREDITS_EXPIRE_REQUEST';
     const QR_PAYMENT_ES_DEBUG                                   = 'QR_PAYMENT_ES_DEBUG';
@@ -5052,6 +5053,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CROSS_BORDER_SEGMENT_EVENT_PUSH_SUCCESS               = 'CROSS_BORDER_SEGMENT_EVENT_PUSH_SUCCESS';
     const CROSS_BORDER_SEGMENT_EVENT_PUSH_FAILED                = 'CROSS_BORDER_SEGMENT_EVENT_PUSH_FAILED';
     const CROSS_BORDER_SEGMENT_EVENT_PUSH_INVALID_REQUEST       = 'CROSS_BORDER_SEGMENT_EVENT_PUSH_INVALID_REQUEST';
+
+    const CROSS_BORDER_RECURRING_TOKEN                          = 'CROSS_BORDER_RECURRING_TOKEN';
 
     const PAYMENT_FEE_CONVERSION_FAILED                         = 'PAYMENT_FEE_CONVERSION_FAILED';
     const PAYMENT_FEE_CONVERSION_FOR_MCC                        = 'PAYMENT_FEE_CONVERSION_FOR_MCC';
@@ -13368,6 +13371,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TNC_LOG_UPDATE_FAILED                                 = 'TNC_LOG_UPDATE_FAILED';
     const INVALID_PRODUCT_CONFIG_JSON                           = 'INVALID_PRODUCT_CONFIG_JSON';
     const MODIFY_CLOSE_BY_IF_APPLICABLE                         = 'MODIFY_CLOSE_BY_IF_APPLICABLE';
+    const TOKENISED_REARCH_STATUS                               = 'TOKENISED_REARCH_STATUS';
 
     const ORG_FEATURE_REPLICATION = 'ORG_FEATURE_REPLICATION';
 
