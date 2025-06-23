@@ -80,7 +80,10 @@ class Processor extends VirtualAccount\Processor
         '787878',
         '456456',
         //axis prefixes
-        VirtualAccount\Provider::AXIS_COMMON_IFSC
+        VirtualAccount\Provider::AXIS_COMMON_IFSC,
+        //idfc prefixes
+        '5678', //non payroll
+        '3141' //payroll
     ];
 
     /**
