@@ -169,4 +169,31 @@ class CoreTest extends TestCase
 
         $this->assertEquals( true, $shouldValidateLock );
     }
+
+    public function testUploadFilesByAgentSuccess()
+    {
+        $service = Mockery::mock(Service::class)->makePartial();
+        
+        $input = [
+            'merchant_id' => 'merchant_123',
+            'document_type' => 'promoter_address_url',
+            'file' => 'file_content'
+        ];
+        
+        $expectedResponse = [
+            Entity::ID => 'doc_123456789',
+            Entity::FILE_STORE_ID => 'file_123456789',
+            Entity::MERCHANT_ID => 'merchant_123',
+            Entity::UPLOAD_BY_ADMIN_ID => 'admin_123',
+            Entity::CREATED_AT => 1234567890
+        ];
+        
+        $service->shouldReceive('uploadFilesByAgent')
+            ->with($input)
+            ->andReturn($expectedResponse);
+        
+        $response = $service->uploadFilesByAgent($input);
+        
+        $this->assertEquals($expectedResponse, $response);
+    }
 }

@@ -49,6 +49,7 @@ class Type
     const MEMORANDUM_OF_ASSOCIATION    = 'memorandum_of_association';
     const ARTICLE_OF_ASSOCIATION       = 'article_of_association';
     const BOARD_RESOLUTION             = 'board_resolution';
+    const GAZETTE_NOTIFICATION         = "gazette_notification";
     const BANK_VERIFICATION_LETTER     = 'bank_verification_letter';
 
     // For KYC service integration
@@ -511,6 +512,7 @@ class Type
         self::HUF_DEED,
         self::SOCIETY_REGISTRATION_CERTIFICATE,
         self::POWER_OF_ATTORNEY,
+        self::GAZETTE_NOTIFICATION,
 
         self::FIRS_ICICI_FILE,
         self::FIRS_ICICI_ZIP,
@@ -799,6 +801,7 @@ class Type
         self::EMERCHANTPAY_PASSPORT           => self::ADDITIONAL_DOCUMENTS,
         self::CPV_REPORT                      => self::ADDITIONAL_DOCUMENTS,
         self::BAR_COUNCIL_CERTIFICATE         => self::ADDITIONAL_DOCUMENTS,
+        self::GAZETTE_NOTIFICATION            => self::ADDITIONAL_DOCUMENTS
     ];
 
     /**

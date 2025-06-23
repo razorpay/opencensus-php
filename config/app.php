@@ -812,6 +812,10 @@ return array(
 
     'cross_border_payment_fee_fix_experiment_id' => env('CROSS_BORDER_PAYMENT_FEE_FIX_EXPERIMENT_ID'),
 
+    'cross_border_rearch_card_recurring_initial_flow_experiment_id' => env('CROSS_BORDER_REARCH_CARD_RECURRING_INITIAL_FLOW_EXPERIMENT_ID'),
+
+    'cross_border_rearch_card_recurring_flow_experiment_id' => env('CROSS_BORDER_REARCH_CARD_RECURRING_FLOW_EXPERIMENT_ID'),
+
     'show_upi_autopay_method_on_dashboard' => env('SHOW_UPI_AUTOPAY_METHOD_ON_DASHBOARD'),
 
     'upi_autopay_rearch_pre_process' => env('UPI_AUTOPAY_REARCH_PRE_PROCESS'),
@@ -1118,6 +1122,8 @@ return array(
     'subcategory_exclusion_for_automation' => env('SUBCATEGORY_EXCLUSION_FOR_AUTOMATION'),
 
     'migrate_mkyc_to_document_upload_v2' => env('MIGRATE_MKYC_TO_DOCUMENT_UPLOAD_V2'),
+    
+    'add_new_business_types' => env('ADD_NEW_BUSINESS_TYPES'),
 
     'partnership_unblock_huf_business_type_experiment_id' => env('PARTNERSHIP_UNBLOCK_HUF_BUSINESS_TYPE_EXP_ID'),
 
@@ -1127,6 +1133,10 @@ return array(
 
     'onboarding_api_upi_terminal_creation_disabled' => env('ONBOARDING_API_UPI_TERMINAL_CREATION_DISABLED'),
 
+    'entity_relational_load_from_scrooge_experiment_id' => env('ENTITY_RELATIONAL_LOAD_FROM_SCROOGE_EXPERIMENT_ID'),
+
+    'settlement_notification_opt_out_experiment_id' => env('SETTLEMENT_NOTIFICATION_OPT_OUT_EXPERIMENT_ID'),
+    
     'settlements_processed_comms_experiment_id' => env('SETTLEMENTS_PROCESSED_COMMS_EXPERIMENT_ID'),
 
     'transfer_settlement_nss_experiment_id'=> env('TRANSFER_SETTLEMENT_NSS_EXPERIMENT_ID'),
@@ -1451,6 +1461,8 @@ return array(
 
     'saved_card_token_payments_rearch'=> env('SAVED_CARD_TOKEN_PAYMENTS_REARCH'),
 
+    'saved_card_token_payments_rearch_issuer'=> env('SAVED_CARD_TOKEN_PAYMENTS_REARCH_ISSUER'),
+
     'block_merchant_on_rearch_cps' => env('BLOCK_MERCHANT_ON_REARCH_CPS'),
 
     'cross_border_pacb_tagging_experiment_id'   => env('CROSS_BORDER_PACB_TAGGING_EXPERIMENT_ID'),
@@ -1493,8 +1505,6 @@ return array(
     'block_merchants_on_ups_experiment_id' => env('BLOCK_MERCHANTS_ON_UPS_EXPERIMENT_ID'),
 
     'delete_card_metadata_after_reconciliation_for_paysecure_and_fulcrum' => env('DELETE_CARD_METADATA_AFTER_RECONCILIATION_FOR_PAYSECURE_AND_FULCRUM'),
-
-    'banking_org_id_moto_payments_via_pg_router' => env('BANKING_ORG_ID_MOTO_PAYMENTS_VIA_PGROUTER'),
 
     'pass_rejected_unused_tokens' => env('PASS_REJECTED_UNUSED_TOKENS'),
 

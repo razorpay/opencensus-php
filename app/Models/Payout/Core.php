@@ -12639,7 +12639,28 @@ class Core extends Base\Core
             $status = $fundTransferAttempt->getStatus();
         }
 
-        return [
+        // Fetch fund account and contact details for enrichment
+        $fundAccountContactData = null;
+        try {
+            // Get fund account ID from payout and check for "fa_" prefix
+            $fundAccountId = $payout->getFundAccountId();
+
+            // Remove "fa_" prefix if present
+            if (strpos($fundAccountId, 'fa_') === 0) {
+                $fundAccountId = substr($fundAccountId, 3); // Remove "fa_" prefix (3 characters)
+            }
+
+            $fundAccountContactData = $this->repo->fund_account->fetchFundAccountWithContactForStatementEnrichment($fundAccountId);
+        } catch (\Throwable $e) {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FUND_ACCOUNT_CONTACT_FETCH_ERROR,
+                ['payout_id' => $payout->getId(), 'fund_account_id' => $payout->getFundAccountId()]
+            );
+        }
+
+        $baseData = [
             PayoutConstants::ENTITY_ID               => $payout->getId(),
             PayoutConstants::ENTITY_TYPE             => PayoutConstants::PAYOUTS_ENTITY_TYPE,
             PayoutConstants::UTR                     => $utr ? $utr : "",
@@ -12651,7 +12672,21 @@ class Core extends Base\Core
             PayoutConstants::MODE                    => $payout->getMode(),
             PayoutConstants::AMOUNT                  => $payout->getAmount(),
             PayoutConstants::BALANCE_ID              => $payout->getBalanceId(),
+            PayoutConstants::PAYOUT_PURPOSE          => $payout->getPurpose(),
+
         ];
+
+        // Add enhanced data if available
+        if ($fundAccountContactData !== null) {
+            $baseData[PayoutConstants::FUND_ACCOUNT_ID] = $fundAccountContactData['fund_account_id'] ?? "";
+            $baseData[PayoutConstants::CONTACT_ID] = $fundAccountContactData['contact_id'] ?? "";
+            $baseData[PayoutConstants::NAME] = $fundAccountContactData['name'] ?? "";
+            $baseData[PayoutConstants::CONTACT] = $fundAccountContactData['contact'] ?? "";
+            $baseData[PayoutConstants::EMAIL] = $fundAccountContactData['email'] ?? "";
+            $baseData[PayoutConstants::CONTACT_TYPE] = $fundAccountContactData['contact_type'] ?? "";
+        }
+
+        return $baseData;
     }
 
     public function triggerPayoutPropertiesEventViaMicroservice(Entity $payout, array $payoutRequestInput)
