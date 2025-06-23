@@ -64,6 +64,7 @@ class Core extends Base\Core
     const DEFAULT_FTS_CHANNEL = Channel::ICICI;
     const DEFAULT_PAYOUT_CHANNEL = Channel::AXIS;
 
+    const SETTLEMENT_NOTIFICATION_OPT_OUT_EXPERIMENT_KEY = "app.settlement_notification_opt_out_experiment_id";
     const PROCESSED_COMMS_EXPERIMENT_KEY        = "app.settlements_processed_comms_experiment_id";
 
     public function retrieveById($id)
@@ -606,12 +607,7 @@ class Core extends Base\Core
                 $merchantId = $merchant->getParentId();
             }
 
-            $variant = $this->app->razorx->getTreatment($merchantId,
-                MerchantModel\RazorxTreatment::SETTLEMENT_NOTIFICATION_OPT_OUT,
-                $this->mode
-            );
-
-            if (strtolower($variant) === 'on')
+            if ($this->isSettlementNotificationOptOutEnabled($merchantId, self::SETTLEMENT_NOTIFICATION_OPT_OUT_EXPERIMENT_KEY) === true)
             {
                 return;
             }
@@ -1632,4 +1628,48 @@ class Core extends Base\Core
         return $tag;
     }
 
+    // check for settlement notification opt out experiment
+    protected function isSettlementNotificationOptOutEnabled($merchantId, $experimentKey): bool
+    {
+        try {
+            $experimentId = $this->app['config']->get($experimentKey);
+
+            // if experiment not found; send notifications as usual from API; same as experiement is not enabled for the merchant
+            if (empty($experimentId))
+            {
+                return false;
+            }
+
+            $this->trace->info(TraceCode::SETTLEMENT_NOTIFICATION_OPT_OUT_EXPERIMENT_REQUEST_LOG, [
+                'experiment_key' => $experimentKey,
+                'experiment_id' => $experimentId,
+                'merchant_id'   => $merchantId,
+            ]);
+
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $experimentId,
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SETTLEMENT_NOTIFICATION_OPT_OUT_EXPERIMENT_RESPONSE_LOG, [
+                'experiment_id' => $experimentId,
+                'merchant_id'   => $merchantId,
+                'splitz_output' => $response,
+            ]);
+
+                return $variant === 'enabled';
+        }
+        catch( \Throwable $ex)
+        {
+            $this->trace->error(TraceCode::SETTLEMENT_NOTIFICATION_OPT_OUT_EXPERIMENT_FAILURE, [
+                'message' => $ex->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
 }
