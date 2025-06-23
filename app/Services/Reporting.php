@@ -348,6 +348,7 @@ class Reporting implements ExternalService
                     'total_count' => $data['count'],
                     'input' => $input,
                     'headers' => $requestHeaders,
+                    'isAdminTokenPresent' => !empty($this->ba->getAdminToken()),
                 ]);
         } catch (\Throwable $e) {
             $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS_LOG_ERROR,
