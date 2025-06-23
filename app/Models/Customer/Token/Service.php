@@ -2920,15 +2920,28 @@ class Service extends Base\Service
                         'response'=>$terminal_response
                     ]);
 
-                    $currentMerchantID = $terminal_response[0]['merchant_id'];
-                    $merchantPushProvisioning = $this->repo->merchant->fetchMerchantFromId($currentMerchantID);
+                    $isPushProvisioningEnabled = false;
+                    foreach ($terminal_response as $currentMerchant)
+                    {
+                        $currentMerchantID = $currentMerchant['merchant_id'];
+                        $merchantPushProvisioning = $this->repo->merchant->fetchMerchantFromId($currentMerchantID);
 
-                    $this->trace->info(TraceCode::MISC_TRACE_CODE,[
-                        'message'=>'Merchant Info',
-                        'merchant'=>$merchantPushProvisioning,
-                    ]);
+                        $this->trace->info(TraceCode::MISC_TRACE_CODE,[
+                            'message'=>'Merchant Info',
+                            'merchant'=>$merchantPushProvisioning,
+                        ]);
 
-                    $this->merchant = $merchantPushProvisioning;
+                        $this->merchant = $merchantPushProvisioning;
+                        if ($this->merchant->isFeatureEnabled(Feature\Constants::PUSH_PROVISIONING_LIVE) === true)
+                        {
+                            $isPushProvisioningEnabled = true;
+                            break;
+                        }
+                    }
+
+                    if ($isPushProvisioningEnabled === false) {
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "push provisioning is not enabled for this gateway terminal id");
+                    }
 
                     // find existing customer or create a new one if not available
                     $customer =  $this->getCustomerByMerchantPP($input);
