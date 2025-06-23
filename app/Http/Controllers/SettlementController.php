@@ -1028,6 +1028,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function createSettlementsWFAction()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createSettlementsWFAction($input);
+
+        return ApiResponse::json($data);
+    }
+
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('1024M');
