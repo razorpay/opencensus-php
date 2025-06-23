@@ -24,6 +24,7 @@ import {
   fetchSettlementAmount as fnFetchSettlementAmount,
   fetchBalanceConfig as fnFetchBalanceConfig,
   fetchOndemandRestrictions,
+  fetchOndemandMerchantConfig,
 } from 'merchant/reducers/home';
 import {
   fetchSchedule as fnFetchSchedule,
@@ -43,6 +44,7 @@ import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import moment from 'moment';
 import qs from 'query-string';
 import { validateSettlementIdFilters } from 'merchant/views/Settlements/v3/utils/common';
+import { getIsOdsMigrationEnabled } from 'merchant/views/Settlements/InstantSettlements/utils/common';
 
 const DEFAULT_PAGE_SIZE_SETTLEMENTS_V3 = 25;
 
@@ -75,8 +77,23 @@ class SettlementsListContainer extends ListContainer {
   get settleNowRestrictionMsg() {
     if (!this.settlementRestricted) return;
 
-    const { attempts_left, settlable_amount, max_amount_limit, settlements_count_limit } =
-      this.props.ondemand_restrictions.data;
+    const { user, ondemand_restrictions, ondemand_merchant_config } = this.props;
+    const isOdsExpEnabled = getIsOdsMigrationEnabled(user);
+
+    let attempts_left, settlable_amount, max_amount_limit, settlements_count_limit;
+
+    if (isOdsExpEnabled) {
+      const restrictedConfig = ondemand_merchant_config?.data?.restricted_config;
+      ({
+        remaining_attempts: attempts_left,
+        remaining_settlement_amount: settlable_amount,
+        daily_max_amount_limit: max_amount_limit,
+        daily_settlement_count_limit: settlements_count_limit,
+      } = restrictedConfig);
+    } else {
+      ({ attempts_left, settlable_amount, max_amount_limit, settlements_count_limit } =
+        ondemand_restrictions?.data);
+    }
 
     if (this.props.user.isEsOnDemandBlocked) {
       return 'Settle now is temporarily unavailable. Please try again at 8:00 AM tomorrow.';
@@ -174,7 +191,7 @@ class SettlementsListContainer extends ListContainer {
       user,
       fetchProviders,
     } = this.props;
-
+    const isOdsExpEnabled = getIsOdsMigrationEnabled(user);
     window.rzpAnalytics?.({
       eventCategory: EVENT_CATEGORY_DASHBOARD_SETTLEMENTS,
       eventAction: 'Go To - Settlements',
@@ -195,12 +212,16 @@ class SettlementsListContainer extends ListContainer {
     this.popupIfSettle();
     fetchSettlementAmount();
     fetchHolidayList();
-    this.fetchRestrictionsIfAny();
+    this.fetchRestrictionsIfAny(isOdsExpEnabled);
   }
 
-  fetchRestrictionsIfAny = () => {
+  fetchRestrictionsIfAny = (isOdsExpEnabled) => {
     if (this.settlementRestricted) {
-      this.props.fetchOndemandRestrictions();
+      if (!isOdsExpEnabled) {
+        this.props.fetchOndemandRestrictions();
+      } else {
+        this.props.fetchOndemandMerchantConfig();
+      }
     }
   };
 
@@ -287,13 +308,20 @@ class SettlementsListContainer extends ListContainer {
       checkIfFirstEverSettlement,
       settlementExists,
       esOndemandSettlementEnabled,
+      ondemand_merchant_config,
+      user,
     } = this.props;
+
+    const isOdsExpEnabled = getIsOdsMigrationEnabled(user);
 
     const balance = current_balance.data.balance;
     const settlableAmount =
       this.settlementRestricted &&
-      ondemand_restrictions &&
-      ondemand_restrictions.data.settlable_amount;
+      (isOdsExpEnabled
+        ? (ondemand_merchant_config &&
+            ondemand_merchant_config?.data?.restricted_config?.remaining_settlement_amount) ??
+          0
+        : (ondemand_restrictions && ondemand_restrictions.data.settlable_amount) ?? 0);
 
     openModal({
       component: (
@@ -522,6 +550,7 @@ const mapDispatchToProps = (dispatch) => {
       fetchHolidayList: fnFetchHolidayList,
       fetchBalanceConfig: fnFetchBalanceConfig,
       fetchOndemandRestrictions,
+      fetchOndemandMerchantConfig,
       fetchProviders: fetchTerminalProviders,
     },
     dispatch,

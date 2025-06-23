@@ -27,6 +27,7 @@ import {
 } from 'merchant/reducers/settlements/details';
 import { OdsBanners } from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage/banners/OdsBanners';
 import { QUERY_KEY as LINKED_ACC_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useLinkedAccountBalance';
+import { QUERY_KEY as NEW_ODS_CONFIG_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useNewODSConfig';
 import { QUERY_KEY as ODS_CONFIG_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
 import { QUERY_KEY as ODS_RES_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSRestrictedConfig';
 import { QUERY_KEY as PG_BAL_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/usePGBalance';
@@ -54,6 +55,7 @@ import {
   SettlementCycle,
 } from './styledUtils';
 import { docsUrl } from 'common/utils/constants';
+import { getIsOdsMigrationEnabled } from 'merchant/views/Settlements/InstantSettlements/utils/common';
 
 const SETTLEMENT_DOC_LINK = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]: docsUrl.SETTLEMENTS_DOC_URL,
@@ -147,6 +149,8 @@ const SettlementsHeaderV2 = ({
     });
   }, []);
 
+  const isOdsExpEnabled = getIsOdsMigrationEnabled(user);
+
   const onRefreshClick = () => {
     fetchCurrentBalance();
     fetchPreviousSettlements(prevSettlementParams);
@@ -156,9 +160,14 @@ const SettlementsHeaderV2 = ({
     setFetchedAt(moment());
     setTimeDiff(0);
     if (isOndemandSettlementEnabled) {
-      queryClient.removeQueries({ queryKey: ODS_CONFIG_QUERY_KEY, exact: true });
+      queryClient.removeQueries({
+        queryKey: isOdsExpEnabled ? NEW_ODS_CONFIG_QUERY_KEY : ODS_CONFIG_QUERY_KEY,
+        exact: true,
+      });
       queryClient.removeQueries({ queryKey: PG_BAL_QUERY_KEY, exact: true });
-      queryClient.removeQueries({ queryKey: ODS_RES_QUERY_KEY, exact: true });
+      if (!isOdsExpEnabled) {
+        queryClient.removeQueries({ queryKey: ODS_RES_QUERY_KEY, exact: true });
+      }
       queryClient.removeQueries({ queryKey: LINKED_ACC_QUERY_KEY, exact: true });
     }
 

@@ -297,8 +297,13 @@ class HomeContainer extends Component {
   }
 
   fetchRestrictionsIfAny() {
+    const { user } = this.props;
     if (this.settlementRestricted) {
-      this.props.fetchOndemandRestrictions();
+      if (!user.isOdsMigrationEnabled) {
+        this.props.fetchOndemandRestrictions();
+      } else {
+        this.props.fetchOndemandMerchantConfig();
+      }
     }
   }
 
@@ -791,6 +796,7 @@ class HomeContainer extends Component {
       support_detail,
       kycStatusActivationDuration,
       ondemand_restrictions,
+      ondemand_merchant_config,
       showTnCModal,
       trackEvents,
       i18: { isConfigTagEnabled },
@@ -843,6 +849,7 @@ class HomeContainer extends Component {
       mode,
       current_balance,
       ondemand_restrictions: this.settlementRestricted && ondemand_restrictions,
+      ondemand_merchant_config: this.settlementRestricted && ondemand_merchant_config,
       tabsMeta,
       isAdmin,
       analyticsFetch,
@@ -1177,6 +1184,7 @@ export default compose(
         mode: state.session.mode,
         current_balance: state.home.current_balance,
         ondemand_restrictions: state.home.ondemand_restrictions,
+        ondemand_merchant_config: state.home.ondemand_merchant_config,
         merchantBalanceConfigs: state.home.merchantBalanceConfigs,
         showInstantActivationSuccess: state.home.instantActivations.showInstantActivationSuccess,
         showKYCDetails: state.home.instantActivations.showKYCDetails,

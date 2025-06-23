@@ -1,5 +1,6 @@
 import { PaymentsDashboardUser } from '@libs/shared-types/payments';
 import type { ODSConfig } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
+import type { NewODSConfig } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useNewODSConfig';
 
 export const CREATE_ODS_ENDPOINT = {
   NEW: 'capital_es/service/instant_settlements/ondemand',
@@ -14,7 +15,7 @@ export const ODS_PRICING_ENDPOINT = {
 export const SEPERATEDBALANCEURL = 'capital_es/service/balances?type=online_domestic';
 
 export const getHasMerchantLevelLimit = (
-  odsAvailableLimit: ODSConfig['available_limit'],
+  odsAvailableLimit: ODSConfig['available_limit'] | NewODSConfig['available_limit'],
 ): boolean => {
   return odsAvailableLimit !== null && odsAvailableLimit !== undefined;
 };
@@ -23,12 +24,24 @@ export const getIsMerchantLimitBreached = (odsConfig?: ODSConfig) => {
   return (
     !!odsConfig?.disable &&
     getHasMerchantLevelLimit(odsConfig?.available_limit) &&
-    Number(odsConfig?.available_limit || 0) <= 0
+    Number(odsConfig?.available_limit ?? 0) <= 0
+  );
+};
+
+export const getIsMerchantLimitBreachedNew = (odsConfig?: NewODSConfig) => {
+  return (
+    !!odsConfig?.limit_breached &&
+    getHasMerchantLevelLimit(odsConfig?.available_limit) &&
+    Number(odsConfig?.available_limit ?? 0) <= 0
   );
 };
 
 export const getIsGlobalLimitBreached = (odsConfig?: ODSConfig) => {
   return !!odsConfig?.disable && !getIsMerchantLimitBreached(odsConfig);
+};
+
+export const getIsGlobalLimitBreachedNew = (odsConfig?: NewODSConfig) => {
+  return !!odsConfig?.limit_breached && !getIsMerchantLimitBreachedNew(odsConfig);
 };
 
 export const getIsPartialOndemandSettlementEnabled = (user: any) => {

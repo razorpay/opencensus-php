@@ -14,6 +14,7 @@ const CURRENT_BALANCE_FETCH = 'CURRENT_BALANCE_FETCH';
 const SETTLEMENT_AMOUNT_FETCH = 'SETTLEMENT_AMOUNT_FETCH';
 const BALANCE_CONFIG_FETCH = 'BALANCE_CONFIG_FETCH';
 const ONDEMAND_RESTRICTIONS_FETCH = 'ONDEMAND_RESTRICTIONS_FETCH';
+const ONDEMAND_MERCHANT_CONFIG = 'ONDEMAND_MERCHANT_CONFIG';
 
 // product led onboarding actions
 const PAYMENT_HANDLE_FETCH = 'PAYMENT_HANDLE_FETCH';
@@ -75,6 +76,11 @@ const initialState = {
     error: null,
   },
   ondemand_restrictions: {
+    loading: true,
+    data: {},
+    error: null,
+  },
+  ondemand_merchant_config: {
     loading: true,
     data: {},
     error: null,
@@ -297,6 +303,13 @@ export const fetchOndemandRestrictions = () => {
   };
 };
 
+export const fetchOndemandMerchantConfig = () => {
+  return {
+    type: ONDEMAND_MERCHANT_CONFIG,
+    payload: merchantFetch('capital_es/service/instant_settlements/ondemand/config'),
+  };
+};
+
 export const fetchBalanceConfig = () => {
   return {
     type: BALANCE_CONFIG_FETCH,
@@ -459,6 +472,22 @@ export default function homeReducer(state = initialState, action) {
         loading: false,
         error: action.payload.errors,
         data: initialState.ondemand_restrictions.data,
+      });
+
+    case `${ONDEMAND_MERCHANT_CONFIG}::SUCCESS`:
+      return merge(state, {
+        ondemand_merchant_config: {
+          data: action.payload.data,
+          loading: false,
+          error: null,
+        },
+      });
+
+    case `${ONDEMAND_MERCHANT_CONFIG}::ERROR`:
+      return set(state, 'ondemand_merchant_config', {
+        loading: false,
+        error: action.payload.errors,
+        data: initialState.ondemand_merchant_config.data,
       });
 
     case `${PAYMENT_HANDLE_FETCH}::SUCCESS`:

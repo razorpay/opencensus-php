@@ -318,12 +318,15 @@ class AnalyticsDesktop extends Component {
   };
 
   showOndemandSettlementForm() {
-    const { current_balance, ondemand_restrictions, user } = this.props;
+    const { current_balance, ondemand_restrictions, ondemand_merchant_config, user } = this.props;
     trackSettleNow();
     selfServeSettleTracking();
+    const isOdsExpEnabled = user.isOdsMigrationEnabled;
     const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
     const balance = current_balance.data.balance;
-    const settlableAmount = ondemand_restrictions && ondemand_restrictions.data.settlable_amount;
+    const settlableAmount = isOdsExpEnabled
+      ? ondemand_merchant_config?.data?.restricted_config?.remaining_settlement_amount ?? 0
+      : ondemand_restrictions?.data?.settlable_amount ?? 0;
 
     this.props.openModal({
       component: (

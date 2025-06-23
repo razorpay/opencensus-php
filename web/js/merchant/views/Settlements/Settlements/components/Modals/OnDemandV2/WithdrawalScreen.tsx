@@ -32,7 +32,10 @@ import { connect } from 'react-redux';
 import { useSplitzService } from 'common/splitz';
 import lazy from 'merchant/routes/LazyLoader';
 import { useLinkedAccountBalance } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useLinkedAccountBalance';
-import { useODSConfig } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
+import {
+  ODSConfig,
+  useODSConfig,
+} from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
 import { useODSRestrictedConfig } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSRestrictedConfig';
 import { useOdsMutation } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useOdsMutation';
 import { usePGBalance } from 'merchant/views/Settlements/InstantSettlements/query-hooks/usePGBalance';
@@ -45,6 +48,7 @@ import {
 } from 'merchant/views/Settlements/InstantSettlements/utils/analytics';
 import {
   getHasMerchantLevelLimit,
+  getIsOdsMigrationEnabled,
   getIsPartialOndemandSettlementEnabled,
   getIsRouteOndemandSettlementEnabled,
 } from 'merchant/views/Settlements/InstantSettlements/utils/common';
@@ -64,12 +68,15 @@ import {
 import { DASHBOARD_ZINDEX_MAP } from '@libs/shared-utils';
 import SelectModeOfTransaction from './SelectModeOfTransaction';
 import type { PaymentsDashboardUser } from '@libs/shared-types/payments';
-import { getIsOdsMigrationEnabled } from 'merchant/views/Settlements/InstantSettlements/utils/common';
 import {
   isBalanceSeperationEnabled,
   isCapitalLimitEnabled,
   isSmartSettlementEnabled,
 } from '@dashboards/payments/views/Settlements/components/utils';
+import {
+  NewODSConfig,
+  useNewODSConfig,
+} from '@dashboards/payments/views/Settlements/InstantSettlements/query-hooks/useNewODSConfig';
 
 const GtmModalContent = lazy(
   () =>
@@ -297,22 +304,33 @@ const WithdrawalScreen = ({
   const amountInPaise = convertToMinorUnit(amount, { currency });
   const isLinkedAccountTabActive = selectedTab === SETTLEMENT_TYPES.ROUTE;
 
+  const isOdsExpEnabled = getIsOdsMigrationEnabled(user);
   const pgBalanceQuery = usePGBalance();
 
-  const odsConfigQuery = useODSConfig();
+  const odsConfigQuery = isOdsExpEnabled ? useNewODSConfig() : useODSConfig();
   const odsRestrictedConfigQuery = useODSRestrictedConfig({
-    enabled: isODSRestricted,
+    enabled: isODSRestricted && !isOdsExpEnabled,
   });
   const linkedAccountBalanceQuery = useLinkedAccountBalance({ enabled: isLinkedAccountTabActive });
 
   const hasMIDLevelLimit = getHasMerchantLevelLimit(odsConfigQuery.data?.available_limit);
+
+  const maxLimit = isOdsExpEnabled
+    ? (odsConfigQuery.data as NewODSConfig)?.max_limit_per_working_day
+    : (odsConfigQuery.data as ODSConfig)?.max_limit;
+
+  const restrictedLimit = isOdsExpEnabled
+    ? (odsConfigQuery.data as NewODSConfig)?.restricted_config?.daily_max_amount_limit
+    : odsRestrictedConfigQuery.data?.max_amount_limit;
+
+  const restrictedAvailableLimit = isOdsExpEnabled
+    ? (odsConfigQuery?.data as NewODSConfig)?.restricted_config?.remaining_settlement_amount
+    : odsRestrictedConfigQuery.data?.settlable_amount;
   /** Avoid fallback value of zero to handle cases where value not present - backward compactibility */
-  const dailyMaxLimit = isODSRestricted
-    ? odsRestrictedConfigQuery.data?.max_amount_limit
-    : odsConfigQuery.data?.max_limit;
+  const dailyMaxLimit = isODSRestricted ? restrictedLimit : maxLimit;
   /** Avoid fallback value of zero to handle cases where value not present - backward compactibility */
   const dailyAvailableLimit = isODSRestricted
-    ? odsRestrictedConfigQuery.data?.settlable_amount
+    ? restrictedAvailableLimit
     : odsConfigQuery.data?.available_limit;
   const showDailyLimit = isODSRestricted || hasMIDLevelLimit;
   const splitz = useSplitzService();
@@ -323,8 +341,9 @@ const WithdrawalScreen = ({
     ? seperatedBalance?.data?.derived_balance || 0
     : currentBalance;
   const linkedAccountBalance = Number(linkedAccountBalanceQuery.data?.balance) || 0;
-  const isSmartSettlementAvailable =
-    odsConfigQuery?.data?.smart_settlement_config?.smart_settlement === 'active';
+  const isSmartSettlementAvailable = isOdsExpEnabled
+    ? (odsConfigQuery?.data as NewODSConfig)?.smart_settlement_config?.enabled
+    : (odsConfigQuery?.data as ODSConfig)?.smart_settlement_config?.smart_settlement === 'active';
   const errorMessage = ((): string => {
     // Linked Account
     if (isLinkedAccountTabActive) {
@@ -351,8 +370,6 @@ const WithdrawalScreen = ({
     }
     return '';
   })();
-
-  const isOdsExpEnabled = user.isOdsMigrationEnabled;
 
   const pricingBreakupQuery = usePricingBreakup({
     amount: amountInPaise,
@@ -381,7 +398,12 @@ const WithdrawalScreen = ({
   const isFetchingInitialData =
     pgBalanceQuery.isInitialLoading ||
     odsConfigQuery.isInitialLoading ||
-    (isODSRestricted && odsRestrictedConfigQuery.isInitialLoading);
+    (isODSRestricted
+      ? isOdsExpEnabled
+        ? odsConfigQuery.isInitialLoading
+        : odsRestrictedConfigQuery.isInitialLoading
+      : false);
+
   /** Using isFetchingInitialData as state initialiser, allows us to avoid CLS when going to next screen(confirm screen) and coming back here*/
   const [isInitialised, setIsInitialised] = useState(!isFetchingInitialData);
   const [shouldShowTransactionModeSelection, setShouldShowTransactionModeSelection] =

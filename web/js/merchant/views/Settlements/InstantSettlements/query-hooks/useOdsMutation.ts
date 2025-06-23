@@ -4,11 +4,16 @@ import {
   fetchRouteOndemandSettlements,
   fetchInstantSettlements,
 } from 'merchant/reducers/collection';
-import { fetchCurrentBalance, fetchOndemandRestrictions } from 'merchant/reducers/home';
+import {
+  fetchCurrentBalance,
+  fetchOndemandMerchantConfig,
+  fetchOndemandRestrictions,
+} from 'merchant/reducers/home';
 import store from 'merchant/store';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { QUERY_KEY as LINKED_ACC_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useLinkedAccountBalance';
 import { QUERY_KEY as ODS_CONFIG_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
+import { QUERY_KEY as NEW_ODS_CONFIG_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useNewODSConfig';
 import { QUERY_KEY as ODS_RES_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSRestrictedConfig';
 import { QUERY_KEY as PG_BAL_QUERY_KEY } from 'merchant/views/Settlements/InstantSettlements/query-hooks/usePGBalance';
 import {
@@ -54,9 +59,14 @@ export const useOdsMutation = (isOdsExpEnabled: Boolean) => {
     },
     onSuccess: (_data, payload) => {
       const isRouteOds = payload.type === SETTLEMENT_TYPES.ROUTE;
-      queryClient.removeQueries({ queryKey: ODS_CONFIG_QUERY_KEY, exact: true });
+      queryClient.removeQueries({
+        queryKey: isOdsExpEnabled ? NEW_ODS_CONFIG_QUERY_KEY : ODS_CONFIG_QUERY_KEY,
+        exact: true,
+      });
       queryClient.removeQueries({ queryKey: PG_BAL_QUERY_KEY, exact: true });
-      queryClient.removeQueries({ queryKey: ODS_RES_QUERY_KEY, exact: true });
+      if (!isOdsExpEnabled) {
+        queryClient.removeQueries({ queryKey: ODS_RES_QUERY_KEY, exact: true });
+      }
       /**
        * we create custom instance of redux store while running tests, so this store
        * and test instance will be different which might causes issues in test cases.
@@ -65,7 +75,12 @@ export const useOdsMutation = (isOdsExpEnabled: Boolean) => {
        * */
       const dispatch = store.dispatch;
       dispatch(fetchCurrentBalance());
-      dispatch(fetchOndemandRestrictions());
+      if (isOdsExpEnabled) {
+        dispatch(fetchOndemandMerchantConfig());
+      } else {
+        dispatch(fetchOndemandRestrictions());
+      }
+
       if (isRouteOds) {
         dispatch(fetchRouteOndemandSettlements({ count: 25, skip: 0 }));
         queryClient.removeQueries({ queryKey: LINKED_ACC_QUERY_KEY, exact: true });

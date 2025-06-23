@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchOndemandRestrictions } from 'merchant/reducers/home';
+import { fetchOndemandRestrictions, fetchOndemandMerchantConfig } from 'merchant/reducers/home';
 import { fetchHolidayList } from 'merchant/reducers/settlements/details';
 import { fetchInstantSettlements as fetchAll } from 'merchant/reducers/collection';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -56,13 +56,29 @@ class InstantSettlements extends ListContainer {
 
   /* istanbul ignore next */
   get settleNowRestrictionMsg() {
-    const { user } = this.props;
+    const { user, ondemand_restrictions, ondemand_merchant_config } = this.props;
     const isEsOnDemandBlocked = user.isEsOnDemandBlocked;
 
     if (!this.settlementRestricted) return null;
 
-    const { attempts_left, settlable_amount, max_amount_limit, settlements_count_limit } =
-      this.props.ondemand_restrictions.data;
+    const isOdsExpEnabled = user?.isOdsMigrationEnabled;
+
+    let attempts_left, settlable_amount, max_amount_limit, settlements_count_limit;
+
+    if (isOdsExpEnabled) {
+      const restrictedConfig = ondemand_merchant_config?.data?.restricted_config;
+
+      ({
+        remaining_attempts: attempts_left,
+        remaining_settlement_amount: settlable_amount,
+        daily_max_amount_limit: max_amount_limit,
+        daily_settlement_count_limit: settlements_count_limit,
+      } = restrictedConfig);
+    } else {
+      ({ attempts_left, settlable_amount, max_amount_limit, settlements_count_limit } =
+        ondemand_restrictions?.data);
+    }
+
     if (isEsOnDemandBlocked) {
       return 'Settle now is temporarily unavailable. Please try again at 8:00 AM tomorrow.';
     } else if (this.isOnDemandDisabled) {
@@ -123,7 +139,11 @@ class InstantSettlements extends ListContainer {
 
   fetchRestrictionsIfAny = () => {
     if (this.settlementRestricted) {
-      this.props.fetchOndemandRestrictions();
+      if (this.props.user.isOdsMigrationEnabled) {
+        this.props.fetchOndemandMerchantConfig();
+      } else {
+        this.props.fetchOndemandRestrictions();
+      }
     }
   };
 
@@ -144,13 +164,18 @@ class InstantSettlements extends ListContainer {
       checkIfFirstEverSettlement,
       settlementExists,
       esOndemandSettlementEnabled,
+      ondemand_merchant_config,
+      user,
     } = this.props;
-
+    const isOdsExpEnabled = user.isOdsMigrationEnabled;
     const balance = current_balance.data.balance || 0;
     const settlableAmount =
       this.settlementRestricted &&
-      ondemand_restrictions &&
-      ondemand_restrictions.data.settlable_amount;
+      (isOdsExpEnabled
+        ? (ondemand_merchant_config &&
+            ondemand_merchant_config.data?.restricted_config?.remaining_settlement_amount) ??
+          0
+        : (ondemand_restrictions && ondemand_restrictions.data.settlable_amount) ?? 0);
 
     openModal({
       component: (
@@ -259,6 +284,7 @@ const mapDispatchToProps = (dispatch) => {
       ...ModalActions,
       fetchHolidayList,
       fetchOndemandRestrictions,
+      fetchOndemandMerchantConfig,
     },
     dispatch,
   );

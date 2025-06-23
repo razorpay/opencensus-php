@@ -5,10 +5,12 @@ import { bindActionCreators } from 'redux';
 
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import { fetchOndemandRestrictions as fnFetchOndemandRestrictions } from 'merchant/reducers/home';
-import { useODSConfig } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
 import {
   getIsGlobalLimitBreached,
   getIsMerchantLimitBreached,
+  getIsGlobalLimitBreachedNew,
+  getIsMerchantLimitBreachedNew,
+  getIsOdsMigrationEnabled,
 } from 'merchant/views/Settlements/InstantSettlements/utils/common';
 import { OnDemandModalEntry } from 'merchant/views/Settlements/Settlements/components/Modals/OnDemandModalEntry';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
@@ -19,6 +21,8 @@ import {
 import { openModal as fnOpenModal, closeModal } from 'merchant_common/reducers/modals';
 
 import { restrictedFeatures, settleNowRestrictionMsgFn } from './utils';
+import { useNewODSConfig } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useNewODSConfig';
+import { useODSConfig } from 'merchant/views/Settlements/InstantSettlements/query-hooks/useODSConfig';
 
 const SettleNow = (props) => {
   const {
@@ -35,10 +39,15 @@ const SettleNow = (props) => {
   } = props;
   const currencyCode = user.merchant.currency || 'INR';
 
-  const odsQuery = useODSConfig();
+  const isOdsExpEnabled = getIsOdsMigrationEnabled(user);
+
+  const odsQuery = isOdsExpEnabled ? useNewODSConfig() : useODSConfig();
+
   const isNodalAccountLowBalanceBlocked = odsQuery.data?.blocked;
   const isLoading = odsQuery.isFetching || current_balance.loading;
-  const isOdsDisabled = !!odsQuery.data?.disable;
+  const isOdsDisabled = isOdsExpEnabled
+    ? !!odsQuery.data?.limit_breached
+    : !!odsQuery.data?.disable;
 
   const isOnDemandDisabled = () => {
     return restrictedFeatures.some((feature) => user.isFeatureEnabled(feature));
@@ -46,14 +55,17 @@ const SettleNow = (props) => {
   const settlementRestricted =
     user.isOndemandSettlementsRestricted || isOnDemandDisabled() || isNodalAccountLowBalanceBlocked;
 
-  const attemptsLeft =
-    settlementRestricted && ondemand_restrictions && ondemand_restrictions.data.attempts_left;
+  const attemptsLeft = isOdsExpEnabled
+    ? settlementRestricted && odsQuery.data?.restricted_config?.remaining_attempts
+    : settlementRestricted && ondemand_restrictions && ondemand_restrictions.data.attempts_left;
 
-  const isOndemandRestrictionsLoading =
-    settlementRestricted && ondemand_restrictions && ondemand_restrictions.loading;
+  const isOndemandRestrictionsLoading = isOdsExpEnabled
+    ? settlementRestricted && odsQuery.isLoading
+    : settlementRestricted && ondemand_restrictions && ondemand_restrictions.loading;
 
-  const settlableAmount =
-    settlementRestricted && ondemand_restrictions && ondemand_restrictions.data.settlable_amount;
+  const settlableAmount = isOdsExpEnabled
+    ? settlementRestricted && odsQuery.data?.restricted_config?.remaining_settlement_amount
+    : settlementRestricted && ondemand_restrictions && ondemand_restrictions.data.settlable_amount;
 
   const isSettleNowRestricted =
     settlementRestricted && (!attemptsLeft || !settlableAmount || isOndemandRestrictionsLoading);
@@ -74,7 +86,7 @@ const SettleNow = (props) => {
     isOdsDisabled;
 
   const fetchRestrictionsIfAny = () => {
-    if (settlementRestricted) {
+    if (!isOdsExpEnabled && settlementRestricted) {
       fetchOndemandRestrictions();
     }
   };
@@ -99,11 +111,25 @@ const SettleNow = (props) => {
     });
   };
 
+  const getMerchantLimitBreached = isOdsExpEnabled
+    ? getIsMerchantLimitBreachedNew(odsQuery.data)
+    : getIsMerchantLimitBreached(odsQuery.data);
+
+  const maxLimit = odsQuery.data
+    ? isOdsExpEnabled
+      ? odsQuery?.data.max_limit_per_working_day
+      : odsQuery?.data.max_limit
+    : 0;
+
+  const globalLimitBreached = isOdsExpEnabled
+    ? getIsGlobalLimitBreachedNew(odsQuery.data)
+    : getIsGlobalLimitBreached(odsQuery.data);
+
   const getTooltipContent = () => {
     if (isLoading) {
       return 'Loading...';
     }
-    if (!user.isOndemandSettlementsRestricted && getIsMerchantLimitBreached(odsQuery.data)) {
+    if (!user.isOndemandSettlementsRestricted && getMerchantLimitBreached) {
       return (
         <>
           You’ve already settled your maximum allowed limit of{' '}
@@ -111,13 +137,13 @@ const SettleNow = (props) => {
             size="small"
             color="surface.text.staticWhite.normal"
             currency={currencyCode}
-            value={(odsQuery.data?.max_limit || 0) / 100}
+            value={(maxLimit || 0) / 100}
           />{' '}
           for the day.
         </>
       );
     }
-    if (getIsGlobalLimitBreached(odsQuery.data)) {
+    if (globalLimitBreached) {
       return 'On-demand Settlements are being limited due to high usage. Please try again the next working day.';
     }
     if (isEsOnDemandBlocked) {
@@ -132,6 +158,7 @@ const SettleNow = (props) => {
       settlementRestricted,
       ondemand_restrictions,
       isOnDemandDisabled,
+      odsQuery,
       user,
       isNodalAccountLowBalanceBlocked,
     );

@@ -3,6 +3,7 @@ import { isExperimentEnabled } from 'common/splitz/utils';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import LocRepaymentTooltip from 'merchant/views/Capital/CashAdvanceNudges/components/LocRepaymentTooltip';
+import { getIsOdsMigrationEnabled } from 'merchant/views/Settlements/InstantSettlements/utils/common';
 
 export const getSettlementTimeFormat = (defaultFormat = 'DD MMM YYYY, hh:mm:ss a') => {
   const orgFeatureEnabled = isOrgFeatureExist('hide_settlement_time');
@@ -26,12 +27,28 @@ export const settleNowRestrictionMsgFn = (
   settlementRestricted,
   ondemand_restrictions,
   isOnDemandDisabled,
+  OdsQuery,
   user,
   isNodalAccountBalanceLow,
 ) => {
   if (!settlementRestricted) return null;
-  const { attempts_left, settlable_amount, max_amount_limit, settlements_count_limit } =
-    ondemand_restrictions?.data || {};
+
+  let attempts_left, settlable_amount, max_amount_limit, settlements_count_limit;
+
+  if (getIsOdsMigrationEnabled(user)) {
+    const data = OdsQuery.data?.restricted_config;
+    attempts_left = data?.remaining_attempts;
+    settlable_amount = data?.remaining_settlement_amount;
+    max_amount_limit = data?.daily_max_amount_limit;
+    settlements_count_limit = data?.daily_settlement_count_limit;
+  } else {
+    const data = ondemand_restrictions?.data || {};
+    attempts_left = data.attempts_left;
+    settlable_amount = data.settlable_amount;
+    max_amount_limit = data.max_amount_limit;
+    settlements_count_limit = data.settlements_count_limit;
+  }
+
   if (isOnDemandDisabled()) {
     const restrictedItem = restrictedFeatures
       .filter((feat) => user.isFeatureEnabled(feat))
@@ -45,7 +62,7 @@ export const settleNowRestrictionMsgFn = (
 
     const renderFeatureComponent = () => {
       return restrictedItem.map((item, i) => {
-        if (i === restrictedItem.length - 1 && i != 0) {
+        if (i === restrictedItem.length - 1 && i !== 0) {
           return (
             <>
               & <span className="highlight-tooltip"> {item}.</span>
@@ -61,6 +78,7 @@ export const settleNowRestrictionMsgFn = (
         }
       });
     };
+
     return (
       <div className="disable-ondemand-msg">
         <span className="pr-5">
@@ -87,6 +105,7 @@ export const settleNowRestrictionMsgFn = (
       true,
     )} for the day.`;
   }
+
   return null;
 };
 
