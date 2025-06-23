@@ -28,8 +28,11 @@ export const getClubbedOfferRules = (formData) => {
         includes: {
           orders: [
             {
-              min_amount: +formData.min_amount * 100,
+              min_amount: rupeesToPaise(formData.min_amount),
               applies_to: 'total_amount',
+              ...(formData.max_order_amount
+                ? { max_amount: rupeesToPaise(formData.max_order_amount) }
+                : {}),
             },
           ],
           payment_instruments: [
@@ -63,7 +66,7 @@ export const getClubbedOfferRules = (formData) => {
           value: isLowCostEmi
             ? +formData.low_cost_emi.find((item) => item.tenure === tenure).discount_to_avail
                 .discount_percentage
-            : formData.plan_merchant_payback[tenure] * 100 || 0,
+            : rupeesToPaise(formData.plan_merchant_payback[tenure]) || 0,
         },
       ];
 
@@ -73,8 +76,10 @@ export const getClubbedOfferRules = (formData) => {
           offer_type: formData.additional_offer,
           limit_type,
           unit: formData.additional_offer_discount_type,
-          value: +(formData.flat_cashback || formData.percent_rate) * 100,
-          ...(formData.percent_rate ? { max_discount: +formData.max_cashback * 100 || 0 } : {}),
+          value: rupeesToPaise(formData.flat_cashback || formData.percent_rate),
+          ...(formData.percent_rate
+            ? { max_discount: rupeesToPaise(formData.max_cashback) || 0 }
+            : {}),
         });
       }
 
@@ -232,9 +237,8 @@ export function prepareDataForSubmit(
     const { rules, isAdditionalOffer } = getClubbedOfferRules(formData);
 
     if (rules.length) {
-      transformedFormData.rules = rules;
-
       if (isAdditionalOffer) {
+        transformedFormData.rules = rules;
         transformedFormData.type = 'clubbed';
       }
     }
