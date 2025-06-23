@@ -5406,8 +5406,6 @@ class Route
 
 
     public static $private = [
-        'offer_fetch_multiple',
-        'offer_create',
         'internal_order_payments',
         'collect_info_merchant_details_patch',
         'payouts_merchant_smart_routing_summary',
