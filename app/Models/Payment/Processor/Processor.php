@@ -2227,14 +2227,11 @@ class Processor
 
             if ((isset($input['auth_type']) === true) and ($input['auth_type'] === AuthType::SKIP))
             {
-                $experimentName = 'app.banking_org_id_moto_payments_via_pg_router';
-                $result = (new Payment\Service())->getSplitzExperimentResponseForBankingMotoRearch($merchant->getOrgId(),$experimentName);
-                if ($result !== 'enable')
+                if ($merchant->gertOrgId() === '100000Razorpay')
                 {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         'reason' => "MOTO_Payment",
                         'merchant_id' => $merchant->getId(),
-                        'banking_org_id' => $merchant->getOrgId(),
                     ]);
                     return false;
                 }
@@ -11048,7 +11045,17 @@ class Processor
 
         $this->eventPaymentFailed($exception);
 
-        (new Notify($this->payment))->trigger(Payment\Event::CUSTOMER_FAILED);
+        $isUpiOtmMandateSuccess = false;
+
+        if(isset($this->payment->localToken) === true && isset($this->payment->localToken->upiMandate) === true)
+        {
+            $isUpiOtmMandateSuccess = $this->isUpiOtmMandateSuccess($this->payment, $this->payment->localToken->upiMandate->toArray());
+        }
+
+        if($isUpiOtmMandateSuccess === false)
+        {
+            (new Notify($this->payment))->trigger(Payment\Event::CUSTOMER_FAILED);
+        }
 
         if ($this->merchant->isFeatureEnabled(Feature::PAYMENT_FAILURE_EMAIL) === true)
         {
@@ -11345,6 +11352,42 @@ class Processor
         {
             $gatewayData['card_mandate']['recurring_frequency'] = CardMandate\MandateHubs\MandateHQ\Constants::FREQUENCY_AS_PRESENTED;
 
+            if ($this->payment->getSubscriptionId() === null)
+            {
+                return;
+            }
+
+            //$this subscription data is not being initialize for the initial payment. if subscription is not present do fetching.
+            if ($this->subscription == null)
+            {
+                $this->subscription = $this->app['module']
+                    ->subscription
+                    ->fetchSubscriptionInfo(
+                        [
+                            Payment\Entity::AMOUNT          => $this->payment->getAmount(),
+                            Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($this->payment->getSubscriptionId()),
+                            Payment\Entity::METHOD          => $input['method'],
+                        ],
+                        $this->payment->merchant,
+                    );
+            }
+
+            if ($this->subscription !== null)
+            {
+                $gatewayData['card_mandate']['end_date'] = $this->subscription->getEndAt();
+                $gatewayData['card_mandate']['recurring_count'] = $this->subscription->getTotalCount();
+                $gatewayData['card_mandate']['start_date'] = $this->subscription->getStartAt();
+
+                //for initial payment and token is not available, so the max amount is hardcoded match with the max amount value in subscription.
+                if($token == null)
+                {
+                    $gatewayData['card_mandate']['max_debit_amount'] = 3500000;
+                }
+                else
+                {
+                    $gatewayData['card_mandate']['max_debit_amount'] = $token->getMaxAmount();
+                }
+            }
         }
     }
 
