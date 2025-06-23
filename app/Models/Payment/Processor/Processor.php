@@ -2227,14 +2227,11 @@ class Processor
 
             if ((isset($input['auth_type']) === true) and ($input['auth_type'] === AuthType::SKIP))
             {
-                $experimentName = 'app.banking_org_id_moto_payments_via_pg_router';
-                $result = (new Payment\Service())->getSplitzExperimentResponseForBankingMotoRearch($merchant->getOrgId(),$experimentName);
-                if ($result !== 'enable')
+                if ($merchant->gertOrgId() === '100000Razorpay')
                 {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         'reason' => "MOTO_Payment",
                         'merchant_id' => $merchant->getId(),
-                        'banking_org_id' => $merchant->getOrgId(),
                     ]);
                     return false;
                 }
