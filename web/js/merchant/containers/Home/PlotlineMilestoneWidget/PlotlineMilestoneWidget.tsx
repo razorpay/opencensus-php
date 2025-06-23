@@ -78,7 +78,7 @@ const PlotlineMilestoneWidget = () => {
       transactionCount === null ||
       !doesUserHaveMerchant ||
       isAccountOnTestMode ||
-      isUnregisteredMerchant
+      !isUnregisteredMerchant
     )
       return {
         shouldShowWidget: false,
