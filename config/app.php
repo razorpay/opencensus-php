@@ -1457,6 +1457,8 @@ return array(
 
     'saved_card_token_payments_rearch'=> env('SAVED_CARD_TOKEN_PAYMENTS_REARCH'),
 
+    'saved_card_token_payments_rearch_issuer'=> env('SAVED_CARD_TOKEN_PAYMENTS_REARCH_ISSUER'),
+
     'block_merchant_on_rearch_cps' => env('BLOCK_MERCHANT_ON_REARCH_CPS'),
 
     'cross_border_pacb_tagging_experiment_id'   => env('CROSS_BORDER_PACB_TAGGING_EXPERIMENT_ID'),
