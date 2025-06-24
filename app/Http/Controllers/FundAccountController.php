@@ -5,9 +5,11 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use Symfony\Component\HttpFoundation\Response;
+use RZP\Services\PayoutService\PayoutShadowService;
 
 use RZP\Constants;
 use RZP\Models\FundAccount;
+use Throwable;
 
 /**
  * Class FundAccountController
@@ -23,6 +25,22 @@ class FundAccountController extends Controller
     public function create()
     {
         $input = Request::all();
+
+        try
+        {
+            // call shadow router to mirror the request
+            PayoutShadowService::mirrorRequest(
+                'POST',
+                Request::path(),
+                $input,
+                Request::header()
+            );
+        }
+        catch (Throwable $e)
+        {
+            // ignore error
+        }
+
 
         $data = $this->service()->create($input);
 

@@ -7,6 +7,8 @@ use ApiResponse;
 
 use RZP\Constants;
 use RZP\Models\Contact;
+use RZP\Services\PayoutService\PayoutShadowService;
+use Throwable;
 
 /**
  * Class ContactController
@@ -56,6 +58,21 @@ class ContactController extends Controller
     public function create()
     {
         $input = Request::all();
+
+        try
+        {
+            // call shadow router to mirror the request
+            PayoutShadowService::mirrorRequest(
+                'POST',
+                Request::path(),
+                $input,
+                Request::header()
+            );
+        }
+        catch (Throwable $e)
+        {
+            // we need to do nothing here
+        }
 
         $data = $this->service()->create($input);
 
