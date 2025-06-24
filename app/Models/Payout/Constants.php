@@ -153,8 +153,23 @@ class Constants
     const CMS_REF_NO              = "cms_ref_no";
     const AMOUNT                  = 'amount';
     const BALANCE_ID              = 'balance_id';
+    const FUND_ACCOUNT_ID         = 'fund_account_id';
+    const CONTACT_ID              = 'contact_id';
+    const NAME                    = 'name';
+    const CONTACT                 = 'contact';
+    const CONTACT_TYPE           = 'contact_type';
+    const PAYOUT_PURPOSE         = 'payout_purpose';
+    const EMAIL                   = 'email';
     const PROCESS_TYPE_KAFKA_EVENT_VIA_PS = "kafka_event_via_ps";
     const NAME_MATCHING_THRESHOLD_DEFAULT = 75;
     const CONFIG_VALUE_SETTINGS = 'config_value';
     const PHONE_NUMBER_PAYOUTS = 'phone_number_payout';
+    const PAYEE_IFSC = 'payee_ifsc';
+    const PAYEE_BANK_NAME = 'payee_bank_name';
+    const FTA = 'fta';
+
+    //Constants for Events
+    const MOBILE        = 'mobile';
+    const VPA           = 'vpa';
+    const CUSTOMER_NAME = 'customer_name';
 }

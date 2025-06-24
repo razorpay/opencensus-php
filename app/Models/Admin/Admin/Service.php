@@ -39,6 +39,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Admin\Account as AdminMail;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
+use RZP\Models\Feature\Service as FeatureService;
 
 class Service extends Base\Service
 {
@@ -625,6 +626,9 @@ class Service extends Base\Service
         return $admin;
     }
 
+    /**
+     * @throws BadRequestException
+     */
     public function samlAuthLogin($input)
     {
         $validator = new Validator();
@@ -649,14 +653,24 @@ class Service extends Base\Service
             {
                 try
                 {
-                    $adminMeta = (new \RZP\Models\Admin\AdminsMeta\Repository())->fetchByAdminIdAndUniqueIdentifier($admin->getId(), $input['ad_id']);
+                    if($orgId === Constant::IDAM_AXIS_ORG)
+                    {
+                        $this->checkIDAMAdminDisabled($admin);
+                    }
 
-                    if ($adminMeta !== null )
+                    $adminMeta = $this->repo->admins_meta->fetchByAdminIdAndUniqueIdentifier($admin->getId(), $input['ad_id']);
+
+                    if($adminMeta !== null)
                     {
                         $generatedToken = $this->generateLoginToken($admin);
                     }
                 }
-                catch (\Throwable $e)
+                catch(BadRequestException $e)
+                {
+                    $this->trace->traceException($e);
+                    throw $e;
+                }
+                catch(\Throwable $e)
                 {
                     $this->trace->info(TraceCode::USER_SAML_AUTHENTICATION_FAIL);
 
@@ -1234,9 +1248,6 @@ class Service extends Base\Service
         $validator = new Validator();
         $validator->validateInput('admin_org_replications', $input);
 
-        // Initialize the response structure
-        $response = [];
-
         // Extract and sanitize Org IDs
         $fromOrgId = Org\Entity::silentlyStripSign($input[Constant::FROM_ORG_ID]);
         $toOrgId   = Org\Entity::silentlyStripSign($input[Constant::TO_ORG_ID]);
@@ -1247,11 +1258,11 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FROM_ORG_NOT_FOUND);
         }
 
-        // Retrieve the target organization's name for success message
-        $toOrgName = $this->repo->org->findOrFailPublic($toOrgId);
+        $replicationType = $input[Constant::REPLICATIONS_TYPE];
+        $this->trace->info(TraceCode::ORG_FEATURE_REPLICATION, [$replicationType]);
 
         // Validate replication type; throw an exception for invalid types
-        if ($input[Constant::REPLICATIONS_TYPE] !== 'permission') {
+        if (!in_array($replicationType, ['feature', 'permission'])) {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_REPLICATION_TYPE,
                 null,
@@ -1259,52 +1270,104 @@ class Service extends Base\Service
             );
         }
 
-        // Retrieve permissions of the source organization
-        $orgPermissions = $this->repo->admin->getOrgPermissionsList($fromOrgId);
+        return $this->insertOrgReplications($replicationType, $fromOrgId, $toOrgId);
+    }
 
-        // Extract permission IDs for processing
-        $permissionIds = array_column($orgPermissions, 'id');
+    /**
+     * @throws BadRequestException
+     */
+    private function insertOrgReplications($replicationType, $fromOrgId, $toOrgId): array {
+        // Initialize the response structure
+        $response = [];
 
-        // Retrieve existing permission IDs of the target organization
-        $existingPermissionIds = $this->repo->admin->existingPermissionIds($toOrgId);
+        // Retrieve the target organization's name for success message
+        $toOrg = $this->repo->org->findOrFailPublic($toOrgId);
 
-        // Prepare data for batch insertion (only new permissions)
-        $insertData = collect($permissionIds)
-            ->diff($existingPermissionIds)
-            ->map(function ($permissionId) use ($toOrgId) {
-                return [
-                    'permission_id' => $permissionId,
-                    'entity_type'   => 'org',
-                    'entity_id'     => $toOrgId,
+        $this->trace->info(TraceCode::ORG_FEATURE_REPLICATION, [$toOrg->business_name]);
+
+        switch ($replicationType) {
+            case 'permission':
+                // Retrieve permissions of the source organization
+                $orgPermissions = $this->repo->admin->getOrgPermissionsList($fromOrgId);
+
+                // Extract permission IDs for processing
+                $permissionIds = array_column($orgPermissions, 'id');
+
+                // Retrieve existing permission IDs of the target organization
+                $existingPermissionIds = $this->repo->admin->existingPermissionIds($toOrgId);
+
+                // Prepare data for batch insertion (only new permissions)
+                $insertData = collect($permissionIds)
+                    ->diff($existingPermissionIds)
+                    ->map(function ($permissionId) use ($toOrgId) {
+                        return [
+                            'permission_id' => $permissionId,
+                            'entity_type'   => 'org',
+                            'entity_id'     => $toOrgId,
+                        ];
+                    })
+                    ->toArray();
+
+                // Throw exception if there are no new permissions to insert
+                if (empty($insertData)) {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_NO_NEW_PERMISSIONS);
+                }
+
+                // Perform the permission replication process
+                $replicatePermissions = $this->repo->admin->replicatePermissionsToOrg($insertData);
+
+                // Log the completion of permission replication if successful
+                if ($replicatePermissions) {
+                    $this->trace->info(TraceCode::ADMIN_ORG_PERMISSIONS_REPLICATIONS, [
+                        'replicationData' => $insertData,
+                        'status'          => $replicatePermissions,
+                        'method_name'     => __FUNCTION__,
+                        'route_name'      => $this->app['api.route']->getCurrentRouteName(),
+                    ]);
+                }
+                break;
+
+            case 'feature':
+                // Retrieve features of the source organization
+                $fromOrg = $this->repo->org->findOrFailPublic($fromOrgId);
+                $orgFeatures = $fromOrg->getEnabledFeatures();
+
+                // Retrieve existing feature names of the target organization
+                $existingFeatureNames =$toOrg->getEnabledFeatures();
+
+                // Prepare data for batch insertion (only new features)
+                $insertFeaturesData = collect($orgFeatures)
+                    ->diff($existingFeatureNames)
+                    ->values()
+                    ->toArray();
+
+                // Throw exception if there are no new features to insert
+                if (empty($insertFeaturesData)) {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_NO_NEW_FEATURES);
+                }
+
+                $enableFeatures = [
+                    "names"       => $insertFeaturesData,
+                    "entity_type" => "org",
+                    "should_sync" => "1",
+                    "entity_id"   => $toOrgId,
                 ];
-            })
-            ->toArray();
 
-        // Throw exception if there are no new permissions to insert
-        if (empty($insertData)) {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_NO_NEW_PERMISSIONS);
+                (new FeatureService())->addFeatures($enableFeatures);
+                break;
+
+            default:
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPLICATION_TYPE);
         }
 
-        // Perform the permission replication process
-        $replicatePermissions = $this->repo->admin->replicatePermissionsToOrg($insertData);
 
-        // Log the completion of permission replication if successful
-        if ($replicatePermissions) {
-            $this->trace->info(TraceCode::ADMIN_ORG_PERMISSIONS_REPLICATIONS, [
-                'replicationData' => $insertData,
-                'status'          => $replicatePermissions,
-                'method_name'     => __FUNCTION__,
-                'route_name'      => $this->app['api.route']->getCurrentRouteName(),
-            ]);
-
-            // Set the success response
-            $response = [
-                'status'  => true,
-                'message' => "{$input[Constant::REPLICATIONS_TYPE]} replicated successfully to the {$toOrgName->business_name} org.",
-            ];
-        }
-
+        // Set the success response
+        $response = [
+            'status'  => true,
+            'message' => "{$replicationType} replicated successfully to the {$toOrg->business_name} org.",
+        ];
         return $response;
     }
+
 
 }

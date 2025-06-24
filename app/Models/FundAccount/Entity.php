@@ -34,7 +34,7 @@ use RZP\Models\Customer\Account\CmsGetAttribute;
 class Entity extends Base\PublicEntity
 {
 
-    use SoftDeletes, AsvGetAttribute, CmsGetAttribute;
+    use SoftDeletes, AsvGetAttribute;
 
     // Attributes
     const ACCOUNT_TYPE  = 'account_type';
@@ -336,14 +336,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_NAME);
     }
 
-    public function getSourceAttribute()
+    public function getSourceAttribute($fallbackRelation = null)
     {
         if ($this->getSourceType() == self::CUSTOMER && (new SplitzExperimentEvaluator())->isLazyReadOverrideToCmsEnabled($this->entity))
         {
             return (new ImplicitJoinHelper())->getCustomerAttributeByCustomerId($this, 'source', 'getSourceId');
         }
 
-        return parent::getRelationValue('source');
+        return parent::getRelationValue($fallbackRelation ?? 'source');
+    }
+
+    public function getContactAttribute()
+    {
+        return $this->getSourceAttribute('contact');
+    }
+
+    public function getCustomerAttribute()
+    {
+        return $this->getSourceAttribute('customer');
     }
 
     // ------------- End Getters -------------

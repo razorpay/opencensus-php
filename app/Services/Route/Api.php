@@ -11,6 +11,7 @@ use RZP\Http\RequestHeader;
 use RZP\Models\Base\PublicCollection;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer;
+use RZP\Models\Reversal;
 use RZP\Models\Payment;
 use RZP\Exception\RuntimeException;
 
@@ -44,7 +45,7 @@ class Api extends Base
         return $this->sendRequest(Constant::DIRECT_TRANSFER_ENDPOINT, Requests::POST, $input);
     }
 
-        /**
+    /**
      * To patch a transfer by ID in Route microservice
      * @return array
      * @throws Exception\RuntimeException
@@ -53,37 +54,8 @@ class Api extends Base
     public function patchTransfer(string $transferId, array $input) : array
     {
         $response = $this->patchTransferByInternalRequest($transferId,  $input);
+
         return $response;
-    }
-    public function createPaymentTransfer(string $paymentId, array $input) : array
-    {
-        if ((new Config())->shouldCreateNewPassportToken())
-        {
-            $this->addNewPassportToken();
-        }
-        else
-        {
-            $this->addPassportToken();
-        }
-
-        $endpoint = sprintf(Constant::PAYMENT_TRANSFER_ENDPOINT, $paymentId);
-
-        return $this->sendRequest($endpoint, Requests::POST, $input);
-    }
-
-    /**
-     * To fetch a transfer by ID from Route microservice
-     * @return array
-     * @throws Exception\RuntimeException
-     * @throws \Throwable
-     */
-    public function fetchTransferById(string $transferId, string $merchantId = null) : Transfer\Entity
-    {
-        $response = $this->fetchTransferByIdInternalRequest($transferId, $merchantId);
-
-        $transfer = $this->forceFillTransferFromResponse($response);
-
-        return $this->loadRelatedEntity($transfer);
     }
 
     protected function patchTransferByInternalRequest(string $transferId, array $input) : array
@@ -99,6 +71,77 @@ class Api extends Base
         $response = $this->sendRequest($endpoint, Requests::PATCH,$input);
 
         return $response;
+    }
+
+    public function createPaymentTransfer(string $paymentId, array $input) : array
+    {
+        $routeName = $this->app['api.route']->getCurrentRouteName() ?? '';
+
+        $isBatchApi = false;
+
+        if (in_array($routeName, ['payment_transfer_batch', 'payment_transfer_retry_batch']))
+        {
+            $isBatchApi = true;
+        }
+
+        if ((new Config())->shouldCreateNewPassportToken() || $isBatchApi)
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $endpoint = sprintf(Constant::PAYMENT_TRANSFER_ENDPOINT, $paymentId);
+
+        return $this->sendRequest($endpoint, Requests::POST, $input);
+    }
+
+    public function createTransferReversal(string $transferId, array $input) : array
+    {
+        if ((new Config())->shouldCreateNewPassportToken())
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $endpoint = sprintf(Constant::TRANSFER_REVERSAL_ENDPOINT, $transferId);
+
+        return $this->sendRequest($endpoint, Requests::POST, $input);
+    }
+
+    public function reverseAllTransfers(array $input) : array
+    {
+        if ((new Config())->shouldCreateNewPassportToken())
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        return $this->sendRequest(Constant::REVERSE_ALL_TRANSFERS, Requests::POST, $input);
+    }
+
+
+    /**
+     * To fetch a transfer by ID from Route microservice
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchTransferById(string $transferId, string $merchantId = null) : Transfer\Entity
+    {
+        $response = $this->fetchTransferByIdInternalRequest($transferId, $merchantId);
+
+        $transfer = $this->forceFillTransferFromResponse($response);
+
+        return $this->loadRelatedEntity($transfer);
     }
 
     protected function fetchTransferByIdInternalRequest(string $transferId, string $merchantId = null) : array
@@ -184,6 +227,38 @@ class Api extends Base
     }
 
     /**
+     * To fetch a reversal by ID from Route microservice
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchReversalById(string $reversalId, string $merchantId = null) : Transfer\Entity
+    {
+        $response = $this->fetchReversalByIdInternalRequest($reversalId, $merchantId);
+
+        $transfer = $this->forceFillReversalFromResponse($response);
+
+        return $this->loadRelatedEntity($transfer);
+    }
+
+    protected function fetchReversalByIdInternalRequest(string $reversalId, string $merchantId = null) : array
+    {
+        $endpoint = sprintf(Constant::REVERSAL_FETCH_BY_ID_ENDPOINT, $reversalId);
+
+        if (empty($merchantId) === false)
+        {
+            $queryParams = http_build_query(['merchant_id' => $merchantId]);
+
+            $endpoint = $endpoint . '?' . $queryParams;
+        }
+
+        $response = $this->sendRequest($endpoint, Requests::GET);
+
+        return $response;
+    }
+
+
+    /**
      * To save the API schema transfer in Route microservice
      * @throws Exception\RuntimeException
      * @throws \Throwable
@@ -233,6 +308,24 @@ class Api extends Base
         }
         return null;
     }
+
+    private function forceFillReversalFromResponse($response)
+    {
+        if (empty($response) === false)
+        {
+            $reversal = (new Reversal\Entity());
+
+            $reversal->forceFill($response);
+
+            $reversal->setExternal(true);
+
+            $reversal->generate($response);
+
+            return $reversal;
+        }
+        return null;
+    }
+
 
     private function loadRelatedEntity($transfer)
     {
@@ -337,5 +430,194 @@ class Api extends Base
         $response = $this->sendRequest($endpoint, Requests::GET);
 
         return $response;
+    }
+
+    public function fetchMultipleTransfers(array $input) : array
+    {
+        if ( (new Config())->shouldCreateNewPassportToken() )
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $queryParams = [
+            'count' => $input['count'] ?? 0,
+            'skip' => $input['skip'] ?? 0,
+            'from' => $input['from'] ?? null,
+            'to' => $input['to'] ?? null,
+            'recipient_settlement_id' => $input['recipient_settlement_id'] ?? null,
+            'expand' => $input['expand'] ?? []
+        ];
+
+        $queryParams = array_filter($queryParams, function ($value) {
+            return $value !== null;
+        });
+
+        // Using http_build_query with PHP_QUERY_RFC3986 to preserve array brackets (e.g., expand[]=value)
+        $queryString = http_build_query($queryParams, '', '&&', PHP_QUERY_RFC3986);
+
+        $endpoint = Constant::TRANSFER_FETCH_MULTIPLE_ENDPOINT . '?' . $queryString;
+
+        $this->trace->info(TraceCode::ROUTE_FETCH_TRANSFER_QUERY, [
+            'query_string' => $queryString,
+            'query_params' => $queryParams,
+            'endpoint' => $endpoint
+        ]);
+
+        return $this->sendRequest($endpoint, Requests::GET);
+    }
+
+    public function fetchTransferByIDExternal($transferID,array $input) : array
+    {
+        if ( (new Config())->shouldCreateNewPassportToken() )
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $queryParams = [
+            'expand' => $input['expand'] ?? []
+        ];
+
+        $queryParams = array_filter($queryParams, function ($value) {
+            return $value !== null;
+        });
+
+        $queryString = http_build_query($queryParams, '', '&&', PHP_QUERY_RFC3986);
+
+        $endpoint = sprintf(Constant::TRANSFER_FETCH_ENDPOINT, $transferID);
+        $endpoint = $endpoint. '?' . $queryString;
+
+        $this->trace->info(TraceCode::ROUTE_FETCH_TRANSFER_QUERY, [
+            'query_string' => $queryString,
+            'query_params' => $queryParams,
+            'endpoint' => $endpoint
+        ]);
+
+        return $this->sendRequest($endpoint, Requests::GET);
+    }
+
+    public function fetchByPaymentID($paymentID) : array
+    {
+        if ( (new Config())->shouldCreateNewPassportToken() )
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $endpoint = sprintf(Constant::TRANSFER_FETCH_BY_PAYMENT_ENDPOINT, 'pay_'.$paymentID);
+
+        return $this->sendRequest($endpoint, Requests::GET);
+    }
+
+    public function fetchByOrderID($orderID) : array
+    {
+        if ( (new Config())->shouldCreateNewPassportToken() )
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $endpoint = sprintf(Constant::TRANSFER_FETCH_BY_ORDER_ENDPOINT, 'order_'.$orderID);
+
+
+        return $this->sendRequest($endpoint, Requests::GET);
+    }
+
+    public function fetchLinkedAccountTransfersByID($id) : array
+    {
+        if ( (new Config())->shouldCreateNewPassportToken() )
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $endpoint = sprintf(Constant::LA_TRANSFER_FETCH_BY_ID_ENDPOINT, $id);
+
+        return $this->sendRequest($endpoint, Requests::GET);
+    }
+
+    public function fetchLinkedAccountTransfersByPaymentID($id,$input) : array
+    {
+        if ( (new Config())->shouldCreateNewPassportToken() )
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        $endpoint = sprintf(Constant::LA_TRANSFER_FETCH_BY_PAYMENT_ID_ENDPOINT, $id);
+
+        $queryParams = [
+            'transfer_id' => $input['id']
+        ];
+
+        $queryParams = array_filter($queryParams, function ($value) {
+            return $value !== null;
+        });
+
+        // Using http_build_query with PHP_QUERY_RFC3986 to preserve array brackets (e.g., expand[]=value)
+        $queryString = http_build_query($queryParams, '', '&&', PHP_QUERY_RFC3986);
+
+        $endpoint = $endpoint. '?' . $queryString;
+
+        return $this->sendRequest($endpoint, Requests::GET);
+    }
+
+    public function fetchLinkedAccountTransfers($input) : array
+    {
+        if ( (new Config())->shouldCreateNewPassportToken() )
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+
+        $queryParams = [
+            'count' => $input['count'] ?? 0,
+            'skip' => $input['skip'] ?? 0,
+            'from' => $input['from'] ?? null,
+            'to' => $input['to'] ?? null,
+            'recipient_settlement_id' => $input['recipient_settlement_id'] ?? null,
+            'expand' => $input['expand'] ?? []
+        ];
+
+        $queryParams = array_filter($queryParams, function ($value) {
+            return $value !== null;
+        });
+
+        // Using http_build_query with PHP_QUERY_RFC3986 to preserve array brackets (e.g., expand[]=value)
+        $queryString = http_build_query($queryParams, '', '&&', PHP_QUERY_RFC3986);
+
+        $endpoint = Constant::LA_TRANSFER_FETCH_MULTIPLE_ENDPOINT . '?' . $queryString;
+
+        $this->trace->info(TraceCode::ROUTE_FETCH_TRANSFER_QUERY, [
+            'query_string' => $queryString,
+            'query_params' => $queryParams,
+            'endpoint' => $endpoint
+        ]);
+
+        return $this->sendRequest($endpoint, Requests::GET);
+
     }
 }

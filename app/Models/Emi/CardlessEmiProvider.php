@@ -29,6 +29,10 @@ class CardlessEmiProvider
     const LIQUILOANS = 'liquiloans';
     const INSTANT_EMI = 'instant_emi';
 
+    // shopse is used by optimizer
+    const SHOPSE = 'shopse';
+    const SNAPMINT = 'snapmint';
+
     protected static $providers = [
         self::ZESTMONEY,
         self::EARLYSALARY,
@@ -45,6 +49,8 @@ class CardlessEmiProvider
         self::TVSC,
         self::LIQUILOANS,
         self::INSTANT_EMI,
+        self::SHOPSE,
+        self::SNAPMINT,
     ];
 
     public static $disabledInstruments = [

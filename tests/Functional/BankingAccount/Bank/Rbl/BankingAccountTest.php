@@ -611,7 +611,7 @@ class BankingAccountTest extends TestCase
         $this->app->instance('banking_account_service', $basMock);
     }
 
-    public function verifyCreateBankingAccountRblOnBasExperiment(bool $businessExists, bool $shouldCreateBusiness, array $headers = []) {
+    public function verifyCreateBankingAccountRblOnBasExperiment(bool $businessExists, bool $shouldCreateBusiness, array $headers = [],  bool $skipSplitzMock = false ) {
 
         $attribute = ['activation_status' => 'activated', 'contact_email' => 'test@email.com'];
 
@@ -639,7 +639,9 @@ class BankingAccountTest extends TestCase
             ]
         ];
 
-        $this->mockSplitzTreatment($splitzMockInput, $splitzMockOutput);
+        if($skipSplitzMock !== true) {
+            $this->mockSplitzTreatment($splitzMockInput, $splitzMockOutput);
+        }
 
         $this->mockBankingAccountServiceCallsForRblOnBasExperiment($shouldCreateBusiness);
 
@@ -703,12 +705,12 @@ class BankingAccountTest extends TestCase
 
     public function testCreateBankingAccountRblOnBasExperimentBusinessDoesNotExist()
     {
-        $this->verifyCreateBankingAccountRblOnBasExperiment(false, true);
+        $this->verifyCreateBankingAccountRblOnBasExperiment(false, true, [], true);
     }
 
     public function testCreateBankingAccountRblOnBasExperimentBusinessAlreadyExists()
     {
-        $this->verifyCreateBankingAccountRblOnBasExperiment(true, false);
+        $this->verifyCreateBankingAccountRblOnBasExperiment(true, false, [], true);
     }
 
     public function testCreateBankingAccountRblOnBasExperimentAdminRequest()
@@ -720,7 +722,7 @@ class BankingAccountTest extends TestCase
 
         $this->verifyCreateBankingAccountRblOnBasExperiment(true, true, [
             'HTTP_X-Admin-Email'    => $admin->getEmail(),
-        ]);
+        ],true);
     }
 
     public function testCreateBankingAccountFromMerchantDashboardServiceabilityExperiment()

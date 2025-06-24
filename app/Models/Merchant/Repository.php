@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Database\Connection;
 use DB;
 use Closure;
+use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use Throwable;
 use Carbon\Carbon;
 
@@ -55,6 +56,7 @@ use RZP\Models\Merchant\Acs\Traits\AsvFindWithCache;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant as AsvSdkMerchantQuery;
+use RZP\Models\DeviceDetail\Constants as DDConstants;
 
 class Repository extends Base\Repository
 {
@@ -81,6 +83,7 @@ class Repository extends Base\Repository
     const REJECTED_SUBM_LAST_N_DAYS_DL_QUERY    = "select a.entity_id from hive.realtime_hudi_api.action_state as a inner join hive.realtime_hudi_api.merchant_access_map as mam on a.entity_id = mam.merchant_id where mam.entity_owner_id = '%s' and a.name = '%s' and a.created_at > %d limit %d";
     const AGGREGATOR_PARTNERS_DL_QUERY          = "SELECT id FROM hive.realtime_hudi_api.merchants WHERE partner_type = 'aggregator'";
 
+    const POS_ACTIVATED_OR_KQS_BUT_NOT_LIVE = "SELECT distinct m.id FROM realtime_prod_account_service.merchants m JOIN realtime_prod_pg_onboarding.onboarding_details od ON m.id = od.merchant_id LEFT JOIN realtime_hudi_api.tagging_tagged tt ON m.id = tt.taggable_id WHERE m.live = 0 AND m.hold_funds = 0 AND od.pos_activation_status in (%s)  AND od.signup_campaign in (%s) AND ( tt.taggable_id IS NULL OR LOWER(tt.tag_name) NOT IN (%s))";
     protected $entity = 'merchant';
 
     protected $totalMerchantOnboarded;
@@ -1188,6 +1191,55 @@ class Repository extends Base\Repository
             ->get()
             ->pluck(Entity::ID)
             ->toArray();
+    }
+
+    public function fetchMidAndNameFromOrgAndCategoryFromLiveConnection($orgId, $category, string $mode = null)
+    {
+        /*
+        *
+            -- This query fetches merchant information along with key and feature details.
+            -- It joins the merchant, key, and feature tables on merchant ID.
+            -- It filters records by organization ID and only includes non-expired keys.
+            -- If a specific category is provided (and it's not 'other'), it filters merchants by that category.
+            -- Otherwise, it excludes merchants from 'education' and 'social' categories.
+        */
+        $connection = $this->getDataWarehouseConnection();
+
+        $query = $this->newQueryWithConnection($connection);
+
+        $merchantIdColumn         = $this->repo->merchant->dbColumn(MerchantEntity::ID);
+        $merchantNameColumn       = $this->repo->merchant->dbColumn(MerchantEntity::NAME);
+        $merchantKeyIdColumn      = $this->repo->key->dbColumn(MerchantEntity::ID);
+        $keyMerchantIdColumn      = $this->repo->key->dbColumn("merchant_id");
+        $keyExpiredAtColumn       = $this->repo->key->dbColumn("expired_at");
+        $featureEntityIdColumn    = $this->repo->feature->dbColumn("entity_id");
+        $featureNameColumn        = $this->repo->feature->dbColumn("name");
+        $merchantOrgIdColumn      = $this->repo->merchant->dbColumn(MerchantEntity::ORG_ID);
+        $merchantCategoryColumn   = $this->repo->merchant->dbColumn(MerchantEntity::CATEGORY2);
+
+        $queryAttr = [
+            $merchantNameColumn . ' as name',
+            $merchantKeyIdColumn . ' as key_id',
+            $featureNameColumn . ' as feature_name',
+        ];
+
+        $query
+            ->select($queryAttr)
+            ->join(Table::KEY, $merchantIdColumn, '=', $keyMerchantIdColumn)
+            ->join(Table::FEATURE, $merchantIdColumn, '=', $featureEntityIdColumn)
+            ->where($merchantOrgIdColumn, '=', $orgId)
+            ->whereNull($keyExpiredAtColumn);
+
+        if (!empty($category) && !in_array(strtolower($category), ['other']))
+        {
+            $query->where($merchantCategoryColumn, '=', $category);
+        }
+        else
+        {
+            $query->whereNotIn($merchantCategoryColumn, ['education', 'social']);
+        }
+
+        return $query->get();
     }
 
     public function fetchReferredMerchants($merchantId)
@@ -3395,6 +3447,23 @@ class Repository extends Base\Repository
                     ->whereNull($merchantActivatedAtColumn)
                     ->orderBy($createdAtColumn, 'desc')
                     ->get();
+    }
+
+    public function getPOSMerchantsWithActivatedOrKqsButNotLive()
+    {
+        $pos_activation_status = sprintf("'%s','%s'", Status::KYC_QUALIFIED_STB, Status::ACTIVATED );
+        $signup_campaign = sprintf("'%s','%s'", DDConstants::ASSISTED_ONBOARDING, DDConstants::EASY_ONBOARDING);
+        $riskTags = "";
+        $tags = explode(',',RiskActionConstants::RISK_TAGS_CSV);
+        foreach($tags as $tag) {
+            $riskTags = $riskTags.sprintf(",'%s'", $tag);
+        }
+        $riskTags = substr($riskTags, 1);
+
+        $dataLakeQuery = sprintf(self::POS_ACTIVATED_OR_KQS_BUT_NOT_LIVE, $pos_activation_status, $signup_campaign,$riskTags);
+        $results         = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+        $merchant_ids    = collect($results)->pluck(Entity::ID)->toArray();
+        return $merchant_ids;
     }
 
     /**

@@ -696,6 +696,13 @@ class UserController extends Controller
         return $this->service()->getDetailsUnified($input);
     }
 
+    public function getUserByEmail()
+    {
+        $input = Request::all();
+
+        return $this->service()->getUserByEmail($input);
+    }
+
     public function getUserRoles($Id, $merchantId)
     {
         return $this->service()->getUserRoles($Id, $merchantId);
@@ -832,7 +839,34 @@ class UserController extends Controller
 
         return ApiResponse::json($data);
     }
-    
+
+    public function getUserDetailsWithRelations()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getUserDetailsWithRelations($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function upsertUserDetailsWithRelations()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->upsertUserDetailsWithRelations($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteUserDetailsWithRelations()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->deleteUserDetailsWithRelations($input);
+
+        return ApiResponse::json($data);
+    }
+
     ///user/:id/merchant
     //getMerchantsOfUser return list of a merchants for a given user.
     // for now this is primary used for login api

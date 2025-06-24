@@ -43,6 +43,7 @@ use RZP\Models\PayoutsDetails\Entity as PayoutDetailsEntity;
 use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
 use RZP\Models\PayoutsDetails\Validator as PayoutDetailsValidator;
 use RZP\Models\Payout\Configurations\DirectAccounts\PayoutModeConfig;
+use RZP\Models\Payout\Events as PayoutEvents;
 
 class Validator extends Base\Validator
 {
@@ -53,6 +54,10 @@ class Validator extends Base\Validator
      */
     public $merchant;
 
+    /**
+     * @var PayoutEvents
+     */
+    protected $payoutEvents;
 
     // We are increasing this from 200 to 400. Slack thread for reference:
     // https://razorpay.slack.com/archives/C013868TRK4/p1733080607565809?thread_ts=1732256137.940409&cid=C013868TRK4
@@ -764,6 +769,23 @@ class Validator extends Base\Validator
         'bank_transfer_request_id' => 'sometimes|string',
         'request_payload' => 'sometimes|array'
     ];
+
+    protected function getPayoutCore()
+    {
+        if ($this->payoutCore === null) {
+            $this->payoutCore = new PayoutCore();
+        }
+
+        return $this->payoutCore;
+    }
+
+    protected function getPayoutEvents(){
+        if ($this->payoutEvents === null) {
+            $this->payoutEvents = new PayoutEvents();
+        }
+
+        return $this->payoutEvents;
+    }
 
     protected function validateSourceAndDestination($input)
     {
@@ -1825,6 +1847,10 @@ class Validator extends Base\Validator
     private function validateMobileNumberFormat(string $mobileNumber): void
     {
         if (!preg_match('/^\d{10}$/', $mobileNumber)) {
+            $this->getPayoutEvents()->trackPayoutsToPhoneNumberMobileNumberInvalidEvent(
+                $mobileNumber
+            );
+
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MOBILE_NUMBER_INVALID, FundAccount\Entity::NUMBER);
         }
     }

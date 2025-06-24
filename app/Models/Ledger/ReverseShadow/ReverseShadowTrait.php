@@ -12,6 +12,7 @@ use RZP\Error\Error;
 use Ramsey\Uuid\Uuid;
 use RZP\Constants\Metric;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Payment\Constant;
 use RZP\Models\Feature;
 use RZP\Models\Pricing\Feature as PricingFeature;
@@ -207,6 +208,22 @@ trait ReverseShadowTrait
         return $this->getMerchantAccountBalancesMap($merchantAccountBalancesList);
     }
 
+    public function getMerchantAccountId($merchantAccountBalancesList)
+    {
+        $accountId = null;
+
+        foreach ($merchantAccountBalancesList as $account)
+        {
+            $fundAccountType = $account[LedgerConstants::ENTITIES][Feature\Constants::FUND_ACCOUNT_TYPE][0];
+
+            if ($fundAccountType == LedgerConstants::MERCHANT_BALANCE)
+            {
+                $accountId = $account[LedgerConstants::ID];
+            }
+        }
+        return $accountId;
+    }
+
     public function getMerchantAccounts($ledgerService, $merchantId): array
     {
         $accountPayload = $this->getAccountBalancePayload($merchantId);
@@ -229,7 +246,7 @@ trait ReverseShadowTrait
             catch (\Throwable $e)
             {
 
-                if (Str::contains($e->getMessage(), "cURL error 28: Operation timed out", true))
+                if (Str::contains($e->getMessage(), "cURL error 28:", true))
                 {
                     $retryAttempts++;
                     if ($retryAttempts > LedgerReverseShadowConstants::MAX_RETRY_COUNT_FETCH_MERCHANT_ACCOUNT)

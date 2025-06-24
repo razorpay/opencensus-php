@@ -582,14 +582,22 @@ class MerchantController extends Controller
 
     public function postLiveEnable($id)
     {
-        $data = $this->service()->liveEnable($id);
+        $input = Request::all();
+
+        $skipWorkflowForSettlements = $input['skip_workflows_for_settlements'] ?? false;
+
+        $data = $this->service()->liveEnable($id, $skipWorkflowForSettlements);
 
         return ApiResponse::json($data);
     }
 
     public function postLiveDisable($id)
     {
-        $data = $this->service()->liveDisable($id);
+        $input = Request::all();
+
+        $skipWorkflowForSettlements = $input['skip_workflows_for_settlements'] ?? false;
+
+        $data = $this->service()->liveDisable($id, $skipWorkflowForSettlements);
 
         return ApiResponse::json($data);
     }
@@ -1585,6 +1593,21 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function updateSelfServeReKYCStatus()
+    {
+        // This controller would be called in case of approval on maker checker workflow for update in rekyc status
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::SELF_SERVE_REKYC_UPDATE, [
+            '$input' => $input,
+        ]);
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updateSelfServeReKYCStatus($input);
+
+        return ApiResponse::json($response);
+    }
+
 
     public function postMerchantBddVerificationStatusUpdate()
     {
@@ -4652,6 +4675,15 @@ class MerchantController extends Controller
     public function fetchUserIdAndOrgIdFromMerchantId($merchantId)
     {
         $response = $this->service(E::MERCHANT)->fetchUserIdAndOrgIdFromMerchantId($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchMidAndNameFromOrgAndCategoryFromLiveConnection($orgId, $category)
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $response = $this->service(E::MERCHANT)->fetchMidAndNameFromOrgAndCategoryFromLiveConnection($orgId, $category);
 
         return ApiResponse::json($response);
     }

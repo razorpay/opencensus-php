@@ -648,6 +648,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT_DUE) +  $this->getCodFeeIfApplicable($payment);
     }
 
+    public function getAmountDueForCod()
+    {
+        return $this->getAttribute(self::AMOUNT_DUE) +  $this->getCodFee(0);
+    }
+
     public function getFirstPaymentMinAmount()
     {
         return $this->getAttribute(self::FIRST_PAYMENT_MIN_AMOUNT);
@@ -1273,6 +1278,12 @@ class Entity extends Base\PublicEntity
         {
             return $fee;
         }
+
+        return $this->getCodFee($fee);
+    }
+
+    protected function getCodFee($fee)
+    {
         foreach ($this->orderMetas as $orderMeta)
         {
             if ($orderMeta->getType() !== OrderMeta\Type::ONE_CLICK_CHECKOUT)

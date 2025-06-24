@@ -5,6 +5,7 @@ use RZP\Models\VirtualAccount;
 return [
     'dashboard' => [
         'url'       => env('APP_DASHBOARD_URL'),
+        'usl_url'   => env('APP_DASHBOARD_USL_URL'),
         'secret'    => env('APP_DASHBOARD_SECRET'),
         'pretend'   => env('APP_DASHBOARD_PRETEND'),
         'cloud'     => true,
@@ -1163,6 +1164,15 @@ return [
         ],
     ],
 
+    'payouts_shadow_router' => [
+        'key'                       => env('PAYOUTS_SHADOW_ROUTER_KEY'),
+        'secret'                    => env('PAYOUTS_SHADOW_ROUTER_SECRET'),
+        'payouts_shadow_router_url' => env('PAYOUTS_SHADOW_ROUTER_URL'),
+        'timeout'                   => env('PAYOUTS_SHADOW_ROUTER_TIMEOUT', 60),
+        'connect_timeout'           => env('PAYOUTS_SHADOW_ROUTER_CONNECT_TIMEOUT', 60),
+        'kill_switch'               => env('PAYOUTS_SHADOW_ROUTER_KILL_SWITCH')
+    ],
+
     'relay' => [
         'mock'   => env('RELAY_MOCK', false),
         'secret' => env('APP_RELAY_SECRET'),
@@ -1537,6 +1547,7 @@ return [
             'user'          => env('PAYMENT_METHODS_SERVICE_TEST_USER'),
         ],
         'read_experiment' => env('PAYMENT_METHODS_SERVICE_READ_EXPERIMENT'),
+        'write_experiment' => env('PAYMENT_METHODS_SERVICE_WRITE_EXPERIMENT'),
         'timeout'         => env('PAYMENT_METHODS_SERVICE_TIMEOUT', 100)
     ],
 

@@ -8,6 +8,7 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Methods\Entity as MethodsEntity;
 use RZP\Models\Merchant\Methods\Repository as MethodsRepository;
 use RZP\Models\Merchant\Methods\PaymentMethodsService;
+use RZP\Models\Merchant\Methods\Metric;
 use RZP\Exception\IntegrationException;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -32,6 +33,8 @@ class RepositoryTest extends TestCase
         $this->traceMock->shouldReceive('info')->andReturnNull();
         $this->traceMock->shouldReceive('warning')->andReturnNull();
         $this->traceMock->shouldReceive('traceException')->andReturnNull();
+        $this->traceMock->shouldReceive('error')->andReturnNull();
+        $this->traceMock->shouldReceive('critical')->andReturnNull();
 
         $this->methodsRepoMock = Mockery::mock(MethodsRepository::class)->makePartial()->shouldAllowMockingProtectedMethods();
 
@@ -225,5 +228,136 @@ class RepositoryTest extends TestCase
         // Assert
         $this->assertNull($result); // Should return null as both failed
         $this->assertNull($this->merchant->getRelation('methods')); // Relation should not be set
+    }
+
+    public function testSaveOrFail_WriteEnabled_ServiceSaveSucceeds()
+    {
+        $methodsEntity = $this->createMethodsEntity();
+        $options = ['some_option' => true];
+
+        $this->paymentMethodsServiceMock->shouldReceive('isMethodServiceWriteEnabled')
+            ->once()
+            ->andReturn(true);
+
+        $this->paymentMethodsServiceMock->shouldReceive('saveMethods')
+            ->once()
+            ->with($methodsEntity, $options)
+            ->andReturnNull(); // Success implies no exception / null return for void
+
+        $this->methodsRepoMock->shouldNotReceive('saveOrFailTestAndLive');
+
+        $this->methodsRepoMock->saveOrFail($methodsEntity, $options);
+        // No exception expected
+    }
+
+    public function testSaveOrFail_WriteEnabled_ServiceSaveFails_DbSaveSucceeds()
+    {
+        $methodsEntity = $this->createMethodsEntity();
+        $options = [];
+        $serviceException = new IntegrationException('Service save failed');
+
+        $this->paymentMethodsServiceMock->shouldReceive('isMethodServiceWriteEnabled')
+            ->once()
+            ->andReturn(true);
+
+        $this->paymentMethodsServiceMock->shouldReceive('saveMethods')
+            ->once()
+            ->with($methodsEntity, $options)
+            ->andThrow($serviceException);
+
+
+        $this->methodsRepoMock->shouldReceive('saveOrFailTestAndLive')
+            ->once()
+            ->with($methodsEntity, $options)
+            ->andReturnNull(); // DB save succeeds
+
+        $this->methodsRepoMock->saveOrFail($methodsEntity, $options);
+        // No exception expected to bubble up
+    }
+
+    public function testSaveOrFail_WriteEnabled_ServiceSaveFails_DbSaveFailsWithMismatch()
+    {
+        $methodsEntity = $this->createMethodsEntity();
+        $serviceException = new IntegrationException('Service save failed');
+        $dbExceptionMessage = 'A row in test and live database do not match';
+        $dbException = new \Exception($dbExceptionMessage);
+
+        $this->paymentMethodsServiceMock->shouldReceive('isMethodServiceWriteEnabled')->once()->andReturn(true);
+        $this->paymentMethodsServiceMock->shouldReceive('saveMethods')->once()->andThrow($serviceException);
+
+        $this->methodsRepoMock->shouldReceive('saveOrFailTestAndLive')->once()->andThrow($dbException);
+
+        $this->expectExceptionMessage($dbExceptionMessage);
+
+        $this->methodsRepoMock->saveOrFail($methodsEntity, []);
+    }
+
+    public function testSaveOrFail_WriteEnabled_ServiceSaveFails_DbSaveFailsWithGenericError()
+    {
+        $methodsEntity = $this->createMethodsEntity();
+        $serviceException = new IntegrationException('Service save failed');
+        $dbExceptionMessage = 'Generic DB Error';
+        $dbException = new \Exception($dbExceptionMessage);
+
+        $this->paymentMethodsServiceMock->shouldReceive('isMethodServiceWriteEnabled')->once()->andReturn(true);
+        $this->paymentMethodsServiceMock->shouldReceive('saveMethods')->once()->andThrow($serviceException);
+
+        $this->methodsRepoMock->shouldReceive('saveOrFailTestAndLive')->once()->andThrow($dbException);
+
+        $this->expectExceptionMessage($dbExceptionMessage);
+
+        $this->methodsRepoMock->saveOrFail($methodsEntity, []);
+    }
+
+
+    public function testSaveOrFail_WriteDisabled_DbSaveSucceeds()
+    {
+        $methodsEntity = $this->createMethodsEntity();
+        $options = [];
+
+        $this->paymentMethodsServiceMock->shouldReceive('isMethodServiceWriteEnabled')
+            ->once()
+            ->andReturn(false);
+        $this->paymentMethodsServiceMock->shouldNotReceive('saveMethods');
+
+        $this->methodsRepoMock->shouldReceive('saveOrFailTestAndLive')
+            ->once()
+            ->with($methodsEntity, $options)
+            ->andReturnNull(); // DB save succeeds
+
+        $this->methodsRepoMock->saveOrFail($methodsEntity, $options);
+        // No exception expected
+    }
+
+    public function testSaveOrFail_WriteDisabled_DbSaveFailsWithMismatch()
+    {
+        $methodsEntity = $this->createMethodsEntity();
+        $dbExceptionMessage = 'A row in test and live database do not match';
+        $dbException = new \Exception($dbExceptionMessage);
+
+        $this->paymentMethodsServiceMock->shouldReceive('isMethodServiceWriteEnabled')->once()->andReturn(false);
+        $this->paymentMethodsServiceMock->shouldNotReceive('saveMethods');
+
+        $this->methodsRepoMock->shouldReceive('saveOrFailTestAndLive')->once()->andThrow($dbException);
+
+        $this->expectExceptionMessage($dbExceptionMessage);
+
+        $this->methodsRepoMock->saveOrFail($methodsEntity, []);
+    }
+
+    public function testSaveOrFail_WriteDisabled_DbSaveFailsWithGenericError()
+    {
+        $methodsEntity = $this->createMethodsEntity();
+        $dbExceptionMessage = 'Another DB Error';
+        $dbException = new \Exception($dbExceptionMessage);
+
+        $this->paymentMethodsServiceMock->shouldReceive('isMethodServiceWriteEnabled')->once()->andReturn(false);
+        $this->paymentMethodsServiceMock->shouldNotReceive('saveMethods');
+
+        $this->methodsRepoMock->shouldReceive('saveOrFailTestAndLive')->once()->andThrow($dbException);
+
+        $this->expectExceptionMessage($dbExceptionMessage);
+
+        $this->methodsRepoMock->saveOrFail($methodsEntity, []);
     }
 }

@@ -43,7 +43,7 @@ storage/files/qrcodes/*
 !storage/files/report/.gitkeep
 !storage/files/settlement/.gitkeep
 !storage/files/qrcodes/.gitkeep
-
+!storage/files/errorcodes/error_reason_fav.json
 
 #eclipse
 .buildpath

@@ -15,6 +15,7 @@ class Constants
     const MERCHANT_ACTIVATION_STATUS            = 'merchant_activation_status';
     const INTERNAL_MERCHANT_ACTIVATION_STATUS   = 'internal_merchant_activation_status';
     const INTERNAL_MERCHANT_POS_ACTIVATION_STATUS   = 'internal_merchant_pos_activation_status';
+    const MERCHANT_DETAILS_PATCH_SELF_SERVE_REKYC =  'merchant_details_patch_self_serve_rekyc';
 
     const INTERNAL_CREATE_RISK_ACTION           = 'internal_create_risk_action';
 
@@ -33,7 +34,7 @@ class Constants
     const MERCHANT_ACTIVATION_CLARIFICATIONS_SAVE = 'merchant_activation_clarifications_save';
 
     const PARTNER_ACTIVATION_STATUS             = 'partner_activation_status';
-    
+
     const PARTNER_ACTIVATION_SAVE               = 'partner_activation_save';
 
     const MERCHANT_BANK_ACCOUNT_UPDATE          = 'merchant_bank_account_update';
@@ -89,6 +90,8 @@ class Constants
         self::ADD_ADDITIONAL_WEBSITE_SELF_SERVE         => MerchantSelfServeObserver::class,
 
         self::MERCHANT_INTERNATIONAL_ENABLEMENT_SUBMIT  => MerchantSelfServeObserver::class,
+
+        self::MERCHANT_DETAILS_PATCH_SELF_SERVE_REKYC   => MerchantReKYCStatusObserver::class,
     ];
 
     const ROUTE_VS_RAZORX_EXPERIMENT = [
@@ -144,6 +147,7 @@ class Constants
     CONST NEW_DATA = 'new_data';
 
     CONST ACTIVATION_STATUS = 'activation_status';
+    CONST SELF_SERVE_REKYC_STATUS = 'rekyc_status';
 
     CONST MERCHANT = 'merchant';
 
@@ -155,6 +159,7 @@ class Constants
     const CMMA_CASE_TYPE            = 'case_type';
     const CMMA_ACTIVATION_CASE_TYPE = 'activation';
     const CMMA_POS_ACTIVATION_CASE_TYPE = 'activationPosv1';
+    const CMMA_REKYC_CASE_TYPE = 'activationReKYC';
 
     const CMMA_EVENT_WORKFLOW_STATUS_CHANGE = 'workflow_status_change';
 

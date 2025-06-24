@@ -377,6 +377,8 @@ final class RazorxTreatment
     const COLLECTX_RBL_MERCHANTS_VA_CREATION_BLOCK = "collectx_rbl_merchants_va_creation_block";
     const COLLECTX_RBL_PAYMENT_TRANSFER_RAMP_UP = "collectx_rbl_payment_transfer_ramp_up";
 
+    const COLLECTX_IDFC_PAYMENT_TRANSFER_RAMP_UP = "collectx_idfc_payment_transfer_ramp_up";
+
     const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
 
     // to a/b test between offer tile vs subtext for cred
@@ -747,8 +749,6 @@ final class RazorxTreatment
     //Experiment used to ramp up requests for edge url created for scrooge
     const SCROOGE_EDGE_MIGRATION = 'scrooge_edge_migration';
 
-    const PP_MAGIC_SETTING = 'pp_magic_setting';
-
 
     //Experiment used to control whether requests route to DCS or NOT
     const DCS_EDIT_ENABLED = 'dcs_edit_enabled';
@@ -845,6 +845,11 @@ final class RazorxTreatment
 
     // Expt to handle non terminal payouts after migration
     const NON_TERMINAL_MIGRATION_HANDLING       = 'non_terminal_migration_handling';
+
+    // Experiment to handle source and request ID capture
+    const PAYOUTS_CAPTURE_SOURCE_REQUEST_ID = 'payouts_capture_source_request_id_experiment';
+
+    const PAYOUTS_SHADOW_ROUTER = 'payouts_shadow_router_splitz_experiment';
 
     // Experiment for sending user details to getsimpl
     const SEND_USER_DETAILS_TO_GETSIMPL         = 'send_user_details_to_getsimpl';
@@ -1055,10 +1060,16 @@ final class RazorxTreatment
     const BANK_DATA_VIA_NPCI_API = 'bank_data_via_npci_api';
     const Axis_VA_MIGRATION = 'axis_va_migration';
 
+    // Experiment Variant for Bene Bank Downtime Webhook Notification
+    const DOWNTIME_V2_WEBHOOK_ENABLED = 'v2_webhook_enabled';
+    const DOWNTIME_V2_EXPERIMENT = 'downtime_v2_experiment';
+
     const COLLECTX_RBL_MERCHANTS_VA_CLOSE_BLOCK = "collectx_rbl_merchants_va_close_block";
 
     const COLLECTIONS_RBL_MERCHANTS_VA_ADD_TPV_BLOCK = "collections_rbl_merchants_va_add_tpv_block";
     const PS_API_MERCHANT_MIGRATION_ON_ID = 'ps_api_merchant_migration_on_id';
+
+    const FAV_POSTPAID_DISABLE = 'fav_postpaid_disable';
 
     const Allowed_alt_id_experiments = [
         "non_rearch_alt__RUPAY_isg_kotak",

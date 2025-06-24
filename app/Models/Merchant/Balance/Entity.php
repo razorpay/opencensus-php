@@ -383,7 +383,7 @@ class Entity extends Base\PublicEntity
         return $this->hasOne(Details\Entity::class);
     }
 
-    public static function buildFromMerchant($merchant)
+    public static function buildFromMerchant($merchant, $balanceId = null)
     {
         // TODO need to build it via input
         $balance = new static;
@@ -392,7 +392,10 @@ class Entity extends Base\PublicEntity
         $balance->setAttribute(self::BALANCE, 0);
         $balance->setAttribute(self::CURRENCY, $merchant->getCurrency());
         $balance->setAttribute(self::TYPE, Type::PRIMARY);
-
+        if(empty($balanceId) === false)
+        {
+            $balance->setAttribute(self::ID, $balanceId);
+        }
         return $balance;
     }
 

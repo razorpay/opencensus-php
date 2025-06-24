@@ -3690,12 +3690,13 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function liveEnable($id)
+    public function liveEnable($id, $skipWorkflowForSettlements = false)
     {
         $this->trace->info(
             TraceCode::MERCHANT_LIVE_ENABLE_REQUEST,
             [
-                'merchant_id' => $id,
+                'merchant_id'                    => $id,
+                'skip_workflows_for_settlements' => $skipWorkflowForSettlements,
             ]);
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
@@ -3722,10 +3723,14 @@ class Service extends Base\Service
 
         $merchant->liveEnable();
 
-        // Triggering
-        $workflow = $this->app['workflow']
-                         ->setEntity($merchant->getEntity())
-                         ->handle($oldMerchant, $merchant);
+        // Only trigger workflow if not skipped
+        if ($skipWorkflowForSettlements === false)
+        {
+            // Triggering
+            $workflow = $this->app['workflow']
+                             ->setEntity($merchant->getEntity())
+                             ->handle($oldMerchant, $merchant);
+        }
 
         $this->repo->saveOrFail($merchant);
 
@@ -3734,12 +3739,13 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function liveDisable($id)
+    public function liveDisable($id, $skipWorkflowForSettlements = false)
     {
         $this->trace->info(
             TraceCode::MERCHANT_LIVE_DISABLE_REQUEST,
             [
-                'merchant_id' => $id,
+                'merchant_id'                    => $id,
+                'skip_workflows_for_settlements' => $skipWorkflowForSettlements,
             ]);
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
@@ -3760,10 +3766,14 @@ class Service extends Base\Service
 
         $merchant->liveDisable();
 
-        // Triggering
-        $workflow = $this->app['workflow']
-                         ->setEntity($merchant->getEntity())
-                         ->handle($oldMerchant, $merchant);
+        // Only trigger workflow if not skipped
+        if ($skipWorkflowForSettlements === false)
+        {
+            // Triggering
+            $workflow = $this->app['workflow']
+                             ->setEntity($merchant->getEntity())
+                             ->handle($oldMerchant, $merchant);
+        }
 
         $this->repo->saveOrFail($merchant);
 
@@ -10239,7 +10249,7 @@ class Service extends Base\Service
         }
 
         else if ($merchant->isAggregatorPartner()) {
-            $isEnabled = (new Referral\Core())->isMKYCFlowEnabled($merchant->getId(), $this->app['config']->get('app.mkyc_aggregator_experiment_id'));
+            $isEnabled = (new Referral\Core())->isMKYCFlowEnabled($merchant->getId(), $this->app['config']->get('app.mkyc_aggregator_experiment_id'), 'mkyc_aggregator_flow_enabled');
         }
 
         return $isEnabled;
@@ -13825,7 +13835,9 @@ class Service extends Base\Service
         }
         */
 
-        $transformers = (new \RZP\Base\Transformer())->getTransformers($sqlBinLogData["table"]);
+        $merchantId = $sqlBinLogData['data']['merchant_id'] ?? $sqlBinLogData['data']['id'] ?? null;
+
+        $transformers = (new \RZP\Base\Transformer())->getTransformers($sqlBinLogData["table"], $merchantId);
 
         foreach ($transformers as $transformer)
         {
@@ -14489,6 +14501,29 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function fetchMidAndNameFromOrgAndCategoryFromLiveConnection($orgId, $category)
+    {
+        $response =  $this->repo->merchant->fetchMidAndNameFromOrgAndCategoryFromLiveConnection($orgId, $category);
+
+        $grouped = [];
+
+        foreach ($response as $row) {
+            $key = $row['key_id'];
+
+            if (!isset($grouped[$key])) {
+                $grouped[$key] = [
+                    'name'     => $row['name'],
+                    'key_id'   => $row['key_id'],
+                    'features' => [],
+                ];
+            }
+
+            $grouped[$key]['features'][] = $row['feature_name'];
+        }
+
+        return array_values($grouped);
+    }
+
     private function mapBalanceResponseData(&$balances)
     {
         foreach($balances[Base\PublicCollection::ITEMS] as $index => &$balance)
@@ -14528,4 +14563,5 @@ class Service extends Base\Service
             }
         }
     }
+
 }

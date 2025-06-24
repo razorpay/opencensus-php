@@ -39,6 +39,9 @@ class CardlessEmi
     const CSHE_IFSC = 'CSHE';
     const TVSC_IFSC = 'TVSC';
 
+    const SHOPSE = 'shopse';
+    const SNAPMINT = 'snapmint';
+
     /** @var int[] The minimum order/transaction amount in paisa for each cardless emi provider. */
     public const MIN_AMOUNTS = [
         self::EARLYSALARY  => 300000, // Rs. 3000
@@ -57,6 +60,7 @@ class CardlessEmi
         self::CSHE         => 100000, // Rs. 1000
         self::TVSC         => 300000, // Rs. 3000
         self::LIQUILOANS   => 90000,  // Rs. 900
+        self::SHOPSE       => 100000, // Rs. 1000
     ];
 
     public static $fullName = [
@@ -67,6 +71,8 @@ class CardlessEmi
         self::SEZZLE       => 'Sezzle',
         self::LIQUILOANS   => 'Liquiloans',
         self::INSTANT_EMI  => 'InstantEMI',
+        self::SHOPSE       => 'Shopse',
+        self::SNAPMINT     => 'Snapmint',
     ];
 
     // Add dashboard display names for providers which and are not banks and are not present in IFSC repo

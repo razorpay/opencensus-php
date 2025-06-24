@@ -223,6 +223,22 @@ class Tokens
         return $resp;
     }
 
+    public function getPublicCollection($resp): PublicCollection
+    {
+        $tokens = new PublicCollection();
+
+        foreach ($resp as $tok)
+        {
+            $token = $this->forceFillTokensFromResponse($tok);
+
+            $token = $this->loadRelatedEntity($token);
+
+            $tokens->add($token);
+        }
+
+        return $tokens;
+    }
+
     public function fetchCustomerTokensInternal($input)
     {
         $resp = $this->sendRequest(

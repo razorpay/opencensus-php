@@ -26,6 +26,7 @@ use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Services\Mutex;
+use Razorpay\IFSC\IFSC;
 use RZP\Models\Settings;
 use RZP\Models\Customer;
 use RZP\Models\Reversal;
@@ -125,6 +126,7 @@ use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
 use RZP\Services\Mock\BankingAccountService as MockBankingAccountService;
 use RZP\Models\Transaction\Processor\Ledger\Payout as PayoutsLedgerProcessor;
+use RZP\Models\Payout\SourceRequestIDMapping\Core as SourceRequestIDMappingCore;
 use RZP\Models\Ledger\ReverseShadow\IRCTCPayout\Core as IRCTCPayoutReverseShadowCore;
 
 /**
@@ -500,6 +502,23 @@ class Core extends Base\Core
                 'merchant_id' => $merchant->getId(),
                 'amount_info' => $amountInfo
             ]);
+
+        try
+        {
+            // Capture source request ID mapping for payouts
+            $this->captureSourceRequestId($payout);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::PAYOUT_SOURCE_REQUEST_ID_MAPPING_FAILED,
+                [
+                    'payout_id'   => $payout->getId(),
+                    'merchant_id' => $merchant->getId(),
+                ]);
+        }
 
         if ($payout->getIsPayoutService() === false)
         {
@@ -880,6 +899,33 @@ class Core extends Base\Core
         {
             case Status::PROCESSED:
                 $oldStatus = $payout->getStatus();
+
+                if (isset($ftaData[PayoutConstants::PAYEE_IFSC]) === true) {
+                    $requestPayload = [
+                        "id" => $payout->getMerchantId(),
+                        "experiment_name" =>  $this->app['config']->get('app.payouts_to_phone_number_splitz_experiment'),
+                        'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                    ];
+                    $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE, TraceCode::SEND_IFSC_IN_WEBHOOK_SPLITZ_ERROR);
+
+                    if ($isExperimentEnabled === true) {
+                        $ifsc = $ftaData[PayoutConstants::PAYEE_IFSC];
+                        $payeeBankName = IFSC::getBankName(strtoupper($ifsc));
+
+                        $this->trace->info(
+                            TraceCode::FTA_INFO_IN_PAYOUT_WEBHOOK,
+                            [
+                                PayoutConstants::FTA => $ftaData,
+                                PayoutConstants::PAYEE_BANK_NAME => $payeeBankName,
+                            ]
+                        );
+
+                        $payout->setNotes(array_merge($payout->getNotes(), [
+                            PayoutConstants::PAYEE_IFSC => $ifsc,
+                            PayoutConstants::PAYEE_BANK_NAME => $payeeBankName
+                        ]));
+                    }
+                }
 
                 $this->handlePayoutProcessed($payout, null, $ftaStatus, $ftsSourceAccountInformation, true);
 
@@ -7954,8 +8000,7 @@ class Core extends Base\Core
 
                                     $this->trace->gauge(Metric::BENE_BANK_UP_REDIS_KEY_UNSET, time(),
                                         [
-                                            'bene_code' => $beneBankIfsc,
-                                            'downtime_id' => $input['payload']['id'],
+                                            'bene_code' => $beneBankIfsc
                                         ]
                                     );
                                 }
@@ -7966,8 +8011,7 @@ class Core extends Base\Core
 
                                 $this->trace->gauge(Metric::BENE_BANK_DOWN_REDIS_KEY_SET, time(),
                                     [
-                                        'bene_code' => $beneBankIfsc,
-                                        'downtime_id' => $input['payload']['id'],
+                                        'bene_code' => $beneBankIfsc
                                     ]
                                 );
                             }
@@ -12589,7 +12633,28 @@ class Core extends Base\Core
             $status = $fundTransferAttempt->getStatus();
         }
 
-        return [
+        // Fetch fund account and contact details for enrichment
+        $fundAccountContactData = null;
+        try {
+            // Get fund account ID from payout and check for "fa_" prefix
+            $fundAccountId = $payout->getFundAccountId();
+
+            // Remove "fa_" prefix if present
+            if (strpos($fundAccountId, 'fa_') === 0) {
+                $fundAccountId = substr($fundAccountId, 3); // Remove "fa_" prefix (3 characters)
+            }
+
+            $fundAccountContactData = $this->repo->fund_account->fetchFundAccountWithContactForStatementEnrichment($fundAccountId);
+        } catch (\Throwable $e) {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FUND_ACCOUNT_CONTACT_FETCH_ERROR,
+                ['payout_id' => $payout->getId(), 'fund_account_id' => $payout->getFundAccountId()]
+            );
+        }
+
+        $baseData = [
             PayoutConstants::ENTITY_ID               => $payout->getId(),
             PayoutConstants::ENTITY_TYPE             => PayoutConstants::PAYOUTS_ENTITY_TYPE,
             PayoutConstants::UTR                     => $utr ? $utr : "",
@@ -12601,7 +12666,21 @@ class Core extends Base\Core
             PayoutConstants::MODE                    => $payout->getMode(),
             PayoutConstants::AMOUNT                  => $payout->getAmount(),
             PayoutConstants::BALANCE_ID              => $payout->getBalanceId(),
+            PayoutConstants::PAYOUT_PURPOSE          => $payout->getPurpose(),
+
         ];
+
+        // Add enhanced data if available
+        if ($fundAccountContactData !== null) {
+            $baseData[PayoutConstants::FUND_ACCOUNT_ID] = $fundAccountContactData['fund_account_id'] ?? "";
+            $baseData[PayoutConstants::CONTACT_ID] = $fundAccountContactData['contact_id'] ?? "";
+            $baseData[PayoutConstants::NAME] = $fundAccountContactData['name'] ?? "";
+            $baseData[PayoutConstants::CONTACT] = $fundAccountContactData['contact'] ?? "";
+            $baseData[PayoutConstants::EMAIL] = $fundAccountContactData['email'] ?? "";
+            $baseData[PayoutConstants::CONTACT_TYPE] = $fundAccountContactData['contact_type'] ?? "";
+        }
+
+        return $baseData;
     }
 
     public function triggerPayoutPropertiesEventViaMicroservice(Entity $payout, array $payoutRequestInput)
@@ -12738,6 +12817,61 @@ class Core extends Base\Core
                 'payout_id' => $payout->getId(),
                 'error'     => $e->getMessage()
             ]);
+        }
+    }
+
+    /**
+     * Checks if source request ID mapping is enabled via Splitz experiment
+     *
+     * @param Entity $payout Payout entity to get merchant ID from
+     * @return bool True if enabled, false otherwise
+     */
+    protected function isSourceRequestIdMappingEnabled(Entity $payout): bool
+    {
+
+        $eventExperimentName = Merchant\RazorxTreatment::PAYOUTS_CAPTURE_SOURCE_REQUEST_ID;
+        $eventExperimentIdConfigKey = 'app.'.$eventExperimentName.'_id';
+
+        $properties = [
+            'id'            => $payout->merchant->getId(),
+            'experiment_id' => $this->app['config']->get($eventExperimentIdConfigKey),
+            'request_data' => json_encode(['merchant_id' => $payout->merchant->getId()])
+        ];
+
+        if ($this->isSplitzExperimentEnable($properties,Merchant\RazorxTreatment::VARIANT_ENABLE, TraceCode::PAYOUT_CAPTURE_REQUEST_ID_SPLITZ_ERROR))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Captures the source request ID and associates it with the payout entity
+     *
+     * @param Entity $payout Payout entity to associate with the source request ID
+     */
+    protected function captureSourceRequestId(Entity $payout): void
+    {
+        if (!$this->isSourceRequestIdMappingEnabled($payout))
+        {
+            return;
+        }
+        try
+        {
+            (new SourceRequestIDMappingCore())->createSourceRequestIdMapping($payout->getId(), Entity::PAYOUT);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PAYOUT_SOURCE_REQUEST_ID_MAPPING_FAILED,
+                [
+                    'payout_id' => $payout->getId(),
+                    'merchant_id' => $payout->merchant->getId(),
+                ]
+            );
         }
     }
 }

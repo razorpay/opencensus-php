@@ -5,6 +5,7 @@ namespace RZP\Base;
 use App;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Foundation\Application;
 use RZP\Models\User\Transformers as User;
@@ -20,6 +21,7 @@ use RZP\Models\Merchant\BusinessDetail\Transformers as MerchantBusinessDetail;
 use RZP\Models\Merchant\VerificationDetail\Transformers as MerchantVerificationDetail;
 
 const APPLY_MUTEX_ON_PGOS_DUAL_WRITE_EXPERIMENT_ID = 'app.apply_mutex_on_pgos_dual_write_experiment_id';
+const REMOVE_VERIFICATION_DETAILS_DUAL_WRITE_ON_MERCHANT_DETAILS_AND_STAKEHOLDER_EXPERIMENT_ID = 'app.remove_verification_details_dual_write_on_merchant_details_and_stakeholder_experiment_id';
 
 class Transformer
 {
@@ -193,7 +195,7 @@ class Transformer
         }
     }
 
-    public function getTransformers($tableName)
+    public function getTransformers($tableName, $merchantId)
     {
         switch ($tableName)
         {
@@ -219,6 +221,15 @@ class Transformer
                 ];
                 break;
             case "verification_details"  :
+                // if the experiment is on, instead of dual-write, PGOS will call ASV for merchant_details and stakeholder table
+                if ($this->shouldRemoveDualWriteOnMerchantDetails($merchantId) === true)
+                {
+                    return [
+                        new MerchantVerificationDetail\VerificationDetailTransformer(),
+                        new MerchantBvsValidation\VerificationDetailsTransformer(),
+                        new MerchantStakeholder\VerificationDetailsTransformer(),
+                    ];
+                }
                 return [
                     new MerchantVerificationDetail\VerificationDetailTransformer(),
                     new MerchantBvsValidation\VerificationDetailsTransformer(),
@@ -236,6 +247,51 @@ class Transformer
                     new ClarificationDetail\ClarificationDetailsTransformer(),
                 ];
                 break;
+        }
+    }
+
+    private function shouldRemoveDualWriteOnMerchantDetails($merchantId)
+    {
+        $mode = 'enable';
+
+        $experimentId = $this->app['config']->get(REMOVE_VERIFICATION_DETAILS_DUAL_WRITE_ON_MERCHANT_DETAILS_AND_STAKEHOLDER_EXPERIMENT_ID);
+
+        $splitzId = $merchantId;
+
+        if ($splitzId === null)
+        {
+            $splitzId = UniqueIdEntity::generateUniqueId();
+
+            $this->trace->info(TraceCode::MERCHANT_ID_NOT_FOUND_IN_PGOS_DUAL_WRITE, [
+                'splitz_id' => $splitzId,
+            ]);
+        }
+
+        try
+        {
+            $properties = [
+                'id'            => $splitzId,
+                'experiment_id' => $experimentId,
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::REMOVE_VERIFICATION_DETAILS_DUAL_WRITE_ON_MERCHANT_DETAILS_AND_STAKEHOLDER_SPLITZ_CALL, [
+                'splitz_output' => $variant,
+            ]);
+
+            return $variant === $mode;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'id'   => $splitzId,
+                'experiment_id' => $experimentId ?? null,
+            ]);
+
+            return false;
         }
     }
 

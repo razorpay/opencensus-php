@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundAccount;
 
+use App;
 use RZP\Services\Mutex;
 use RZP\Error\ErrorCode;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -70,6 +71,11 @@ class Service extends Base\Service
      */
     protected $vpaCore;
 
+    /**
+     * @var Payout\Events
+     */
+    protected $payoutEvents;
+
     public function __construct()
     {
         parent::__construct();
@@ -85,6 +91,8 @@ class Service extends Base\Service
         $this->linkedNumberCore = new LinkedNumber\Core;
 
         $this->vpaCore = new Vpa\Core;
+
+        $this->payoutEvents = new Payout\Events;
     }
 
     public function create(array $input): array
@@ -200,6 +208,30 @@ class Service extends Base\Service
             $accountHolderName = $entity->getAccountHolderName();
 
             $this->sanitizeResponseForLinkedNumberPayout($fundAccountArray, $linkedNumber, $accountHolderName);
+            return $fundAccountArray;
+        }
+
+        $app = App::getFacadeRoot();
+
+        if ($app['basicauth']->isPayoutService() === true)
+        {
+            $entity->load('contact');
+            $fundAccount = $entity->toArray();
+
+            if ($fundAccount[BankAccount\Entity::ACCOUNT_TYPE] == Entity::BANK_ACCOUNT)
+            {
+                $fundAccount[Entity::ACCOUNT]['virtual'] = $entity->account->isVirtual();
+            }
+
+            $psFundAccountResponse = (new \RZP\Services\PayoutService\Create())->generateFundAccountResponseForPayoutsService($fundAccount);
+
+            $this->trace->info(
+                TraceCode::MONOLITH_FUND_ACCOUNT_DETAILS_FOR_PAYOUT_SERVICE,
+                [
+                    'fund_account' => $psFundAccountResponse
+                ]);
+            return $psFundAccountResponse;
+
         }
 
         return $fundAccountArray;
@@ -581,7 +613,7 @@ class Service extends Base\Service
         if (empty($mappedVpa) === false)
         {
             list($username, $handle) = explode(Vpa\Entity::AROBASE, $mappedVpa[Entity::VPA] ?? '');
-            
+
             $vpaInput = [
                 Vpa\Entity::USERNAME => $username,
                 Vpa\Entity::HANDLE => $handle,
@@ -589,8 +621,20 @@ class Service extends Base\Service
             $customerName = $mappedVpa[Entity::CUSTOMER_NAME];
 
             $vpa = $fundAccount->account;
+
+            if($vpa->getUsername()!= $username || $vpa->getHandle() != $handle) {
+                $this->payoutEvents->trackPayoutsToPhoneNumberVpaUpdatedEvent(
+                    $merchantId,
+                    $mobileNumber,
+                    $accountHolderName,
+                    $mappedVpa[Entity::VPA],
+                    $vpa->getUsername() . '@' . $vpa->getHandle(),
+                    $fundAccount->getId()
+                );
+            }
+
             $this->vpaCore->updateVpaWithPublicId($vpa, $vpaInput);
-            
+
             //It could be a case where the customer name change but the vpa is still the same.
             $fundAccount->setCustomerName($customerName);
             $fundAccount->saveOrFail();

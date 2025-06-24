@@ -119,4 +119,25 @@ trait PayoutEvent
         $properties = $event->getProperties();
         $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $eventData, $properties);
     }
+
+    public function trackPhoneNumberPayoutEvents(
+        array $eventData,
+        array $customProperties = [],
+        \Throwable $ex = null,
+    ): void
+    {
+        $requestId = $this->app['request']->getTaskId();
+
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $customProperties +=
+            [
+                'timestamp'     => $timestamp,
+                'requestId'     => $requestId
+            ];
+
+        $event = new PE(null, $ex, $customProperties);
+        $properties = $event->getProperties();
+        $this->trackEvent(PE::EVENT_TYPE, PE::EVENT_VERSION, $eventData, $properties);
+    }
 }

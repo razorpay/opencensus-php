@@ -48,7 +48,7 @@ final class Constants
     const STATE_CODE = 'state_code';
     const SELLER_ENTITY_DETAILS = [
         self::GSTIN         =>  '29AAGCR4375J1ZU',
-        self::LEGAL_NAME    =>  'Razorpay Software Private Limited',
+        self::LEGAL_NAME    =>  'Razorpay Software Limited (formerly Razorpay Software Pvt. Ltd.)',
         self::ADDRESS_1     =>  'First Floor SJR Cyber 22 laskar hosur road Adugodi',
         self::LOCATION      =>  'Bangalore',
         self::PINCODE       =>   560030,

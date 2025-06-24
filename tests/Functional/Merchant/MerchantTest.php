@@ -21953,4 +21953,151 @@ The same has been enabled for the account.
         $this->assertEquals("owner", $merchantUser->role);
     }
 
+    public function testMerchantDetailsFetchSuccess()
+    {
+        $org = $this->fixtures->create('org', [
+            'email'         => 'random@abc.com',
+            'email_domains' => 'abc.com',
+            'auth_type'     => 'google_auth',
+        ]);
+
+        $merchant1 = $this->fixtures->create('merchant',[
+            'name' => 'Merchant Name 1',
+            'email'      => 'merchantid1@razorpay.com',
+            'org_id' => $org['id'],
+            'category'  => '5945',
+            'category2' => 'education'
+        ]);
+
+        $merchant2 =$this->fixtures->create('merchant',[
+            'name' => 'Merchant Name 2',
+            'email'      => 'merchantid2@razorpay.com',
+            'org_id' =>  $org['id'],
+            'category'  => '5945',
+            'category2' => 'education'
+        ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id'     => $merchant1['id'],
+                'entity_type'   => 'merchant',
+                'name'          => 'marketplace'
+            ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id'     => $merchant2['id'],
+                'entity_type'   => 'merchant',
+                'name'          => 'marketplace'
+            ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id'     => $merchant2['id'],
+                'entity_type'   => 'merchant',
+                'name'          => 'hide_aggregator_details'
+            ]);
+
+        $this->fixtures->create('key', ['merchant_id' => $merchant1['id'],'id' => 'keyid1',]);
+        $this->fixtures->create('key', ['merchant_id' => $merchant2['id'],'id' => 'keyid2']);
+
+        $this->startTest();
+    }
+
+    public function testEmptyMerchantList()
+    {
+        $this->startTest();
+    }
+
+    public function testMerchantWithoutFeature()
+    {
+        $org = $this->fixtures->create('org', [
+            'email'         => 'random@abc.com',
+            'email_domains' => 'abc.com',
+            'auth_type'     => 'google_auth',
+        ]);
+
+        $merchant = $this->fixtures->create('merchant',[
+            'name' => 'Merchant Name 3',
+            'email'      => 'merchantid3@razorpay.com',
+            'org_id' => $org['id'],
+            'category'  => '7999',
+            'category2' => 'retail'
+        ]);
+
+        $this->fixtures->create('key', ['merchant_id' => $merchant->getId(), 'id' => 'keyid3']);
+
+        $this->startTest();
+    }
+
+    public function testMerchantCategoryMismatch()
+    {
+        $org = $this->fixtures->create('org', [
+            'email'         => 'random@abc.com',
+            'email_domains' => 'abc.com',
+            'auth_type'     => 'google_auth',
+        ]);
+
+        $merchant1 = $this->fixtures->create('merchant',[
+            'name' => 'Merchant Name 4',
+            'email'      => 'merchantid4@razorpay.com',
+            'org_id' => $org['id'],
+            'category'  => '1234',
+            'category2' => 'education'
+        ]);
+
+        $merchant2 = $this->fixtures->create('merchant',[
+            'name' => 'Merchant Name 5',
+            'email'      => 'merchantid5@razorpay.com',
+            'org_id' => $org['id'],
+            'category'  => '1234',
+            'category2' => 'retail'
+        ]);
+
+        $this->fixtures->create('key', ['merchant_id' => $merchant1['id'], 'id' => 'keyid4']);
+        $this->fixtures->create('key', ['merchant_id' => $merchant2['id'], 'id' => 'keyid5']);
+
+        $this->startTest();
+    }
+
+    public function testMerchantWithoutKey()
+    {
+        $org = $this->fixtures->create('org', [
+            'email'         => 'random@abc.com',
+            'email_domains' => 'abc.com',
+            'auth_type'     => 'google_auth',
+        ]);
+
+        $this->fixtures->create('merchant',[
+            'name' => 'Merchant Name 6',
+            'email'      => 'merchantid6@razorpay.com',
+            'org_id' => $org['id'],
+            'category'  => '1111',
+            'category2' => 'education'
+        ]);
+
+        // No key created
+
+        $this->startTest();
+    }
+
+
+    public function testMerchantDetailsFetchFailure()
+    {
+        $request = $this->testData['testMerchantDetailsFetchFailure']['request'];
+
+        $this->makeRequestAndCatchException(
+            function () use ($request)
+            {
+                $this->makeRequestAndGetContent($request);
+            },
+            BadRequestException::class,
+            'The id provided does not exist'
+        );
+    }
+
+
 }
