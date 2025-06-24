@@ -114,6 +114,21 @@ class Api extends Base
         return $this->sendRequest($endpoint, Requests::POST, $input);
     }
 
+    public function reverseAllTransfers(array $input) : array
+    {
+        if ((new Config())->shouldCreateNewPassportToken())
+        {
+            $this->addNewPassportToken();
+        }
+        else
+        {
+            $this->addPassportToken();
+        }
+
+        return $this->sendRequest(Constant::REVERSE_ALL_TRANSFERS, Requests::POST, $input);
+    }
+
+
     /**
      * To fetch a transfer by ID from Route microservice
      * @return array
