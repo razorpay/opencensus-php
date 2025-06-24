@@ -7,6 +7,7 @@ final class Constant
     const DIRECT_TRANSFER_ENDPOINT = '/v1/transfers/direct';
     const PAYMENT_TRANSFER_ENDPOINT = '/v1/transfers/payments/%s';
     const TRANSFER_REVERSAL_ENDPOINT = '/v1/transfers/%s/reversals';
+    const REVERSE_ALL_TRANSFERS = '/v1/refunds/reverse-transfers';
     const TRANSFER_FETCH_BY_ID_ENDPOINT = '/v1/transfers/api/%s';
     const REVERSAL_FETCH_BY_ID_ENDPOINT = '/v1/reversals/api/%s';
     const PATCH_TRANSFER_ROUTE_ENDPOINT = '/v1/transfers/%s';
