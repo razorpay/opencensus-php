@@ -1225,6 +1225,8 @@ return array(
 
     'amount_transferred_rearch_exp_id' => env('AMOUNT_TRANSFERRED_REARCH_EXP_ID'),
 
+    'reverse_all_rearch_exp_id' => env('REVERSE_ALL_REARCH_EXP_ID'),
+
     'route_transfer_rearch_fetch_experiment_id' => env('TRANSFER_FETCH_REARCH_EXP_ID'),
 
     'route_la_transfer_rearch_fetch_experiment_id' => env('LA_TRANSFER_FETCH_REARCH_EXP_ID'),
