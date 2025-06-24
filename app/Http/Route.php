@@ -12574,7 +12574,8 @@ class Route
             'delete_user_details',
             'internal_org_get',
             'contact_get_internal',
-            'feature_get_merchants_internal'
+            'feature_get_merchants_internal',
+            'user_service_data_accessor'
         ],
 
         'payments_cross_border_service' => [
