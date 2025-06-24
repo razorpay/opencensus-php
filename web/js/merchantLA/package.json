@@ -16,7 +16,7 @@
     "@razorpay/blade": "12.31.5",
     "@razorpay/blade-old": "npm:@razorpay/blade-old@0.0.6-hotfix-styled-components",
     "@razorpay/blade-old-for-new-auth": "npm:@razorpay/blade-old@0.0.1",
-    "@razorpay/frontend-care": "0.9.34",
+    "@razorpay/frontend-care": "0.9.35",
     "@razorpay/i18nify-js": "1.12.3",
     "@razorpay/i18nify-react": "4.0.12",
     "@reduxjs/toolkit": "1.9.1",
