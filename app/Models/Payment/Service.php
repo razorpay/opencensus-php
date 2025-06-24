@@ -6031,6 +6031,8 @@ class Service extends Base\Service
 
         $payment->setExternal(true);
 
+        $this->app['pg_router']->associateOfferDiscountIfApplicable($payment, $input);
+
         $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
 
         $payment->merchant()->associate($merchant);

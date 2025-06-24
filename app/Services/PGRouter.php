@@ -675,23 +675,10 @@ class PGRouter
                 }
             }
 
-            if (isset($response['body']['data']['payment']['offers']))
-            {
-                $discountArray = [
-                    'payment_id' => $response['body']['data']['payment']['id'],
-                    'offer_id' => $response['body']['data']['payment']['offer']['offer_id'],
-                    'amount' => $response['body']['data']['payment']['offer']['discount'],
-                    // this is only to maintain backward compatibility with api code,
-                    // these values should not be used anywhere
-                    'id' => $response['body']['data']['payment']['id'],
-                    'order_id' => $response['body']['data']['payment']['id'],
-                ];
-
-                $discount= (new \RZP\Models\Discount\Entity)->forcefill($discountArray);
-            }
-
             $payment = (new Payment\Entity)->forceFill($response['body']['data']['payment']);
 
+
+            $this->associateOfferDiscountIfApplicable($payment, $response['body']['data']);
 
             if ($payment->isUpi() === true)
             {
@@ -728,15 +715,30 @@ class PGRouter
                 $payment->setErrorNull();
             }
 
-            if ($discount !== null)
-            {
-                $payment->discount = $discount;
-            }
-
             return $payment;
         }
 
         return null;
+    }
+
+    public function associateOfferDiscountIfApplicable(Payment\Entity $payment, array $input)
+    {
+        if (isset($input['payment']['offer']))
+        {
+            $discountArray = [
+                'payment_id' => $input['payment']['id'],
+                'offer_id' => $input['payment']['offer']['offer_id'],
+                'amount' => $input['payment']['offer']['discount'],
+                // this is only to maintain backward compatibility with api code,
+                // these values should not be used anywhere
+                'id' =>$input['payment']['id'],
+                'order_id' => $input['payment']['id'],
+            ];
+
+            $discount= (new \RZP\Models\Discount\Entity)->forcefill($discountArray);
+
+            $payment->discount = $discount;
+        }
     }
 
     public function fetchOrder(string $id, string $merchantId, array $input)
