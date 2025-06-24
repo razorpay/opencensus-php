@@ -12568,6 +12568,15 @@ class Route
      * Nothing here should be in private or admin auth
      */
     public static $internalApps = [
+        'user_service' => [
+            'fetch_user_details',
+            'upsert_user_details',
+            'delete_user_details',
+            'internal_org_get',
+            'contact_get_internal',
+            'feature_get_merchants_internal'
+        ],
+
         'payments_cross_border_service' => [
             'payment_capture',
             'internal_payment_authorize_refund',
@@ -18957,7 +18966,7 @@ class Route
         'identity_provider' => [
             'user_fetch_merchants',
             'multiple_users_fetch_internal'
-        ]
+        ],
     ];
 
     //

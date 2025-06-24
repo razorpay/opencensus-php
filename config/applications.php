@@ -2238,5 +2238,9 @@ return [
 
     'identity_provider' => [
         'secret' => env('APP_IDP_SECRET'),
+    ],
+
+    'user_service' => [
+        'secret' => env('USER_SERVICE_SECRET'),
     ]
 ];
