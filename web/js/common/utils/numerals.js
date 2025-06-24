@@ -112,10 +112,10 @@ export const i18HumanReadableNumerals = (value, currencyCode) => {
 export const i18HumanReadableCurrency = (amount, currency) => {
   const currencySymbol = getCurrencySymbol(currency);
   if (currency === 'INR') {
-    return `${currencySymbol} ${humanReadableIndian(amount)}`;
+    return `${currencySymbol}${humanReadableIndian(amount)}`;
   }
 
-  return `${currencySymbol} ${i18HumanReadableNumerals(amount, currency)}`;
+  return `${currencySymbol}${i18HumanReadableNumerals(amount, currency)}`;
 };
 
 /**

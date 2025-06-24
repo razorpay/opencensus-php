@@ -384,11 +384,13 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                 ) : null}
                 <PaymentPageDetails id={order_id} />
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                <DetailRow
-                  label="Bank RRN"
-                  value={acquirer_data.rrn || '--'}
-                  tooltipType="bankRRN"
-                />
+                {!isConfigTagEnabled('transactions.bank_rrn') ? (
+                  <DetailRow
+                    label="Bank RRN"
+                    value={acquirer_data.rrn || '--'}
+                    tooltipType="bankRRN"
+                  />
+                ) : null}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 {user?.isPosOrderIDEnabled && posOrderId ? (
                   <DetailRow
@@ -402,27 +404,27 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     )}
                   />
                 ) : (
-                <DetailRow
-                  label="Order ID"
-                  value={
-                    order_id ? (
-                      <Link
-                        onClick={() => history.push(`/orders/${order_id}${hash}`)}
-                        variant="button"
-                      >
-                        {order_id}
-                      </Link>
-                    ) : (
-                      '--'
-                    )
-                  }
-                  tooltipType="orderId"
-                  copyable
-                  onCopyAction={onCopy('Order ID', { transactionIDActual, orderId: order_id }).bind(
-                    null,
-                    order_id,
-                  )}
-                />
+                  <DetailRow
+                    label="Order ID"
+                    value={
+                      order_id ? (
+                        <Link
+                          onClick={() => history.push(`/orders/${order_id}${hash}`)}
+                          variant="button"
+                        >
+                          {order_id}
+                        </Link>
+                      ) : (
+                        '--'
+                      )
+                    }
+                    tooltipType="orderId"
+                    copyable
+                    onCopyAction={onCopy('Order ID', {
+                      transactionIDActual,
+                      orderId: order_id,
+                    }).bind(null, order_id)}
+                  />
                 )}
                 <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                 <DetailRow

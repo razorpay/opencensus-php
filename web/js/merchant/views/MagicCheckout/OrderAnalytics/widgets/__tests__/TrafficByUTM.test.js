@@ -21,7 +21,7 @@ describe('Magic - TrafficByUTM Widget', () => {
     expect(screen.getByText('Traffic by UTM parameters')).toBeInTheDocument();
     expect(screen.getByText('WHATSAPP')).toBeInTheDocument();
     expect(screen.getByText('248')).toBeInTheDocument();
-    expect(screen.getByText('₹ 1.82L')).toBeInTheDocument();
+    expect(screen.getByText('₹1.82L')).toBeInTheDocument();
     expect(screen.getByRole('combobox')).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Source' }).selected).toBe(true);
   });

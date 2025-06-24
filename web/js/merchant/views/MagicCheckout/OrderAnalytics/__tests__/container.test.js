@@ -22,13 +22,13 @@ describe('Magic - Order Analytics', () => {
         screen.getByText('This data is only for Razorpay Magic processed orders'),
       ).toBeInTheDocument();
       expect(screen.getAllByText('Total Sales')[0]).toBeInTheDocument();
-      expect(screen.getAllByText('₹ 4.62L')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('₹4.62L')[0]).toBeInTheDocument();
 
       expect(screen.getByText('Total Orders Placed')).toBeInTheDocument();
       expect(screen.getAllByText('569')[0]).toBeInTheDocument();
 
       expect(screen.getAllByText('Average Order Value')[0]).toBeInTheDocument();
-      expect(screen.getAllByText('₹ 811.70')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('₹811.70')[0]).toBeInTheDocument();
 
       expect(screen.getByText('Prepaid vs COD - Total Sales')).toBeInTheDocument();
       expect(screen.getByText('Prepaid vs COD - Total Orders')).toBeInTheDocument();
@@ -36,12 +36,12 @@ describe('Magic - Order Analytics', () => {
       expect(screen.getByText('Traffic by UTM parameters')).toBeInTheDocument();
       expect(screen.getByText('WHATSAPP')).toBeInTheDocument();
       expect(screen.getByText('248')).toBeInTheDocument();
-      expect(screen.getByText('₹ 1.82L')).toBeInTheDocument();
+      expect(screen.getByText('₹1.82L')).toBeInTheDocument();
 
       expect(screen.getByText('Top Selling Product')).toBeInTheDocument();
       expect(screen.getByText('(A - GP) Pack of 4 Peanut Butters (800 g)')).toBeInTheDocument();
       expect(screen.getByText('82')).toBeInTheDocument();
-      expect(screen.getByText('₹ 1.30L')).toBeInTheDocument();
+      expect(screen.getByText('₹1.30L')).toBeInTheDocument();
     });
   });
 });

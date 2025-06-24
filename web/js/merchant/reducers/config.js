@@ -501,7 +501,7 @@ const normalizeConfig = (config) => {
   if (
     logoUrl !== null &&
     !/^https:\/\/cdn\.razorpay\.com/.test(logoUrl) &&
-    (!/^http/.test(logoUrl) || !/^https:\/\/cdn-sg/.test(logoUrl))
+    (!/^http/.test(logoUrl) || !/^https:\/\/cdn-/.test(logoUrl))
   ) {
     logoUrl = `https://cdn.razorpay.com${logoUrl.replace(/\.([^.]+$)/, '_medium.$1')}`;
   }

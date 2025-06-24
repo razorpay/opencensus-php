@@ -10,7 +10,7 @@ describe('Magic - Order Analytics utils', () => {
     customTooltip(CHART_OPTIONS, CHART_ELEM, 'total_sales');
     await waitFor(() => {
       expect(screen.queryByText('Total Sales')).toBeInTheDocument();
-      expect(screen.queryByText('₹ 78.06k')).toBeInTheDocument();
+      expect(screen.queryByText('₹78.06k')).toBeInTheDocument();
     });
   });
 });

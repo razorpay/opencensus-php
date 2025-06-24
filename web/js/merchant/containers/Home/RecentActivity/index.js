@@ -147,6 +147,11 @@ class RecentActivity extends Component {
       payload.to = nextProps.endDate.unix();
     }
 
+    // Force mode to be 'test' when in test mode to prevent live API calls
+    if (this.props.mode === 'test') {
+      payload.mode = 'test';
+    }
+
     this.props.fetchPayments(payload).then((data) => {
       return this.props.onFetchPayments && this.props.onFetchPayments(data && data.data);
     });
@@ -358,6 +363,7 @@ const mapStateToProps = (state) => {
     user: state.session.user,
     org: state.session.org,
     config: state.config.config,
+    mode: state.session.mode,
   };
 };
 
