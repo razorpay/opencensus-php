@@ -21,10 +21,7 @@ class Core extends Base\Core
     protected $mappedVpaFetchClient;
     protected $vpaCore;
     protected $payoutService;
-    protected $payoutCore;
-
-    const PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND = 'PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND';
-    const PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD = 'PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD';
+    protected $payoutEvents;
 
     public function __construct()
     {
@@ -33,37 +30,25 @@ class Core extends Base\Core
         $this->favCore = new FAV\Core();
         $this->mappedVpaFetchClient = $this->app[VpaMapperFetch::MAPPED_VPA_FETCH];
         $this->payoutService = new DualWritePayout();
-        $this->payoutCore = new Payout\Core();
+        $this->payoutEvents = new Payout\Events();
     }
 
     public function FetchMappedVpaFromLinkedNumber(string $linkedNumber, string $accountHolderName, string $merchantId)
     {
         $mappedVpa = $this->mappedVpaFetchClient->fetchMappedVpaViaMicroservice($linkedNumber);
 
-        if (empty($mappedVpa) || empty($mappedVpa[FundAccount\Entity::VPA]) || empty($mappedVpa[FundAccount\Entity::CUSTOMER_NAME])) {
+        if (empty($mappedVpa) ||
+            empty($mappedVpa[FundAccount\Entity::VPA]) ||
+            empty($mappedVpa[FundAccount\Entity::CUSTOMER_NAME]) ||
+            !str_contains($mappedVpa[FundAccount\Entity::VPA], '@'))
+        {
             $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND_COUNT);
 
-            // Track the failure event
-            try {
-                $sanitizedData = $this->payoutCore->sanitizeDataForTracking([
-                    FundAccount\Entity::MOBILE => $linkedNumber
-                ]);
-                $this->payoutCore->trackPhoneNumberPayoutFailureEvents(
-                    self::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND,
-                    [
-                        Base\PublicEntity::MERCHANT_ID      => $merchantId,
-                        FundAccount\Entity::MOBILE          => $sanitizedData[FundAccount\Entity::MOBILE],
-                        FundAccount\Entity::CUSTOMER_NAME   => $accountHolderName,
-                        'failure_reason'                    => self::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND
-                    ]
-                );
-            } catch (\Throwable $e) {
-                $this->trace->error(TraceCode::PAYOUT_TO_PHONE_NUMBER_EVENT_TRACKING_FAILED, [
-                    'error_message'     => $e->getMessage(),
-                    'merchant_id'       => $merchantId,
-                    'context'           => self::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND
-                ]);
-            }
+            $this->payoutEvents->trackPayoutsToPhoneNumberVpaNotFoundEvent(
+                $merchantId,
+                $linkedNumber,
+                $accountHolderName
+            );
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR,
@@ -104,33 +89,15 @@ class Core extends Base\Core
         if ($matchScore < $threshold) {
             $this->trace->count(Metric::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_THRESHOLD_FAILURE_COUNT);
 
-            // Track the failure event
-            try {
-                $sanitizedData = $this->payoutCore->sanitizeDataForTracking([
-                    FundAccount\Entity::MOBILE  => $linkedNumber,
-                    FundAccount\Entity::VPA     => $vpaID
-                ]);
-
-                $this->payoutCore->trackPhoneNumberPayoutFailureEvents(
-                    self::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD,
-                    [
-                        Base\PublicEntity::MERCHANT_ID      => $merchantId,
-                        FundAccount\Entity::MOBILE          => $sanitizedData[FundAccount\Entity::MOBILE],
-                        FundAccount\Entity::CUSTOMER_NAME   => $accountHolderName,
-                        FundAccount\Entity::VPA             => $sanitizedData[FundAccount\Entity::VPA],
-                        'bank_customer_name'                => $customerName,
-                        'match_score'                       => $matchScore,
-                        'threshold'                         => $threshold,
-                        'failure_reason'                    => self::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD
-                    ]
-                );
-            } catch (\Throwable $e) {
-                $this->trace->error(TraceCode::PAYOUT_TO_PHONE_NUMBER_EVENT_TRACKING_FAILED, [
-                    'error_message'         => $e->getMessage(),
-                    'merchant_id'           => $merchantId,
-                    'context'               => self::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD
-                ]);
-            }
+            $this->payoutEvents->trackPayoutsToPhoneNumberNameMatchingBelowThresholdEvent(
+                $merchantId,
+                $linkedNumber,
+                $accountHolderName,
+                $customerName,
+                $vpaID,
+                $matchScore,
+                $threshold
+            );
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR,

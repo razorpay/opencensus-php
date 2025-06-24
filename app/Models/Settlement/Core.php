@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement;
 
 use Mail;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants\Country;
@@ -13,6 +14,12 @@ use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
+use RZP\Models\Merchant\Action as MerchantAction;
+use RZP\Models\Workflow\Action as WorkflowAction;
+use RZP\Models\Workflow\Action\MakerType;
+use RZP\Models\Workflow\Action\Differ;
+use RZP\Models\Admin\Permission;
+use RZP\Models\Merchant\Validator as MerchantValidator;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
@@ -1408,31 +1415,244 @@ class Core extends Base\Core
         return false;
     }
 
+    public function createSetlWorkflowAction($input)
+    {
+        try {
+            $action = $input[SettlementConstants::ACTION];
+
+            $merchantId= $input[Constants::MERCHANT_ID];
+
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $merchantDetails = $merchant->merchantDetail;
+
+            $this->validateMerchantForAction($action, $merchant);
+
+            $attributes = $input[SettlementConstants::ATTRIBUTES];
+
+            $input = [
+                'merchant_id'      => $merchantId,
+                'skip_workflows_for_settlements'   => true,
+            ];
+
+            $this->trace->info(TraceCode::CREATE_SETTLEMENT_WF_ACTION_REQUEST,
+                [
+                    'merchant_id'  => $merchantId,
+                    'action'       => $action,
+                    'attributes'   => $attributes,
+                ]);
+
+            $tags = $this->getTags($attributes);
+
+            $routePermission = Permission\Name::$actionMap[$action];
+
+            $diffData = $this->getDiffData($merchantDetails, $action, $attributes);
+
+            // NOTE: given the use case can generate the diff payload directly,
+            // but for consistency reasons calling createDiff
+            // No need for redacting fields as no sensitive field is being used
+
+            $diff = (new Differ\Core)->createDiff([], $diffData);
+
+            $makerAdminId = env(SettlementConstants::SETTLEMENTS_WORKFLOW_ADMIN_ID);
+
+            $admin = $this->repo->admin->getAdminFromId($makerAdminId);
+
+            $workflowAction = $this->app['workflow']
+                ->setWorkflowMaker($admin)
+                ->setWorkflowMakerType(MakerType::ADMIN);
+
+            [$routeName, $controller] = $this->routeAndControllerForAction($action);
+
+            $workflowAction = $workflowAction
+                ->setPermission($routePermission)
+                ->setTags($tags)
+                ->setWorkflowMakerType(MakerType::ADMIN)
+                ->setRouteName($routeName)
+                ->setController($controller)
+                ->setRouteParams(['id' => $merchantId])
+                ->setEntityAndId($merchant->getEntity(), $merchantId)
+                ->setDiff($diff)
+                ->setInput($input)
+                ->trigger();
+
+            $this->trace->info(TraceCode::SETTLEMENT_WF_ACTION_CREATED,
+                [
+                    'merchant_id'  => $merchantId,
+                    'wf_action_id' => $workflowAction['id'],
+                ]);
+
+            return $this->autoApproveWorkflow($input, $merchantId, $admin, $diff);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::CREATE_SETTLEMENT_WF_ACTION_FAILED,
+                [
+                    'merchantId' => $merchantId
+                ]);
+
+            throw $e;
+        }
+    }
+
+    private  function autoApproveWorkflow($input, $merchantId, $maker, $diff)
+    {
+        $openWorkflowActions = (new WorkflowAction\Core)->fetchOpenActionOnEntityOperation(
+            $merchantId, 'merchant', Permission\Name::$actionMap[$diff['new'][SettlementConstants::ACTION]]);
+
+        // note: sleep required because it can take upto 1 second for documents to become available for search in ES.
+        sleep(1);
+
+        $status = SettlementConstants::EXECUTED;
+
+        foreach ($openWorkflowActions as $action)
+        {
+            try
+            {
+                (new WorkflowAction\Core)->approveActionForcefully($action, $maker);
+                (new WorkflowAction\Core)->executeAction($action, $maker, $maker->getSuperAdminRole());
+            }
+            catch (Exception\BadRequestValidationFailureException|Exception\BadRequestException $e)
+            {
+                $status = SettlementConstants::INVALIDATED;
+                $this->handleWorkflowException($e, $merchantId, $status, $action, $maker);
+            }
+            catch (\Throwable $e)
+            {
+                $status = SettlementConstants::FAILED;
+                $this->handleWorkflowException($e, $merchantId, $status, $action, $maker);
+            }
+        }
+
+        $input['workflow_action_status'] = $status;
+
+        return $input;
+    }
+    private function handleWorkflowException($exception, $merchantId, $status, $workflowAction, $maker)
+    {
+        $this->trace->traceException(
+            $exception,
+            Logger::ERROR,
+            TraceCode::SETTLEMENT_WF_EXECUTION_FAILED,
+            [
+                'merchantId'       => $merchantId,
+                'execution_status' => $status,
+            ]);
+        if (isset($workflowAction) === true)
+        {
+            $this->closeSettlementWorkflowIfApplicable($workflowAction, $maker);
+        }
+    }
+    private function closeSettlementWorkflowIfApplicable($workflowAction, $WorkflowMaker)
+    {
+        try {
+            if (isset($workflowAction) === false)
+            {
+                return;
+            }
+            if ($workflowAction->isExecuted() === false)
+            {
+                (new WorkflowAction\Core())->close($workflowAction, $WorkflowMaker, true);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::SETTLEMENT_WF_EXECUTION_CLOSURE_FAILED,
+                [
+                    'workflow_action_id'  => $workflowAction->getId(),
+                ]);
+        }
+    }
+
+    public function validateMerchantForAction($action, $merchant)
+    {
+        $validator =  new MerchantValidator($merchant);
+
+        switch ($action)
+        {
+            case MerchantAction::LIVE_DISABLE:
+                $validator->validateLiveDisable();
+                break;
+            case MerchantAction::LIVE_ENABLE:
+                $validator->validateLiveEnable();
+                break;
+        }
+    }
+
+    public function routeAndControllerForAction($action)
+    {
+        switch ($action)
+        {
+            case MerchantAction::LIVE_DISABLE:
+                return [
+                    SettlementConstants::LIVE_DISABLE_ACTION_ROUTE_NAME,
+                    SettlementConstants::LIVE_DISABLE_ROUTE_CONTROLLER
+                ];
+            case MerchantAction::LIVE_ENABLE:
+                return [
+                    SettlementConstants::LIVE_ENABLE_ACTION_ROUTE_NAME,
+                    SettlementConstants::LIVE_ENABLE_ROUTE_CONTROLLER
+                ];
+        }
+    }
+
+    protected function getDiffData($merchantDetails, $action, $attributes)
+    {
+        $merchantId = $merchantDetails->getId();
+
+        $diffData = [
+            'id'                       => $merchantId,
+            SettlementConstants::ACTION          => $action,
+            SettlementConstants::ATTRIBUTES => $attributes,
+        ];
+
+        return $diffData;
+    }
+
+    protected function getTags($attributes)
+    {
+
+        $tag = [];
+
+        if (isset($attributes[SettlementConstants::SETTLEMENT_WF_TAG]) === true)
+        {
+            $tag[] = $attributes[SettlementConstants::SETTLEMENT_WF_TAG];
+        }
+
+        return $tag;
+    }
+
     // check for settlement notification opt out experiment
     protected function isSettlementNotificationOptOutEnabled($merchantId, $experimentKey): bool
     {
         try {
             $experimentId = $this->app['config']->get($experimentKey);
-    
+
             // if experiment not found; send notifications as usual from API; same as experiement is not enabled for the merchant
             if (empty($experimentId))
             {
                 return false;
             }
-    
+
             $this->trace->info(TraceCode::SETTLEMENT_NOTIFICATION_OPT_OUT_EXPERIMENT_REQUEST_LOG, [
                 'experiment_key' => $experimentKey,
                 'experiment_id' => $experimentId,
                 'merchant_id'   => $merchantId,
             ]);
-    
+
             $properties = [
                 'id'            => $merchantId,
                 'experiment_id' => $experimentId,
             ];
-    
+
             $response = $this->app['splitzService']->evaluateRequest($properties);
-            
+
             $variant = $response['response']['variant']['name'] ?? '';
 
             $this->trace->info(TraceCode::SETTLEMENT_NOTIFICATION_OPT_OUT_EXPERIMENT_RESPONSE_LOG, [
@@ -1440,7 +1660,7 @@ class Core extends Base\Core
                 'merchant_id'   => $merchantId,
                 'splitz_output' => $response,
             ]);
-            
+
                 return $variant === 'enabled';
         }
         catch( \Throwable $ex)
@@ -1452,5 +1672,4 @@ class Core extends Base\Core
             return false;
         }
     }
-
 }

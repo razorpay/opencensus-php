@@ -71,6 +71,11 @@ class Service extends Base\Service
      */
     protected $vpaCore;
 
+    /**
+     * @var Payout\Events
+     */
+    protected $payoutEvents;
+
     public function __construct()
     {
         parent::__construct();
@@ -86,6 +91,8 @@ class Service extends Base\Service
         $this->linkedNumberCore = new LinkedNumber\Core;
 
         $this->vpaCore = new Vpa\Core;
+
+        $this->payoutEvents = new Payout\Events;
     }
 
     public function create(array $input): array
@@ -614,6 +621,18 @@ class Service extends Base\Service
             $customerName = $mappedVpa[Entity::CUSTOMER_NAME];
 
             $vpa = $fundAccount->account;
+
+            if($vpa->getUsername()!= $username || $vpa->getHandle() != $handle) {
+                $this->payoutEvents->trackPayoutsToPhoneNumberVpaUpdatedEvent(
+                    $merchantId,
+                    $mobileNumber,
+                    $accountHolderName,
+                    $mappedVpa[Entity::VPA],
+                    $vpa->getUsername() . '@' . $vpa->getHandle(),
+                    $fundAccount->getId()
+                );
+            }
+
             $this->vpaCore->updateVpaWithPublicId($vpa, $vpaInput);
 
             //It could be a case where the customer name change but the vpa is still the same.

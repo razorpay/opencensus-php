@@ -808,6 +808,10 @@ return array(
 
     'cross_border_payment_fee_fix_experiment_id' => env('CROSS_BORDER_PAYMENT_FEE_FIX_EXPERIMENT_ID'),
 
+    'cross_border_rearch_card_recurring_initial_flow_experiment_id' => env('CROSS_BORDER_REARCH_CARD_RECURRING_INITIAL_FLOW_EXPERIMENT_ID'),
+
+    'cross_border_rearch_card_recurring_flow_experiment_id' => env('CROSS_BORDER_REARCH_CARD_RECURRING_FLOW_EXPERIMENT_ID'),
+
     'show_upi_autopay_method_on_dashboard' => env('SHOW_UPI_AUTOPAY_METHOD_ON_DASHBOARD'),
 
     'upi_autopay_rearch_pre_process' => env('UPI_AUTOPAY_REARCH_PRE_PROCESS'),
@@ -1325,6 +1329,8 @@ return array(
 
     'enable_rearch_card_recurring_flow_initial_mandatehq' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_INITIAL_MANDATEHQ'),
 
+    'enable_rearch_card_recurring_pdn_decoupling' => env('ENABLE_REARCH_CARD_RECURRING_PDN_DECOUPLING'),
+
     'merchant_checkout_optimizer_affordability_emi_enabled_exp_id' => env('MERCHANT_CHECKOUT_OPTIMIZER_AFFORDABILITY_EMI_ENABLED_EXP_ID'),
 
     'append_gateway_payment_id_payu_exp_id' => env('APPEND_GATEWAY_PAYMENT_ID_PAYU_EXP_ID'),
@@ -1452,6 +1458,8 @@ return array(
     'mc_scof_payments_via_cps'=> env('MC_SCOF_PAYMENTS_VIA_CPS'),
 
     'saved_card_token_payments_rearch'=> env('SAVED_CARD_TOKEN_PAYMENTS_REARCH'),
+
+    'saved_card_token_payments_rearch_issuer'=> env('SAVED_CARD_TOKEN_PAYMENTS_REARCH_ISSUER'),
 
     'block_merchant_on_rearch_cps' => env('BLOCK_MERCHANT_ON_REARCH_CPS'),
 
