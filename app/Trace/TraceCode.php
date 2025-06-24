@@ -13406,6 +13406,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ORG_FEATURE_REPLICATION = 'ORG_FEATURE_REPLICATION';
 
+    // userService trace code
+    const USER_SERVICE_DATA_ACCESSOR = 'USER_SERVICE_DATA_ACCESSOR';
+
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

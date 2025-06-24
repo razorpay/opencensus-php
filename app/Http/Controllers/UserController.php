@@ -877,4 +877,14 @@ class UserController extends Controller
         $data = $userService->getMerchantsOfUser($id,$input);
         return ApiResponse::json($data);
     }
+
+    public function userServiceDataAccessor()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->userServiceDataAccessor($input);
+
+        return ApiResponse::json($data);
+    }
+
 }

@@ -214,4 +214,16 @@ class Entity extends Base\PublicEntity
     {
         return $this->incrementing;
     }
+
+    public function toArrayPublicForUserService()
+    {
+        $attributes = $this->toArrayPublic();
+
+        $attributes[self::TOKEN] = $this->getAttribute(self::TOKEN);
+        $attributes[self::CREATED_AT] = $this->getAttribute(self::CREATED_AT);
+        $attributes[self::UPDATED_AT] = $this->getAttribute(self::UPDATED_AT);
+
+        return $attributes;
+    }
+
    }
