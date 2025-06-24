@@ -1227,6 +1227,21 @@ importers:
       '@tanstack/react-query-devtools':
         specifier: 4.33.0
         version: 4.33.0(@tanstack/react-query@4.33.0(react-dom@17.0.2(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@testing-library/dom':
+        specifier: 8.20.0
+        version: 8.20.0
+      '@testing-library/jest-dom':
+        specifier: 5.11.4
+        version: 5.11.4
+      '@testing-library/react':
+        specifier: 10.4.8
+        version: 10.4.8(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@testing-library/react-hooks':
+        specifier: 3.2.1
+        version: 3.2.1(react-test-renderer@17.0.1(react@17.0.2))(react@17.0.2)
+      '@testing-library/user-event':
+        specifier: 14.4.3
+        version: 14.4.3(@testing-library/dom@8.20.0)
       '@types/browserslist-useragent':
         specifier: 3.0.2
         version: 3.0.2

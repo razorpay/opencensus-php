@@ -67,6 +67,11 @@
     "@types/browserslist-useragent": "3.0.2",
     "@module-federation/node": "2.2.2",
     "@tanstack/react-query-devtools": "4.33.0",
+    "@testing-library/dom": "8.20.0",
+    "@testing-library/jest-dom": "5.11.4",
+    "@testing-library/react": "10.4.8",
+    "@testing-library/react-hooks": "3.2.1",
+    "@testing-library/user-event": "14.4.3",
     "@types/compression": "1.7.0",
     "@types/connect-slashes": "0.0.31",
     "@types/cookie-parser": "1.4.7",
@@ -89,6 +94,18 @@
   },
   "nx": {
     "targets": {
+      "test:jest": {
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/shell"
+        }
+      },
+      "test:jest:ci": {
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/shell"
+        }
+      },
       "devstack:build": {
         "executor": "nx:run-commands",
         "options": {
