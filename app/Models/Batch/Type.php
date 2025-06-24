@@ -24,6 +24,7 @@ class Type
     const CREATE_BULK_GIFT_CARDS            = 'create_bulk_gift_cards';
     const UPDATE_GIFT_CARDS_EXPIRY          = 'update_gift_cards_expiry';
     const CREATE_GIFT_CARD_TRANSFERS        = 'create_gift_card_transfers';
+    const CANCEL_BULK_GIFT_CARDS            = 'cancel_bulk_gift_cards';
 
     // GCOMS batch types
     CONST GCMS_UPLOAD_BULK_EMAILS = 'gcms_upload_bulk_emails';
@@ -699,6 +700,7 @@ class Type
         self::IRCTC_SETTLEMENT,
         self::CREATE_WALLET_CONTAINER_REVERSALS,
         self::CREATE_BULK_GIFT_CARDS,
+        self::CANCEL_BULK_GIFT_CARDS,
         self::CREATE_GIFT_CARD_TRANSFERS,
         self::GCMS_UPLOAD_BULK_EMAILS,
         self::BVS_BULK_KYC_VERIFICATION,
@@ -821,6 +823,7 @@ class Type
         self::UPDATE_MIQ,
         self::CREATE_BULK_GIFT_CARDS,
         self::CREATE_BULK_GIFT_CARDS,
+        self::CANCEL_BULK_GIFT_CARDS,
         self::CREATE_GIFT_CARD_TRANSFERS,
         self::GCMS_UPLOAD_BULK_EMAILS,
         self::BVS_BULK_KYC_VERIFICATION,
