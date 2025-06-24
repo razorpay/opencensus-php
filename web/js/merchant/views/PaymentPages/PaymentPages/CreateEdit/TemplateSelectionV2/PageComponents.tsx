@@ -1,14 +1,6 @@
 import React from 'react';
-import {
-  Box,
-  Text,
-  Carousel,
-  CarouselItem,
-  Button,
-  ArrowRightIcon,
-  Heading,
-} from '@razorpay/blade/components';
-import { FeatureListProps, ImageCarouselProps, PageCardProps } from './types';
+import { Box, Text, Button, ArrowRightIcon, Heading } from '@razorpay/blade/components';
+import { FeatureListProps, PageCardProps } from './types';
 import { PAYMENT_PAGES_TYPES } from './PageConfig';
 
 export const FeatureList: React.FC<FeatureListProps> = ({ features, isMobile }) => {
@@ -36,21 +28,10 @@ export const FeatureList: React.FC<FeatureListProps> = ({ features, isMobile }) 
   );
 };
 
-export const ImageCarousel: React.FC<ImageCarouselProps> = ({ images }) => {
-  return (
-    <Carousel>
-      {images.map((image, index) => (
-        <CarouselItem key={index}>
-          <img src={image.src as unknown as string} width="100%" alt={image.alt} />
-        </CarouselItem>
-      ))}
-    </Carousel>
-  );
-};
-
 export const PageCard: React.FC<PageCardProps> = ({ config, onCreateClick, type, isMobile }) => {
   return (
     <Box
+      flex={1}
       backgroundColor={
         type === PAYMENT_PAGES_TYPES.payment_page
           ? 'surface.background.sea.subtle'
@@ -110,7 +91,16 @@ export const PageCard: React.FC<PageCardProps> = ({ config, onCreateClick, type,
         </Button>
       ) : null}
 
-      <ImageCarousel images={config.carouselImages} />
+      <img
+        src={config.previewGif}
+        width="100%"
+        height={isMobile ? '190px' : '360px'}
+        alt={
+          type === PAYMENT_PAGES_TYPES.payment_page
+            ? 'payment page preview gif'
+            : 'storefront preview gif'
+        }
+      />
     </Box>
   );
 };

@@ -31,7 +31,7 @@ const SingleSocialHandle: React.ComponentType<SingleSocialHandleProps> = Sortabl
         justifyContent="space-between"
         alignItems="center"
         width="100%"
-        marginBottom="spacing.4"
+        marginBottom="spacing.7"
         testID={`single-social-handle-${platform}`}
       >
         <Box display="flex" gap="spacing.4" alignItems="center">

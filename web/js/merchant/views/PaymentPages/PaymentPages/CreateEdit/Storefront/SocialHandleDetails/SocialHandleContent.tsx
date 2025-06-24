@@ -10,6 +10,7 @@ import {
   ModalBody,
   TextInput,
   ModalFooter,
+  Card,
 } from '@razorpay/blade/components';
 import { PLATFORM_NAMES, SOCIAL_HANDLES } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import {
@@ -99,32 +100,34 @@ export const AddDetailsContent: React.FC<AddDetailsContentProps> = ({
 
 export const SocialHandleItem = memo(
   ({ item, onSelect }: { item: SocialHandle; onSelect: (handle: SocialHandle) => void }) => (
-    <Box
-      testID={`social-handle-item-${item.name}`}
-      borderWidth="thin"
-      borderColor="surface.border.gray.muted"
-      borderRadius="medium"
-      display="flex"
-      justifyContent="space-between"
-      alignItems="center"
-      height="58px"
-      maxWidth="352px"
-      paddingX="spacing.5"
-      paddingY="spacing.3"
-    >
-      <Box display="flex" gap="spacing.2" alignItems="center">
-        <img src={item.src} alt={item.label} width={24} height={24} />
-        <Text size="large" variant="body" weight="semibold">
-          {item.label}
-        </Text>
+    <Card onClick={() => onSelect(item)} padding="spacing.0">
+      <Box
+        testID={`social-handle-item-${item.name}`}
+        borderWidth="thin"
+        borderColor="surface.border.gray.muted"
+        borderRadius="medium"
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        height="58px"
+        maxWidth="352px"
+        paddingX="spacing.5"
+        paddingY="spacing.3"
+      >
+        <Box display="flex" gap="spacing.3" alignItems="center">
+          <img src={item.src} alt={item.label} width={24} height={24} />
+          <Text size="large" variant="body" weight="semibold">
+            {item.label}
+          </Text>
+        </Box>
+        <IconButton
+          accessibilityLabel={`select ${item.name}`}
+          size="large"
+          icon={ChevronRightIcon}
+          onClick={() => onSelect(item)}
+        />
       </Box>
-      <IconButton
-        onClick={() => onSelect(item)}
-        accessibilityLabel={`select ${item.name}`}
-        size="large"
-        icon={ChevronRightIcon}
-      />
-    </Box>
+    </Card>
   ),
 );
 

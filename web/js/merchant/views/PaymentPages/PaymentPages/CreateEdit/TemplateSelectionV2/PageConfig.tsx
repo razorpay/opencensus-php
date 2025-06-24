@@ -35,12 +35,7 @@ export const PAGE_CONFIGS = {
         textMobile: 'Customers can browse, add to cart & checkout'
       }
     ],
-    carouselImages: [
-      { src: "https://cdn.razorpay.com/static/assets/storefront/SF-1.png", alt: 'Storefront Example 1' },
-      { src: "https://cdn.razorpay.com/static/assets/storefront/SF-2.png", alt: 'Storefront Example 2' },
-      { src: "https://cdn.razorpay.com/static/assets/storefront/SF-3.png", alt: 'Storefront Example 3' },
-      { src: "https://cdn.razorpay.com/static/assets/storefront/SF-4.png", alt: 'Storefront Example 4' },
-    ],
+    previewGif: 'https://cdn.razorpay.com/static/assets/storefront/storefront.gif',
     analyticsData: {
       product_template: 'storefront'
     },
@@ -67,12 +62,7 @@ export const PAGE_CONFIGS = {
         textMobile: 'Custom form to gather inputs and payments'
       }
     ],
-    carouselImages: [
-      { src: "https://cdn.razorpay.com/static/assets/storefront/PP-1.png", alt: 'Payment Page Example 1' },
-      { src: "https://cdn.razorpay.com/static/assets/storefront/PP-2.png", alt: 'Payment Page Example 2' },
-      { src: "https://cdn.razorpay.com/static/assets/storefront/PP-3.png", alt: 'Payment Page Example 3' },
-      { src: "https://cdn.razorpay.com/static/assets/storefront/PP-4.png", alt: 'Payment Page Example 4' },
-    ],
+    previewGif: 'https://cdn.razorpay.com/static/assets/storefront/payment_pages.gif',
     analyticsData: {
       product_template: 'page'
     },

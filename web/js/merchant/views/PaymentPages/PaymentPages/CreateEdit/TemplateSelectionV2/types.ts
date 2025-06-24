@@ -14,6 +14,7 @@ export interface PageConfigType {
     src: string;
     alt: string;
   }>;
+  previewGif: string;
   analyticsData: {
     product_template: string;
     [key: string]: any;
@@ -36,11 +37,4 @@ export interface PageCardProps {
 export interface TemplateSelectionProps extends RouteComponentProps {
   handlePageType: (val: string) => void;
   isMobile: boolean;
-}
-
-export interface ImageCarouselProps {
-  images: Array<{
-    src: string;
-    alt: string;
-  }>;
 }

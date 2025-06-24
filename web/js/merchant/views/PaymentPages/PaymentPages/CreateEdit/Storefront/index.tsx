@@ -343,6 +343,7 @@ const StoreFront = ({
     storefront.entity.settings?.base_config?.banner_feature_enabled,
     storefront.entity?.terms,
     storefront.entity?.social_handles,
+    storefront.entity.settings?.base_config?.social_handles_enabled,
   ]);
 
   function getSupportDetails(): Promise<{
