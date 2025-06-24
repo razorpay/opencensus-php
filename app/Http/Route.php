@@ -18951,6 +18951,7 @@ class Route
             'payment_transfer',
             'transfer_transaction_create',
             'payment_fetch_by_id_internal',
+            'refund_scrooge_payment_update'
         ],
 
         'identity_provider' => [
