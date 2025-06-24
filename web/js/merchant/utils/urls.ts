@@ -13,6 +13,7 @@ export const getCountryOnboardingUrl = (countryCode: CountryCodeType): string =>
     IN: window.EASY_ONBOARDING_URL,
     MY: window.EASY_DASHBOARD_CURLEC_URL,
     SG: window.EASY_DASHBOARD_SG_URL,
+    US: window.EASY_DASHBOARD_US_URL,
   };
 
   return countryOnboardingUrls[countryCode] || window.EASY_ONBOARDING_URL;

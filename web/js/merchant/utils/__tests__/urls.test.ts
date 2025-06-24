@@ -8,6 +8,7 @@ describe('getCountryOnboardingUrl', () => {
     window.EASY_ONBOARDING_URL = 'https://easy-onboarding.example.com';
     window.EASY_DASHBOARD_CURLEC_URL = 'https://curlec.example.com';
     window.EASY_DASHBOARD_SG_URL = 'https://sg-dashboard.example.com';
+    window.EASY_DASHBOARD_US_URL = 'https://us-dashboard.example.com';
   });
 
   afterEach(() => {
@@ -29,8 +30,13 @@ describe('getCountryOnboardingUrl', () => {
     expect(result).toBe('https://sg-dashboard.example.com');
   });
 
-  it('should return EASY_ONBOARDING_URL for an unsupported country code', () => {
+  it('should return EASY_DASHBOARD_US_URL for country code US', () => {
     const result = getCountryOnboardingUrl('US' as CountryCodeType);
+    expect(result).toBe('https://us-dashboard.example.com');
+  });
+
+  it('should return EASY_ONBOARDING_URL for an unsupported country code', () => {
+    const result = getCountryOnboardingUrl('XX' as CountryCodeType);
     expect(result).toBe('https://easy-onboarding.example.com');
   });
 

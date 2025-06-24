@@ -573,7 +573,7 @@ class ProfileDropdown extends Component {
                       user.role === rolesList.OWNER &&
                       user.partner_type === null &&
                       !isOrgFeatureExist('hide_razorpay_text_link') &&
-                      !user.isCountrySingapore
+                      !isConfigTagEnabled('partnership.partnership_program')
                     }
                   >
                     <div className="media loggedin-as">

@@ -232,7 +232,11 @@ class HomeContainer extends Component {
      * RecentActivity component, which will be done using `onFetchPayments`
      * below
      */
-    if (this.hasAccessToOnboardingBanner && !showOnboardingBanner) {
+    if (
+      this.hasAccessToOnboardingBanner &&
+      !showOnboardingBanner &&
+      !props.i18?.isConfigTagEnabled?.('onboarding.getting_started')
+    ) {
       if (user.activation_status !== 'activated' || !user.isActivated) {
         this.state = {
           ...this.state,

@@ -50,6 +50,9 @@ class I18nOnboardingAnnouncement extends Component {
       if (user?.country_code === 'SG') {
         return !!isAdminAsMerchant?.data; // Banner for SG is shown only if the merchant is an admin
       }
+      if (user?.country_code === 'US') {
+        return !!isAdminAsMerchant?.data; // Banner for US is shown only if the merchant is an admin
+      }
     }
     return false;
   };

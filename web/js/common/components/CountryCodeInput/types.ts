@@ -5,6 +5,7 @@ export interface CountryCodeInputPropsInterface {
   onContactChange?: (value: string) => void;
   onChange?: (value: { dialCode: string; value: string }) => void;
   showContactInput?: boolean;
+  defaultCountryCode?: string;
 }
 
 type countryData = {

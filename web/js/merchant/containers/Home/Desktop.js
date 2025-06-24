@@ -562,7 +562,7 @@ class AnalyticsDesktop extends Component {
     return (
       <div className="home-analytics-desktop">
         <PricingSubscriptionWrapper />
-        {['MY', 'SG'].includes(user.country_code) ? (
+        {['MY', 'SG', 'US'].includes(user.country_code) ? (
           <I18nOnboardingAnnouncement user={user} />
         ) : null}
         <ShowWhen

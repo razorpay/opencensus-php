@@ -19,6 +19,7 @@
     window.CURLEC_LINKED_ACCOUNT_ONBOARDING_URL = "{{ env('CURLEC_LINKED_ACCOUNT_ONBOARDING_URL') }}"
     window.EASY_DASHBOARD_CURLEC_URL = "{{ env('EASY_DASHBOARD_CURLEC_URL') }}";
     window.EASY_DASHBOARD_SG_URL = "{{ env('EASY_DASHBOARD_SG_URL') }}";
+    window.EASY_DASHBOARD_US_URL = "{{ env('EASY_DASHBOARD_US_URL') }}";
     window.PP_ECOMMERCE_URL = "{{ env('PP_ECOMMERCE_URL') }}";
     window.BANK_DETAILS_URL = "{{ env('BANK_DETAILS_URL') }}";
     window.APP_NAME = "{{ env('APP_NAME') }}";

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import ModalHeader from 'common/ui/ModalHeader';
+import { useI18Service } from 'common/i18';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -10,10 +11,10 @@ import {
   checkEligibilityForFeeBasedGating,
   handleFeeBasedGatingNavigation,
 } from 'merchant/utils/feeBasedGatingUtils';
-import { getCookie } from 'common/utils/cookies';
 import { isOrgFeatureExist } from '../models/User';
 
 export default ({ onCloseClick, user }) => {
+  const { isConfigTagEnabled } = useI18Service();
   const activationName =
     !user.showInstantActivation || !user.instantActivation.isL1Submitted ? 'Activation' : 'KYC';
 
@@ -38,11 +39,6 @@ export default ({ onCloseClick, user }) => {
     }
   }, []);
 
-  const [isSGMerchant, setIsSGMerchant] = useState(false);
-  useEffect(() => {
-    setIsSGMerchant(getCookie('rzp_user_merchant_region') === 'SG');
-  }, []);
-
   const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
 
   const shouldRedirectToEasyFlow =
@@ -50,6 +46,8 @@ export default ({ onCloseClick, user }) => {
     user.partner_type === PARTNER_TYPE.PURE_PLATFORM;
 
   const isEligibleForFeeBasedGating = checkEligibilityForFeeBasedGating(user);
+
+  const isL2ActivationFormEnabled = !isConfigTagEnabled('account.l2_activation_form');
 
   let modalBody = (
     <div>
@@ -59,10 +57,10 @@ export default ({ onCloseClick, user }) => {
       >
         {user.isOrgAxis
           ? 'Please reach out to the Axis Bank to get yourself activated'
-          : isSGMerchant
+          : !isL2ActivationFormEnabled
           ? 'Sales will reach out to you for more details'
           : `Please fill and submit the ${activationName} Form to access live mode.`}
-        {!user.isOrgAxis && !isOrgFeatureExist('hide_activation_form') && !isSGMerchant ? (
+        {!user.isOrgAxis && !isOrgFeatureExist('hide_activation_form') && isL2ActivationFormEnabled ? (
           <div className="Modal__actions text-right">
             {!shouldRedirectToEasyFlow ? (
               <button className="btn btn-primary btn-block" onClick={redirectToEasyAfter1sec}>

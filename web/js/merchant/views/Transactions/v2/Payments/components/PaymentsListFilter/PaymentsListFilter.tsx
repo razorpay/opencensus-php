@@ -99,7 +99,7 @@ const PaymentsListFilter = ({
     defaultChannelOption,
     defaultChannelValue,
     defaultDeviceIdValue,
-    defaultStoreIdValue
+    defaultStoreIdValue,
   } = getDefaultValuesAndOptions();
   const [date, setDate] = useState<Duration>(defaultDate);
   const [shouldShowDateRangePicker, setShowDateRangePicker] = useState(
@@ -130,7 +130,6 @@ const PaymentsListFilter = ({
   const isOmniChannelMerchant = _isOmniChannelMerchant(user);
   const flatStores = useHierarchyStore((state) => state.flatStores);
 
-
   const handleSearch = (newSearchParams = {}) => {
     const newCountryCode = isContactSearch ? countryCode : '';
     const searchParams = {
@@ -141,18 +140,19 @@ const PaymentsListFilter = ({
       country_code: newCountryCode,
       source_channel: channel,
       device_id: defaultDeviceIdValue,
-      "store_ids[]": defaultStoreIdValue,
+      'store_ids[]': defaultStoreIdValue,
       ...newSearchParams,
     };
     if (searchByValue) {
-      searchParams[searchBy === SearchQueryParam.POS_ORDER_ID ? SearchQueryParam.NOTES : searchBy] = searchByValue;
+      searchParams[searchBy === SearchQueryParam.POS_ORDER_ID ? SearchQueryParam.NOTES : searchBy] =
+        searchByValue;
     }
     onSubmit(searchParams);
   };
 
   const clearStoreId = (idToRemove) => {
-    const updatedStoreIds = defaultStoreIdValue.filter(id => id !== idToRemove);
-    handleSearch({ "store_ids[]": updatedStoreIds });
+    const updatedStoreIds = defaultStoreIdValue.filter((id) => id !== idToRemove);
+    handleSearch({ 'store_ids[]': updatedStoreIds });
   };
 
   const onDatesChange = ({ from, to }) => {
@@ -359,6 +359,7 @@ const PaymentsListFilter = ({
                 onChange={onCountryCodeChange}
                 dialCode={defaultCountryCodeValue}
                 showContactInput={false}
+                defaultCountryCode={user?.merchant?.country_code}
               />
             ) : null}
             <TextInput
@@ -383,19 +384,31 @@ const PaymentsListFilter = ({
         <Box display="flex" flexWrap="wrap" gap="spacing.3" alignItems="center">
           {method ? (
             <Box display="flex" alignItems="center" flexDirection="row" flexShrink={0}>
-              <Text color="surface.text.gray.subtle" marginTop="3px">Payment Method:</Text>
-              <Tag marginLeft="spacing.3" size="medium" marginTop="spacing.2" onDismiss={clearMethod}>
+              <Text color="surface.text.gray.subtle" marginTop="3px">
+                Payment Method:
+              </Text>
+              <Tag
+                marginLeft="spacing.3"
+                size="medium"
+                marginTop="spacing.2"
+                onDismiss={clearMethod}
+              >
                 {defaultMethodOption?.title || method}
               </Tag>
             </Box>
           ) : null}
-          {channel && method ? (
-            <Divider marginTop="spacing.2" orientation="vertical" />
-          ) : null}
+          {channel && method ? <Divider marginTop="spacing.2" orientation="vertical" /> : null}
           {channel ? (
             <Box display="flex" alignItems="center" flexDirection="row" flexShrink={0}>
-              <Text color="surface.text.gray.subtle" marginTop="3px">Channel:</Text>
-              <Tag marginLeft="spacing.3" size="medium" marginTop="spacing.2" onDismiss={clearChannel}>
+              <Text color="surface.text.gray.subtle" marginTop="3px">
+                Channel:
+              </Text>
+              <Tag
+                marginLeft="spacing.3"
+                size="medium"
+                marginTop="spacing.2"
+                onDismiss={clearChannel}
+              >
                 {defaultChannelOption?.title || channel}
               </Tag>
             </Box>
@@ -405,8 +418,15 @@ const PaymentsListFilter = ({
           ) : null}
           {defaultDeviceIdValue ? (
             <Box display="flex" alignItems="center" flexDirection="row" flexShrink={0}>
-              <Text color="surface.text.gray.subtle" marginTop="3px">DSN:</Text>
-              <Tag marginLeft="spacing.3" size="medium" marginTop="spacing.2" onDismiss={clearDeviceId}>
+              <Text color="surface.text.gray.subtle" marginTop="3px">
+                DSN:
+              </Text>
+              <Tag
+                marginLeft="spacing.3"
+                size="medium"
+                marginTop="spacing.2"
+                onDismiss={clearDeviceId}
+              >
                 {defaultDeviceIdValue}
               </Tag>
             </Box>
@@ -414,7 +434,11 @@ const PaymentsListFilter = ({
           {defaultStoreIdValue.length > 0 && (defaultDeviceIdValue || channel || method) ? (
             <Divider marginTop="spacing.2" orientation="vertical" />
           ) : null}
-          <StoreTags storeId={defaultStoreIdValue} flatStores={flatStores} clearStoreId={clearStoreId} />
+          <StoreTags
+            storeId={defaultStoreIdValue}
+            flatStores={flatStores}
+            clearStoreId={clearStoreId}
+          />
         </Box>
       ) : null}
     </Box>

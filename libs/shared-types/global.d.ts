@@ -51,6 +51,7 @@ declare global {
     EASY_ONBOARDING_URL: string;
     EASY_DASHBOARD_CURLEC_URL: string;
     EASY_DASHBOARD_SG_URL: string;
+    EASY_DASHBOARD_US_URL: string;
     RAZORPAY_WEBSITE: string;
     STREAKS_REWARDS?: string;
     ONE_DASHBOARD?: boolean;

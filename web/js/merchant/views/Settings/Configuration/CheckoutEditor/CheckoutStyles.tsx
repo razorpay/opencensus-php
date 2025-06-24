@@ -11,6 +11,7 @@ import RazorpayTrustesBadge from './CheckoutStyling/TrustedBadge/RazorpayTrustes
 import { isRazorpayTrustedBadgeActive } from './CheckoutStyling/TrustedBadge/utils';
 import { TrustedBadgeType } from './context/types';
 import { User } from 'common/typings';
+import { useI18Service } from 'common/i18';
 
 interface CheckoutStylesProps {
   trustedBadge: TrustedBadgeType;
@@ -21,6 +22,7 @@ const CheckoutStyles: React.FC<CheckoutStylesProps> = ({
   user,
 }: CheckoutStylesProps) => {
   const isRTBActive = isRazorpayTrustedBadgeActive(trustedBadge);
+  const { isConfigTagEnabled } = useI18Service();
   return (
     <>
       <FestivalTheme />
@@ -30,7 +32,9 @@ const CheckoutStyles: React.FC<CheckoutStylesProps> = ({
       <ButtonStyle />
       <FontStyle />
       <SidebarGraphic />
-      {!isRTBActive && <RazorpayTrustesBadge isActive={isRTBActive} />}
+      {!isRTBActive && !isConfigTagEnabled('account.trusted_badge') && (
+        <RazorpayTrustesBadge isActive={isRTBActive} />
+      )}
     </>
   );
 };

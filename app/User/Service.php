@@ -4124,6 +4124,10 @@ class Service extends Base\Service
                 $redirectionURL = env('EASY_DASHBOARD_SG_URL');
             }
 
+            if (!empty($signupCampaign) && $signupCampaign === 'us_signup') {
+                $redirectionURL = env('EASY_DASHBOARD_US_URL');
+            }
+
             Cookie::queue('rzp_merchant_id', $id, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
             Cookie::queue('rzp_user_id', $userId, $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false);
 
@@ -4258,7 +4262,7 @@ class Service extends Base\Service
             return true;
         }
 
-        if ((($signupCampaign === 'i18n_my_signup') || ($signupCampaign === 'easy_onboarding') || ($signupCampaign === 'sg_signup')) and
+        if ((($signupCampaign === 'i18n_my_signup') || ($signupCampaign === 'easy_onboarding') || ($signupCampaign === 'sg_signup') || ($signupCampaign === 'us_signup')) and
             (empty($details['activation_form_milestone']) === true) and
             ($submitted == 0))
         {

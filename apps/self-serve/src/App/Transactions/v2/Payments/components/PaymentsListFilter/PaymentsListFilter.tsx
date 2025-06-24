@@ -125,7 +125,8 @@ const PaymentsListFilter = ({
       ...newSearchParams,
     };
     if (searchByValue) {
-      searchParams[searchBy === SearchQueryParam.POS_ORDER_ID ? SearchQueryParam.NOTES : searchBy] = searchByValue;
+      searchParams[searchBy === SearchQueryParam.POS_ORDER_ID ? SearchQueryParam.NOTES : searchBy] =
+        searchByValue;
     }
     onSubmit(searchParams);
   };
@@ -310,6 +311,7 @@ const PaymentsListFilter = ({
                 onChange={onCountryCodeChange}
                 dialCode={defaultCountryCodeValue}
                 showContactInput={false}
+                defaultCountryCode={user?.merchant?.country_code}
               />
             ) : null}
             <TextInput

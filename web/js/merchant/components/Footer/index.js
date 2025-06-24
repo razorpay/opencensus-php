@@ -67,7 +67,7 @@ export const getURLsByCountry = (_countryCode) => {
     },
     {
       label: LEGAL_DOCS_NAMES.TERMS_OF_USE,
-      link: `https://razorpay.com/${countryCode}/terms/`,
+      link: `https://razorpay.com/${countryCode}/tnc/`,
       key: 'terms_of_use',
     },
     {

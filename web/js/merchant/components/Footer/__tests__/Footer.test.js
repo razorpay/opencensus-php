@@ -117,7 +117,7 @@ describe('getURLsByCountry', () => {
         },
         {
           label: LEGAL_DOCS_NAMES.TERMS_OF_USE,
-          link: `https://razorpay.com/us/terms/`,
+          link: `https://razorpay.com/us/tnc/`,
           key: 'terms_of_use',
         },
         {
@@ -137,7 +137,7 @@ describe('getURLsByCountry', () => {
         },
         {
           label: LEGAL_DOCS_NAMES.TERMS_OF_USE,
-          link: `https://razorpay.com/sg/terms/`,
+          link: `https://razorpay.com/sg/tnc/`,
           key: 'terms_of_use',
         },
         {

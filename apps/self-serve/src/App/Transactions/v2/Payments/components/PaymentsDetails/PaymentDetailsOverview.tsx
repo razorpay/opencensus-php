@@ -73,6 +73,7 @@ interface IPaymentDetailsOverview extends RouteComponentProps {
   fetchSchedule: () => Promise<Record<string, string>>;
   fetchSettlementConfig: () => Promise<Record<string, string>>;
   openModal: (args) => void;
+  user: PaymentsDashboardUser;
 }
 
 function PaymentDetailsOverview({
@@ -83,6 +84,7 @@ function PaymentDetailsOverview({
   fetchSchedule,
   fetchSettlementConfig,
   history,
+  user,
 }: IPaymentDetailsOverview) {
   const { openModal } = useStore((state) => ({
     openModal: state.openModal,
@@ -323,7 +325,8 @@ function PaymentDetailsOverview({
                         paddingLeft="spacing.3"
                       >
                         <Text>
-                          GST <Tooltip type="gst" size="small" />
+                          {user?.country_code !== 'IN' ? 'Tax' : 'GST'}{' '}
+                          <Tooltip type="gst" size="small" />
                         </Text>
                         <BladeAmount
                           value={i18nifyConvertToMajorUnit(tax, currency)}

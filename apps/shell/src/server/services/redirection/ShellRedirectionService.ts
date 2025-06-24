@@ -102,6 +102,10 @@ export class ShellRedirectionService {
         redirectionURL = process.env[AppConstants.EASY_DASHBOARD_SG_URL] || '';
       }
 
+      if (this.data?.user?.user?.signup_campaign === AppConstants.US_SIGNUP) {
+        redirectionURL = process.env[AppConstants.EASY_DASHBOARD_US_URL] || '';
+      }
+
       this.response.cookie(AppConstants.RZP_MERCHANT_ID, this.data?.user?.id, { maxAge: ttl });
       this.response.cookie(AppConstants.RZP_USER_ID, this.data?.user?.user?.id, { maxAge: ttl });
 
@@ -306,8 +310,7 @@ export class ShellRedirectionService {
   private matchExclusionsToRedirect(isExpEnabled: boolean = false): boolean {
     const uri = this.request.originalUrl.replace(/^\/|\/$/g, ''); // Trim leading and trailing slashes
 
-    let pattern =
-      /\b(r=partner|auth_source|referral_code|coupon_code|merchant_invitation|invitation)\b/;
+    let pattern = /\b(r=partner|auth_source|referral_code|coupon_code|merchant_invitation|invitation)\b/;
 
     if (isExpEnabled) {
       pattern = /\b(r=partner|auth_source|coupon_code|merchant_invitation|invitation)\b/;
@@ -376,7 +379,8 @@ export class ShellRedirectionService {
     return (
       (signupCampaign === AppConstants.I18N_MY_SIGNUP ||
         signupCampaign === AppConstants.EASY_ONBOARDING ||
-        signupCampaign === AppConstants.SG_SIGNUP) &&
+        signupCampaign === AppConstants.SG_SIGNUP ||
+        signupCampaign === AppConstants.US_SIGNUP) &&
       !this.data?.user?.activation_form_milestone &&
       submitted === 0
     );

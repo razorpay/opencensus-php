@@ -28,6 +28,7 @@ const CountryCodeInput = ({
   onDialCodeChange,
   value,
   showContactInput = true,
+  defaultCountryCode,
 }: CountryCodeInputPropsInterface): JSX.Element => {
   const dropdownMenuRef = useRef<HTMLDivElement>();
   // prettier-ignore
@@ -56,9 +57,14 @@ const CountryCodeInput = ({
       setCountryListData(formattedCountryListData);
       setResult(formattedCountryListData);
       const initialCountryData =
+        formattedCountryListData.find(
+          (country) => country.country?.toLowerCase() === defaultCountryCode?.toLowerCase(),
+        ) ||
         formattedCountryListData.find((country) => country.value === dialCode) ||
         formattedCountryListData.find((country) => country.country === 'in');
-      setCountryData(initialCountryData);
+      if (initialCountryData) {
+        setCountryData(initialCountryData);
+      }
     };
     fetchCountryCodes();
   }, [dialCode]);

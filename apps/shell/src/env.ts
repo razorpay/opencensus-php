@@ -42,6 +42,7 @@ export const STREAKS_REWARDS = process.env['STREAKS_REWARDS'];
 export const REFINER_PROJECT_ID = process.env['REFINER_PROJECT_ID'];
 export const EASY_ONBOARDING_URL = process.env['EASY_ONBOARDING_URL'];
 export const EASY_DASHBOARD_SG_URL = process.env['EASY_DASHBOARD_SG_URL'];
+export const EASY_DASHBOARD_US_URL = process.env['EASY_DASHBOARD_US_URL'];
 export const EASY_DASHBOARD_CURLEC_URL = process.env['EASY_DASHBOARD_CURLEC_URL'];
 export const PP_ECOMMERCE_URL = process.env['PP_ECOMMERCE_URL'];
 export const INSIGHTS_SUPERSET_URL = process.env['INSIGHTS_SUPERSET_URL'];
