@@ -12566,6 +12566,15 @@ class Route
      * Nothing here should be in private or admin auth
      */
     public static $internalApps = [
+        'user_service' => [
+            'fetch_user_details',
+            'upsert_user_details',
+            'delete_user_details',
+            'internal_org_get',
+            'contact_get_internal',
+            'feature_get_merchants_internal'
+        ],
+
         'payments_cross_border_service' => [
             'payment_capture',
             'internal_payment_authorize_refund',
@@ -18036,7 +18045,8 @@ class Route
 
         'reporting' => [
             'merchant_associated_accounts_fetch',
-            'internal_merchant_fetch'
+            'internal_merchant_fetch',
+            'internal_feature_get_all',
         ],
 
         'vajra' => [
@@ -18949,12 +18959,13 @@ class Route
             'payment_transfer',
             'transfer_transaction_create',
             'payment_fetch_by_id_internal',
+            'refund_scrooge_payment_update'
         ],
 
         'identity_provider' => [
             'user_fetch_merchants',
             'multiple_users_fetch_internal'
-        ]
+        ],
     ];
 
     //

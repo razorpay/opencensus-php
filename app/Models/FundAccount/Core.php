@@ -38,6 +38,8 @@ use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\WalletAccount\Validator as WalletAccountValidator;
 use RZP\Models\FundAccount\DetailsPropagator\Core as DetailsPropagator;
+use \RZP\Models\Payout\SourceRequestIDMapping\Core as SourceRequestIDMappingCore;
+use Throwable;
 
 /**
  * Class Core
@@ -67,11 +69,18 @@ class Core extends Base\Core
 
     protected $vendorPaymentService;
 
+    /**
+     * @var Payout\Events
+     */
+    protected $payoutEvents;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->vendorPaymentService = $this->app['vendor-payment'];
+
+        $this->payoutEvents = new Payout\Events;
     }
 
     /**
@@ -266,6 +275,27 @@ class Core extends Base\Core
 
         Metric::pushCreateMetrics($fundAccount);
 
+        if ($input[Entity::ACCOUNT_TYPE] === Entity::VPA) {
+            $this->payoutEvents->trackVPAFundAccountCreatedEvent(
+                $merchant->getId(),
+                $fundAccount->getId(),
+            );
+        }
+
+        try
+        {
+            // Capture source request ID for fund account
+            $this->captureSourceRequestId($fundAccount);
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->info(TraceCode::FA_CREATE_SOURCE_REQUEST_ID_CAPTURE_FAILED, [
+                'error' => $e->getMessage(),
+                'fund_account_id' => $fundAccount->getId()
+            ]);
+        }
+
+
         return $fundAccount;
     }
 
@@ -356,6 +386,19 @@ class Core extends Base\Core
             $this->repo->saveOrFailWithoutEsSync($fundAccount);
 
             Metric::pushCreateMetrics($fundAccount);
+
+            try
+            {
+                // Capture source request ID for fund account
+                $this->captureSourceRequestId($fundAccount);
+            }
+            catch (Throwable $e)
+            {
+                $this->trace->info(TraceCode::FA_CREATE_SOURCE_REQUEST_ID_CAPTURE_FAILED, [
+                    'error'            => $e->getMessage(),
+                    'fund_account_id' => $fundAccount->getId()
+                ]);
+            }
         }
         else
         {
@@ -1847,6 +1890,75 @@ class Core extends Base\Core
                 'input'        => $input,
             ]
         );
+    }
+
+    /**
+     * Checks if source request ID mapping is enabled via Splitz experiment
+     *
+     * @param Entity $fundAccount Fund account entity to get merchant ID from
+     * @return bool True if enabled, false otherwise
+     */
+    protected function isSourceRequestIdMappingEnabled(Entity $fundAccount): bool
+    {
+        try
+        {
+            $eventExperimentName = 'payouts_source_request_id_mapping';
+            $eventExperimentIdConfigKey = 'app.'.$eventExperimentName.'_id';
+
+            $properties = [
+                "id" => $fundAccount->merchant->getId(),
+                "experiment_id" => $this->app['config']->get($eventExperimentIdConfigKey),
+                'request_data' => json_encode(['merchant_id' => $fundAccount->merchant->getId()])
+            ];
+
+            return (new Merchant\Core())->isSplitzExperimentEnable($properties, RazorxTreatment::VARIANT_ENABLE);
+
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SOURCE_REQUEST_ID_MAPPING_SPLITZ_ERROR,
+                [
+                    'fund_account_id' => $fundAccount->getId(),
+                    'merchant_id' => $fundAccount->merchant->getId(),
+                ]
+            );
+        }
+
+        return false;
+    }
+
+    /**
+     * Captures the source request ID (AWS trace ID) and associates it with the fund account
+     *
+     * @param Entity $fundAccount The fund account to associate with the source request ID
+     * @return void
+     */
+    protected function captureSourceRequestId(Entity $fundAccount): void
+    {
+        // Check if source request ID mapping is enabled via Splitz
+        if ($this->isSourceRequestIdMappingEnabled($fundAccount) === false)
+        {
+            return;
+        }
+
+        try {
+            (new SourceRequestIDMappingCore())->createSourceRequestIdMapping($fundAccount->getId(), E::FUND_ACCOUNT);
+        }
+        catch (\Throwable $e) {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SOURCE_REQUEST_ID_MAPPING_FAILED,
+                [
+                    'fund_account_id' => $fundAccount->getId(),
+                    'merchant_id' => $fundAccount->merchant->getId(),
+                ]
+            );
+        }
     }
 
 }

@@ -3159,6 +3159,7 @@ class Service extends Base\Service
             Entity::TERMINAL_ID => $payment->getTerminalId(),
             Entity::UPDATED_AT => $payment->getUpdatedAt(),
             Entity::INTERNAL_ERROR_CODE => $payment->getInternalErrorCode(),
+            Entity::SETTLED_BY => $payment->getSettledBy(),
         ]);
 
         if ($entity['order_id'] != null)
@@ -6030,6 +6031,8 @@ class Service extends Base\Service
         }
 
         $payment->setExternal(true);
+
+        $this->app['pg_router']->associateOfferDiscountIfApplicable($payment, $input);
 
         $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
 

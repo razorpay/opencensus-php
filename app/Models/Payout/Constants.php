@@ -167,4 +167,9 @@ class Constants
     const PAYEE_IFSC = 'payee_ifsc';
     const PAYEE_BANK_NAME = 'payee_bank_name';
     const FTA = 'fta';
+
+    //Constants for Events
+    const MOBILE        = 'mobile';
+    const VPA           = 'vpa';
+    const CUSTOMER_NAME = 'customer_name';
 }
