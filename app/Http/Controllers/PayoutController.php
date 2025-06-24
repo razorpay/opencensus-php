@@ -16,6 +16,8 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payout\Metric;
+use RZP\Services\PayoutService\PayoutShadowService;
+use Throwable;
 
 class PayoutController extends Controller
 {
@@ -74,6 +76,22 @@ class PayoutController extends Controller
     public function postFundAccountPayout()
     {
         $input = Request::all();
+
+        try
+        {
+            // call shadow router to mirror the request
+            PayoutShadowService::mirrorRequest(
+                'POST',
+                Request::path(),
+                $input,
+                Request::header()
+            );
+        }
+        catch (Throwable $e)
+        {
+            // ignore error
+        }
+
 
         $data = $this->service()->fundAccountPayout($input);
 
