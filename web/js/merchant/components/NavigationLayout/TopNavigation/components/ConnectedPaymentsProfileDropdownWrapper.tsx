@@ -82,18 +82,6 @@ function ConnectedPaymentsProfileDropdownWrapper({ logout, switchMerchant, split
 
   useEffect(() => {
     const oldModeToken = 'rzp_mode';
-    const oldModeValue = getItemFromLocalStorage(oldModeToken);
-
-    // localizing mode for each merchant so that different modes can be maintained
-    // across logins/merchants
-    if (oldModeValue) {
-      window.rzp_user &&
-        Object.keys(window.rzp_user.merchants).forEach((merchantId) => {
-          setItemInLocalStorage(`${oldModeToken}--${merchantId}`, oldModeValue);
-        });
-
-      removeItemFromLocalStorage(oldModeToken);
-    }
 
     if (window.rzp_user) {
       setModeToken(`${oldModeToken}--${window.rzp_user.current}`);

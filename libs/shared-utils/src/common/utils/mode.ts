@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-implicit-any-catch */
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
-import { getItemFromLocalStorage, setItemInLocalStorage } from './localStorage';
+import { RazorpayUser } from '@libs/shared-types';
+import {
+  getItemFromLocalStorage,
+  removeItemFromLocalStorage,
+  setItemInLocalStorage,
+} from './localStorage';
 
 /**
  * Defines the type for the mode. It can either be 'test' or 'live'.
@@ -14,11 +19,20 @@ let mode: ModeT = 'test';
 
 export const getMerchantModeKey = (mid: string) => {
   const modePrefixIdentifier = 'rzp_mode--';
-  return `${modePrefixIdentifier}${mid}`;
+  return window.rzp_user ? `${modePrefixIdentifier}${mid}` : '';
+};
+
+/**
+ * Checks if user is activated
+ * Equivalent to User.js isActivated getter
+ */
+const isUserActivated = (user: RazorpayUser): boolean => {
+  return Boolean(user.activated) || user.pos_activation_status === 'activated';
 };
 
 /**
  * Retrieves the mode for a specific merchant or returns the default mode if not set.
+ * Implements the same business logic as App.js for consistency.
  *
  * @param {string} [merchantId] - The merchant ID for which to retrieve the mode.
  * @returns {ModeT} - Returns the mode, either 'test' or 'live'.
@@ -26,8 +40,17 @@ export const getMerchantModeKey = (mid: string) => {
 export const getMode = (merchantId?: string): ModeT => {
   if (merchantId) {
     const merchantModeKey = getMerchantModeKey(merchantId);
-    const modeFromLocalStorage = getItemFromLocalStorage(merchantModeKey);
-    return (modeFromLocalStorage || mode) as ModeT;
+    let currentMode = getItemFromLocalStorage(merchantModeKey) as ModeT | null;
+
+    const user: RazorpayUser = (window as any)?.rzp_user || {};
+
+    if (!currentMode) {
+      currentMode = isUserActivated(user) ? 'live' : 'test';
+    } else if (!isUserActivated(user)) {
+      currentMode = 'test';
+    }
+
+    return currentMode || mode;
   } else {
     return mode;
   }
@@ -62,5 +85,30 @@ export const switchMode = (merchantId: string, _mode: ModeT) => {
     } catch (e) {
       console.error('Error Setting Mode:', e);
     }
+  }
+};
+
+/**
+ * Migrates old global mode tokens to merchant-specific tokens and initializes
+ * the current mode token for the active merchant.
+ *
+ * This function handles the migration from the old 'rzp_mode' token format
+ * to the new merchant-specific format 'rzp_mode--{merchantId}'.
+ *
+ * @returns {void} - Returns nothing.
+ */
+export const migrateGlobalModeTokensToMerchantModeTokens = (): void => {
+  const oldModeToken = 'rzp_mode';
+  const oldModeValue = getItemFromLocalStorage(oldModeToken);
+
+  // localizing mode for each merchant so that different modes can be maintained
+  // across logins/merchants
+  if (oldModeValue) {
+    window.rzp_user &&
+      Object.keys(window.rzp_user.merchants).forEach((merchantId) => {
+        setItemInLocalStorage(`${oldModeToken}--${merchantId}`, oldModeValue);
+      });
+
+    removeItemFromLocalStorage(oldModeToken);
   }
 };
