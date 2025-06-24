@@ -16,10 +16,12 @@ use RZP\Traits\TrimSpace;
 use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\Contact\BatchHelper as ContactBatchHelper;
 use RZP\Services\VendorPayments\Service as VendorPaymentService;
+use RZP\Models\Payout\SourceRequestIDMapping\Core as SourceRequestIDMappingCore;
 
 /**
  * Class Core
@@ -139,7 +141,66 @@ class Core extends Base\Core
 
         $this->PushVendorEvent($contact, Contact\Constants::CONTACT_CREATED_MESSAGE);
 
+        try
+        {
+            // Capture source request ID for contact
+            $this->captureSourceRequestId($contact);
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->info(TraceCode::CONTACT_CREATE_SOURCE_REQUEST_ID_CAPTURE_FAILED, [
+                'error' => $e->getMessage(),
+                'contact_id' => $contact->getId()
+            ]);
+        }
+
         return $contact;
+    }
+
+    /**
+     * Checks if source request ID mapping is enabled via Splitz experiment
+     *
+     * @param Entity $contact Contact entity to get merchant ID from
+     * @return bool True if enabled, false otherwise
+     */
+    protected function isSourceRequestIdMappingEnabled(Entity $contact): bool
+    {
+        $properties = [
+            "id"            => $contact->merchant->getId(),
+            "experiment_id" => $this->app['config']->get('app.source_request_id_mapping_experiment_id'),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, RazorxTreatment::VARIANT_ENABLE);
+
+
+    }
+
+    /**
+     * Captures the source request ID (AWS trace ID) and associates it with the contact
+     *
+     * @param Entity $contact The contact to associate with the source request ID
+     * @return void
+     */
+    protected function captureSourceRequestId(Entity $contact): void
+    {
+        // Check if source request ID mapping is enabled via Splitz
+        if ($this->isSourceRequestIdMappingEnabled($contact) === false)
+        {
+            return;
+        }
+
+        try {
+            (new SourceRequestIDMappingCore())->createSourceRequestIdMapping($contact->getId(), Constants\Entity::CONTACT);
+        } catch (\Throwable $e) {
+            // Just log the error, don't fail the contact creation
+            $this->trace->error(
+                'contact.source_request_id.capture_error',
+                [
+                    'contact_id' => $contact->getId(),
+                    'error' => $e->getMessage()
+                ]
+            );
+        }
     }
 
     /**
@@ -224,6 +285,20 @@ class Core extends Base\Core
                                Constants\Entity::CONTACT => $contact->getId(),
                                'save_or_fail_flag'       => $compositePayoutSaveOrFail
                            ]);
+
+
+        try
+        {
+            // Capture source request ID for contact
+            $this->captureSourceRequestId($contact);
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->info(TraceCode::CONTACT_CREATE_SOURCE_REQUEST_ID_CAPTURE_FAILED, [
+                'error' => $e->getMessage(),
+                'contact_id' => $contact->getId()
+            ]);
+        }
 
         return $contact;
     }

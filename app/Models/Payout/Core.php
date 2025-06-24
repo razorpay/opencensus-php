@@ -126,6 +126,7 @@ use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
 use RZP\Services\Mock\BankingAccountService as MockBankingAccountService;
 use RZP\Models\Transaction\Processor\Ledger\Payout as PayoutsLedgerProcessor;
+use RZP\Models\Payout\SourceRequestIDMapping\Core as SourceRequestIDMappingCore;
 use RZP\Models\Ledger\ReverseShadow\IRCTCPayout\Core as IRCTCPayoutReverseShadowCore;
 
 /**
@@ -501,6 +502,23 @@ class Core extends Base\Core
                 'merchant_id' => $merchant->getId(),
                 'amount_info' => $amountInfo
             ]);
+
+        try
+        {
+            // Capture source request ID mapping for payouts
+            $this->captureSourceRequestId($payout);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::PAYOUT_SOURCE_REQUEST_ID_MAPPING_FAILED,
+                [
+                    'payout_id'   => $payout->getId(),
+                    'merchant_id' => $merchant->getId(),
+                ]);
+        }
 
         if ($payout->getIsPayoutService() === false)
         {
@@ -12799,6 +12817,61 @@ class Core extends Base\Core
                 'payout_id' => $payout->getId(),
                 'error'     => $e->getMessage()
             ]);
+        }
+    }
+
+    /**
+     * Checks if source request ID mapping is enabled via Splitz experiment
+     *
+     * @param Entity $payout Payout entity to get merchant ID from
+     * @return bool True if enabled, false otherwise
+     */
+    protected function isSourceRequestIdMappingEnabled(Entity $payout): bool
+    {
+
+        $eventExperimentName = Merchant\RazorxTreatment::PAYOUTS_CAPTURE_SOURCE_REQUEST_ID;
+        $eventExperimentIdConfigKey = 'app.'.$eventExperimentName.'_id';
+
+        $properties = [
+            'id'            => $payout->merchant->getId(),
+            'experiment_id' => $this->app['config']->get($eventExperimentIdConfigKey),
+            'request_data' => json_encode(['merchant_id' => $payout->merchant->getId()])
+        ];
+
+        if ($this->isSplitzExperimentEnable($properties,Merchant\RazorxTreatment::VARIANT_ENABLE, TraceCode::PAYOUT_CAPTURE_REQUEST_ID_SPLITZ_ERROR))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Captures the source request ID and associates it with the payout entity
+     *
+     * @param Entity $payout Payout entity to associate with the source request ID
+     */
+    protected function captureSourceRequestId(Entity $payout): void
+    {
+        if (!$this->isSourceRequestIdMappingEnabled($payout))
+        {
+            return;
+        }
+        try
+        {
+            (new SourceRequestIDMappingCore())->createSourceRequestIdMapping($payout->getId(), Entity::PAYOUT);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PAYOUT_SOURCE_REQUEST_ID_MAPPING_FAILED,
+                [
+                    'payout_id' => $payout->getId(),
+                    'merchant_id' => $payout->merchant->getId(),
+                ]
+            );
         }
     }
 }
