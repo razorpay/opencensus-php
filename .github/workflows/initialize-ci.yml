@@ -79,12 +79,18 @@ jobs:
 
       - name: Determine Env Configs
         id: get_env_configs
+        env:
+          BRANCH_NAME: ${{ inputs.branch_name }}
         run: |
-          BRANCH_NAME="${{ inputs.branch_name }}"
-          if [[ "$BRANCH_NAME" == master || "$BRANCH_NAME" == hotfix/* ]]; then
+          echo "Branch name: $BRANCH_NAME"
+          # Convert branch name to lowercase for case-insensitive comparison
+          BRANCH_NAME_LOWER=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]')
+          if [[ "$BRANCH_NAME" == master || "$BRANCH_NAME_LOWER" == hotfix/* ]]; then
+            echo "Matched master or hotfix branch - setting canary_build=true"
             echo "target_envs=[\"production\",\"devstack\"]" >> $GITHUB_OUTPUT
             echo "run_canary_build=true" >> $GITHUB_OUTPUT
           else
+            echo "Non-master/hotfix branch - setting canary_build=false"
             echo "target_envs=[\"devstack\"]" >> $GITHUB_OUTPUT
             echo "run_canary_build=false" >> $GITHUB_OUTPUT
           fi

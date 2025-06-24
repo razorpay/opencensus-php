@@ -53,7 +53,7 @@ jobs:
   build-shell-server-canary:
     name: Shell Server - Canary
     needs: [delay-job-p1]
-    if: ${{ inputs.run_canary_build && contains(inputs.affected_apps_p2, 'shell') }}
+    if: ${{ inputs.run_canary_build }}
     strategy:
       fail-fast: true
       matrix:
@@ -100,7 +100,7 @@ jobs:
   shell-server-multi-arch-manifest-canary:
     name: Shell Server - Multi Arch (Canary)
     needs: ["build-shell-server-canary"]
-    if: contains(inputs.affected_apps_p2, 'shell') 
+    if: contains(inputs.affected_apps_p2, 'shell')
     runs-on: ["non-api"]
     strategy:
       fail-fast: true
