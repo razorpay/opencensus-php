@@ -1125,7 +1125,7 @@ class Core extends Base\Core
 
         Entity::silentlyStripSign($orderId);
 
-        $transfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(E::ORDER, $orderId, $merchant);
+        $transfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchantWithExternal(E::ORDER, $orderId, $merchant);
 
         if ((empty($transfers) === false) and (count($transfers) > 0))
         {

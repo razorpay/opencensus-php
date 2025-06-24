@@ -1613,6 +1613,13 @@ class Service extends Base\Service
 
             $this->merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
+            if ($this->shouldSendReverseAllRequestToRouteService($payment, $this->merchant))
+            {
+                $routeResponse = $this->app['route']->reverseAllTransfers($input);
+
+                return $routeResponse;
+            }
+
             unset($input[Entity::PAYMENT_ID]);
 
             $input[RefundConstants::REVERSE_ALL] = true;
@@ -4385,4 +4392,73 @@ class Service extends Base\Service
         }
         return false;
     }
+
+    private function shouldSendReverseAllRequestToRouteService($payment, $merchant)
+    {
+        $transferPayments = $this->repo->transfer_payment->getTransferPaymentIncludingExternal($payment->getId());
+
+        $shouldProcessViaRoute = false;
+
+        // transfer payment logic
+        if ($transferPayments->count() > 0)
+        {
+            if ($transferPayments[0]->isExternal() === true)
+            {
+                $shouldProcessViaRoute = true;
+            }
+        }
+        else if ($payment->isTransferredInOldFlow() === true)
+        {
+            $shouldProcessViaRoute = false;
+        }
+
+        $isExpEnabled = $this->isReverseAllRearchExpEnabled($payment->getId(), $merchant->getId());
+
+        if ($shouldProcessViaRoute && $isExpEnabled)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isReverseAllRearchExpEnabled(string $paymentId, string $merchantId): bool
+    {
+        if ($this->mode === Mode::TEST && app()->runningUnitTests() === false)
+        {
+            return false;
+        }
+
+        try
+        {
+            $properties = [
+                'id'            => $paymentId,
+                'experiment_id' => $this->app['config']->get('app.reverse_all_rearch_exp_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::REVERSE_ALL_REARCH_SPLITZ_EXP_RESULT, [
+                'merchant_id'   => $merchantId,
+                'payment_id'    => $paymentId,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'payment_id'    => $paymentId,
+                'experiment_id' => $this->app['config']->get('app.reverse_all_rearch_exp_id') ?? null
+            ]);
+
+            return false;
+        }
+    }
+
 }
