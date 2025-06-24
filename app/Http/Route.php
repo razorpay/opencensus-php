@@ -2822,6 +2822,7 @@ class Route
         'upsert_user_details'                      => ['post',     'users/details',                                  'UserController@upsertUserDetailsWithRelations'                                ],
         'delete_user_details'                      => ['delete',     'users/details',                                  'UserController@deleteUserDetailsWithRelations'                                ],
 
+        'user_service_data_accessor'               => ['post',     'user_service/accessor',                            'UserController@userServiceDataAccessor'                          ],
 
         //b2b flow
         'create_international_virtual_accounts'             => ['post',     'international/virtual_accounts',                 'BankTransferController@createAccountForCurrencyCloud'          ],
@@ -5857,6 +5858,7 @@ class Route
         'fetch_user_details',
         'upsert_user_details',
         'delete_user_details',
+        'user_service_data_accessor',
         'pricing_hard_delete_plan',
         'pricing_hard_refresh_plan',
         'pricing_create_plan_recon_job_sync',
@@ -12572,7 +12574,8 @@ class Route
             'delete_user_details',
             'internal_org_get',
             'contact_get_internal',
-            'feature_get_merchants_internal'
+            'feature_get_merchants_internal',
+            'user_service_data_accessor'
         ],
 
         'payments_cross_border_service' => [

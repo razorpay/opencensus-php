@@ -7555,4 +7555,126 @@ class Core extends Base\Core
             });
         }
     }
+
+    public function userPermissions($merchant)
+    {
+        return $this->fetchUserPermissions($merchant);
+    }
+
+    public function fetchMerchantAttribute($merchantID)
+    {
+        // Attach merchant attributes of specific groups
+        $signupAttributes = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId(
+            $merchantID,
+            Product::BANKING,
+            Merchant\Attribute\Group::X_SIGNUP
+        )->toArrayPublic();
+
+        $currentAccountAttributes = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId(
+            $merchantID,
+            Product::BANKING,
+            Merchant\Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS
+        )->toArrayPublic();
+
+        $currentAccountAttributesFromPG = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId($merchantID, Product::PRIMARY, Merchant\Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS)->toArrayPublic();
+
+        $merchantPreferencesAttributes = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId($merchantID, Product::BANKING, Merchant\Attribute\Group::X_MERCHANT_PREFERENCES)->toArrayPublic();
+
+        $xProductEnabledAttributes = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId($merchantID, Product::BANKING, Merchant\Attribute\Group::PRODUCTS_ENABLED)->toArrayPublic();
+        // This is a hack, to unblock for now, need to figure out how to merge public arrays
+        $settableAttributes['entity'] = "collection";
+        $settableAttributes['count'] = count($xProductEnabledAttributes['items'] ?? []) +  count($signupAttributes['items']?? []) + count($currentAccountAttributes['items'] ?? []) + count($merchantPreferencesAttributes['items'] ?? []) + count($currentAccountAttributesFromPG['items'] ?? []);
+        $settableAttributes['items'] = array_merge($xProductEnabledAttributes['items'] ?? [], $signupAttributes['items'] ?? [], $currentAccountAttributes['items'] ?? [], $merchantPreferencesAttributes['items'] ?? [], $currentAccountAttributesFromPG['items'] ?? []);
+
+        return $settableAttributes;
+    }
+
+    public function fetchBankingBalanceData($merchantID)
+    {
+        $res = [];
+        $vaBalance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+            $merchantID,
+            Merchant\Balance\Type::BANKING,
+            Merchant\Balance\AccountType::SHARED);
+
+        // Balance entity doesn't have a status, so checking for active current accounts via BASD entity
+        $caActiveBalanceIds = $this->repo->banking_account_statement_details->getBalanceIdsForActiveDirectAccounts($merchantID);
+
+        /** @var Merchant\Balance\Entity $caBalance */
+        $caBalance = $this->repo->balance->getMerchantBalancesByTypeAndAccountTypeAndBalanceIds(
+            $merchantID,
+            Merchant\Balance\Type::BANKING,
+            Merchant\Balance\AccountType::DIRECT,
+            $caActiveBalanceIds)->first();
+
+        // We hit this flow during /login too where merchant even though of X,
+        // doesn't have balance etc created yet.
+
+        // If both VA and CA are not there
+        if ($vaBalance === null and $caBalance === null)
+        {
+            return $res;
+        }
+
+        $caActivationStatus = null;
+
+        if (empty($caBalance) === false)
+        {
+            $bankingAccountCA = $this->repo->banking_account->getActivatedBankingAccountFromBalanceId($caBalance->getId());
+
+            $caActivationStatus = optional($bankingAccountCA)->getStatus();
+
+            //Fetching icici ca status from banking account service.
+            if(empty($caActivationStatus) === true or
+                $caActivationStatus !== 'activated')
+            {
+                $caActivationStatus = (new BankingAccountService\Core())->fetchBasCaStatus($merchantID);
+            }
+        }
+
+        // If Only CA is there
+        if (empty($vaBalance) === true)
+        {
+            return $res + [
+                    Merchant\Entity::CA_ACTIVATION_STATUS   => $caActivationStatus,
+                    Merchant\Entity::ACCOUNTS               => $this->fetchBankingAccountWithBalance(
+                        $merchantID),
+                ];
+        }
+
+        // If either VA is there or both VA and CA are there
+        $bankingAccount = $this->repo->banking_account->getActivatedBankingAccountFromBalanceId($vaBalance->getId());
+
+        $bulkUserType = $this->getBulkPayoutsUserType($vaBalance);
+
+        return $res +
+            [
+                // balance for business banking activated at should have account_type shared
+                // Relevant slack thread : https://razorpay.slack.com/archives/CE4DMABE3/p1574075046102400
+
+                // Below fields except accounts and ca_activation_status are related to only virtual account
+
+                Merchant\Entity::BANKING_ACTIVATED_AT   => $vaBalance->getCreatedAt(),
+                Merchant\Entity::CA_ACTIVATION_STATUS   => $caActivationStatus,
+                Merchant\Entity::BANKING_BALANCE        => $vaBalance->only([Merchant\Balance\Entity::BALANCE,
+                    Merchant\Balance\Entity::CURRENCY]),
+                Merchant\Entity::BANKING_ACCOUNT        => $bankingAccount->toArrayPublic(),
+                Merchant\Entity::ACCOUNTS               => $this->fetchBankingAccountWithBalance(
+                    $merchantID),
+                Merchant\Entity::CREDIT_BALANCE         => $this->fetchBankingCreditBalances(
+                    $merchantID,
+                    Product::BANKING,
+                    $vaBalance->getAccountType(),
+                    $bankingAccount->getPublicId()),
+                Merchant\Entity::BULK_PAYOUTS_USER_TYPE => $bulkUserType,
+            ];
+    }
+
+    public function fetchUserSettings($userID)
+    {
+        $user = $this->repo->user->getUserFromID($userID);
+
+        return $user->getAllSettings();
+    }
+
 }

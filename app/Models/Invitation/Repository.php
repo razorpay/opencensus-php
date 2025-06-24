@@ -95,7 +95,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->get()
-            ->toArray();
+            ->callOnEveryItem('toArrayPublicForUserService');
     }
 
     public function updateInvitation($invitation)
@@ -115,8 +115,6 @@ class Repository extends Base\Repository
             ->where(Entity::ID, array_get($invitation, Entity::ID))
             ->first();
 
-        $invitation->id = intval($invitation->id);
-
         return $invitation;
     }
 
@@ -133,8 +131,6 @@ class Repository extends Base\Repository
             Entity::USER_ID => array_get($invitation, Entity::USER_ID),
             Entity::MERCHANT_ID => array_get($invitation, Entity::MERCHANT_ID),
         ]);
-
-        $invitation->id = intval($invitation->id);
 
         return $invitation;
     }
