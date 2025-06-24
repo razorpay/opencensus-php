@@ -1212,6 +1212,7 @@ class Route
         'setl_transaction_timeline'                => ['get',      'settlements/transaction/timeline',               'SettlementController@getTransactionTimeline'                       ],
         'setl_reason_code_mapping_internal'        => ['get',      'internal/settlements/on_hold/{reason_codes?}',   'SettlementController@fetchHoldReasonCodeMappingsInternal'          ],
         'setl_reason_code_mapping_admin'           => ['get',      'admin/settlements/on_hold/{reason_codes?}',      'SettlementController@fetchHoldReasonCodeMappingsAdmin'             ],
+        'setl_create_workflow_action'              => ['post',     'settlements/wf-actions/create',                  'SettlementController@createSettlementsWFAction'                    ],
 
 
 
@@ -6466,6 +6467,7 @@ class Route
         'feature_get_all_internal',
         'create_settlement_entry',
         'get_global_config',
+        'setl_create_workflow_action',
         'update_admin_through_batch',
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
@@ -18202,7 +18204,8 @@ class Route
             'payout_create_2FA_internal',
             'payout_fetch_by_id_internal',
             'setl_adj_add',
-            'merchant_fetch_internal_users'
+            'merchant_fetch_internal_users',
+            'setl_create_workflow_action'
         ],
 
         'partnerships' => [
@@ -18947,6 +18950,7 @@ class Route
             'payment_transfer',
             'transfer_transaction_create',
             'payment_fetch_by_id_internal',
+            'refund_scrooge_payment_update'
         ],
 
         'identity_provider' => [

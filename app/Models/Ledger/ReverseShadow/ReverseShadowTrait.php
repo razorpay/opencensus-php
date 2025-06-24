@@ -246,7 +246,7 @@ trait ReverseShadowTrait
             catch (\Throwable $e)
             {
 
-                if (Str::contains($e->getMessage(), "cURL error 28: Operation timed out", true))
+                if (Str::contains($e->getMessage(), "cURL error 28:", true))
                 {
                     $retryAttempts++;
                     if ($retryAttempts > LedgerReverseShadowConstants::MAX_RETRY_COUNT_FETCH_MERCHANT_ACCOUNT)

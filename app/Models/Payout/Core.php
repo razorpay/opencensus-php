@@ -126,6 +126,7 @@ use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
 use RZP\Services\Mock\BankingAccountService as MockBankingAccountService;
 use RZP\Models\Transaction\Processor\Ledger\Payout as PayoutsLedgerProcessor;
+use RZP\Models\Payout\SourceRequestIDMapping\Core as SourceRequestIDMappingCore;
 use RZP\Models\Ledger\ReverseShadow\IRCTCPayout\Core as IRCTCPayoutReverseShadowCore;
 
 /**
@@ -248,12 +249,6 @@ class Core extends Base\Core
     const DUAL_WRITE_META_NAME = 'dual_write';
 
     const DUAL_WRITE_RETRY_EXHAUST = 'dual_write_retry_exhaust';
-
-    const PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND = 'PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND';
-
-    const PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD = 'PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD';
-
-    const PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID = 'PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID';
 
     /**
      * @var Mutex
@@ -507,6 +502,23 @@ class Core extends Base\Core
                 'merchant_id' => $merchant->getId(),
                 'amount_info' => $amountInfo
             ]);
+
+        try
+        {
+            // Capture source request ID mapping for payouts
+            $this->captureSourceRequestId($payout);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::PAYOUT_SOURCE_REQUEST_ID_MAPPING_FAILED,
+                [
+                    'payout_id'   => $payout->getId(),
+                    'merchant_id' => $merchant->getId(),
+                ]);
+        }
 
         if ($payout->getIsPayoutService() === false)
         {
@@ -12808,65 +12820,58 @@ class Core extends Base\Core
         }
     }
 
-    public function trackPhoneNumberPayoutFailureEvents(
-        string $eventName,
-        array $properties): void
+    /**
+     * Checks if source request ID mapping is enabled via Splitz experiment
+     *
+     * @param Entity $payout Payout entity to get merchant ID from
+     * @return bool True if enabled, false otherwise
+     */
+    protected function isSourceRequestIdMappingEnabled(Entity $payout): bool
     {
-        $eventDataGroup = null;
 
-        switch ($eventName)
+        $eventExperimentName = Merchant\RazorxTreatment::PAYOUTS_CAPTURE_SOURCE_REQUEST_ID;
+        $eventExperimentIdConfigKey = 'app.'.$eventExperimentName.'_id';
+
+        $properties = [
+            'id'            => $payout->merchant->getId(),
+            'experiment_id' => $this->app['config']->get($eventExperimentIdConfigKey),
+            'request_data' => json_encode(['merchant_id' => $payout->merchant->getId()])
+        ];
+
+        if ($this->isSplitzExperimentEnable($properties,Merchant\RazorxTreatment::VARIANT_ENABLE, TraceCode::PAYOUT_CAPTURE_REQUEST_ID_SPLITZ_ERROR))
         {
-            case self::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND:
-                $eventDataGroup = EventCode::PAYOUTS_TO_PHONE_NUMBER_EVENT_VPA_NOT_FOUND;
-                break;
-            case self::PAYOUTS_TO_PHONE_NUMBER_NAME_MATCHING_BELOW_THRESHOLD:
-                $eventDataGroup = EventCode::PAYOUTS_TO_PHONE_NUMBER_EVENT_NAME_MATCHING_BELOW_THRESHOLD;
-                break;
-            case self::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID:
-                $eventDataGroup = EventCode::PAYOUTS_TO_PHONE_NUMBER_EVENT_MOBILE_NUMBER_FORMAT_INVALID;
-                break;
+            return true;
         }
 
-        $this->app['diag']->trackPhoneNumberPayoutFailureEvents(
-            $eventDataGroup,
-            $properties
-        );
-
-        $this->trace->info(TraceCode::PAYOUTS_TO_PHONE_NUMBER_FAILURE_DATALAKE_EVENT_PUSHED,[
-            "event_name"       => $eventName,
-            "event_properties" => $properties,
-            "event_data_group" => $eventDataGroup
-        ]);
+        return false;
     }
 
-    public function sanitizeDataForTracking(array $data): array
+    /**
+     * Captures the source request ID and associates it with the payout entity
+     *
+     * @param Entity $payout Payout entity to associate with the source request ID
+     */
+    protected function captureSourceRequestId(Entity $payout): void
     {
-        $results = [];
-        foreach ($data as $type => $value) {
-            switch ($type){
-                case FundAccount\Entity::MOBILE:
-                    // Replace all but the last 5 characters with 'x'
-                    if (strlen($value) < 5) {
-                        $results[$type] = str_repeat('x', strlen($value));
-                    } else {
-                        $maskLength = strlen($value) - 5;
-                        $results[$type] = str_repeat('x', $maskLength) . substr($value, -5);
-                    }
-                    break;
-                case FundAccount\Entity::VPA:
-                    // Mask the VPA by replacing everything before '@' with 'x'
-                    $atPosition = strpos($value, '@');
-                    if ($atPosition !== false) {
-                        $results[$type] = str_repeat('x', $atPosition) . substr($value, $atPosition);
-                    } else {
-                        $results[$type] = str_repeat('x', strlen($value)); // If no '@' found, mask entire string
-                    }
-                    break;
-                default:
-                    $results[$type] = $value; // Return data as is for unknown types
-                    break;
-            }
+        if (!$this->isSourceRequestIdMappingEnabled($payout))
+        {
+            return;
         }
-        return $results;
+        try
+        {
+            (new SourceRequestIDMappingCore())->createSourceRequestIdMapping($payout->getId(), Entity::PAYOUT);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PAYOUT_SOURCE_REQUEST_ID_MAPPING_FAILED,
+                [
+                    'payout_id' => $payout->getId(),
+                    'merchant_id' => $payout->merchant->getId(),
+                ]
+            );
+        }
     }
 }

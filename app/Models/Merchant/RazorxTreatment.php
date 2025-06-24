@@ -846,6 +846,11 @@ final class RazorxTreatment
     // Expt to handle non terminal payouts after migration
     const NON_TERMINAL_MIGRATION_HANDLING       = 'non_terminal_migration_handling';
 
+    // Experiment to handle source and request ID capture
+    const PAYOUTS_CAPTURE_SOURCE_REQUEST_ID = 'payouts_capture_source_request_id_experiment';
+
+    const PAYOUTS_SHADOW_ROUTER = 'payouts_shadow_router_splitz_experiment';
+
     // Experiment for sending user details to getsimpl
     const SEND_USER_DETAILS_TO_GETSIMPL         = 'send_user_details_to_getsimpl';
 
@@ -1063,6 +1068,8 @@ final class RazorxTreatment
 
     const COLLECTIONS_RBL_MERCHANTS_VA_ADD_TPV_BLOCK = "collections_rbl_merchants_va_add_tpv_block";
     const PS_API_MERCHANT_MIGRATION_ON_ID = 'ps_api_merchant_migration_on_id';
+
+    const FAV_POSTPAID_DISABLE = 'fav_postpaid_disable';
 
     const Allowed_alt_id_experiments = [
         "non_rearch_alt__RUPAY_isg_kotak",

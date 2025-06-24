@@ -4,6 +4,8 @@ namespace RZP\Models\Transaction\Processor\Ledger;
 
 use Ramsey\Uuid\Uuid;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Core;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
@@ -236,7 +238,16 @@ class FundAccountValidation extends Base
             $payload[self::TRANSACTION_DATE] = $validation->reversal->getCreatedAt();
         }
 
-        if ($validation->merchant->isPostpaid() === true)
+        $requestPayload = [
+            "id" =>  $validation->merchant->getId(),
+            "experiment_name" => RazorxTreatment::FAV_POSTPAID_DISABLE,
+            'request_data'  => json_encode(['id' =>  $validation->merchant->getId()])
+        ];
+
+        $isExperimentEnabled = (new Core())->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
+
+        if (($validation->merchant->isPostpaid() === true) and
+                ($isExperimentEnabled === false))
         {
             $payload[self::COMMISSION] = '0';
             $payload[self::TAX]        = '0';

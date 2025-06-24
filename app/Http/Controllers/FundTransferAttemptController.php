@@ -9,6 +9,8 @@ use RZP\Constants\Entity;
 use RZP\Models\FundTransfer\Attempt\Constants;
 use RZP\Services\FTS\Constants as FTSConstants;
 use RZP\Models\FundAccount\Validation\Service as FavService;
+use RZP\Services\PayoutService\PayoutShadowService;
+use Throwable;
 
 class FundTransferAttemptController extends Controller
 {
@@ -69,6 +71,21 @@ class FundTransferAttemptController extends Controller
             $response = (new FavService())->updateFavWithFtsWebhook($input);
 
             return ApiResponse::json($response);
+        }
+
+        try
+        {
+            // call shadow router to mirror the request
+            PayoutShadowService::mirrorRequest(
+                'POST',
+                Request::path(),
+                $input,
+                Request::header()
+            );
+        }
+        catch (Throwable $e)
+        {
+            // ignore error
         }
 
         $response = $this->service()->updateFundTransferAttempt($input);

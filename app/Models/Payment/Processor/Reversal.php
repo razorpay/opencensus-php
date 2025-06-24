@@ -405,7 +405,7 @@ trait Reversal
 
                 $this->validateTransferReversalAllowedIfLedgerReverseShadowEnabled($transfer);
 
-                if ($transfer->isExternal() && in_array($transfer->getStatus(), [Transfer\Status::PENDING, Transfer\Status::CREATED]))
+                if ($transfer->isRearch() && in_array($transfer->getStatus(), [Transfer\Status::PENDING, Transfer\Status::CREATED]))
                 {
                     // For rearch transfer, wait till transfer reaches terminaL state
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSFER_IN_PROGRESS);

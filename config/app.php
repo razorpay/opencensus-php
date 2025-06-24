@@ -722,6 +722,10 @@ return array(
 
     'ppi_wallet_on_upi_pricing_splitz_experiment_id' => env('PPI_WALLET_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),
 
+    'payouts_shadow_router_splitz_experiment_id' => env('PAYOUTS_SHADOW_ROUTER_SPLITZ_EXPERIMENT_ID'),
+
+    'payouts_capture_source_request_id_experiment_id' => env('PAYOUTS_CAPTURE_SOURCE_REQUEST_ID_EXPERIMENT_ID'),
+
     'dcc_on_auto_subscription_payments_experiment_id' => env('DCC_ON_AUTO_SUBSCRIPTION_PAYMENTS_EXPERIMENT_ID'),
 
     'optimise_submerchant_create_exp_id' => env('OPTIMISE_SUBMERCHANT_CREATE_EXP_ID'),
@@ -1225,6 +1229,8 @@ return array(
 
     'amount_transferred_rearch_exp_id' => env('AMOUNT_TRANSFERRED_REARCH_EXP_ID'),
 
+    'reverse_all_rearch_exp_id' => env('REVERSE_ALL_REARCH_EXP_ID'),
+
     'route_transfer_rearch_fetch_experiment_id' => env('TRANSFER_FETCH_REARCH_EXP_ID'),
 
     'route_la_transfer_rearch_fetch_experiment_id' => env('LA_TRANSFER_FETCH_REARCH_EXP_ID'),
@@ -1328,6 +1334,8 @@ return array(
     'enable_description_validation_for_merchant'    => env('ENABLE_DESCRIPTION_VALIDATION_FOR_MERCHANT'),
 
     'enable_rearch_card_recurring_flow_initial_mandatehq' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_INITIAL_MANDATEHQ'),
+
+    'enable_rearch_card_recurring_pdn_decoupling' => env('ENABLE_REARCH_CARD_RECURRING_PDN_DECOUPLING'),
 
     'merchant_checkout_optimizer_affordability_emi_enabled_exp_id' => env('MERCHANT_CHECKOUT_OPTIMIZER_AFFORDABILITY_EMI_ENABLED_EXP_ID'),
 
@@ -1507,6 +1515,8 @@ return array(
     'upi_auth_link_frequency_as_presented_default' => env('UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT'),
 
     'banking_redirection_enabled' => env('BANKING_REDIRECTION_ENABLED'),
+
+    'source_request_id_mapping_experiment_id' => env('SOURCE_REQUEST_ID_MAPPING_EXPERIMENT_ID'),
 
     'pgos_read_for_metadata_enabled' => env('PGOS_READ_FOR_METADATA_ENABLED'),
 

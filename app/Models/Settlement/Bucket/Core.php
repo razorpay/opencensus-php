@@ -805,10 +805,44 @@ class Core extends Base\Core
                 break;
 
             case Transaction\Type::TRANSFER:
-                if ($txnSource->getSourceType() === Transaction\Type::PAYMENT)
+                if ($txnSource->getSourceType() === TransferConstant::PAYMENT)
                 {
                     $metaSource = $txnSource->source;
                     $international = $metaSource->isInternational();
+                }
+                else if ($txnSource->getSourceType() === TransferConstant::ORDER)
+                {
+                    try
+                    {
+                        $transfer = $txnSource;
+
+                        $order = $txnSource->source;
+
+                        $orderId = $order->getId();
+
+                        $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($orderId, $transfer->merchant->getId());
+
+                        $rearchPayments = $this->app['pg_router']->fetchOrderPayments($orderId, $transfer->merchant->getId());
+
+                        $allPayments = $apiPayments->merge($rearchPayments);
+
+                        foreach ($allPayments as $payment)
+                        {
+                            if (($payment->getStatus() === Payment\Status::CAPTURED) || ($payment->getStatus() === Payment\Status::REFUNDED))
+                            {
+                                $sourcePayment = $payment;
+
+                                break;
+                            }
+                        }
+                    }
+                    catch (\Throwable $e)
+                    {
+                        return null;
+                    }
+
+                    $metaSource = $sourcePayment;
+                    $international = $sourcePayment->isInternational();
                 }
                 else
                 {
