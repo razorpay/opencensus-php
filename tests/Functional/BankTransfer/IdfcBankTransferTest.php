@@ -1631,6 +1631,123 @@ class IdfcBankTransferTest extends TestCase
         $this->assertEquals($payment['id'], $txn['entity_id']);
         $this->assertEquals(0, $txn['credit']);
     }
+
+    public function testProcessBankTransferIdfcForImpsWithClosedVirtualAccount()
+    {
+        $testData = $this->testData['testProcessBankTransferIdfc'];
+
+        $accountNumber = $this->getIdfcVaBankAccount('5678'); // Using non-payroll series
+        $testData['request']['content']['vaNumber'] = $accountNumber;
+        $testData['request']['content']['productCode'] = "IIMPS";
+        $current_time = new DateTime();
+        $formatted_time = $current_time->format('d-M-y h.i.s.u A');
+        $testData['request']['content']['creditGenerationTime'] = $formatted_time;
+        $testData['request']['content']['ifscCode'] = "";
+
+        $balance1 = $this->getDbEntity('balance',
+            [
+                'merchant_id' => '10000000000000',
+            ], 'live');
+
+        // This makes sure that the refunds for failed fund loadings on X happen via X
+        (new Service)->setConfigKeys([ConfigKey::RX_FUND_LOADING_REFUNDS_VIA_X => true]);
+
+        $this->fixtures->on('test')->edit('balance', $balance1->getId(), [
+            'type'           => 'banking',
+            'account_number' => $accountNumber,
+        ]);
+
+        $ba = $this->fixtures->on('test')->create('bank_account',
+            [
+                'merchant_id'    => '10000000000000',
+                'entity_id'      => 'HMwb1lgZD9N5Gm',
+                'type'           => 'virtual_account',
+                'ifsc_code'      => 'IDFB0020101',  //validate if its correct ifsc code
+                'account_number' => $accountNumber,
+            ]);
+
+        // Create the virtual account but set it as closed
+        $virtualAccount = $this->fixtures->on('test')->create('virtual_account',
+            [
+                'id'              => 'HMwb1lgZD9N5Gm',
+                'merchant_id'     => '10000000000000',
+                'status'          => 'closed', // Setting the status as closed
+                'bank_account_id' => $ba->getId(),
+                'balance_id'      => $balance1->getId(),
+            ]);
+
+        $this->fixtures->on('test')->create('banking_account_tpv',
+            [
+                'balance_id' => $balance1->getId(),
+                'status'     => 'approved',
+                'payer_ifsc' => 'HDFC0003981',
+                'payer_account_number' => '45612345678900987'
+            ]);
+
+        // Mock the processor to ensure getTransferTypeBasedOnPayeeAccount returns true
+        $processorMock = $this->getMockBuilder(Processor::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getTransferTypeBasedOnPayeeAccount'])
+            ->getMockForAbstractClass();
+
+        $processorMock->method('getTransferTypeBasedOnPayeeAccount')
+            ->willReturn(true);
+
+        $this->app->instance('processor', $processorMock);
+
+        $bankTransferService = new BankTransferService();
+        $iv = random_string_special_chars(16);
+        $encryptedData = $bankTransferService->encryptIdfcBankCallbackData($testData['request']['content'], $iv);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url' => '/ecollect/notify/idfc/test',
+            'method' => 'POST',
+            'server' => $testData['request']['server'],
+            'raw' => $encryptedData, // Raw data goes here
+            'headers' => [
+                'Content-Type' => 'text/plain'
+            ],
+        ];
+
+        $encryptedFullResponse = $this->makeRequestAndGetRawContent($request);
+        $response = $bankTransferService->decryptIdfcBankCallbackData((string)$encryptedFullResponse->getContent());
+
+        $this->assertEquals($testData['response']['content']['statusDesc'],$response['statusDesc']);
+        $this->assertEquals($testData['response']['content']['status'], $response['status']);
+        $this->assertEquals($testData['response']['content']['errorDesc'], $response['errorDesc']);
+        $this->assertEquals($testData['response']['content']['errorCode'], $response['errorCode']);
+        $this->assertEquals($accountNumber, $response['corRefNo']);
+
+        $bankTransferRequest = $this->getLastEntity('bank_transfer_request', true);
+
+        $this->assertEquals(true, $bankTransferRequest['is_created']);
+        $this->assertEquals('imps',  $bankTransferRequest['mode']);
+        $this->assertEquals('',  $bankTransferRequest['payer_ifsc']);
+        $this->assertEquals($accountNumber, $bankTransferRequest['payee_account']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['utr'], $testData['request']['content']['utrNo']);
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['utrNo']);
+        $this->assertEquals(50000, $bankTransfer['amount']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals($testData['request']['content']['remitterAccountNumber'], $payerBankAccount['account_number']);
+        $this->assertEquals("", $payerBankAccount['ifsc']);
+
+        // Check if a payment was created for the refund
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertNull($payment);
+
+        // Check if a payout was created for the refund
+        $payout = $this->getLastEntity('payout', true);
+        $this->assertNull($payout);
+
+        // Verify the reason for the refund
+        $this->assertStringContainsString('VIRTUAL_ACCOUNT_CLOSED', $bankTransfer['unexpected_reason']);
+    }
 }
 
 

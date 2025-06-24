@@ -2193,6 +2193,11 @@ class Service extends Base\Service
         return app('settlements_api')->updateFOH($input);
     }
 
+    public function createSettlementsWFAction(array $input) : array
+    {
+        return (new Settlement\Core)->createSetlWorkflowAction($input);
+    }
+
     public function updateSchedule(array $input) : array
     {
         return app('settlements_api')->updateSchedule($input);
