@@ -4344,6 +4344,13 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function getUserByEmail(array $input)
+    {
+        (new Validator)->validateInput('get_details', $input);
+
+        return $this->core->getUserByEmail($input);
+    }
+
     public function getUserRoles(string $userID, string $merchantID)
     {
         (new Validator)->validateInput('get_user_roles', [
@@ -4906,9 +4913,6 @@ class Service extends Base\Service
                 }
             } else if (isset($input['merchant_id']) === true) {
                 $invitations = $this->repo->invitation->getInvitationsForMerchantId($input['merchant_id']);
-                foreach ($invitations as $invitation) {
-                    $invitation->id = intval($invitation->id);
-                }
                 if (isset($invitations) === true and empty($invitations) === false) {
                     $response['invitations'] = array_merge($response['invitations'], $invitations);
                 }
@@ -5205,4 +5209,108 @@ class Service extends Base\Service
             throw new Exception\BadRequestValidationFailureException($exception->getMessage());
         }
     }
+
+    public function userServiceDataAccessor($input)
+    {
+        $responseData = [];
+
+        $this->trace->info(
+            TraceCode::USER_SERVICE_DATA_ACCESSOR,
+            [
+                'input' => $input
+            ]
+        );
+
+        $action = $input['action'] ?? 'default';
+
+        switch ($action) {
+            case 'create_merchant':
+                $merchantInputData = $input['payload']['merchant_input_data'] ?? [];
+                $merchantDetailInputData = $input['payload']['merchant_detail_input_data'] ?? [];
+                $createMerchantMetadata = $input['payload']['create_merchant_metadata'] ?? [];
+                $responseData = $this->merchantService->create($merchantInputData,
+                    $merchantDetailInputData,
+                    $createMerchantMetadata
+                );
+                break;
+
+            case 'product_switch':
+                $this->productSwitch($input);
+                $responseData = ['success' => true];
+                break;
+
+            case 'actor_info':
+                $responseData = Adapter\Base::getActorInfo();
+                break;
+
+            case 'fetch_role_names_from_authz':
+                $responseData = $this->fetchAuthzRoleNames($input);
+                break;
+
+            case 'fetch_methods':
+                $merchantEntity = $this->repo->merchant->findOrFail($input['merchant_id']);
+                $responseData = $merchantEntity->getMethods();
+                break;
+
+            case 'fetch_role_name':
+                $responseData = $this->repo->roles->fetchRoleName($input['role_name']);
+                break;
+
+            case 'fetch_settings':
+                $responseData = $this->core->fetchUserSettings($input['user_id']);
+                break;
+
+            case 'fetch_additional_data':
+                $merchantEntity = $this->repo->merchant->findOrFail($input['merchant_id']);
+                $responseData = [
+                    'permissions' =>  $this->core->userPermissions($input['merchant']),
+                    'attributes' => $this->core->fetchMerchantAttribute($input['merchant_id']),
+                    'methods' => $merchantEntity->getMethods()
+                ];
+
+                $responseData += $this->core->fetchBankingBalanceData($input['merchant_id']);
+                break;
+
+            default:
+                break;
+        }
+
+        return [
+            'response' => $responseData
+        ];
+    }
+
+   public function fetchAuthzRoleNames($input)
+   {
+       try {
+           $res = (new \RZP\Models\Roles\Service())->getRoleNamesUsingExperiment($input['role_ids']);
+           return $res;
+       }catch (\Throwable $ex) {
+           $this->trace->info(
+               TraceCode::USER_SERVICE_DATA_ACCESSOR,
+               [
+                   'desc' => 'error while fetching authz role names',
+                   'err' => $ex->getMessage()
+               ],
+           );
+           return ['res' => 'something went wrong'];
+       }
+   }
+
+   public function productSwitch($input)
+   {
+       $userID = $input['user_id'];
+       $merchantID = $input['merchant_id'];
+       $merchant = $this->repo->merchant->findOrFail($merchantID);
+       $user = $this->repo->user->findOrFail($userID);
+
+       $this->app['basicauth']->setMerchant($merchant);
+       $this->app['basicauth']->setUser($user);
+
+       $merchantService = new Merchant\Service();
+
+       $merchantService->switchProductMerchant();
+
+   }
+
 }

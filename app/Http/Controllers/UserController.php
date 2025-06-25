@@ -696,6 +696,13 @@ class UserController extends Controller
         return $this->service()->getDetailsUnified($input);
     }
 
+    public function getUserByEmail()
+    {
+        $input = Request::all();
+
+        return $this->service()->getUserByEmail($input);
+    }
+
     public function getUserRoles($Id, $merchantId)
     {
         return $this->service()->getUserRoles($Id, $merchantId);
@@ -870,4 +877,14 @@ class UserController extends Controller
         $data = $userService->getMerchantsOfUser($id,$input);
         return ApiResponse::json($data);
     }
+
+    public function userServiceDataAccessor()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->userServiceDataAccessor($input);
+
+        return ApiResponse::json($data);
+    }
+
 }

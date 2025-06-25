@@ -1212,6 +1212,7 @@ class Route
         'setl_transaction_timeline'                => ['get',      'settlements/transaction/timeline',               'SettlementController@getTransactionTimeline'                       ],
         'setl_reason_code_mapping_internal'        => ['get',      'internal/settlements/on_hold/{reason_codes?}',   'SettlementController@fetchHoldReasonCodeMappingsInternal'          ],
         'setl_reason_code_mapping_admin'           => ['get',      'admin/settlements/on_hold/{reason_codes?}',      'SettlementController@fetchHoldReasonCodeMappingsAdmin'             ],
+        'setl_create_workflow_action'              => ['post',     'settlements/wf-actions/create',                  'SettlementController@createSettlementsWFAction'                    ],
 
 
 
@@ -2814,12 +2815,14 @@ class Route
         'user_all_roles'                           => ['get',      'users/{id}/roles/{merchant_id}',                 'UserController@getUserRoles'                                       ],
         'user_delete_incorrect_password_count'     => ['post',     'users/incorrect_password_count',                 'UserController@removeIncorrectPasswordCount'                       ],
         'user_fetch_by_verified_contact_internal'  => ['post',     'users_internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
+        'user_internal_fetch_by_email'             => ['post',     'users_internal/fetch_user_by_email',             'UserController@getUserByEmail'                              ],
         'user_internal_fetch_by_verified_contact'  => ['post',     'users/internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
         'user_edit_internal'                       => ['patch',    'users_internal/{id}',                            'UserController@editUserInternal'                                   ],
         'fetch_user_details'                       => ['get',      'users/details',                                  'UserController@getUserDetailsWithRelations'                                   ],
         'upsert_user_details'                      => ['post',     'users/details',                                  'UserController@upsertUserDetailsWithRelations'                                ],
         'delete_user_details'                      => ['delete',     'users/details',                                  'UserController@deleteUserDetailsWithRelations'                                ],
 
+        'user_service_data_accessor'               => ['post',     'user_service/accessor',                            'UserController@userServiceDataAccessor'                          ],
 
         //b2b flow
         'create_international_virtual_accounts'             => ['post',     'international/virtual_accounts',                 'BankTransferController@createAccountForCurrencyCloud'          ],
@@ -5851,9 +5854,11 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'user_internal_fetch_by_email',
         'fetch_user_details',
         'upsert_user_details',
         'delete_user_details',
+        'user_service_data_accessor',
         'pricing_hard_delete_plan',
         'pricing_hard_refresh_plan',
         'pricing_create_plan_recon_job_sync',
@@ -6464,6 +6469,7 @@ class Route
         'feature_get_all_internal',
         'create_settlement_entry',
         'get_global_config',
+        'setl_create_workflow_action',
         'update_admin_through_batch',
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
@@ -12562,6 +12568,16 @@ class Route
      * Nothing here should be in private or admin auth
      */
     public static $internalApps = [
+        'user_service' => [
+            'fetch_user_details',
+            'upsert_user_details',
+            'delete_user_details',
+            'internal_org_get',
+            'contact_get_internal',
+            'feature_get_merchants_internal',
+            'user_service_data_accessor'
+        ],
+
         'payments_cross_border_service' => [
             'payment_capture',
             'internal_payment_authorize_refund',
@@ -18032,7 +18048,8 @@ class Route
 
         'reporting' => [
             'merchant_associated_accounts_fetch',
-            'internal_merchant_fetch'
+            'internal_merchant_fetch',
+            'internal_feature_get_all',
         ],
 
         'vajra' => [
@@ -18199,7 +18216,8 @@ class Route
             'payout_create_2FA_internal',
             'payout_fetch_by_id_internal',
             'setl_adj_add',
-            'merchant_fetch_internal_users'
+            'merchant_fetch_internal_users',
+            'setl_create_workflow_action'
         ],
 
         'partnerships' => [
@@ -18551,6 +18569,7 @@ class Route
         ],
 
         'pgos' => [
+            'user_internal_fetch_by_email',
             'pricing_fetch_plan_internal',
             'qr_code_merchant_create',
             'internal_fetch_merchant_users',
@@ -18943,12 +18962,13 @@ class Route
             'payment_transfer',
             'transfer_transaction_create',
             'payment_fetch_by_id_internal',
+            'refund_scrooge_payment_update'
         ],
 
         'identity_provider' => [
             'user_fetch_merchants',
             'multiple_users_fetch_internal'
-        ]
+        ],
     ];
 
     //

@@ -722,6 +722,10 @@ return array(
 
     'ppi_wallet_on_upi_pricing_splitz_experiment_id' => env('PPI_WALLET_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),
 
+    'payouts_shadow_router_splitz_experiment_id' => env('PAYOUTS_SHADOW_ROUTER_SPLITZ_EXPERIMENT_ID'),
+
+    'payouts_capture_source_request_id_experiment_id' => env('PAYOUTS_CAPTURE_SOURCE_REQUEST_ID_EXPERIMENT_ID'),
+
     'dcc_on_auto_subscription_payments_experiment_id' => env('DCC_ON_AUTO_SUBSCRIPTION_PAYMENTS_EXPERIMENT_ID'),
 
     'optimise_submerchant_create_exp_id' => env('OPTIMISE_SUBMERCHANT_CREATE_EXP_ID'),
@@ -807,6 +811,10 @@ return array(
     'cross_border_dfb_non_inr_experiment_id' => env('CROSS_BORDER_DFB_NON_INR_EXPERIMENT_ID'),
 
     'cross_border_payment_fee_fix_experiment_id' => env('CROSS_BORDER_PAYMENT_FEE_FIX_EXPERIMENT_ID'),
+
+    'cross_border_rearch_card_recurring_initial_flow_experiment_id' => env('CROSS_BORDER_REARCH_CARD_RECURRING_INITIAL_FLOW_EXPERIMENT_ID'),
+
+    'cross_border_rearch_card_recurring_flow_experiment_id' => env('CROSS_BORDER_REARCH_CARD_RECURRING_FLOW_EXPERIMENT_ID'),
 
     'show_upi_autopay_method_on_dashboard' => env('SHOW_UPI_AUTOPAY_METHOD_ON_DASHBOARD'),
 
@@ -1114,6 +1122,8 @@ return array(
     'subcategory_exclusion_for_automation' => env('SUBCATEGORY_EXCLUSION_FOR_AUTOMATION'),
 
     'migrate_mkyc_to_document_upload_v2' => env('MIGRATE_MKYC_TO_DOCUMENT_UPLOAD_V2'),
+    
+    'add_new_business_types' => env('ADD_NEW_BUSINESS_TYPES'),
 
     'partnership_unblock_huf_business_type_experiment_id' => env('PARTNERSHIP_UNBLOCK_HUF_BUSINESS_TYPE_EXP_ID'),
 
@@ -1123,6 +1133,10 @@ return array(
 
     'onboarding_api_upi_terminal_creation_disabled' => env('ONBOARDING_API_UPI_TERMINAL_CREATION_DISABLED'),
 
+    'entity_relational_load_from_scrooge_experiment_id' => env('ENTITY_RELATIONAL_LOAD_FROM_SCROOGE_EXPERIMENT_ID'),
+
+    'settlement_notification_opt_out_experiment_id' => env('SETTLEMENT_NOTIFICATION_OPT_OUT_EXPERIMENT_ID'),
+    
     'settlements_processed_comms_experiment_id' => env('SETTLEMENTS_PROCESSED_COMMS_EXPERIMENT_ID'),
 
     'transfer_settlement_nss_experiment_id'=> env('TRANSFER_SETTLEMENT_NSS_EXPERIMENT_ID'),
@@ -1214,6 +1228,8 @@ return array(
     'route_tidb_fetch_exp_id' => env('ROUTE_TIDB_FETCH_EXP_ID'),
 
     'amount_transferred_rearch_exp_id' => env('AMOUNT_TRANSFERRED_REARCH_EXP_ID'),
+
+    'reverse_all_rearch_exp_id' => env('REVERSE_ALL_REARCH_EXP_ID'),
 
     'route_transfer_rearch_fetch_experiment_id' => env('TRANSFER_FETCH_REARCH_EXP_ID'),
 
@@ -1318,6 +1334,8 @@ return array(
     'enable_description_validation_for_merchant'    => env('ENABLE_DESCRIPTION_VALIDATION_FOR_MERCHANT'),
 
     'enable_rearch_card_recurring_flow_initial_mandatehq' => env('ENABLE_REARCH_CARD_RECURRING_FLOW_INITIAL_MANDATEHQ'),
+
+    'enable_rearch_card_recurring_pdn_decoupling' => env('ENABLE_REARCH_CARD_RECURRING_PDN_DECOUPLING'),
 
     'merchant_checkout_optimizer_affordability_emi_enabled_exp_id' => env('MERCHANT_CHECKOUT_OPTIMIZER_AFFORDABILITY_EMI_ENABLED_EXP_ID'),
 
@@ -1447,6 +1465,8 @@ return array(
 
     'saved_card_token_payments_rearch'=> env('SAVED_CARD_TOKEN_PAYMENTS_REARCH'),
 
+    'saved_card_token_payments_rearch_issuer'=> env('SAVED_CARD_TOKEN_PAYMENTS_REARCH_ISSUER'),
+
     'block_merchant_on_rearch_cps' => env('BLOCK_MERCHANT_ON_REARCH_CPS'),
 
     'cross_border_pacb_tagging_experiment_id'   => env('CROSS_BORDER_PACB_TAGGING_EXPERIMENT_ID'),
@@ -1490,13 +1510,13 @@ return array(
 
     'delete_card_metadata_after_reconciliation_for_paysecure_and_fulcrum' => env('DELETE_CARD_METADATA_AFTER_RECONCILIATION_FOR_PAYSECURE_AND_FULCRUM'),
 
-    'banking_org_id_moto_payments_via_pg_router' => env('BANKING_ORG_ID_MOTO_PAYMENTS_VIA_PGROUTER'),
-
     'pass_rejected_unused_tokens' => env('PASS_REJECTED_UNUSED_TOKENS'),
 
     'upi_auth_link_frequency_as_presented_default' => env('UPI_AUTH_LINK_FREQUENCY_AS_PRESENTED_DEFAULT'),
 
     'banking_redirection_enabled' => env('BANKING_REDIRECTION_ENABLED'),
+
+    'source_request_id_mapping_experiment_id' => env('SOURCE_REQUEST_ID_MAPPING_EXPERIMENT_ID'),
 
     'pgos_read_for_metadata_enabled' => env('PGOS_READ_FOR_METADATA_ENABLED'),
 

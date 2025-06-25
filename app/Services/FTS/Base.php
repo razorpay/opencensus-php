@@ -3,6 +3,7 @@
 namespace RZP\Services\FTS;
 
 use RZP\Models\FundAccount\Validation\Metric;
+use Throwable;
 use \WpOrg\Requests\Response;
 use Razorpay\Trace\Logger as Trace;
 
@@ -14,6 +15,7 @@ use RZP\Http\Request\Requests;
 use RZP\Models\FundTransfer\Redaction;
 use RZP\Trace\TraceCode;
 use RZP\Base\RepositoryManager;
+use RZP\Models\Payout\SourceRequestIDMapping\Core as SourceRequestIDMappingCore;
 
 class Base
 {
@@ -307,7 +309,6 @@ class Base
 
         $headers[self::ACCEPT]       = 'application/json';
         $headers[self::CONTENT_TYPE] = 'application/json';
-
         $this->headers = $headers;
     }
 
@@ -352,7 +353,6 @@ class Base
 
         return $response;
     }
-
 
     /**
      * Method to parse response from FTS

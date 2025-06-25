@@ -4997,6 +4997,10 @@ class Service extends Base\Service
         {
             $merchant_id = $this->merchant->getId();
         }
+        if($this->ba->isAdminAuth()===true)
+        {
+            $merchant_id = $this->app['request']->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
+        }
 
         return $core->getBusinessTypes($merchant_id);
 

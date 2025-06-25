@@ -2459,35 +2459,6 @@ class Service extends Base\Service
         return $response['response']['variant']['name'] ?? '';
     }
 
-    public function getSplitzExperimentResponseForBankingMotoRearch(string $orgId, string $experimentName)
-    {
-        try
-        {
-            $properties = [
-                'id'            => $this->app['request']->getTaskId(),
-                'experiment_id' => $this->app['config']->get($experimentName),
-                'request_data'  => json_encode(['org_id' => $orgId]),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
-                'org_id'            => $orgId,
-                'experimentName'    => $experimentName,
-                'request'           => $properties,
-                'result'            => $response
-            ]);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
-                'org_id'   => $orgId,
-                'experiment_id' => $this->app['config']->get($experimentName) ?? null
-            ]);
-        }
-
-        return $response['response']['variant']['name'] ?? '';
-    }
 
     public function isSplitzExperimentEnable(string $merchantId, string $experimentName, string $checkVariant): bool
     {
@@ -3188,6 +3159,7 @@ class Service extends Base\Service
             Entity::TERMINAL_ID => $payment->getTerminalId(),
             Entity::UPDATED_AT => $payment->getUpdatedAt(),
             Entity::INTERNAL_ERROR_CODE => $payment->getInternalErrorCode(),
+            Entity::SETTLED_BY => $payment->getSettledBy(),
         ]);
 
         if ($entity['order_id'] != null)
@@ -6059,6 +6031,8 @@ class Service extends Base\Service
         }
 
         $payment->setExternal(true);
+
+        $this->app['pg_router']->associateOfferDiscountIfApplicable($payment, $input);
 
         $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
 

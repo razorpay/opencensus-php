@@ -328,9 +328,36 @@ class Reporting implements ExternalService
     {
         $this->addAssociatedFeaturesHeader();
 
-        $configs = $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input);
+        $uuid = $this->generateUuidV4();
 
-        return $this->filterConfigsByFeatureAndTags($configs);
+        //for api decomp recon
+        $headers = ['X-Unique-Id' => $uuid];
+
+        $configs = $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input, $headers);
+
+        $data = $this->filterConfigsByFeatureAndTags($configs);
+
+        //log filtered configs to coralogix for recon 
+        try {
+            $requestHeaders = $this->headers;
+            unset($requestHeaders[self::ADMIN_TOKEN_HEADER]);
+            $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS_RECON,
+                [
+                    'configs'   => collect($data['items'])->pluck('id', 'name')->toArray(),
+                    'unique_id' => $uuid,
+                    'total_count' => $data['count'],
+                    'input' => $input,
+                    'headers' => $requestHeaders,
+                    'isAdminTokenPresent' => !empty($this->ba->getAdminToken()),
+                ]);
+        } catch (\Throwable $e) {
+            $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS_LOG_ERROR,
+                [
+                    'error' => $e->getMessage(),
+                ]);
+        }
+
+        return $data;
     }
 
     public function fetchConfigById(string $id): array
@@ -1789,6 +1816,25 @@ class Reporting implements ExternalService
         if (empty($orgHostName) === false)
         {
             $input[self::TEMPLATE_OVERRIDES][self::DASHBOARD_HOST_NAME] = $orgHostName;
+        }
+    }
+
+    protected function generateUuidV4(): string {
+        try {
+            $data = random_bytes(16);
+            // Set version to 0100
+            $data[6] = chr((ord($data[6]) & 0x0f) | 0x40);
+    
+            // Set bits 6-7 to 10
+            $data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
+
+            return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+        } catch (\Throwable $e) {
+            $this->trace->info(TraceCode::REPORTING_SERVICE_FILTERED_CONFIGS_LOG_ERROR,
+                [
+                    'error' => $e->getMessage(),
+                ]);
+            return '';
         }
     }
 }
