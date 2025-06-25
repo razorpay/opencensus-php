@@ -56,6 +56,7 @@ use RZP\Mail\Merchant\RazorpayX\InstantActivation as RazorpayXInstantActivationM
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Merchant\Methods\Core as MethodsCore;
 use RZP\Jobs\CrossBorder\CrossBorderCommonUseCases;
+use Neves\Events\TransactionalClosureEvent;
 
 class Activate extends Base\Core
 {
@@ -153,10 +154,12 @@ class Activate extends Base\Core
         // set methods before activating
         $merchant->setDefaultMethodsBasedOnCategory();
 
-        //creating terminal request for CARD only
-        $this->sendTerminalCreationRequest($merchant, DEConstants::CARD);
-        //creating terminal request for UPI only
-        $this->sendTerminalCreationRequest($merchant, DEConstants::UPI);
+        \Event::dispatch(new TransactionalClosureEvent(function () use ($merchant) {
+            //creating terminal request for CARD only
+            $this->sendTerminalCreationRequest($merchant, DEConstants::CARD);
+            //creating terminal request for UPI only
+            $this->sendTerminalCreationRequest($merchant, DEConstants::UPI);
+        }));
 
         $isNoDocOnboardedMerchant = $merchant->isFeatureEnabled(Feature\Constants::NO_DOC_ONBOARDING);
 
@@ -473,10 +476,12 @@ class Activate extends Base\Core
 
         $merchant->releaseFunds();
 
-        //creating terminal request for CARD only
-        $this->sendTerminalCreationRequest($merchant, DEConstants::CARD);
-        //creating terminal request for UPI only
-        $this->sendTerminalCreationRequest($merchant, DEConstants::UPI);
+        \Event::dispatch(new TransactionalClosureEvent(function () use ($merchant) {
+            //creating terminal request for CARD only
+            $this->sendTerminalCreationRequest($merchant, DEConstants::CARD);
+            //creating terminal request for UPI only
+            $this->sendTerminalCreationRequest($merchant, DEConstants::UPI);
+        }));
 
         $merchantCore = new Merchant\Core;
 
@@ -577,6 +582,12 @@ class Activate extends Base\Core
         ]);
 
         if ($balanceId !== null) {
+            $merchant = $this->repo->merchant->findOrFail($merchant->getId());
+            if ($merchant->isFeatureEnabled(Constants::PG_LEDGER_REVERSE_SHADOW) === false) {
+                $this->repo->transaction(function () use ($merchant) {
+                    $this->createPgLedgerReverseShadowFeature($merchant->getId());
+                });
+            }
             return $balanceId;
         }
         if ($this->shouldOnboardToLedger($merchant) === true)
@@ -587,12 +598,7 @@ class Activate extends Base\Core
                 $response = (new Feature\Service())->ledgerPGAccountCreateRequest($merchant);
 
                 if ($response[Constants::ACCOUNTS_CREATED_RESPONSE] === true and $response[Constants::ACCOUNTS_ES_ONDEMAND_CREATED_RESPONSE] === true and $merchant->isFeatureEnabled(Constants::PG_LEDGER_REVERSE_SHADOW) === false) {
-                    (new FeatureCore)->create(
-                        [
-                            FeatureEntity::ENTITY_TYPE => EntityConstants::MERCHANT,
-                            FeatureEntity::ENTITY_ID => $merchant->getId(),
-                            FeatureEntity::NAME => Constants::PG_LEDGER_REVERSE_SHADOW,
-                        ]);
+                    $this->createPgLedgerReverseShadowFeature($merchant->getId());
                 }
                 else
                 {
@@ -634,6 +640,15 @@ class Activate extends Base\Core
             });
         }
         return $balanceId;
+    }
+
+    public function createPgLedgerReverseShadowFeature($merchantId) {
+        (new FeatureCore)->create(
+            [
+                FeatureEntity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                FeatureEntity::ENTITY_ID => $merchantId,
+                FeatureEntity::NAME => Constants::PG_LEDGER_REVERSE_SHADOW,
+            ]);
     }
 
     public function getMerchantAccounts($ledgerService, $merchantId): array
