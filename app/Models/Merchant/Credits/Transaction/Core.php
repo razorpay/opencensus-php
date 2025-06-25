@@ -419,7 +419,11 @@ class Core extends Base\Core
         {
             $creditAmountToReverse = $creditsUsed[$key];
 
-            $creditsToReverse[$creditId] = -1 * $creditAmountToReverse;
+            if (isset($creditsToReverse[$creditId]) === false) {
+                $creditsToReverse[$creditId] = 0;
+            }
+
+            $creditsToReverse[$creditId] += -1 * $creditAmountToReverse;
         }
 
         // There is an outer db transaction which ensures that credits

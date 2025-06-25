@@ -47628,6 +47628,72 @@ class PayoutTest extends OAuthTestCase
         }
     }
 
+    public function testReverseCreditsViaPayoutServiceWithBalancedDebitCredit()
+    {
+        $balance = $this->getDbEntities(
+            'balance',
+            [
+                'account_number' => '2224440041626905',
+            ],
+            'live'
+        )->first();
+
+        $this->testData['testReverseCreditsViaPayoutService']['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        // Create a credit entity
+        $this->fixtures->on('live')->create('credits', [
+            'id' => 'Gg7sgBZgv12345',
+            'merchant_id' => '10000000000000',
+            'value' => 200,
+            'used' => 0,
+            'type' => 'reward_fee',
+            'product' => 'banking'
+        ]);
+
+        // Create balanced debit and credit transactions (130 debit, -130 credit)
+        $this->fixtures->on('live')->create('credit_transaction', [
+            'id' => 'credTRANv12345',
+            'entity_id' => 'QLbVvQmybMfiXH',
+            'entity_type' => 'payout',
+            'credits_used' => 130,  // Debit entry
+            'credits_id' => 'Gg7sgBZgv12345',
+            'created_at' => Carbon::now()->subHours(6)->getTimestamp(),
+            'updated_at' => Carbon::now()->subHours(6)->getTimestamp()
+        ]);
+
+        $this->fixtures->on('live')->create('credit_transaction', [
+            'id' => 'credTRANv12346',
+            'entity_id' => 'QLbVvQmybMfiXH',
+            'entity_type' => 'payout',
+            'credits_used' => -130, // Credit entry (already reversed)
+            'credits_id' => 'Gg7sgBZgv12345', // Same credit ID
+            'created_at' => Carbon::now()->subHours(5)->getTimestamp(),
+            'updated_at' => Carbon::now()->subHours(5)->getTimestamp()
+        ]);
+
+        // Call reverse credits - will create a zero-amount transaction for audit trail
+        $requestData = $this->testData['testReverseCreditsViaPayoutService'];
+        $requestData['request']['content']['entity_id'] = 'QLbVvQmybMfiXH';
+
+        $this->startTest($requestData);
+
+        // Verify that a zero-amount credit transaction was created for audit trail
+        $creditTransactions = $this->getDbEntities('credit_transaction', ['entity_id' => 'QLbVvQmybMfiXH'], 'live');
+
+        // Should have 3 transactions: original 2 + 1 zero-amount reversal entry
+        $this->assertEquals(3, $creditTransactions->count());
+
+        // Verify the new transaction has zero credits_used
+        $newTransaction = $creditTransactions->sortByDesc('created_at')->first();
+        $this->assertEquals(0, $newTransaction['credits_used']);
+        $this->assertEquals('Gg7sgBZgv12345', $newTransaction['credits_id']);
+
+        // Verify the credits entity was not modified (since net change is 0)
+        $creditsAfterTest = $this->getDbEntityById('credits', 'Gg7sgBZgv12345', 'live');
+        $this->assertEquals(0, $creditsAfterTest["used"]);
+    }
 
 }
 
