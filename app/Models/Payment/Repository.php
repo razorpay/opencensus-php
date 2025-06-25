@@ -743,6 +743,11 @@ EOT;
         if (!is_null($merchantId) &&
             count(array_diff(array_keys($params), ["skip", "count", "from", "to"])) === 0)
         {
+            $this->trace->info(TraceCode::PAYMENT_FETCH_MULTIPLE_PARAMETER, [
+                'params'           => $params,
+                'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+
             $app = App::getFacadeRoot();
 
             // The variant is used for switching between tidb admin / merchant -> slave
@@ -1206,6 +1211,11 @@ EOT;
         if (!is_null($merchantId) &&
             count(array_diff(array_keys($params), ["skip", "count", "from", "to"])) === 0)
         {
+            $this->trace->info(TraceCode::PAYMENT_FETCH_MULTIPLE_PARAMETER, [
+                'params'           => $params,
+                'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+
             $app = App::getFacadeRoot();
 
             // The variant is used for switching between tidb admin / merchant -> slave

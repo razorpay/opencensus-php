@@ -51,19 +51,12 @@ class PaymentsFetchParity extends Job
             return;
         }
 
-        //The TPS for this route is 150, we only want 15 requests to be produced per second instead
-        $rand = rand(1, 9000);
-        if ($rand > 900)
-        {
-            return;
-        }
-
         $randString = $this->generateRandomString();
         $producerKey = $this->timestamp . '_' . $randString;
 
         $message = [
             "data" => [
-                "api"           => "payments_fetch_multiple",
+                "api"           => "payment_fetch_multiple",
                 "request_input" => $this->requestInput,
                 "response"      => $this->responseBody,
                 "timestamp"     => $this->timestamp,

@@ -2512,6 +2512,8 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
+        $parityInput = $input;
+
         $this->addInputTrace($input);
 
         $this->modifyInputForVATransaction($input);
@@ -2542,7 +2544,11 @@ class Service extends Base\Service
                 return $this->fetchPaymentDocumentsThroughInvoice($payments, $merchantId);
             }
 
-            return $payments->toArrayPublic();
+            $response = $payments->toArrayPublic();
+
+            $this->pushEventForPaymentFetchMultipleParity($parityInput, $response, $merchantId);
+
+            return $response;
         }
 
         $payments = $this->repo
@@ -2559,24 +2565,40 @@ class Service extends Base\Service
 
         $response = $payments->toArrayPublic();
 
-        if ($this->checkSplitzForPaymentsFetchMultipleParity($merchantId) === true)
-        {
-            $input["ip"]       = $this->app['request']->ip();
-
-            $input["merchant_id"] = $merchantId;
-
-            //Extracting Passport Details
-            $config  = $this->app['config']->get('applications.route');
-
-            $passport = $this->app['basicauth']->getPassportJwt($config['url']);
-
-            $input["passport"] = $passport;
-
-
-            $this->pushFetchMultipleDataForParity($response, $input);
-        }
+        $this->pushEventForPaymentFetchMultipleParity($parityInput, $response, $merchantId);
 
         return $response;
+    }
+
+    public function pushEventForPaymentFetchMultipleParity($input, $response, $merchantId) {
+        try
+        {
+            $config  = $this->app['config']->get('applications.route');
+
+            $internalApp = $this->app['basicauth']->getInternalApp()?? "none";
+
+            if ($this->app['api.route']->getCurrentRouteName() === "payment_fetch_multiple" &&
+                $internalApp == "none" && $this->checkSplitzForPaymentsFetchMultipleParity($merchantId) === true)
+            {
+                $input["merchant_id"] = $merchantId;
+
+                $input["uri"] = $this->app['request']->getUri();
+
+                $input["passport"] = $this->app['basicauth']->getPassportJwt($config['url']);
+
+                $input["task_id"] = $this->app['request']->getTaskId();
+
+                $input["client_ip"] = $this->app['request']->getClientIp();
+
+                $this->pushFetchMultipleDataForParity($response, $input);
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::PAYMENT_FETCH_MULTIPLE_PARITY_PRODUCER_FAILURE, [
+                "error" => $ex->getMessage(),
+            ]);
+        }
     }
 
     public function checkSplitzForPaymentsFetchMultipleParity(string $merchantId): bool
