@@ -2845,6 +2845,7 @@ class Service extends Base\Service
         $id = Entity::stripSignWithoutValidation($id);
         $callbackPresent = false;
         $authenticationEntityFetch = false;
+        $internalApp = $this->app['basicauth']->getInternalApp()?? "none";
 
         $showSettlementHoldStatus = false;
 
@@ -2913,6 +2914,15 @@ class Service extends Base\Service
         {
             // if payment merchant is not same as context merchant, other valid possibility is that fetch is called by
             // the partner merchant of that submerchant
+
+            $this->trace->info(TraceCode::PAYMENT_FETCH_BY_ID_TRAFFIC_ANALYSIS, [
+                'app' => $internalApp,
+                'payment_id' => $id,
+                'merchant_id' => $this->merchant->getId(),
+                'payment_merchant_id' => $paymentMerchantId,
+                'data' => "payment_merchant_mismatch"
+            ]);
+
             $this->checkAuthMerchantAccessToEntity($paymentMerchantId);
         }
 
@@ -2938,11 +2948,27 @@ class Service extends Base\Service
             $authenticationData = (new Payment\Service)->getAuthenticationEntity3ds2($payment->getPublicId());
             if ((isset($authenticationData['success']) === true) and ($authenticationData['success'] === true))
             {
+                $this->trace->info(TraceCode::PAYMENT_FETCH_BY_ID_AUTHENTICATION_OBJECT_FETCH, [
+                    'merchant_id' => $this->merchant->getId(),
+                    'payment_merchant_id' => $paymentMerchantId,
+                    'payment_id' => $id,
+                    'app' => $internalApp,
+                    'data' => "authentication object"
+                ]);
+
+                $authenticationEntityFetch = true;
                 $this->addAuthenticationObject($entity, $authenticationData);
             }
           }
         if (isset($entity['card'])) {
             if (isset($authenticationData['cavv']) && $payment->card->network === Card\Network::$fullName[Card\Network::AMEX]){
+                $this->trace->info(TraceCode::PAYMENT_FETCH_BY_ID_AUTHENTICATION_OBJECT_FETCH, [
+                    'merchant_id' => $this->merchant->getId(),
+                    'payment_merchant_id' => $paymentMerchantId,
+                    'payment_id' => $id,
+                    'app' => $internalApp,
+                    'data' => "authentication reference number"
+                ]);
                 $authenticationEntityFetch = true;
                 $authenticationData = (new Payment\Service)->getAuthenticationEntity3ds2($payment->getPublicId());
                 $entity['acquirer_data']['authentication_reference_number'] = $authenticationData['cavv'];
@@ -3001,7 +3027,6 @@ class Service extends Base\Service
             $entity['transaction'] = null;
         }
 
-        $internalApp = $this->app['basicauth']->getInternalApp()?? "none";
         $config  = $this->app['config']->get('applications.route');
         $passport = $this->app['basicauth']->getPassportJwt($config['url']);
 
@@ -3253,6 +3278,14 @@ class Service extends Base\Service
     {
         if($this->merchant->isPartner() === false)
         {
+            $this->trace->info(TraceCode::PAYMENT_FETCH_BY_ID_TRAFFIC_ANALYSIS, [
+                'route'       => $this->app['api.route']->getCurrentRouteName(),
+                'merchant_id' => $this->merchant->getId(),
+                'payment_merchant_id' => $entityMerchantId,
+                'app' => $this->app['basicauth']->getInternalApp()?? "none",
+                'data' => "merchant_not_partner"
+            ]);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_ID, null, null);
         }
@@ -3267,9 +3300,25 @@ class Service extends Base\Service
 
         if ( $applicablePartners->isEmpty() === true )
         {
+            $this->trace->info(TraceCode::PAYMENT_FETCH_BY_ID_TRAFFIC_ANALYSIS, [
+                'route'       => $this->app['api.route']->getCurrentRouteName(),
+                'merchant_id' => $this->merchant->getId(),
+                'payment_merchant_id' => $entityMerchantId,
+                'app' => $this->app['basicauth']->getInternalApp()?? "none",
+                'data' => "partner_not_applicable"
+            ]);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_ID, null, null);
         }
+
+        $this->trace->info(TraceCode::PAYMENT_FETCH_BY_ID_TRAFFIC_ANALYSIS, [
+            'route'       => $this->app['api.route']->getCurrentRouteName(),
+            'merchant_id' => $this->merchant->getId(),
+            'payment_merchant_id' => $entityMerchantId,
+            'app' => $this->app['basicauth']->getInternalApp()?? "none",
+            'data' => "valid_partner_merchant"
+        ]);
     }
 
     protected function addDashboardFlags(array &$entity, $payment, array $input = [])
