@@ -78,6 +78,7 @@ import pdfCreation from 'merchant/views/Transactions/v1/Payments/components/PdfC
 import { fetchBouncememo } from 'merchant/views/Transactions/v1/Payments/BounceMemo.types';
 import { useMutation } from '@tanstack/react-query';
 import { isPaymentSplitSectionAllowed } from 'merchant/views/Transactions/utils';
+import UnregisteredWebsiteError from './UnregisteredWebsiteError';
 
 const PaymentReceipt = lazy(
   () =>
@@ -100,6 +101,7 @@ interface IPaymentDetailsSectionProps extends RouteComponentProps<{ id: string }
   bankTransfer: any;
   terminalProviders: any;
   shouldShowOptimizerDetails: boolean;
+  shouldShowUnregisteredWebsiteError?: boolean;
 }
 
 interface DetailRowProps {
@@ -154,6 +156,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
   bankTransfer,
   terminalProviders,
   shouldShowOptimizerDetails,
+  shouldShowUnregisteredWebsiteError = false,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const isStorefront = location.hash === '#storefront';
@@ -377,7 +380,12 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                     {error_reason ? (
                       <>
                         <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-                        <DetailRow label="Error Reason" value={error_reason} />
+                        {error_reason === 'unregistered_website' &&
+                        shouldShowUnregisteredWebsiteError ? (
+                          <UnregisteredWebsiteError paymentId={id} label="Error Reason" />
+                        ) : (
+                          <DetailRow label="Error Reason" value={error_reason} />
+                        )}
                       </>
                     ) : null}
                   </>

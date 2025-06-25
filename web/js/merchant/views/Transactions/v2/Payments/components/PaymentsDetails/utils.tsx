@@ -31,7 +31,7 @@ import {
   trackDetailsCopy,
   trackDetailsClick,
 } from 'merchant/views/Transactions/v2/common/tracking';
-
+import { merchantFetch } from '@dashboards/payments/utils/merchantFetch';
 import {
   IPaymentDetails,
   PaymentStatus,
@@ -41,6 +41,35 @@ import {
   IQuestionDetails,
   RefundConfig,
 } from './types';
+import { getMode } from '@federated/apps/shell/commonStore';
+import errorService from '@razorpay/universe-cli/errorService';
+import { DASHBOARD_TEAMS } from '@libs/shared-types';
+
+export const getMerchantPaymentDetails = async (params: {
+  payment_id: string;
+}): Promise<{ referer: string }> => {
+  try {
+    const response = await merchantFetch({
+      absUrl:
+        '/mes/rzp.merchant_experience_service.merchant_payments.v1.MerchantPaymentsService/GetMerchantPaymentDetails',
+      headers: {
+        'X-Razorpay-Mode': getMode(),
+      },
+      method: 'POST',
+      data: params,
+    });
+    return response?.referer ? response : { referer: '' };
+  } catch (error) {
+    errorService.captureError(error, {
+      tags: {
+        team: DASHBOARD_TEAMS.PG_DASHBOARD,
+      },
+      rank: errorService.ErrorRank.P1,
+      extra: { info: error },
+    });
+    return { referer: '' };
+  }
+};
 
 export const shouldHideCapturePaymentAction = (
   payment: IPaymentDetails,
@@ -726,7 +755,10 @@ export const imageDownload = ({
   }
 };
 
-export const isIssueRefundBtnHidden = (paymentIdDetails: IPaymentDetails, refundConfig: RefundConfig): boolean => {
+export const isIssueRefundBtnHidden = (
+  paymentIdDetails: IPaymentDetails,
+  refundConfig: RefundConfig,
+): boolean => {
   const disableRefundDetails = {};
 
   refundConfig?.org?.forEach((configDetails) => {

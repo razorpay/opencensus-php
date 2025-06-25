@@ -45,6 +45,7 @@ import {
 import {
   isRefundRevampEnabled,
   isRefundConfigRevampEnabled,
+  isUnregisteredWebsiteErrorEnabled,
 } from 'merchant/views/Transactions/v2/common/utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -110,6 +111,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
     dashboardFlag.push('upi_payer_name');
   }
   const splitz = useSplitzService();
+  const shouldShowUnregisteredWebsiteError = isUnregisteredWebsiteErrorEnabled({ splitz, user });
   const isPaymentsRoute = location.pathname.includes('/payments');
 
   const shouldShowOptimizerDetails = user.isOptimizerView();
@@ -150,7 +152,8 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
             org: responses[2]?.data?.refund_configs || [],
             merchant: responses[3]?.data?.refund_configs || [],
           };
-          const isIssueRefundHidden = isIssueRefundBtnHidden(responses[0]?.data, refundConfig) || false;
+          const isIssueRefundHidden =
+            isIssueRefundBtnHidden(responses[0]?.data, refundConfig) || false;
 
           setIsIssueRefundHidden(isIssueRefundHidden);
         }
@@ -302,9 +305,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
               paymentIdRefundDetails={paymentIdRefundDetails}
               applicationDetails={applicationDetails}
             />
-            {!isDesktop &&
-            !isConfigTagEnabled('refunds.refund') &&
-            !user.isJnKOmniEnabled ? (
+            {!isDesktop && !isConfigTagEnabled('refunds.refund') && !user.isJnKOmniEnabled ? (
               <Box>
                 <Button
                   isFullWidth
@@ -329,6 +330,7 @@ const PaymentsDetails = (props: PaymentDetailsProps): JSX.Element => {
               applicationDetails={applicationDetails}
               shouldShowOptimizerDetails={shouldShowOptimizerDetails}
               terminalProviders={terminalProviders}
+              shouldShowUnregisteredWebsiteError={shouldShowUnregisteredWebsiteError}
             />
             {!isConfigTagEnabled('refunds.refund') && !user.isJnKOmniEnabled && (
               <PaymentRefundDetails

@@ -185,23 +185,23 @@ export const getDefaultSearchByValueAndOption = ({
 
 export const onSearch =
   (history: RouteComponentProps['history']) =>
-    (args: Record<string, unknown>): void => {
-      args = encodeSensitiveFields(args);
-      const { pathname, hash, state } = history.location;
-      history.replace({
-        pathname,
-        hash,
-        search: stringifyQueryParams(args),
-        state,
-      });
-    };
+  (args: Record<string, unknown>): void => {
+    args = encodeSensitiveFields(args);
+    const { pathname, hash, state } = history.location;
+    history.replace({
+      pathname,
+      hash,
+      search: stringifyQueryParams(args),
+      state,
+    });
+  };
 
 export const onPaginate =
   (paginate: Paginate) =>
-    (params: Record<string, unknown>): void => {
-      const searchParams = qs.parse(window.location.search);
-      paginate({ ...searchParams, ...params });
-    };
+  (params: Record<string, unknown>): void => {
+    const searchParams = qs.parse(window.location.search);
+    paginate({ ...searchParams, ...params });
+  };
 
 export const getCreatedOnTime = ({ created_at }: { created_at: number }): string => {
   const format = getDateFormat(created_at);
@@ -284,6 +284,21 @@ export const isRefundConfigRevampEnabled = (splitz: SpiltzContextState): boolean
   const { abExperiments } = splitz || { abExperiments: { refund_config_revamp: undefined } };
   if (!abExperiments?.refund_config_revamp) return false;
   return isExperimentEnabled(abExperiments.refund_config_revamp);
+};
+
+export const isUnregisteredWebsiteErrorEnabled = ({
+  splitz,
+  user,
+}: {
+  splitz: SpiltzContextState;
+  user: User;
+}): boolean => {
+  const { abExperiments } = splitz || {
+    abExperiments: { txn_unregistered_website_error: undefined },
+  };
+  if (user.isCountrySingapore || user.isCountryUS) return false;
+  if (!abExperiments?.txn_unregistered_website_error) return false;
+  return isExperimentEnabled(abExperiments.txn_unregistered_website_error);
 };
 
 export const isBounceMemoEnabled = (splitz: SpiltzContextState): boolean => {

@@ -693,6 +693,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'txn_unregistered_website_error',
+        experimentId: {
+          beta: 'QkHdoyVsNEINtd',
+          production: 'QkHckkSfWoA7jF',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'ray_ai',
         experimentId: {
           beta: 'NgMk9aLHhP79nc',
