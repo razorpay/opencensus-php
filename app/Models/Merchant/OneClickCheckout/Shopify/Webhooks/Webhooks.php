@@ -687,16 +687,20 @@ class Webhooks extends Base\Core
 
     protected function getPrepaidTransactionForRefund(array $txns): array
     {
-        $txn = [];
-        for ($i = 0; $i < count($txns); $i++)
-        {
-            if ($txns[$i]['status'] === 'success' and $txns[$i]['kind'] === 'refund' and $txns[$i]['gateway'] === 'Razorpay')
-            {
-                $txn = $txns[$i];
-                break;
+        $latestTxn = [];
+
+        foreach ($txns as $txn) {
+            if ($txn['status'] === 'success' &&
+                $txn['kind'] === 'refund' &&
+                $txn['gateway'] === 'Razorpay') {
+
+                if (empty($latestTxn) || strtotime($txn['created_at']) > strtotime($latestTxn['created_at'])) {
+                    $latestTxn = $txn;
+                }
             }
         }
-        return $txn;
+
+        return $latestTxn;
     }
 
     protected function processFulfillmentUpdateEvent(array $data)
