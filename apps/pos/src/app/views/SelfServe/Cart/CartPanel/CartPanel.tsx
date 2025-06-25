@@ -189,8 +189,7 @@ const CartPanel = ({ isHidden = false }: CartPanelProps): JSX.Element => {
         isOpen={isCartOpen}
         onDismiss={handleCartClose}
         accessibilityLabel="SliderModal"
-        // TODO: Remove this once the issue is fixed
-        zIndex={1000}
+        zIndex={9999}
       >
         <ModalContent
           handleCartClose={handleCartClose}
