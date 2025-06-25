@@ -1841,6 +1841,8 @@ class ErrorCode
     const BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED                                        = 'BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED';
     const BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED                                   = 'BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED';
     const BAD_REQUEST_EMAIL_NOT_VERIFIED                                            = 'BAD_REQUEST_EMAIL_NOT_VERIFIED';
+    
+    const BAD_REQUEST_MERCHANT_CREATION_USER_EMAIL_NOT_VERIFIED                     = 'BAD_REQUEST_MERCHANT_CREATION_USER_EMAIL_NOT_VERIFIED';
     const BAD_REQUEST_ACTION_NOT_ALLOWED                                            = 'BAD_REQUEST_ACTION_NOT_ALLOWED';
     const BAD_REQUEST_CONTACT_MOBILE_ALREADY_VERIFIED                               = 'BAD_REQUEST_CONTACT_MOBILE_ALREADY_VERIFIED';
     const BAD_REQUEST_EMAIL_ALREADY_VERIFIED                                        = 'BAD_REQUEST_EMAIL_ALREADY_VERIFIED';

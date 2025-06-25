@@ -2595,9 +2595,27 @@ class Service extends Base\Service
         $businessName = $input[Merchant\Entity::NAME] ?? '';
         $signupSource = $input[DeviceDetail\Entity::SIGNUP_SOURCE] ??
             $this->auth->getRequestOriginProduct();
-
+        
         $user = $this->auth->getUser();
-
+        
+        if ( $user[Entity::SIGNUP_VIA_EMAIL] === 1 and $user->getConfirmedAttribute() !== true)
+        {
+            $this->trace->info(TraceCode::MERCHANT_CREATION_USER_EMAIL_NOT_VERIFIED,
+                               [
+                                   'userId'        => $user[Entity::ID]
+                               ]);
+            
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                null,
+                [
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_CREATION_USER_EMAIL_NOT_VERIFIED,
+                ],
+                ErrorCode::BAD_REQUEST_MERCHANT_CREATION_USER_EMAIL_NOT_VERIFIED
+            );
+        }
+        
+        
         if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__)) {
             $merchants = $user->getMerchantsFromAsvWithPivot(1);
         } else {

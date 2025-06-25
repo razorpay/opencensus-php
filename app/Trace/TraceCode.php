@@ -4354,7 +4354,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_ORG_NOT_ALLOWED_IN_SEPARATED_LOGIN_SIGNUP        = 'USER_ORG_NOT_ALLOWED_IN_SEPARATED_LOGIN_SIGNUP';
     const USER_ONLY_REGISTRATION                                = 'USER_ONLY_REGISTRATION';
     const USER_CREATED_MERCHANT                                 = 'USER_CREATED_MERCHANT';
-
+    const MERCHANT_CREATION_USER_EMAIL_NOT_VERIFIED             = 'MERCHANT_CREATION_USER_EMAIL_NOT_VERIFIED';
     const USER_DEFAULT_MERCHANT_FOUND                           = 'USER_DEFAULT_MERCHANT_FOUND';
     const USER_DEFAULT_MERCHANT_NOT_FOUND                       = 'USER_DEFAULT_MERCHANT_NOT_FOUND';
     const USER_ALREADY_BANKING_OWNER                                = 'USER_ALREADY_BANKING_OWNER';
