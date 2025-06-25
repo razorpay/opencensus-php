@@ -270,6 +270,7 @@ class Type
         self::SHOP_FRONT_IMAGE,
         self::SHOP_INTERIOR_IMAGE,
         self::PGI_CERTIFICATE,
+        self::GAZETTE_NOTIFICATION,
 
         // Curlec documents
         self::FIMM_OR_SC_REGISTRATION_FORM,
@@ -372,6 +373,7 @@ class Type
         self::BOARD_RESOLUTION_LETTER           => "Board Resolution Letter",
         self::WEBSITE_SCREENSHOTS_ADDITIONAL    => "Website Screenshots Additional",
         self::PGI_CERTIFICATE                   => "PGI Certificate",
+        self::GAZETTE_NOTIFICATION              => "Gazette Notification Certificate",
 
         // Curlec documents
         self::FIMM_OR_SC_REGISTRATION_FORM                          => "FIMM or SC Registration Form",
