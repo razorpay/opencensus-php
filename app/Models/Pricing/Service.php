@@ -190,7 +190,7 @@ class Service extends Base\Service
             return $plan;
         }
 
-        $plan = $this->repo->pricing->getPlanByNameLegacy($input[Entity::PLAN_NAME]);
+        $plan = $this->repo->pricing->getPlanByNameLegacy($input[Entity::PLAN_NAME], $ruleOrgId);
 
         return $plan->toArrayPublic();
     }

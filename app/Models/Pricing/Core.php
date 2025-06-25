@@ -169,7 +169,7 @@ class Core extends Base\Core
         $inputRules = $input[Entity::RULES];
 
         // Validate plan name is unique
-        $plan = $this->repo->pricing->getPlanByNameLegacy($planName);
+        $plan = $this->repo->pricing->getPlanByNameLegacy($planName, $ruleOrgId);
 
         $validator->validatePlanCountZero($plan);
 

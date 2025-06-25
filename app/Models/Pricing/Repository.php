@@ -1249,9 +1249,9 @@ class Repository extends Base\Repository
         return $ccResponse;
     }
 
-    public function getPlanByNameLegacy($name)
+    public function getPlanByNameLegacy($name, $orgId = null)
     {
-        return $this->newQueryWithOrgIdParam()
+        return $this->newQueryWithOrgIdParam($orgId)
                     ->where(Pricing\Entity::PLAN_NAME, '=', $name)
                     ->orderBy(Pricing\Entity::PAYMENT_METHOD, 'desc')
                     ->orderBy(Pricing\Entity::ID, 'desc')

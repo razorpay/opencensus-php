@@ -224,7 +224,7 @@ class ChargeCollections
         $this->headers[self::ACCEPT]        = 'application/json';
         $this->headers[self::CONTENT_TYPE]  = 'application/json';
         $this->headers[self::X_TASK_ID]     = $this->app['request']->getTaskId();
-        $this->headers[self::X_PASSPORT_JWT_V1] = $this->auth->getPassportJwt($baseUrl);
+       $this->headers[self::X_PASSPORT_JWT_V1] = $this->auth->getPassportJwt($baseUrl);
         $this->headers['X-User-Id'] = $this->merchantId;
 
         if(isset($headers[self::TENANT]) === true)
