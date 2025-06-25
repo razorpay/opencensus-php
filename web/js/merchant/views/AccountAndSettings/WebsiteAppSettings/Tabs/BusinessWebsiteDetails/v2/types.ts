@@ -147,6 +147,7 @@ export interface WebsiteVerificationStage {
   mcc_check_status?: WebsiteVerificationStatus;
   dedupe_check_status?: WebsiteVerificationStatus;
   negative_keyword_check_status?: WebsiteVerificationStatus;
+  negative_keyword_data?: string[];
   bvs_check_status?: WebsiteVerificationStatus;
   bvs_single_page_check_status?: WebsiteVerificationStatus;
 }

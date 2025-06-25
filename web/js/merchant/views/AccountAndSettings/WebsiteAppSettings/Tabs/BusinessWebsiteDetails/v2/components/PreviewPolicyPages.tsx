@@ -4,8 +4,6 @@ import {
   Button,
   Text,
   Heading,
-  Badge,
-  CheckIcon,
   Divider,
   Accordion,
   AccordionItem,
@@ -80,10 +78,18 @@ function PreviewPages({
     isError,
     isFetching,
     refetch: retryPreviewAPI,
-  } = usePolicyPagesPreview({
-    mode,
-    sections: policyPagesToBeMade,
-  });
+  } = usePolicyPagesPreview(
+    {
+      mode,
+      sections: policyPagesToBeMade,
+    },
+    (error) => {
+      showNotification({
+        type: 'error',
+        message: error?.message || 'Something went wrong. Please try again.',
+      });
+    },
+  );
   const { consentMutation, publishMutation } = usePolicyPagesPublish();
   const [isConsentChecked, setIsConsentChecked] = useState(true);
   const [isFormError, setIsFormError] = useState(false);

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { Alert, Text } from '@razorpay/blade/components';
+import { Alert, Text, Box } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { bindActionCreators } from 'redux';
@@ -25,10 +25,7 @@ import {
   getWebsiteWorkflowStatus,
 } from '../utils';
 
-export const getLivenessError = (
-  status: WebsiteLivenssCheckStatus | undefined,
-  mainPageUrl: string,
-) => {
+const getLivenessError = (status: WebsiteLivenssCheckStatus | undefined, mainPageUrl: string) => {
   switch (status) {
     case WebsiteLivenssCheckStatus.liveness_check_failed: {
       return {
@@ -149,6 +146,31 @@ export const getLivenessError = (
       };
     }
   }
+};
+
+const NegativeKeywordError = ({
+  negativeKeywordData,
+  mainPageUrl,
+}: {
+  negativeKeywordData: string[];
+  mainPageUrl: string;
+}) => {
+  if (negativeKeywordData.length > 0) {
+    const errorMsg = `Please review and update your website to align with our content policies. Content related to topics such as ${negativeKeywordData
+      .slice(0, 5)
+      .map((word) => `"${word}"`)
+      .join(', ')} may not be allowed.`;
+    return (
+      <Alert
+        color="negative"
+        isDismissible={false}
+        isFullWidth
+        title={`Some content on your website (${mainPageUrl}) doesn't comply with Razorpay's policies.`}
+        description={errorMsg}
+      />
+    );
+  }
+  return null;
 };
 
 interface PrimaryWebsiteWorkflowStatusProps {
@@ -314,22 +336,30 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
 
   if (status === Status.BvsNeedsClarification) {
     return (
-      <Alert
-        color="negative"
-        isDismissible={false}
-        isFullWidth
-        title={title}
-        description="Kindly update and add your website details"
-        actions={{
-          primary: {
-            onClick: () => {
-              onFixMissingPages();
-              trackBannerClick(ctaText);
+      <Box flexDirection="column" display="flex" gap="spacing.4">
+        <Alert
+          color="negative"
+          isDismissible={false}
+          isFullWidth
+          title={title}
+          description="Kindly update and add your website details"
+          actions={{
+            primary: {
+              onClick: () => {
+                onFixMissingPages();
+                trackBannerClick(ctaText);
+              },
+              text: ctaText,
             },
-            text: ctaText,
-          },
-        }}
-      />
+          }}
+        />
+        <NegativeKeywordError
+          negativeKeywordData={
+            websiteUpdateData?.website_verification_stage?.negative_keyword_data ?? []
+          }
+          mainPageUrl={mainPageUrl}
+        />
+      </Box>
     );
   }
 
@@ -347,15 +377,23 @@ const PrimaryWebsiteWorkflowStatus: React.FC<PrimaryWebsiteWorkflowStatusProps> 
 
   if (status === Status.WorkflowInReview) {
     return (
-      <Alert
-        color="notice"
-        isDismissible={false}
-        isFullWidth
-        title={title}
-        description={`We’ll verify your details and share an update by ${getUnderReviewETA({
-          offset: 48 * 60 * 60 * 1000,
-        })}.`}
-      />
+      <Box flexDirection="column" display="flex" gap="spacing.4">
+        <Alert
+          color="notice"
+          isDismissible={false}
+          isFullWidth
+          title={title}
+          description={`We’ll verify your details and share an update by ${getUnderReviewETA({
+            offset: 48 * 60 * 60 * 1000,
+          })}`}
+        />
+        <NegativeKeywordError
+          negativeKeywordData={
+            websiteUpdateData?.website_verification_stage?.negative_keyword_data ?? []
+          }
+          mainPageUrl={mainPageUrl}
+        />
+      </Box>
     );
   }
 

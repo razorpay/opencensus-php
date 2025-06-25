@@ -342,6 +342,10 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
         notApplicablePages.push(key as WebsitePolicyPages);
       }
     });
+
+    // check if there's any change in not applicable pages then we need to save it using the same api
+    const isNotApplicableChanged = notApplicablePagesKeys.length != notApplicablePages.length;
+
     const properties = {
       websiteCount: getWebsiteCount(user),
       pagesFilled,
@@ -363,7 +367,7 @@ const WebsiteSubmitModal: React.FC<WebsiteSubmitModalProps> = ({
     });
 
     // if no user provided links exist, then directly go to the policy pages creation step
-    if (pagesFilled.length === 0 && notApplicablePages.length === 0) {
+    if (pagesFilled.length === 0 && notApplicablePages.length === 0 && !isNotApplicableChanged) {
       setNextStepForPolicyPages({ newPolicyPagesToBeMade });
       return;
     }

@@ -47,11 +47,12 @@ const saveMerchantPolicyPagesConsent = async (data): Promise<PolicyPagesConsentR
   }
 };
 
-export const usePolicyPagesPreview = (payload) => {
+export const usePolicyPagesPreview = (payload, onError = () => {}) => {
   return useQuery(['usePolicyPagesPreview'], () => getPolicyPagesPreview(payload), {
     refetchOnWindowFocus: false,
     refetchOnMount: true,
     retry: 0,
+    onError,
   });
 };
 
