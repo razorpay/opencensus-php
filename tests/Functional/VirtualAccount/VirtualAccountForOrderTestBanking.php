@@ -79,6 +79,62 @@ class VirtualAccountForOrderTestBanking  extends TestCase
         $this->assertEquals($offlineData->id, $virtualAccountData->offline_challan_id);
     }
 
+    public function testCreateVirtualAccountWithCloseByForOfflineChallan()
+    {
+        $this->fixtures->merchant->addFeatures(['offline_checkout']);
+
+        $this->ba->privateAuth();
+
+        $resp = $this->starttest();
+
+        $terminalCreteData = [
+            "id"                       => 'Oc3KkqYe4LjpdA',
+            'gateway'                  => 'offline_hdfc',
+            'gateway_merchant_id'     => '12345678',
+            'gateway_secure_secret'   => '12345',
+            'offline'                 =>  1,
+            'merchant_id'             =>  '10000000000000',
+        ];
+
+        $this->fixtures->create('terminal', $terminalCreteData);
+
+        $this->fixtures->merchant->enableOffline();
+
+        // Generate close_by timestamp (at least 15 minutes ahead of current time)
+        $closeBy = Carbon::now()->addMinutes(20)->getTimestamp();
+
+        $virtualAccount = $this->createVirtualAccountForOfflineOrder(
+            $resp['id'],
+            [
+                'customer_id' => $this->customer['id'],
+                'receivers'   => ['offline_challan'],
+                'close_by'    => $closeBy,
+            ]
+        );
+
+        $this->assertEquals('offline_challan', $virtualAccount['receivers'][0]['entity']);
+
+        $offlineData = [
+            'property_id'    => '12345',
+            'property_value' => 'abc',
+        ];
+
+        $this->assertEquals($offlineData, $virtualAccount['order']['customer_additional_info']);
+
+        $offlineData = DB::select('select * from offline_challans')[0];
+
+        $this->assertNotEmpty($offlineData, 'Offline challan data should not be empty');
+
+        $this->assertEquals($offlineData->id, $virtualAccount['receivers'][0]['id']);
+
+        $virtualAccountData = DB::select('select * from virtual_accounts')[0];
+
+        $this->assertEquals($offlineData->id, $virtualAccountData->offline_challan_id);
+
+        // Assert that close_by is correctly set
+        $this->assertEquals($closeBy, $virtualAccountData->close_by);
+    }
+
     protected function setUpOfflinePayment()
     {
         $this->fixtures->merchant->addFeatures(['offline_checkout']);
