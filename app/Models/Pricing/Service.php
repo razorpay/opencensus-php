@@ -1556,7 +1556,13 @@ class Service extends Base\Service
 
         $this->repo->transactionOnLiveAndTestAndAsv(function () use ($planId)
         {
-            $pricingRules = $this->repo->pricing->getPlanLegacy($planId, skipOrgCheck: true);
+            // Fetch ALL rules including soft-deleted ones to avoid leaving orphaned records
+            // Use direct query to bypass cache and ensure we get soft-deleted records
+            $pricingRules = $this->repo->pricing->newQuery()
+                ->where(Pricing\Entity::PLAN_ID, $planId)
+                ->withTrashed()
+                ->get();
+                
             if (($pricingRules->count()) === 0)
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
@@ -1590,7 +1596,11 @@ class Service extends Base\Service
 
         $response = $this->repo->transactionOnLiveAndTestAndAsv(function () use ($planId, $input)
         {
-            $pricingRules = $this->repo->pricing->getPlanLegacy($planId, skipOrgCheck: true);
+            $pricingRules = $this->repo->pricing->newQuery()
+                ->where(Pricing\Entity::PLAN_ID, $planId)
+                ->withTrashed()
+                ->get();
+                
             if (($pricingRules->count()) === 0)
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);

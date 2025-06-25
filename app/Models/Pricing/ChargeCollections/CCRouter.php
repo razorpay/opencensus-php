@@ -462,7 +462,12 @@ class CCRouter
                 ]);
 
                 // Retry only for timeout errors
-                if (str_contains($e->getMessage(), "cURL error 28") && $attempt < $maxRetries - 1) {
+                $isCurlTimeout = str_contains($e->getMessage(), "cURL error 28");
+                if (!$isCurlTimeout && $e->getPrevious() !== null) {
+                    $isCurlTimeout = str_contains($e->getPrevious()->getMessage(), "cURL error 28");
+                }
+                
+                if ($isCurlTimeout && $attempt < $maxRetries - 1) {
                     usleep($retryDelayMs * 1000);
                     continue;
                 }
