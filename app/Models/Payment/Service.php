@@ -341,7 +341,8 @@ class Service extends Base\Service
                 'input'      => $input
             ]);
 
-        $this->blockIfCollectxPayment($id);
+        // commented as refund has been enabled from scrooge and check has been added in createNewV2 in scrooge
+//        $this->blockIfCollectxPayment($id);
 
         // commented for now, will be enabled during further ramp-up
         // $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);

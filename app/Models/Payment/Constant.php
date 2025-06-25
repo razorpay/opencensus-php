@@ -60,10 +60,12 @@ class Constant
     const YESBANK   = 'yesbank';
     const RBL       = 'rbl';
     const AXIS      = 'axis';
+    const IDFC      = 'idfc';
 
     const CHANNEL_SETTLED_BY_MAPPING = [
         'yesb' => self::YESBANK,
         'rbl'  => self::RBL,
         'axis' => self::AXIS,
+        'idfc' =>self::IDFC,
     ];
 }
