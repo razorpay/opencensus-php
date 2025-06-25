@@ -26,6 +26,7 @@ import {
 import { ControlActionsArgs, ControlActionsType, HandleControlActionFnParam } from './types';
 import { startSchedulePoll, stopSchedulePoll } from 'merchant_common/views/Reports/redux/reducer';
 import { Button } from 'merchant_common/views/Reports/components/styled';
+import { useReportsSplitzExperiments } from 'merchant_common/views/Reports/hooks';
 
 const mapDispatchToProps = (dispatch, { dashboardType }) => ({
   openModal: (modal) => dispatch(openModal(modal)),
@@ -45,6 +46,7 @@ const ControlActionsComponent = connect(
     startSchedulePoll,
     stopSchedulePoll,
     dashboardType,
+    isEdgeEnabled,
   }: ControlActionsArgs) => {
     const { status, id, name } = scheduleData;
     const [isActionsLoading, setIsActionsLoading] = useState<ControlActionsType[]>([]);
@@ -70,6 +72,7 @@ const ControlActionsComponent = connect(
                     promise({
                       headers: {},
                       scheduleId: id,
+                      isEdgeEnabled,
                     })
                       .then(() => {
                         trackScheduleSection({
@@ -224,5 +227,13 @@ const ControlActionsComponent = connect(
 
 export const ControlActions = (props) => {
   const dashboardType = useDashboardType();
-  return <ControlActionsComponent {...props} dashboardType={dashboardType} />;
+  const { isEdgeEnabled } = useReportsSplitzExperiments();
+
+  return (
+    <ControlActionsComponent
+      {...props}
+      dashboardType={dashboardType}
+      isEdgeEnabled={isEdgeEnabled}
+    />
+  );
 };

@@ -11,6 +11,7 @@ export interface ControlActionsArgs {
   stopSchedulePoll: () => void;
   startSchedulePoll: () => void;
   dashboardType: DashboardType;
+  isEdgeEnabled: boolean;
 }
 
 export enum ControlActions {

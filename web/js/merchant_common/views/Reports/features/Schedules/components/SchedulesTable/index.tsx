@@ -18,6 +18,7 @@ import { openModal } from 'merchant_common/reducers/modals';
 import { initiateSchedulesPoll } from 'merchant_common/views/Reports/api/schedules';
 import { trackScheduleSection } from 'merchant_common/views/Reports/configs/analytics.config';
 import { ScheduleType } from 'merchant_common/views/Reports/types/schedule';
+import { useReportsSplitzExperiments } from 'merchant_common/views/Reports/hooks';
 
 const mapStateToProps = ({ reportsCore, session }, { dashboardType }) => {
   const { loading, allSchedules, pageTrack, filter, genericPoll, totalCount } =
@@ -63,6 +64,7 @@ const SchedulesTableComponent = connect(
     genericPoll,
     stopSchedulePoll,
     totalCount,
+    isEdgeEnabled,
     dashboardType,
     showNotification,
     startSchedulePoll,
@@ -111,6 +113,7 @@ const SchedulesTableComponent = connect(
           },
           // updates redux state when generic poll times out
           onPollStopCallback: () => stopSchedulePoll(),
+          isEdgeEnabled,
         });
 
         // update ref with new poll's abort fn
@@ -172,6 +175,14 @@ const SchedulesTableComponent = connect(
 );
 
 export const SchedulesTable = (props) => {
+  const { isEdgeEnabled } = useReportsSplitzExperiments();
   const dashboardType = useDashboardType();
-  return <SchedulesTableComponent dashboardType={dashboardType} {...props} />;
+
+  return (
+    <SchedulesTableComponent
+      isEdgeEnabled={isEdgeEnabled}
+      dashboardType={dashboardType}
+      {...props}
+    />
+  );
 };

@@ -1,4 +1,5 @@
 import React from 'react';
+import 'merchant_common/views/Reports/mocks/hooks/useReportsSplitzExperimentsMock';
 import { render, screen } from 'test-utils';
 import { SchedulesTable } from 'merchant_common/views/Reports/features/Schedules/components/SchedulesTable';
 import { getSchedulesStateWith } from 'merchant_common/views/Reports/features/Schedules/__test__/fixtures';

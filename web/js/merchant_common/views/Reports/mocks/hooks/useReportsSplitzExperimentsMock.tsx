@@ -4,5 +4,6 @@ jest.mock('merchant_common/views/Reports/hooks/useReportsSplitzExperiments', () 
     isRevampedLAReports: true,
     isOverviewRecentsFilterEnabled: true,
     isReportsSelfServeEnabled: true,
+    isEdgeEnabled: false,
   }),
 }));

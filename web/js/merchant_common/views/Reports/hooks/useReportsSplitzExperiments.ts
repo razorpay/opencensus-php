@@ -13,10 +13,9 @@ export const useReportsSplitzExperiments = (org?: OrgData, user?: User) => {
       LA_Reports_Revamp,
       Data_Sync_Advertisement_Banner_Experiment,
       create_custom_report,
+      reporting_api_decomp_pg,
     },
   } = splitz;
-
-  
 
   // For JK org the schedules are disabled hence handling from hook
   const isJKORg = Boolean(user && org) && isJKOfflineMerchant(org, user);
@@ -25,11 +24,14 @@ export const useReportsSplitzExperiments = (org?: OrgData, user?: User) => {
   const disableReportsSchedules = isBillMeMerchantOnly || isJKORg;
 
   return {
-    isSchedulesEnabled: disableReportsSchedules ? false : Reports_Schedules?.variables?.result === 'on',
+    isSchedulesEnabled: disableReportsSchedules
+      ? false
+      : Reports_Schedules?.variables?.result === 'on',
     isRevampedLAReports: LA_Reports_Revamp?.variables?.result === 'on',
     isOverviewRecentsFilterEnabled: Reports_Revamp_Recents?.variables?.result === 'on',
     isDataSyncAdvertisementBannerEnabled:
       Data_Sync_Advertisement_Banner_Experiment?.variables?.result === 'on',
     isReportsSelfServeEnabled: create_custom_report?.variables?.result === 'on',
+    isEdgeEnabled: reporting_api_decomp_pg?.variables?.result === 'on',
   };
 };

@@ -1,4 +1,5 @@
 import React from 'react';
+import 'merchant_common/views/Reports/mocks/hooks/useReportsSplitzExperimentsMock';
 import { render, screen, userEvent } from 'test-utils';
 import { ControlActions } from 'merchant_common/views/Reports/features/Schedules/components/ControlActions/ControlActions';
 import * as modalFn from 'merchant_common/reducers/modals';

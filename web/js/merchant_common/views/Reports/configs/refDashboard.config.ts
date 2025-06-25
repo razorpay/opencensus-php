@@ -15,7 +15,7 @@ import {
   OPTIMISER_SETTLEMENTS,
   PAYMENTS,
   PAYMENTS_REPORTS,
-  BILLING_REPORTS
+  BILLING_REPORTS,
 } from 'merchant_common/views/Reports/constants';
 import {
   changeScheduleNumericsToString,

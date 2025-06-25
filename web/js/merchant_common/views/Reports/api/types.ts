@@ -46,6 +46,7 @@ export interface LongPollInitiatorArgs<T> {
   pollResSuccessCallback: (x: ResPayload<T>) => void;
   pollResFailedCallback: (x: PollResFailedCallbackArgs) => void;
   onPollStopCallback: () => void;
+  isEdgeEnabled: boolean;
 }
 
 export interface ReportsFetchAPIParams {
@@ -57,6 +58,7 @@ export interface ReportsFetchAPIParams {
 export interface ScheduleAPIFnParams {
   headers: ReportsFetchHeaders;
   scheduleId: string;
+  isEdgeEnabled: boolean;
 }
 
 export enum CreateScheduleMethod {
@@ -69,6 +71,7 @@ export interface CreateScheduleAPIFnParams<T> {
   payload: T;
   method: keyof typeof CreateScheduleMethod;
   scheduleId: string;
+  isEdgeEnabled: boolean;
 }
 export interface ScheduleAPIEditParams<T> extends ScheduleAPIFnParams {
   payload: T;

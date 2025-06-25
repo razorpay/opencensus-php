@@ -29,6 +29,7 @@ export interface SchedulesTablePropsType {
   stopSchedulePoll: () => void;
   startSchedulePoll: () => void;
   totalCount: number;
+  isEdgeEnabled: boolean;
   dashboardType: DashboardType;
   showNotification: (x: any) => void;
   openModal: (x: { component: JSX.Element; size: string }) => void;

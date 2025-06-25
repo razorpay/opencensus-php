@@ -39,6 +39,7 @@ import { useScheduleReportReducer } from './hooks/useScheduleReportReducer';
 import { trackCreateEditScheduleModal } from 'merchant_common/views/Reports/configs/analytics.config';
 import { ScheduleType } from 'merchant_common/views/Reports/types/schedule';
 import { ModifierType } from 'merchant_common/views/Reports/components/types';
+import { useReportsSplitzExperiments } from 'merchant_common/views/Reports/hooks';
 
 export const ScheduleReportModal = ({
   allReportConfigs,
@@ -77,6 +78,8 @@ export const ScheduleReportModal = ({
     setSubmitButtonLoading,
     setWhenTime,
   } = useScheduleReportReducer(params?.scheduleData, allReportConfigs);
+
+  const { isEdgeEnabled } = useReportsSplitzExperiments();
 
   const renderDurationInfo = () => {
     return !Boolean(customDataDuration?.startDate && whenTime?.date && selectedDataDuration?.label)
@@ -170,6 +173,7 @@ export const ScheduleReportModal = ({
         payload: parsedPayload,
         method: actionViaModal === 'Create' ? 'post' : 'patch',
         scheduleId: actionViaModal === 'Create' ? '' : params?.scheduleData?.id ?? '',
+        isEdgeEnabled,
       })
         .then((data) => {
           if (!data.success || !data.data || !data.data.id) {

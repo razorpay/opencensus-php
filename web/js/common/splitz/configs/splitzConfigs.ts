@@ -1181,6 +1181,22 @@ export const splitzConfig: SplitzInitConfig = {
           },
         },
         {
+          uniqueHashKey: 'reporting_api_decomp_pg',
+          experimentId: {
+            beta: 'QiCA08taD7pHxw',
+            production: 'QiErgL1kQ094vg',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+        {
           uniqueHashKey: 'Reports_Schedules',
           experimentId: {
             beta: 'LpcUyqou4GEsNz',
