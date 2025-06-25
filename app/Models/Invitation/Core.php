@@ -129,8 +129,31 @@ class Core extends Base\Core
                 }
             }
 
-            // Associate user only if it exists
-            $invitation->user()->associate($invitedUser);
+            $splitzResponse = $this->getSplitzResponse($this->merchant->getId(), 'invitation_orphan_users');
+
+            if ($splitzResponse === 'enable') {
+
+                // If invited user has no associated merchants,
+                // clear the orphan user data.
+                // refer https://razorpay.atlassian.net/browse/MXDI-1726
+
+                $merchantUsers = $this->repo->merchant_user->returnMerchantIdsForUserId($invitedUser->getId());
+
+                if (count($merchantUsers) > 0)
+                {
+                    // Associate user if at least one merchant mapping exists
+                    $invitation->user()->associate($invitedUser);
+                }
+                else {
+                    // Delete orphan user's email and mobile
+                    (new User\Service())->deleteOrphanedUserData($invitedUser);
+                    $invitedUser = null;
+                }
+            }
+            else {
+                // Associate user only if it exists
+                $invitation->user()->associate($invitedUser);
+            }
         }
 
         $this->repo->saveOrFail($invitation);
@@ -158,6 +181,37 @@ class Core extends Base\Core
 
         return $invitation;
     }
+
+    private function getSplitzResponse(string $merchantId, string $experimentName): string
+    {
+        $response = [];
+
+        try
+        {
+            $experimentId = $this->config->get('app.'.$experimentName);
+
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id'            => $merchantId,
+                'experiment_id' => $experimentId,
+            ]);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $experimentId,
+                'result'        => $response
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->config->get($experimentName) ?? null
+            ]);
+        }
+
+        return array_get($response, 'response.variant.variables.0.value', '');
+    }
+
 
     /**
      * @throws Exception\BadRequestException

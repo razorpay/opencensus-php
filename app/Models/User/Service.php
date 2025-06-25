@@ -5331,4 +5331,19 @@ class Service extends Base\Service
 
    }
 
+
+    public function deleteOrphanedUserData($user)
+    {
+        if (empty($user->getEmail()) === false)
+        {
+            $user->setAttribute(Entity::EMAIL, null);
+        }
+
+        if (empty($user->getContactMobile()) === false)
+        {
+            $user->setAttribute(Entity::CONTACT_MOBILE, null);
+        }
+
+        $this->repo->saveOrFail($user);
+    }
 }

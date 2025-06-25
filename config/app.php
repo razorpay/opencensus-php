@@ -1122,7 +1122,7 @@ return array(
     'subcategory_exclusion_for_automation' => env('SUBCATEGORY_EXCLUSION_FOR_AUTOMATION'),
 
     'migrate_mkyc_to_document_upload_v2' => env('MIGRATE_MKYC_TO_DOCUMENT_UPLOAD_V2'),
-    
+
     'add_new_business_types' => env('ADD_NEW_BUSINESS_TYPES'),
 
     'partnership_unblock_huf_business_type_experiment_id' => env('PARTNERSHIP_UNBLOCK_HUF_BUSINESS_TYPE_EXP_ID'),
@@ -1136,7 +1136,7 @@ return array(
     'entity_relational_load_from_scrooge_experiment_id' => env('ENTITY_RELATIONAL_LOAD_FROM_SCROOGE_EXPERIMENT_ID'),
 
     'settlement_notification_opt_out_experiment_id' => env('SETTLEMENT_NOTIFICATION_OPT_OUT_EXPERIMENT_ID'),
-    
+
     'settlements_processed_comms_experiment_id' => env('SETTLEMENTS_PROCESSED_COMMS_EXPERIMENT_ID'),
 
     'transfer_settlement_nss_experiment_id'=> env('TRANSFER_SETTLEMENT_NSS_EXPERIMENT_ID'),
@@ -1533,4 +1533,6 @@ return array(
     'virtual_account' => [
         'global_max_close_by' => env('GLOBAL_MAX_LIMIT_CLOSE_BY', \RZP\Models\VirtualAccount\Validator::DEFAULT_CLOSE_BY_DAYS),
     ],
+
+    'invitation_orphan_users' => env('INVITATION_ORPHAN_USERS'),
 );
