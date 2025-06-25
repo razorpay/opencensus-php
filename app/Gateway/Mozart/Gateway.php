@@ -2257,7 +2257,7 @@ class Gateway extends Base\Gateway
                 'auth' => $authentication
             ]
         ];
-
+        
         if (isset($this->app['rzp.mode']) and $this->app['rzp.mode'] === 'test')
         {
             $testCaseId = $this->app['request']->header('X-RZP-TESTCASE-ID');
@@ -2267,6 +2267,7 @@ class Gateway extends Base\Gateway
                 $mozartRequest['headers']['X-RZP-TESTCASE-ID'] = $testCaseId;
             }
         }
+        
         return $mozartRequest;
     }
 
