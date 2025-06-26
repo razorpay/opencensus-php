@@ -8,6 +8,10 @@ export const BUSINESS_TYPE_MAP = {
   7: 'NGO',
   9: 'Trust',
   10: 'Society',
+  14: 'Government',
+  15: 'Judicial Person',
+  16: 'Local Authority',
+  17: 'Section 8 Company'
 };
 
 export const ATTR_DETAILS = {
