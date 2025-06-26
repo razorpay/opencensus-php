@@ -6066,4 +6066,29 @@ GROUP BY
 
         return false;
     }
+
+    protected function addQueryParamSourceChannel($query, $params)
+    {
+        $sourceChannel = $params[Payment\Constant::SOURCE_CHANNEL];
+
+        // allow only online,in_person source_channels
+        $allowedValues = [Payment\Constant::ONLINE, Payment\Constant::IN_PERSON];
+        if (!in_array($sourceChannel, $allowedValues)) {
+            throw new Exception\InvalidArgumentException("Invalid source_channel value: {$sourceChannel}");
+        }
+
+        if ($sourceChannel === Payment\Constant::ONLINE)
+        {
+            // For online, get all records that are NOT in_person (includes source_channel with NULL)
+            $query->where(function($q) {
+                $q->where($this->dbColumn(Payment\Constant::SOURCE_CHANNEL), '!=', Payment\Constant::IN_PERSON)
+                  ->orWhereNull($this->dbColumn(Payment\Constant::SOURCE_CHANNEL));
+            });
+        }
+        else
+        {
+            // For in_person, get exact match
+            $query->where($this->dbColumn(Payment\Constant::SOURCE_CHANNEL), '=', $sourceChannel);
+        }
+    }
 }
