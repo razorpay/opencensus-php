@@ -3,6 +3,7 @@
 namespace RZP\Models\Base\Traits;
 
 use App;
+use RZP\Constants\Environment;
 use RZP\Constants\Metric;
 use RZP\Exception;
 use RZP\Http\RequestHeader;
@@ -290,20 +291,38 @@ trait ExternalRepo
 
         if ($this->entity === Entity::PAYMENT)
         {
-            try
-            {
-                if ($this->validateExternalFetchEnabled() === true)
+            if (Environment::isLowerEnvironment($this->app['env']) === false
+                and Environment::isEnvironmentQA($this->app['env']) === false) {
+                try
                 {
-                    return $this->fetchExternalEntity($id, "", $params);
+                    if ($this->validateExternalFetchEnabled() === true)
+                    {
+                        return $this->fetchExternalEntity($id, "", $params);
+                    }
                 }
-            }
-            catch (\Throwable $e) {}
+                catch (\Throwable $e) {}
 
-            try
-            {
-                return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
+                try
+                {
+                    return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
+                }
+                catch (\Throwable $e) {}
+            } else {
+                try
+                {
+                    return parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
+                }
+                catch (\Throwable $e) {}
+
+                try
+                {
+                    if ($this->validateExternalFetchEnabled() === true)
+                    {
+                        return $this->fetchExternalEntity($id, "", $params);
+                    }
+                }
+                catch (\Throwable $e) {}
             }
-            catch (\Throwable $e) {}
         }
         else
         {
