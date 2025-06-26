@@ -20,6 +20,27 @@ export const LOAD_TYPES = {
   CONTAINER: 'container',
 };
 
+export const REVERSAL_TYPES = {
+  WALLET_LOAD: 'WALLET_LOAD',
+  GIFT_CARD: 'GIFT_CARD',
+};
+
+export const REVERSAL_TYPE_MESSAGE = {
+  [REVERSAL_TYPES.WALLET_LOAD]: [
+    'Load ID can be obtained from the response file if you have used batch load action or from transactions tab on dashboard.',
+    'This feature will work only if you are not using two factor authentication for wallet debit',
+  ],
+  [REVERSAL_TYPES.GIFT_CARD]: [
+    'Either the gift card ID or the gift card number must be present for a successful update.',
+    'Reason for cancellation, contact (email/phone) of the customer making the extension request, link to the support ticket with customer request details, timestamp of the request and source of the request (email, social media, chat etc.) are mandatory parameters.',
+  ],
+};
+
+export const REVERSAL_TYPES_OPTIONS = [
+  { label: 'Reverse Loads', name: REVERSAL_TYPES.WALLET_LOAD },
+  { label: 'Cancel Gift Cards', name: REVERSAL_TYPES.GIFT_CARD },
+];
+
 export const DISPLAY_MESSAGES = {
   process: 'The file is being processed. Please wait as this may take some time.',
   success: 'The file has been processed successfully.',
@@ -36,4 +57,5 @@ export const BATCH_TYPES = {
   CREATE_BULK_GIFT_CARDS: 'create_bulk_gift_cards',
   UPDATE_GIFT_CARD_EXPIRY: 'update_gift_cards_expiry',
   CREATE_GIFT_CARD_TRANSFERS: 'create_gift_card_transfers',
+  CANCEL_BULK_GIFT_CARDS: 'cancel_bulk_gift_cards',
 };

@@ -10,7 +10,6 @@ import DataTable from 'common/ui/Table/DataTable';
 import { Button, DownloadIcon } from '@razorpay/blade/components';
 import { type AxiosResponse } from 'axios';
 import { useSplitzService } from 'common/splitz';
-import { isExperimentEnabled } from 'common/splitz/utils';
 import {
   isCreateGiftCardBatchEnabled as isGCBatchEnabled,
   isGiftCardTransferEnabled as isGCTransferEnabled,

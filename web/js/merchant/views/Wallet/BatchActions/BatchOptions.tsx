@@ -13,6 +13,7 @@ import Button from 'merchant/views/Settlements/Settlements/components/Modals/Sch
 import ErrorIcon from 'assets/error_illustration.svg';
 import { useSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
+import { BATCH_TYPES } from './constants';
 
 interface OpenModalArgs {
   size: string;
@@ -45,6 +46,7 @@ export const CreateBatchOptions = (props: CreateBatchOptionsProps): JSX.Element 
           'create_bulk_gift_cards',
           'update_gift_cards_expiry',
           'create_gift_card_transfers',
+          BATCH_TYPES.CANCEL_BULK_GIFT_CARDS,
         ].includes(batch.type) &&
         ['created', 'processing', 'partially_processed'].includes(batch.status),
     );
@@ -141,7 +143,7 @@ export const CreateBatchOptions = (props: CreateBatchOptionsProps): JSX.Element 
             <div className="text-primary">
               <strong>Reversals</strong>
             </div>
-            <div>Reverse wallet loads from multiple customers at once.</div>
+            <div>Reverse loads from multiple customers at once.</div>
           </div>
           <i className="i-chevron-right pull-right text-primary" />
         </div>

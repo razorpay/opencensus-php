@@ -20,6 +20,8 @@ import {
   validateGCExpiryBatch,
   createGCTransferBatch,
   validateGCTransferBatch,
+  createGiftCardCancellationBatch,
+  validateGiftCardCancellationBatch,
 } from 'merchant/reducers/batches';
 import { BatchUploadWrapper } from 'merchant/views/Wallet/BatchActions/components/BatchUploadWrapper';
 import InputSelector from 'merchant/views/Wallet/BatchActions/components/InputSelector';
@@ -29,6 +31,9 @@ import {
   CREATE_ACCOUNTS_OPTIONS,
   CREATE_LOADS_OPTIONS,
   LOAD_TYPES,
+  REVERSAL_TYPES_OPTIONS,
+  REVERSAL_TYPES,
+  REVERSAL_TYPE_MESSAGE,
 } from 'merchant/views/Wallet/BatchActions/constants';
 
 import { getSelectedBatchType } from './utils';
@@ -175,23 +180,70 @@ export const LoadsBatchUpload = connect(null, {
 export const ReversalsBatchUpload = connect(null, {
   createBatch: createReversalBatch as () => void,
   validateBatch: validateReversalBatch as () => void,
-})(({ createBatch, validateBatch }) => {
-  const sampleUrl = `/files/sample_create_wallet_container_reversals.xlsx`;
+  createGiftCardCancellationBatch: createGiftCardCancellationBatch,
+  validateGiftCardCancellationBatch: validateGiftCardCancellationBatch,
+})(
+  ({
+    createBatch,
+    validateBatch,
+    createGiftCardCancellationBatch,
+    validateGiftCardCancellationBatch,
+  }) => {
+    const [provider, setProvider] = useState<string>(REVERSAL_TYPES.WALLET_LOAD);
 
-  return (
-    <BatchUploadWrapper
-      batchType={BATCH_TYPES.CREATE_WALLET_REVERSAL_CONTAINERS}
-      docUrl={sampleUrl}
-      title="Create Batch Reversals"
-      points={[
-        'Load ID can be obtained from the response file if you have used batch load action or from transactions tab on dashboard.',
-        'This feature will work only if you are not using two factor authentication for wallet debit',
-      ]}
-      createBatch={createBatch}
-      validateBatch={validateBatch}
-    />
-  );
-});
+    const splitz = useSplitzService();
+    const isCreateGiftCardBatchEnabled = isExperimentEnabled(
+      splitz?.abExperiments?.create_bulk_gift_cards,
+    );
+
+    const reversalOptions = () => {
+      if (isCreateGiftCardBatchEnabled) {
+        return REVERSAL_TYPES_OPTIONS;
+      } else {
+        return REVERSAL_TYPES_OPTIONS.filter(
+          (options) => options?.name !== REVERSAL_TYPES.GIFT_CARD,
+        );
+      }
+    };
+
+    const selectedBatch =
+      provider === REVERSAL_TYPES.WALLET_LOAD
+        ? {
+            selectedValidateBatch: validateBatch,
+            selectedCreateBatch: createBatch,
+            batchType: provider,
+            sampleUrl: '/files/sample_create_wallet_container_reversals.xlsx',
+            title: 'Create Batch Reversals',
+            points: REVERSAL_TYPE_MESSAGE[provider],
+          }
+        : {
+            selectedValidateBatch: validateGiftCardCancellationBatch,
+            selectedCreateBatch: createGiftCardCancellationBatch,
+            batchType: provider,
+            sampleUrl: '/files/sample_cancel_gift_card.xlsx',
+            title: 'Create Batch Gift Card Cancellations',
+            points: REVERSAL_TYPE_MESSAGE[provider],
+          };
+
+    return (
+      <BatchUploadWrapper
+        batchType={selectedBatch.batchType}
+        docUrl={selectedBatch.sampleUrl}
+        title={selectedBatch.title}
+        points={selectedBatch.points}
+        component={
+          <InputSelector
+            options={reversalOptions()}
+            setInput={setProvider}
+            defaultValue={provider}
+          />
+        }
+        createBatch={selectedBatch.selectedCreateBatch}
+        validateBatch={selectedBatch.selectedValidateBatch}
+      />
+    );
+  },
+);
 
 export const GCExpiryBatchUpload = connect(null, {
   createBatch: createGCExpiryBatch as () => void,

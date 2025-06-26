@@ -11,9 +11,10 @@ import {
 export interface InputSelectorProps {
   setInput: Dispatch<SetStateAction<string>>;
   options: Array<{ label: string; name: string }>;
+  defaultValue?: string;
 }
 
-const InputSelector = ({ setInput, options }: InputSelectorProps): JSX.Element => {
+const InputSelector = ({ setInput, options, defaultValue }: InputSelectorProps): JSX.Element => {
   const setField = useCallback(
     (e) => {
       setInput(e.values?.[0]);
@@ -33,7 +34,7 @@ const InputSelector = ({ setInput, options }: InputSelectorProps): JSX.Element =
           validationState="none"
           isRequired={true}
           testID="test-load-dropdown"
-          defaultValue="accounts"
+          defaultValue={defaultValue || 'accounts'}
         />
         <DropdownOverlay>
           <ActionList>

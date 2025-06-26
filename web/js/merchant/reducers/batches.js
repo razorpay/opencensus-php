@@ -8,6 +8,7 @@ import {
   entityFetchPendingState,
   entityFetchErrorState,
 } from 'merchant_common/reducers/entity';
+import { BATCH_TYPES } from '../views/Wallet/BatchActions/constants';
 
 const REFUND = 'REFUND_BATCHS';
 const VIRTUAL_ACCOUNT_BATCHS = 'VIRTUAL_ACCOUNT_BATCHS';
@@ -523,6 +524,7 @@ export const fetchAllWalletBatches = (
     'create_wallet_container_reversals',
     'update_gift_cards_expiry',
     'create_gift_card_transfers',
+    BATCH_TYPES.CANCEL_BULK_GIFT_CARDS,
   ];
 
   if (!isCreateGiftCardBatchEnabled) {
@@ -545,7 +547,9 @@ export const validateContainerLoadsBatch = validateBatch('create_wallet_containe
 export const createUsersBatch = createBatch('create_wallet_user_containers');
 export const validateUsersBatch = validateBatch('create_wallet_user_containers');
 export const createReversalBatch = createBatch('create_wallet_container_reversals');
+export const createGiftCardCancellationBatch = createBatch(BATCH_TYPES.CANCEL_BULK_GIFT_CARDS);
 export const validateReversalBatch = validateBatch('create_wallet_container_reversals');
+export const validateGiftCardCancellationBatch = validateBatch(BATCH_TYPES.CANCEL_BULK_GIFT_CARDS);
 export const createGiftCardsBatch = createBatch('create_bulk_gift_cards');
 export const validateGiftCardsBatch = validateBatch('create_bulk_gift_cards');
 export const createGCExpiryBatch = createBatch('update_gift_cards_expiry');
