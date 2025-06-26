@@ -6,6 +6,7 @@ use App;
 use RZP\Exception;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Transfer;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Models\Admin\ConfigKey;
@@ -313,6 +314,22 @@ trait ExternalOrderRepo
                 $key = array_search("payments", $expands[self::EXPAND]);
 
                 unset($expands[self::EXPAND][$key]);
+            }
+            else if (in_array("transfers", $expands['expand']) === true)
+            {
+                if ((new Transfer\Service())->isRouteTidbFetchExpEnabled($merchantId))
+                {
+                    $transfers = $this->repo
+                        ->transfer
+                        ->fetchBySourceTypeAndIdAndMerchantWithExternal(Entity::ORDER, $id, $this->merchant, []);
+
+                    $entity->transfers = $transfers->toArrayPublic();
+
+                    $key = array_search("transfers", $expands[self::EXPAND]);
+
+                    unset($expands[self::EXPAND][$key]);
+
+                }
             }
         }
     }
