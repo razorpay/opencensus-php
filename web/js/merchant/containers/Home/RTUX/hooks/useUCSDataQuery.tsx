@@ -4,7 +4,7 @@ import { type AxiosRequestConfig } from 'axios';
 import { fetchUCS } from '@federated/apps/shell/rest-fetch';
 import { isRTUXHomepageEnabled } from '../utils';
 import { User } from 'common/typings';
-
+import { isEligibleForFtuxV2 } from 'merchant/containers/Home/FTUX/utils';
 
 // Todo : Add type for response
 export const fetchUCSData = async (requestData: AxiosRequestConfig['data']): Promise<any> => {
@@ -46,13 +46,14 @@ export const withRtuxComponentData = <P extends RTUXComponentProps>(
       user,
       splitz: { abExperiments },
     } = props;
+    const isFTUXHomepage = isEligibleForFtuxV2({ user, abExperiments });
     const isRTUXHomepage = isRTUXHomepageEnabled({ user, abExperiments });
     const isDashboardHome = window.location.pathname === '/app/dashboard';
 
     useUCSDataQuery(
       ['rtux-homepage', 'data'],
       { alias: 'home_page' },
-      isRTUXHomepage && isDashboardHome,
+      !isFTUXHomepage && isRTUXHomepage && isDashboardHome,
     );
 
     return <WrappedComponent {...props} />;
