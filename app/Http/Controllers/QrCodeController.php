@@ -36,6 +36,22 @@ class QrCodeController extends Controller
         return ApiResponse::json($entity);
     }
 
+    public function update(string $id)
+    {
+        $input = Request::all();
+
+        $entity = Tracer::inspan(
+            [
+                'name' => HyperTrace::QR_CODE_EDIT
+            ], 
+            function() use ($id, $input) {
+                return (new NonVAQrCodeService())->edit($id, $input);
+            }
+        );
+
+        return ApiResponse::json($entity);
+    }
+
     public function createQrForMerchant()
     {
         $input = Request::all();

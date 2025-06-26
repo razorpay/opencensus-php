@@ -50,6 +50,7 @@ return [
         ],
     ],
 
+
     'testCreateUpiQrCodeFixedAmount' => [
         'name'           => 'Test QR Code',
         'description'    => 'QR code for tests',
@@ -1603,6 +1604,27 @@ return [
                     "type" => "bharat_qr"
                 ]
             ]
+        ],
+    ],
+
+    'testQrCodeEditNotes' => [
+        'request'  => [
+            'content' => [
+                'notes' => [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ],
+            ],
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content' => [
+                'notes' => [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ],
+            ],
+            'status_code' => 200,
         ],
     ],
 ];

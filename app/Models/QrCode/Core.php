@@ -143,15 +143,6 @@ class Core extends Base\Core
         return Response::download($tempImage, $filename);
     }
 
-    public function edit(Entity $qrCode, array $input)
-    {
-        $qrCode->edit($input);
-
-        $this->repo->saveOrFail($qrCode);
-
-        return $qrCode;
-    }
-
     public function tokenizeExistingQrCodeMpans(Entity $qrCode)
     {
         $qrStringTokenized = Entity::getQrStringWithTokenizedMpans($qrCode->getOriginalQrString());
@@ -161,7 +152,12 @@ class Core extends Base\Core
             Entity::MPANS_TOKENIZED => true,
         ];
 
-        $this->edit($qrCode, $editInput);
+        $qrCode->edit($input, 'tokenize');
+
+        $this->repo->saveOrFail($qrCode);
+
+        return $qrCode;
+
     }
 
     public function buildQrCode(array $input, $order = null)

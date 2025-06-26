@@ -5316,6 +5316,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CLOUDFRONT_EXPERIMENT_ENABLED                         = 'CLOUDFRONT_EXPERIMENT_ENABLED';
     const QR_CODE_UPI_GATEWAY_CALL_FOR_INTENT_URL               = 'QR_CODE_UPI_GATEWAY_CALL_FOR_INTENT_URL';
     const QR_CODE_CREATE_REQUEST                                = 'QR_CODE_CREATE_REQUEST';
+    const QR_CODE_EDIT_REQUEST                                  = 'QR_CODE_EDIT_REQUEST';
     const QR_CODE_CHECKOUT_CREATE_REQUEST                       = 'QR_CODE_CHECKOUT_CREATE_REQUEST';
     const QR_CODE_PAYMENT_LINKS_CREATE_REQUEST                  = 'QR_CODE_PAYMENT_LINKS_CREATE_REQUEST';
     const QR_CODE_CLOSE_REQUEST                                 = 'QR_CODE_CLOSE_REQUEST';

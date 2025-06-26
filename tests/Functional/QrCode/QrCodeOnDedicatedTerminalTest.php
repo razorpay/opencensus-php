@@ -2871,4 +2871,20 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertNull($qrCode->getDeviceId());
 
     }
+
+    public function testQrCodeEditNotes()
+    {
+        $terminal = $this->fixtures->create('terminal:dedicated_sharp_terminal');
+        
+        $qrCode = $this->createQrCode(
+            [
+                'type' => 'upi_qr',
+            ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/qr_codes/' . $qrCode['id'];
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
 }

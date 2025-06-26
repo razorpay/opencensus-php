@@ -2864,6 +2864,4 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals('paid', $qrCodeEntity['close_reason']);
         $this->assertEquals($testData['expected_status'], $qrCodeEntity->getStatus());
     }
-
-
 }

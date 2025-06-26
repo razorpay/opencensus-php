@@ -126,6 +126,19 @@ class Service extends QrCode\Service
         return $qrCode->toArrayPublic();
     }
 
+    public function edit($id, $input)
+    {
+        $qrCodeId = Entity::verifyIdAndStripSign($id);
+
+        $qrCode = $this->repo->qr_code->findByIdAndMerchant($qrCodeId, $this->merchant);
+
+        $qrCode->edit($input);
+
+        $this->repo->saveOrFail($qrCode);
+
+        return $qrCode->toArrayPublic();
+    }
+
     public function createTerminalAndMapQrToDevice(array $input):array
     {
         $response = [];
