@@ -16,6 +16,8 @@ const CHANGE_RULE_MODE = 'CHANGE_RULE_MODE';
 const DELETE_RULE = 'DELETE_RULE';
 const CREATE_RULE = 'CREATE_RULE';
 const UPDATE_RULE = 'UPDATE_RULE';
+const FETCH_SUPPORTED_GATEWAYS = 'FETCH_SUPPORTED_GATEWAYS';
+
 export const getRule = (id) => {
   const params = {
     url: `merchant/mid/rule_groups/${id}`,
@@ -171,6 +173,20 @@ export const deleteRule = (id) => {
   };
 };
 
+const getSupportedGateways = () => {
+  return merchantFetch({
+    url: 'terminals/proxy/optimizer/supported_gateways',
+    method: 'get',
+  }).then((d) => d.data);
+};
+
+export const fetchSupportedGateways = () => {
+  return {
+    type: FETCH_SUPPORTED_GATEWAYS,
+    payload: getSupportedGateways(),
+  };
+};
+
 const initialState = {
   loading: true,
   rules: [],
@@ -187,6 +203,8 @@ const initialState = {
   },
   providers_loading: false,
   terminalProviders: [],
+  supportedGateways_loading: false,
+  supportedGateways: {},
   rule,
   error: null,
 };
@@ -414,6 +432,23 @@ export default function navigatorReducer(state = initialState, action) {
 
     case `${RULE_RESET}`:
       return initialState;
+    
+    case `${FETCH_SUPPORTED_GATEWAYS}::SUCCESS`:
+      return merge(state, {
+        supportedGateways_loading: false,
+        supportedGateways: action.payload,
+      });
+
+    case `${FETCH_SUPPORTED_GATEWAYS}::PENDING`:
+      return merge(state, {
+        supportedGateways_loading: true,
+      });
+
+    case `${FETCH_SUPPORTED_GATEWAYS}::ERROR`:
+      return merge(state, {
+        supportedGateways_loading: false,
+        error: action.payload.errors,
+      });
 
     default:
       return state;

@@ -7,7 +7,7 @@ import Dropdown from 'common/components/Dropdown';
 import ClickOutside from 'merchant/views/Navigator/components/ClickOutside';
 import { gatewayLogos } from 'merchant/views/Navigator/components/util';
 
-const ProviderSelector = ({ name, providers, provider, setProvider, isLoading, onChange }) => {
+const ProviderSelector = ({ name, providers, provider, setProvider, isLoading, onChange, supportedGateways }) => {
   const location = useLocation();
 
   const isProviderSelectorForV2 = !location.pathname.includes('/settlements');
@@ -19,6 +19,7 @@ const ProviderSelector = ({ name, providers, provider, setProvider, isLoading, o
   const options = [{ [optionDisplayKey]: 'All', value: '', gateway: '' }];
   const providerOps = providers?.filter((p) => p.Gateway != 'smart_router');
   providerOps?.forEach((p) => {
+    const gatewayLogo = supportedGateways?.[p.Gateway]?.['Gateway Name']?.meta_data?.image_url ?? gatewayLogos[p.Gateway];
     options.push({
       [optionDisplayKey]: p.Provider_name || p.Gateway,
       value:
@@ -28,9 +29,14 @@ const ProviderSelector = ({ name, providers, provider, setProvider, isLoading, o
             : 'razorpay'
           : p.Terminal_id,
       gateway: p.Gateway,
-      ...(isProviderSelectorForV2 && !!gatewayLogos[p.Gateway]
+      ...(isProviderSelectorForV2 && !!gatewayLogo
         ? {
-            leading: <ActionListItemAsset src={gatewayLogos[p.Gateway]} alt={p.Gateway} />,
+            leading: (
+              <ActionListItemAsset
+                src={gatewayLogo}
+                alt={p.Gateway}
+              />
+            ),
           }
         : {}),
     });
@@ -77,6 +83,7 @@ const ProviderSelector = ({ name, providers, provider, setProvider, isLoading, o
           <div className="input-select">
             <ul className="unlisted">
               {options.map((o, index) => {
+                const gatewayLogo = supportedGateways?.[o.Gateway]?.['Gateway Name']?.meta_data?.image_url ?? gatewayLogos[o.Gateway];
                 return (
                   <li
                     key={index}
@@ -90,7 +97,10 @@ const ProviderSelector = ({ name, providers, provider, setProvider, isLoading, o
                         <div className="col-xs-10">
                           {o.name !== 'All' && (
                             <div className="recommended-provider-img-block">
-                              <img src={gatewayLogos[o.gateway]} />
+                              <img
+                                src={gatewayLogo}
+                                alt={o.gateway}
+                              />
                             </div>
                           )}
                           <b className="optn-text">{o.name}</b>

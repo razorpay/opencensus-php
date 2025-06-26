@@ -20,10 +20,11 @@ type PaymentOptimizerProviderProps = {
     Terminal_id?: string;
     updated_at: number;
   }[];
+  supportedGateways: any;
 };
 
 function PaymentOptimierProvider(props: PaymentOptimizerProviderProps) {
-  const { item, terminalProviders } = props;
+  const { item, terminalProviders, supportedGateways } = props;
   const provider = findProviderDetails(terminalProviders, item.optimizer_provider, item.settled_by);
 
   if (!provider) {
@@ -34,7 +35,14 @@ function PaymentOptimierProvider(props: PaymentOptimizerProviderProps) {
     <Tooltip content={provider.Provider_name} placement="top">
       <TooltipInteractiveWrapper>
         <Box display="flex" gap="spacing.4" maxWidth="120px">
-          <img alt={provider.Gateway} height="20" src={gatewayLogos[provider.Gateway]} />
+          <img
+            alt={provider.Gateway}
+            height="20"
+            src={
+              supportedGateways?.[provider.Gateway]?.['Gateway Name']?.meta_data?.image_url ??
+              gatewayLogos[provider.Gateway]
+            }
+          />
           <StyledText as="span">{provider.Provider_name}</StyledText>
         </Box>
       </TooltipInteractiveWrapper>
@@ -45,6 +53,7 @@ function PaymentOptimierProvider(props: PaymentOptimizerProviderProps) {
 function mapStateToProps(state) {
   return {
     terminalProviders: state?.navigator?.terminalProviders,
+    supportedGateways: state?.navigator?.supportedGateways,
   };
 }
 

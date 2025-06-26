@@ -7,7 +7,7 @@ import { withRouter } from 'common/deprecated/withRouter';
 import { withSplitzService } from 'common/splitz';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchPayments, fetchMarketplacePayments } from 'merchant/reducers/collection';
-import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
+import { fetchTerminalProviders, fetchSupportedGateways } from 'merchant/reducers/navigator/details';
 import {
   FIXED_COLUMNS_TRANSACTIONS_V2,
   OPTIONAL_COLUMNS_TRANSACTIONS_V2,
@@ -40,8 +40,10 @@ class PaymentsList extends ListContainer {
     const {
       user: { isCustomTransactionTabView, isOptimizerEnabled },
       fetchProviders,
+      fetchSupportedGateways,
     } = this.props;
     if (isOptimizerEnabled) {
+      fetchSupportedGateways();
       fetchProviders();
     }
 
@@ -182,6 +184,7 @@ function mapDispatchToProps(dispatch, props) {
       fetchAll: props?.isMarketplacePayments ? fetchMarketplacePayments : fetchPayments,
       showNotification,
       fetchProviders: fetchTerminalProviders,
+      fetchSupportedGateways,
     },
     dispatch,
   );

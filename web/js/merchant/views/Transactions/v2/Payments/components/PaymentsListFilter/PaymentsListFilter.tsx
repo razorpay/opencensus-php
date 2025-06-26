@@ -78,6 +78,7 @@ const PaymentsListFilter = ({
   onSubmit,
   loading,
   user,
+  supportedGateways,
   location: { pathname },
   openModal,
   terminalProviders,
@@ -340,6 +341,7 @@ const PaymentsListFilter = ({
                 providers={terminalProviders}
                 onChange={onTerminalProviderChange}
                 isLoading={loading}
+                supportedGateways={supportedGateways}
               />
             )}
         </StyledSubListFilter>
@@ -447,6 +449,7 @@ const PaymentsListFilter = ({
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
+  supportedGateways: state.navigator.supportedGateways,
 });
 
 const mapDispatchToProps = (dispatch) =>

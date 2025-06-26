@@ -49,6 +49,7 @@ export interface PaymentsListFilterProps extends RouteComponentProps {
   user: User;
   terminalProviders?: { [key: string]: any }[];
   showBatchIdFilter?: boolean;
+  supportedGateways: { [key: string]: any };
 }
 
 export interface ExtraFiltersModalProps {

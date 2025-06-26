@@ -14,7 +14,10 @@ import {
 } from './constants';
 import { PaymentsEditColumnsModal } from './PaymentsEditColumnsModal';
 import ListContainer from 'apps/self-serve/src/legacy/containers/ListContainer';
-import { fetchTerminalProviders } from 'apps/self-serve/src/bootstrap/Store/reducers/navigatorReducer';
+import {
+  fetchTerminalProviders,
+  fetchSupportedGateways,
+} from 'apps/self-serve/src/bootstrap/Store/reducers/navigatorReducer';
 import { fetchPayments as fetchAll } from 'apps/self-serve/src/bootstrap/Store/reducers/paymentsReducer';
 import PaymentsListFilter from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsListFilter';
 import PaymentsTable from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsTable';
@@ -39,9 +42,11 @@ class PaymentsList extends ListContainer {
     const {
       store: { session: { user: { isCustomTransactionTabView, isOptimizerEnabled } = {} } = {} },
       fetchProviders,
+      fetchSupportedGateways,
     } = this.props;
 
     if (isOptimizerEnabled) {
+      fetchSupportedGateways();
       fetchProviders();
     }
 
@@ -185,6 +190,7 @@ function mapDispatchToProps(dispatch) {
     {
       fetchAll,
       fetchProviders: fetchTerminalProviders,
+      fetchSupportedGateways,
     },
     dispatch,
   );
