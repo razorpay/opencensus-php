@@ -333,4 +333,23 @@ class HyperTrace
     const DCS_FETCH_FEATURES_AGGREGATE                                                          = 'dcs.fetch.feature.aggregate';
 
     const DCS_FETCH_FEATURE_VALUE                                                               = 'dcs.fetch.feature.value';
+
+    // MTU Transacted Action traces
+    const MTU_TRANSACTED_ACTION_EXECUTE                                                         = 'MtuTransactedAction.execute';
+    const MTU_TRANSACTED_ACTION_PROCESS_MERCHANT                                                = 'MtuTransactedAction.processMerchant';
+    const MTU_TRANSACTED_ACTION_SEND_SEGMENT_BATCH                                              = 'MtuTransactedAction.sendSegmentBatch';
+    const MTU_TRANSACTED_ACTION_PUSH_SEGMENT_EVENT                                              = 'MtuTransactedAction.pushSegmentEvent';
+    const MTU_TRANSACTED_ACTION_FETCH_MERCHANT                                                  = 'MtuTransactedAction.fetchMerchant';
+    const MTU_TRANSACTED_ACTION_FETCH_FIRST_TRANSACTION                                         = 'MtuTransactedAction.fetchFirstTransaction';
+    const MTU_TRANSACTED_ACTION_FETCH_PREVIOUS_ACTIVATION_STATUS                                = 'MtuTransactedAction.fetchPreviousActivationStatus';
+    const MTU_TRANSACTED_ACTION_GET_REFERRAL_CODE                                               = 'MtuTransactedAction.getReferralCode';
+    const MTU_TRANSACTED_ACTION_FETCH_USER_DEVICE_DETAIL                                        = 'MtuTransactedAction.fetchUserDeviceDetail';
+    const MTU_TRANSACTED_ACTION_PUSH_TO_SEGMENT_ANALYTICS                                       = 'MtuTransactedAction.pushToSegmentAnalytics';
+    const MTU_TRANSACTED_ACTION_APPLY_MTU_COUPON                                                = 'MtuTransactedAction.applyMtuCoupon';
+    const MTU_TRANSACTED_ACTION_ENABLE_FTUX_DASHBOARD                                           = 'MtuTransactedAction.enableFtuxDashboard';
+    const MTU_TRANSACTED_ACTION_WEBSITE_COMPLIANCE_CHECK                                        = 'MtuTransactedAction.websiteComplianceCheck';
+    const MTU_TRANSACTED_ACTION_CHECK_WEBSITE_SECTIONS_APPLICABLE                               = 'MtuTransactedAction.checkWebsiteSectionsApplicable';
+    const MTU_TRANSACTED_ACTION_FETCH_WEBSITE_DETAILS                                           = 'MtuTransactedAction.fetchWebsiteDetails';
+    const MTU_TRANSACTED_ACTION_SEND_WEBSITE_ADHERENCE_NOTIFICATION                             = 'MtuTransactedAction.sendWebsiteAdherenceNotification';
+    const MTU_TRANSACTED_ACTION_ENABLE_FTUX_DASHBOARD_KEYS                                      = 'MtuTransactedAction.enableFtuxDashboardKeys';
 }

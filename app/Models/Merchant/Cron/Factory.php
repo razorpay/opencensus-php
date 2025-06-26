@@ -54,6 +54,8 @@ class Factory
         switch ($cronType)
         {
             case "mtu-transacted":
+                RuntimeManager::setMaxExecTime(600);
+
                 return (new MtuTransactedCronJob($input));
             case "month-first-mtu-transacted":
                 RuntimeManager::setMaxExecTime(1200);
