@@ -1,6 +1,6 @@
-import { useLocation } from 'react-router-dom';
+import { matchPath, useLocation } from 'react-router-dom';
 import { isProductPathActive as checkProductPathActive, getActiveProductAlias } from './utils';
-import { PRODUCT_ALIAS_MAP } from './constants';
+import { PRODUCT_ALIAS_MAP, getAllFullScreenFlows } from './constants';
 
 /**
  * Hook to get the active product based on the path
@@ -78,4 +78,19 @@ export const useGetActiveProduct = () => {
     isCompanyRegistrationActive,
     activeProductAlias,
   };
+};
+
+/**
+ * Hook to hide the top navigation based on the active route for hiding the top navigation for full screen flows
+ * @returns boolean indicating if the top navigation should be hidden
+ */
+export const useHideTopNavigation = () => {
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  const isFullPage = getAllFullScreenFlows().some((flowPath) =>
+    Boolean(matchPath({ path: flowPath, exact: false }, currentPath)),
+  );
+
+  return isFullPage;
 };

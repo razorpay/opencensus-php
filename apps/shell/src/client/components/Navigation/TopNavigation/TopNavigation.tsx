@@ -27,9 +27,12 @@ import {
 } from '@razorpay/blade/components';
 import React, { Suspense, useEffect } from 'react';
 import { useLocation, useNavigate, matchPath, Navigate } from 'react-router-dom';
-import { useConnectedNavigationStore } from '@federated/apps/shell/connected-navigation/connectedNavigationStore';
+import {
+  SelectedProduct,
+  useConnectedNavigationStore,
+} from '@federated/apps/shell/connected-navigation/connectedNavigationStore';
 import { useTopNavigationData } from './hooks';
-import { PRODUCT_PATH_MAP, PRODUCT_ALIAS_MAP } from '../constants';
+import { PRODUCT_ALIAS_MAP, PRODUCT_SEARCH_SUPPORT_FOR_MOBILE } from '../constants';
 import { HeaderActionsLoader } from '../HeaderActionsLoader';
 import { PRODUCT_ICON_MAP } from './constants';
 import { ProductTopNavBrand } from './ProductTopNavBrand';
@@ -37,7 +40,7 @@ import { useBreakpoint } from '@razorpay/blade/utils';
 import { isProductPathActive } from '../utils';
 import { useStore } from '@federated/apps/shell/commonStore';
 import { ProductAlias } from '../types';
-import { useGetActiveProduct } from '../hooks';
+import { useGetActiveProduct, useHideTopNavigation } from '../hooks';
 import RazorpayHome from '@apps/shell/src/assets/razorpay_home.svg';
 import { analyticsTrack, getCommonAnalyticsProperties } from '@libs/shared-utils';
 import errorService from '@razorpay/universe-cli/errorService';
@@ -94,13 +97,13 @@ function TopNavigation() {
   } = useConnectedNavigationStore((state) => state);
   const showNotification = useStore((state) => state.showNotification);
 
-  const { setColorScheme, theme } = useTheme();
+  const { theme } = useTheme();
   const { products, isLoading, isError } = useTopNavigationData();
   const { matchedDeviceType } = useBreakpoint({
     breakpoints: theme.breakpoints,
   });
-  const { isHomeActive, isBankingActive } = useGetActiveProduct();
-
+  const { isHomeActive } = useGetActiveProduct();
+  const isFullPage = useHideTopNavigation();
   const isMobile = matchedDeviceType === 'mobile';
 
   const { activeProductAlias } = useGetActiveProduct();
@@ -111,21 +114,8 @@ function TopNavigation() {
 
   const isOneHomeEnabled = Boolean(window?.IS_ONE_HOME_ENABLED);
 
-  const setThemeBasedOnSelectedProduct = () => {
-    // TODO: Set color scheme to dark for banking once X is released in connected dashboard
-    switch (activeProductAlias) {
-      case PRODUCT_ALIAS_MAP.BANKING: {
-        setColorScheme('light');
-        break;
-      }
-
-      case PRODUCT_ALIAS_MAP.PAYMENTS:
-        setColorScheme('light');
-        break;
-      default:
-        setColorScheme('light');
-    }
-  };
+  const shouldShowSearchOnMobile =
+    showSearchOnMobile && PRODUCT_SEARCH_SUPPORT_FOR_MOBILE.includes(activeProductAlias);
 
   //Write UT for this
   useEffect(() => {
@@ -147,6 +137,32 @@ function TopNavigation() {
       }
     }
   }, [productsFromStore, navigate, isOneHomeEnabled]);
+
+  const clearProductIfChanged = (
+    currentProduct: SelectedProduct | null,
+    nextProduct: SelectedProduct | null,
+  ) => {
+    /**
+     * check if the selected product is the same as the product in the store
+     * if not, clear the selected product from store
+     * this is done to trigger loading state on the new product
+     */
+    if (currentProduct?.alias !== nextProduct?.alias) {
+      if (
+        currentProduct?.alias === PRODUCT_ALIAS_MAP.PAYMENTS &&
+        nextProduct?.sharedId === PRODUCT_ALIAS_MAP.PARTNERS &&
+        nextProduct?.selectAction?.actionType === 'modal'
+      ) {
+        /**
+         * this is a special case where we don't want to clear the selected product
+         * used only for partners onboarding modal
+         * todo: might not be required after partners micro app is live
+         */
+        return;
+      }
+      clearSelectedProduct();
+    }
+  };
 
   const handleProductSelect = ({ productAlias, isInsideMore } = {}) => {
     return () => {
@@ -172,9 +188,6 @@ function TopNavigation() {
           },
         });
 
-        //TODO: The right way to do this is based on routes
-        setThemeBasedOnSelectedProduct();
-
         const selectedProductAction = selectedProduct?.selectAction;
 
         switch (selectedProductAction?.actionType) {
@@ -186,14 +199,7 @@ function TopNavigation() {
             const navigationValue = selectedProductAction?.value;
             switch (navigationValue?.type) {
               case 'internal_navigation': {
-                if (productsFromStore.selectedProduct?.alias !== selectedProduct?.alias) {
-                  /**
-                   * check if the selected product is the same as the product in the store
-                   * if not, clear the selected product from store
-                   * this is done to trigger loading state on the new product
-                   */
-                  clearSelectedProduct();
-                }
+                clearProductIfChanged(productsFromStore.selectedProduct, selectedProduct);
 
                 navigate(navigationValue.navigateTo);
                 break;
@@ -213,6 +219,8 @@ function TopNavigation() {
           case 'modal': {
             const modalAlias = selectedProductAction?.value;
             if (modalAlias === 'partners_onboarding_modal') {
+              clearProductIfChanged(productsFromStore.selectedProduct, selectedProduct);
+
               navigate({
                 pathname: '/dashboard',
                 search: '?openModal=partners_onboarding_modal',
@@ -315,6 +323,10 @@ function TopNavigation() {
     );
   };
 
+  if (isFullPage) {
+    return null;
+  }
+
   if (isMobile) {
     if (isHomeActive || currentPath.startsWith('/home')) {
       return (
@@ -370,7 +382,7 @@ function TopNavigation() {
             <Box></Box>
             <HeaderActionsLoader />
           </TopNav>
-          {showSearchOnMobile && (
+          {shouldShowSearchOnMobile && (
             <Box paddingBottom="spacing.3">
               <HeaderActionsLoader showOnlyMobileSearch={true} />
             </Box>

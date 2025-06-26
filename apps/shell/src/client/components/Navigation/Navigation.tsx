@@ -3,13 +3,15 @@ import { Box, useTheme, BladeProvider } from '@razorpay/blade/components';
 import { useBreakpoint } from '@razorpay/blade/utils';
 import { bladeTheme } from '@razorpay/blade/tokens';
 import { getItemFromLocalStorage } from '@libs/shared-utils';
+import { useHideTopNavigation } from './hooks';
 import { useStore } from '@federated/apps/shell/commonStore';
 
 const TopNavigation = lazy(() => import('./TopNavigation'));
 const FTUXBanner = lazy(() => import('./TopNavigation/FTUXBanner'));
 
 export const ConnectedNavigationContainer = ({ children }): JSX.Element => {
-  const { theme } = useTheme();
+  const { theme, colorScheme } = useTheme();
+  const isFullPage = useHideTopNavigation();
   const { matchedDeviceType } = useBreakpoint({
     breakpoints: theme.breakpoints,
   });
@@ -21,12 +23,17 @@ export const ConnectedNavigationContainer = ({ children }): JSX.Element => {
   );
 
   return (
-    <Box backgroundColor="#E3EAF3" height="100vh" display="flex" flexDirection="column">
+    <Box
+      backgroundColor={colorScheme === 'light' ? '#E3EAF3' : '#273244'}
+      height="100vh"
+      display="flex"
+      flexDirection="column"
+    >
       <Suspense fallback={null}>
         <TopNavigation />
       </Suspense>
       <Box
-        marginX={{ base: 'spacing.0', m: 'spacing.3' }}
+        marginX={{ base: 'spacing.0', m: isFullPage ? 'spacing.0' : 'spacing.3' }}
         overflow="hidden"
         backgroundColor="surface.background.gray.moderate"
         borderTopLeftRadius={isMobile ? 'none' : 'medium'}

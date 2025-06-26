@@ -3,9 +3,12 @@ import create from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { type ProductAlias } from '../../components/Navigation/types';
 
-type SelectedProduct = {
+export type SelectedProduct = {
   title: string;
   alias: ProductAlias;
+  selectAction: {
+    actionType: string;
+  };
 };
 
 type StoreState = {
