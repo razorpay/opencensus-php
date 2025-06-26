@@ -2625,6 +2625,7 @@ class Processor
                                 "max_amount" => $subscriptionRegistration->getMaxAmount(),
                                 "expire_at" => $subscriptionRegistration->getExpireAt(),
                                 "frequency" => $subscriptionRegistration->getFrequency(),
+                                "notes" => $subscriptionRegistration->getNotes(),
                             ];
                         }
                     }
