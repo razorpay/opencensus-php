@@ -16,7 +16,11 @@ import {
   Chip,
 } from '@razorpay/blade/components';
 import { Controller, UseFieldArrayUpdate, useFormContext } from 'react-hook-form';
-import { ATTRIBUTE_TYPE_OPERATORS, COMPARISON_OPERATORS } from './constants';
+import {
+  ATTRIBUTE_HELP_TEXT_MAPPING,
+  ATTRIBUTE_TYPE_OPERATORS,
+  COMPARISON_OPERATORS,
+} from './constants';
 import { Attribute, AttributeFormField, FormData } from './types';
 
 interface AttributeRowProps {
@@ -83,6 +87,7 @@ const AttributeRow = ({
                     operator: '',
                     value: '',
                     type: attributeList[values[0]].type,
+                    elementType: attributeList[values[0]].elementType,
                   } as AttributeFormField);
                   trigger(fieldInput.name);
                 }}
@@ -120,6 +125,7 @@ const AttributeRow = ({
                         minValue: '',
                         maxValue: '',
                         type: field.type,
+                        elementType: field.elementType,
                       } as AttributeFormField);
                     } else {
                       update(index, {
@@ -127,6 +133,7 @@ const AttributeRow = ({
                         operator: values[0],
                         value: '',
                         type: field.type,
+                        elementType: field.elementType,
                       } as AttributeFormField);
                     }
                     trigger(fieldInput.name);
@@ -235,6 +242,7 @@ const AttributeRow = ({
                         errorText={fieldState.error?.message}
                         validationState={fieldState.error ? 'error' : 'none'}
                         isDisabled={viewOnly}
+                        helpText={ATTRIBUTE_HELP_TEXT_MAPPING[field.operator] || ''}
                       />
                     )
                   }

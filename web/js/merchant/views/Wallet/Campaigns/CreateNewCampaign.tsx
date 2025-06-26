@@ -8,7 +8,6 @@ import {
   StepItem,
   Text,
   Modal,
-  ModalHeader,
   ModalFooter,
   StepItemIcon,
   CheckIcon,
@@ -17,7 +16,6 @@ import {
   useToast,
   CheckCircleIcon,
   ZapIcon,
-  Divider,
   ToastContainer,
   ModalBody,
 } from '@razorpay/blade/components';
@@ -35,7 +33,14 @@ import ReviewAndPublish from './ReviewAndPublish';
 import { formSchema } from './formSchema';
 import { CampaignType, CampaignTypeEnum, FormData, Wallet } from './types';
 import { createProgramForCampaign, createCampaign } from '../queries';
-import { combineEpochAndTime, generateRuleString, createUsageLimits } from './utils';
+import {
+  combineEpochAndTime,
+  generateRuleString,
+  createUsageLimits,
+  getFilterRules,
+  getActionConfig,
+  removeArrayNotation,
+} from './utils';
 import { CONSTANT_ACTION_CONFIGS, DURATION_PRESETS } from './constants';
 import { rupeesToPaise } from '@libs/shared-utils';
 
@@ -274,10 +279,9 @@ const CreateNewCampaign = ({ mode, merchant_id }) => {
               type: 'DIRECT_EVALUATION',
               main_rule:
                 data.triggerAttributes.length > 0
-                  ? generateRuleString(data.triggerAttributes)
+                  ? generateRuleString(data.triggerAttributes) || 'true'
                   : 'true', //If there are no attributes, then send this as default rule
-              has_filter: false,
-              filter_rule: '()',
+              filter_rules: getFilterRules(data.triggerAttributes),
             },
             actions: [
               {
@@ -289,34 +293,16 @@ const CreateNewCampaign = ({ mode, merchant_id }) => {
                     value:
                       data.creditType === 'flat'
                         ? rupeesToPaise(data.creditAmount)
-                        : `${data.creditAmount}*${data.triggerActionAttribute}/100`,
+                        : `${data.creditAmount}*${removeArrayNotation(
+                            data.triggerActionAttribute,
+                          )}/100`,
                     is_points_field: true,
                   },
-                  ...(selectedEventName === 'order_placed'
-                    ? {
-                        ...CONSTANT_ACTION_CONFIGS.ORDER_PLACED,
-                        program_id: {
-                          type: 'constant',
-                          value: programCreatedData.id,
-                        },
-                        merchant_id: {
-                          type: 'constant',
-                          value: merchant_id,
-                        },
-                      }
-                    : selectedEventName === 'wallet_credit'
-                    ? {
-                        program_id: {
-                          type: 'constant',
-                          value: programCreatedData.id,
-                        },
-                        merchant_id: {
-                          type: 'constant',
-                          value: merchant_id,
-                        },
-                        ...CONSTANT_ACTION_CONFIGS.CREDIT_WALLET,
-                      }
-                    : {}),
+                  ...getActionConfig({
+                    event: selectedEventName,
+                    program_id: programCreatedData.id,
+                    merchant_id,
+                  }),
                 },
               },
             ],

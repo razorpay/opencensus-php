@@ -5,6 +5,7 @@ import {
   generateRuleString,
   createUsageLimits,
   sanitizeRuleValues,
+  getFilterRules,
 } from '../utils';
 
 describe('normalizeEvents', () => {
@@ -22,6 +23,13 @@ describe('normalizeEvents', () => {
                 type: 'number',
                 required: true,
               },
+              pins: {
+                type: 'array',
+                required: true,
+                array: {
+                  type: 'string',
+                },
+              },
               billing_address: {
                 type: 'map',
                 required: true,
@@ -33,6 +41,13 @@ describe('normalizeEvents', () => {
                   country: {
                     type: 'string',
                     required: true,
+                  },
+                  pins: {
+                    type: 'array',
+                    required: true,
+                    array: {
+                      type: 'string',
+                    },
                   },
                 },
               },
@@ -78,6 +93,16 @@ describe('normalizeEvents', () => {
             type: 'string',
             required: true,
           },
+          'order.billing_address.pins[]': {
+            elementType: 'string',
+            required: true,
+            type: 'array',
+          },
+          'order.pins[]': {
+            elementType: 'string',
+            required: true,
+            type: 'array',
+          },
         },
       },
       event2: {
@@ -88,6 +113,141 @@ describe('normalizeEvents', () => {
             required: true,
           },
           'user.email': {
+            type: 'string',
+            required: true,
+          },
+        },
+      },
+    };
+
+    const result = normalizeEvents(input);
+
+    expect(result).toEqual(expectedOutput);
+  });
+
+  it('should handle array type attributes properly', () => {
+    const input = [
+      {
+        id: 'event3',
+        name: 'Event 3',
+        payload_config: {
+          order: {
+            type: 'map',
+            required: true,
+            map: {
+              line_items: {
+                type: 'array',
+                required: true,
+                array: {
+                  type: 'map',
+                  map: {
+                    sku: {
+                      type: 'string',
+                      required: true,
+                    },
+                    price: {
+                      type: 'int',
+                      required: true,
+                    },
+                  },
+                },
+              },
+              order_tags: {
+                type: 'array',
+                required: true,
+                array: {
+                  type: 'string',
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+
+    const expectedOutput = {
+      event3: {
+        name: 'Event 3',
+        attributes: {
+          // Array of maps - only scalar fields inside, not the parent array
+          'order.line_items[].sku': {
+            type: 'string',
+            required: true,
+          },
+          'order.line_items[].price': {
+            type: 'int',
+            required: true,
+          },
+          // Scalar array is included
+          'order.order_tags[]': {
+            type: 'array',
+            required: true,
+            elementType: 'string',
+          },
+        },
+      },
+    };
+
+    const result = normalizeEvents(input);
+
+    expect(result).toEqual(expectedOutput);
+  });
+
+  it('should flatten the config and ignore nested arrays in output', () => {
+    const input = [
+      {
+        id: 'event4',
+        name: 'Event 4',
+        payload_config: {
+          order: {
+            type: 'map',
+            required: true,
+            map: {
+              addresses: {
+                type: 'array',
+                required: true,
+                array: {
+                  type: 'map',
+                  map: {
+                    city: {
+                      type: 'string',
+                      required: true,
+                    },
+                    pins: {
+                      type: 'array',
+                      required: true,
+                      array: {
+                        type: 'int',
+                      },
+                    },
+                    address_owners: {
+                      type: 'array',
+                      required: true,
+                      array: {
+                        type: 'map',
+                        map: {
+                          name: {
+                            type: 'string',
+                            required: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+
+    const expectedOutput = {
+      event4: {
+        name: 'Event 4',
+        attributes: {
+          // No container array entry for order.addresses
+          'order.addresses[].city': {
             type: 'string',
             required: true,
           },
@@ -126,6 +286,317 @@ describe('normalizeEvents', () => {
 
     const result = normalizeEvents(input);
 
+    expect(result).toEqual(expectedOutput);
+  });
+
+  it('should handle scalar arrays and nested maps correctly', () => {
+    const input = [
+      {
+        id: 'event5',
+        name: 'Event 5',
+        payload_config: {
+          sample_order: {
+            type: 'map',
+            required: true,
+            map: {
+              id: {
+                type: 'string',
+                required: true,
+              },
+              amount: {
+                type: 'int',
+                required: true,
+              },
+              // Scalar array - should be included
+              pins: {
+                type: 'array',
+                required: true,
+                array: {
+                  type: 'string',
+                  required: true,
+                },
+              },
+              // Nested map - should normalize all the way to scalar values
+              address: {
+                type: 'map',
+                required: true,
+                map: {
+                  line1: {
+                    type: 'map',
+                    required: true,
+                    map: {
+                      city: {
+                        type: 'string',
+                        required: true,
+                      },
+                      state: {
+                        type: 'string',
+                        required: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+
+    const expectedOutput = {
+      event5: {
+        name: 'Event 5',
+        attributes: {
+          'sample_order.id': {
+            type: 'string',
+            required: true,
+          },
+          'sample_order.amount': {
+            type: 'int',
+            required: true,
+          },
+          // Scalar array is normalized only up to the array itself
+          'sample_order.pins[]': {
+            type: 'array',
+            required: true,
+            elementType: 'string',
+          },
+          // Nested map is normalized all the way to scalar values
+          'sample_order.address.line1.city': {
+            type: 'string',
+            required: true,
+          },
+          'sample_order.address.line1.state': {
+            type: 'string',
+            required: true,
+          },
+        },
+      },
+    };
+
+    const result = normalizeEvents(input);
+
+    expect(result).toEqual(expectedOutput);
+  });
+
+  it('should handle array of maps and nested arrays together correctly', () => {
+    const input = [
+      {
+        id: 'event6',
+        name: 'Event 6',
+        payload_config: {
+          sample_order: {
+            type: 'map',
+            required: true,
+            map: {
+              // Array of maps - normalize to scalar fields inside maps
+              addresses: {
+                type: 'array',
+                required: true,
+                array: {
+                  type: 'map',
+                  map: {
+                    line_address: {
+                      type: 'string',
+                      required: true,
+                    },
+                    city: {
+                      type: 'string',
+                      required: true,
+                    },
+                    // Nested array inside array of maps - should be excluded
+                    pins: {
+                      type: 'array',
+                      required: true,
+                      array: {
+                        type: 'int',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+
+    const result = normalizeEvents(input) as any;
+
+    // Check scalar values are included but nested arrays are not
+    expect(result['event6'].name).toBe('Event 6');
+    expect(result['event6'].attributes['sample_order.addresses[].line_address']).toBeDefined();
+    expect(result['event6'].attributes['sample_order.addresses[].city']).toBeDefined();
+    expect(result['event6'].attributes['sample_order.addresses[].pins']).toBeUndefined();
+  });
+
+  it('should follow array normalization rules correctly', () => {
+    const input = [
+      {
+        id: 'event_arrays',
+        name: 'Event Arrays',
+        payload_config: {
+          sample_order: {
+            type: 'map',
+            required: true,
+            map: {
+              // Simple scalar fields
+              id: {
+                type: 'string',
+                required: true,
+              },
+              amount: {
+                type: 'int',
+                required: true,
+              },
+              // Scalar array - should be included in output
+              tags: {
+                type: 'array',
+                required: true,
+                array: {
+                  type: 'string',
+                },
+              },
+              // Array of maps - should not be included, only its contents
+              line_items: {
+                type: 'array',
+                required: true,
+                array: {
+                  type: 'map',
+                  map: {
+                    sku: {
+                      type: 'string',
+                      required: true,
+                    },
+                    price: {
+                      type: 'int',
+                      required: true,
+                    },
+                  },
+                },
+              },
+              // Deeply nested regular map - normalize all the way
+              shipping: {
+                type: 'map',
+                required: false,
+                map: {
+                  address: {
+                    type: 'map',
+                    required: true,
+                    map: {
+                      city: {
+                        type: 'string',
+                        required: true,
+                      },
+                      state: {
+                        type: 'string',
+                        required: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+
+    const expectedOutput = {
+      event_arrays: {
+        name: 'Event Arrays',
+        attributes: {
+          // Simple scalar fields
+          'sample_order.id': {
+            type: 'string',
+            required: true,
+          },
+          'sample_order.amount': {
+            type: 'int',
+            required: true,
+          },
+          // Scalar array included
+          'sample_order.tags[]': {
+            type: 'array',
+            required: true,
+            elementType: 'string',
+          },
+          // Array of maps - only the content fields, not the array itself
+          'sample_order.line_items[].sku': {
+            type: 'string',
+            required: true,
+          },
+          'sample_order.line_items[].price': {
+            type: 'int',
+            required: true,
+          },
+          // Deep nested map fields
+          'sample_order.shipping.address.city': {
+            type: 'string',
+            required: true,
+          },
+          'sample_order.shipping.address.state': {
+            type: 'string',
+            required: true,
+          },
+        },
+      },
+    };
+
+    const result = normalizeEvents(input);
+
+    expect(result).toEqual(expectedOutput);
+  });
+
+  it('should handle elementType property correctly for arrays', () => {
+    const input = [
+      {
+        id: 'event_element_type',
+        name: 'Event Element Type',
+        payload_config: {
+          order: {
+            type: 'map',
+            required: true,
+            map: {
+              tags: {
+                type: 'array',
+                required: true,
+                array: {
+                  type: 'string',
+                },
+              },
+              amounts: {
+                type: 'array',
+                required: true,
+                array: {
+                  type: 'int',
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+
+    const expectedOutput = {
+      event_element_type: {
+        name: 'Event Element Type',
+        attributes: {
+          'order.tags[]': {
+            type: 'array',
+            required: true,
+            elementType: 'string',
+          },
+          'order.amounts[]': {
+            type: 'array',
+            required: true,
+            elementType: 'int',
+          },
+        },
+      },
+    };
+
+    const result = normalizeEvents(input);
     expect(result).toEqual(expectedOutput);
   });
 });
@@ -342,6 +813,137 @@ describe('generateRuleString', () => {
 
     expect(result).toBe(expected);
   });
+
+  it('should format string arrays correctly with escaped quotes around values', () => {
+    const rules = [
+      {
+        field: 'tags',
+        operator: 'contains_any',
+        value: '1,2,3,4,5',
+        type: 'array',
+        elementType: 'string',
+      },
+    ];
+
+    //prettier-ignore
+    const expected = "Event.tags contains_any [\"1\",\"2\",\"3\",\"4\",\"5\"]";
+    const result = generateRuleString(rules);
+
+    expect(result).toBe(expected);
+  });
+
+  it('should format number arrays correctly without quotes around values', () => {
+    const rules = [
+      {
+        field: 'amounts',
+        operator: 'contains_any',
+        value: '1,2,3,4,5',
+        type: 'array',
+        elementType: 'int',
+      },
+    ];
+
+    const expected = 'Event.amounts contains_any [1,2,3,4,5]';
+    const result = generateRuleString(rules);
+
+    expect(result).toBe(expected);
+  });
+
+  it('should format contains_all operator correctly based on element type', () => {
+    const stringRule = {
+      field: 'tags',
+      operator: 'contains_all',
+      value: 'tag1,tag2',
+      type: 'array',
+      elementType: 'string',
+    };
+
+    const numberRule = {
+      field: 'ids',
+      operator: 'contains_all',
+      value: '1,2,3',
+      type: 'array',
+      elementType: 'int',
+    };
+
+    const stringResult = generateRuleString([stringRule]);
+    const numberResult = generateRuleString([numberRule]);
+
+    //prettier-ignore
+    const expectedString = "Event.tags contains_all [\"tag1\",\"tag2\"]";
+    expect(stringResult).toBe(expectedString);
+    expect(numberResult).toBe('Event.ids contains_all [1,2,3]');
+  });
+
+  it('should handle whitespace in array values correctly', () => {
+    const rules = [
+      {
+        field: 'tags',
+        operator: 'contains_any',
+        value: ' tag1 , tag2 , tag3 ',
+        type: 'array',
+        elementType: 'string',
+      },
+    ];
+
+    //prettier-ignore
+    const expected = "Event.tags contains_any [\"tag1\",\"tag2\",\"tag3\"]";
+    const result = generateRuleString(rules);
+
+    expect(result).toBe(expected);
+  });
+
+  it('should format contains operator correctly', () => {
+    const rules = [
+      {
+        field: 'tags',
+        operator: 'contains',
+        value: 'tag1,tag2,tag3',
+        type: 'string',
+      },
+    ];
+
+    const expected = 'Event.tags in ["tag1","tag2","tag3"]';
+    const result = generateRuleString(rules);
+    expect(result).toBe(expected);
+  });
+
+  it('should convert amount fields in array values to paise', () => {
+    const rules = [
+      {
+        field: 'amount',
+        operator: 'contains_any',
+        value: '100,200,300',
+        type: 'array',
+        elementType: 'int',
+      },
+    ];
+
+    const expected = 'Event.amount contains_any [10000,20000,30000]';
+    const result = generateRuleString(rules);
+    expect(result).toBe(expected);
+  });
+
+  it('should skip fields with array elements in the middle', () => {
+    const rules = [
+      {
+        field: 'order.line_items[].price',
+        operator: 'greater_than',
+        value: 100,
+        type: 'int',
+      },
+      {
+        field: 'price',
+        operator: 'greater_than',
+        value: 100,
+        type: 'int',
+      },
+    ];
+
+    const expected = 'Event.price > 10000';
+    const result = generateRuleString(rules);
+    expect(result).toBe(expected);
+  });
 });
 
 describe('createUsageLimits', () => {
@@ -553,5 +1155,155 @@ describe('sanitizeRuleValues', () => {
   it('should return the value unchanged for fields other than "program_id"', () => {
     const result = sanitizeRuleValues('other_field', 'value');
     expect(result).toBe('value');
+  });
+});
+
+describe('getFilterRules', () => {
+  it('should create filter rules grouped by array paths', () => {
+    const rules = [
+      // Regular non-array field - should be ignored
+      {
+        field: 'order.amount',
+        operator: 'greater_than',
+        value: 100,
+        type: 'int',
+      },
+      // Array fields from order.line_items
+      {
+        field: 'order.line_items[].sku',
+        operator: 'equal_to',
+        value: 'SKU123',
+        type: 'string',
+      },
+      {
+        field: 'order.line_items[].price',
+        operator: 'greater_than',
+        value: 50,
+        type: 'int',
+      },
+      // Array fields from order.addresses
+      {
+        field: 'order.addresses[].city',
+        operator: 'equal_to',
+        value: 'Mumbai',
+        type: 'string',
+      },
+      {
+        field: 'order.addresses[].line_address',
+        operator: 'contains',
+        value: 'Main Street',
+        type: 'string',
+      },
+    ];
+
+    const result = getFilterRules(rules);
+
+    expect(result).toEqual({
+      'order.line_items': 'Event.sku == "SKU123" && Event.price > 5000',
+      'order.addresses': 'Event.city == "Mumbai" && Event.line_address in ["Main Street"]',
+    });
+  });
+
+  it('should handle different operators correctly', () => {
+    const rules = [
+      // Equal to
+      {
+        field: 'order.line_items[].sku',
+        operator: 'equal_to',
+        value: 'SKU123',
+        type: 'string',
+      },
+      // Greater than
+      {
+        field: 'order.line_items[].price',
+        operator: 'greater_than',
+        value: 50,
+        type: 'int',
+      },
+      // Is between
+      {
+        field: 'order.line_items[].quantity',
+        operator: 'is_between',
+        minValue: 5,
+        maxValue: 10,
+        type: 'int',
+      },
+      // Is (boolean)
+      {
+        field: 'order.line_items[].in_stock',
+        operator: 'is',
+        value: 'yes',
+        type: 'boolean',
+      },
+    ];
+
+    const result = getFilterRules(rules);
+
+    expect(result).toEqual({
+      'order.line_items':
+        'Event.sku == "SKU123" && Event.price > 5000 && Event.quantity >= 5 && Event.quantity <= 10 && Event.in_stock == true',
+    });
+  });
+
+  it('should handle amount fields correctly', () => {
+    const rules = [
+      {
+        field: 'order.line_items[].price',
+        operator: 'greater_than',
+        value: 100,
+        type: 'int',
+      },
+    ];
+
+    const result = getFilterRules(rules);
+
+    // Should be multiplied by 100 for paise conversion
+    expect(result).toEqual({
+      'order.line_items': 'Event.price > 10000',
+    });
+  });
+
+  it('should return null when no array fields are provided', () => {
+    const rules = [
+      {
+        field: 'order.amount',
+        operator: 'greater_than',
+        value: 100,
+        type: 'int',
+      },
+      {
+        field: 'customer.email',
+        operator: 'equal_to',
+        value: 'test@example.com',
+        type: 'string',
+      },
+    ];
+
+    const result = getFilterRules(rules);
+
+    expect(result).toBeNull();
+  });
+
+  it('should sanitize program_id values in array fields', () => {
+    const rules = [
+      {
+        field: 'order.line_items[].program_id',
+        operator: 'equal_to',
+        value: '12345',
+        type: 'string',
+      },
+      {
+        field: 'order.line_items[].program_id',
+        operator: 'equal_to',
+        value: 'iprog_67890',
+        type: 'string',
+      },
+    ];
+
+    const result = getFilterRules(rules);
+
+    expect(result).toEqual({
+      'order.line_items': 'Event.program_id == "iprog_12345" && Event.program_id == "iprog_67890"',
+    });
   });
 });

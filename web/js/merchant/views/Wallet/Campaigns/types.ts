@@ -18,7 +18,8 @@ export type AttributeTypes =
   | 'uint64'
   | 'float'
   | 'boolean'
-  | 'map';
+  | 'map'
+  | 'array';
 
 export type PrimitiveAttributeTypes = Exclude<AttributeTypes, 'map'>;
 
@@ -36,6 +37,7 @@ export interface AttributeFormField {
   minValue?: string;
   maxValue?: string;
   type?: AttributeTypes;
+  elementType?: AttributeTypes;
 }
 
 export interface FormData {
@@ -79,6 +81,7 @@ export interface Wallet {
 export interface Attribute {
   type: AttributeTypes;
   required: boolean;
+  elementType?: AttributeTypes;
 }
 
 export type ValueOf<T> = T[keyof T];

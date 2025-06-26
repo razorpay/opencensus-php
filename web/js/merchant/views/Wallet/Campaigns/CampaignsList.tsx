@@ -24,18 +24,46 @@ import {
   Spinner,
   SparklesIcon,
   PlusIcon,
+  CalendarIcon,
 } from '@razorpay/blade/components';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import moment from 'moment';
 import { fetchCampaigns, updateCampaign } from '../queries';
 import { CAMPAIGN_STATUS, CAMPAIGN_STATUS_CONFIRMATION_MESSAGES } from './constants';
 import { SessionContext } from '../context';
 import { ValueOf } from './types';
 
 const CampaignControls = ({ item, onCampaignChange }) => {
+  const today = moment();
+
+  // Don't show controls for terminated campaigns
   if (item.status === CAMPAIGN_STATUS.TERMINATED.value) {
     return null;
   }
+
+  // Don't show controls for completed campaigns (ends_at in the past)
+  if (item.ends_at && moment.unix(item.ends_at).isBefore(today)) {
+    return null;
+  }
+
+  // For scheduled campaigns, only allow termination
+  if (item.starts_at && moment.unix(item.starts_at).isAfter(today)) {
+    return (
+      <Box display="flex">
+        <Box display="flex" marginRight="spacing.8">
+          <IconButton
+            icon={() => <StopCircleIcon color="feedback.icon.negative.intense" />}
+            onClick={() => {
+              onCampaignChange(item.id, CAMPAIGN_STATUS.TERMINATED.value);
+            }}
+            accessibilityLabel="stop"
+          />
+        </Box>
+      </Box>
+    );
+  }
+
   return (
     <Box display="flex">
       <Box display="flex" marginRight="spacing.8">
@@ -80,9 +108,36 @@ const campaign_name = {
 
 const campaign_status = {
   title: 'Status',
-  value: (item) => (
-    <Badge color={CAMPAIGN_STATUS[item.status].color}>{CAMPAIGN_STATUS[item.status].label}</Badge>
-  ),
+  value: (item) => {
+    const today = moment();
+
+    //  if campaign is terminated
+    if (item.status === CAMPAIGN_STATUS.TERMINATED.value) {
+      return (
+        <Badge color={CAMPAIGN_STATUS.TERMINATED.color}>{CAMPAIGN_STATUS.TERMINATED.label}</Badge>
+      );
+    }
+
+    // Check if campaign is scheduled (starts in the future)
+    if (item.starts_at && moment.unix(item.starts_at).isAfter(today)) {
+      const formattedDate = moment.unix(item.starts_at).format('D MMM');
+      return (
+        <Badge color="information" icon={CalendarIcon}>
+          Scheduled on {formattedDate}
+        </Badge>
+      );
+    }
+
+    // Check if campaign is completed (ended in the past)
+    if (item.ends_at && moment.unix(item.ends_at).isBefore(today)) {
+      return <Badge color="neutral">Completed</Badge>;
+    }
+
+    // Use the original status from backend for active/inactive campaigns
+    return (
+      <Badge color={CAMPAIGN_STATUS[item.status].color}>{CAMPAIGN_STATUS[item.status].label}</Badge>
+    );
+  },
 };
 
 const campaign_controls = {

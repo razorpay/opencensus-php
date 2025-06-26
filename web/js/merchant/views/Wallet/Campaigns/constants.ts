@@ -8,6 +8,8 @@ export const COMPARISON_OPERATORS = {
   LESS_THAN_OR_EQUAL: 'less_than_or_equal',
   IS_BETWEEN: 'is_between',
   CONTAINS: 'contains',
+  CONTAINS_ALL: 'contains_all',
+  CONTAINS_ANY: 'contains_any',
   IS: 'is',
 };
 
@@ -58,7 +60,17 @@ export const ATTRIBUTE_TYPE_OPERATORS: Record<PrimitiveAttributeTypes, Attribute
       { value: 'is_between', label: 'is between', rule: '>= && <=' },
     ],
     boolean: [{ value: 'is', label: 'is', rule: '=' }],
+    array: [
+      { value: 'contains_all', label: 'contains all', rule: 'contains_all' },
+      { value: 'contains_all', label: 'contains any', rule: 'contains_all' },
+    ],
   };
+
+export const ATTRIBUTE_HELP_TEXT_MAPPING = {
+  [COMPARISON_OPERATORS.CONTAINS_ALL]: 'Use commas to enter multiple values',
+  [COMPARISON_OPERATORS.CONTAINS_ANY]: 'Use commas to enter multiple values',
+  [COMPARISON_OPERATORS.CONTAINS]: 'Use commas to enter multiple values',
+};
 
 export const TRIGGER_ACTIONS = {
   WALLET_CREDIT: { label: 'Credit Wallet' },
@@ -289,9 +301,35 @@ export const CAMPAIGN_STATUS = {
     value: 'TERMINATED',
     color: 'neutral',
   },
+  /**Frontend only states */
+  SCHEDULED: {
+    label: 'Scheduled',
+    value: 'SCHEDULED',
+    color: 'information',
+  },
+  COMPLETED: {
+    label: 'Completed',
+    value: 'COMPLETED',
+    color: 'neutral',
+  },
 } as const;
 
-export const NUMBER_TYPES = ['int', 'int64', 'uint', 'uint64', 'float'];
+export const NUMBER_TYPES = [
+  'int',
+  'int64',
+  'uint',
+  'float',
+  'float64',
+  'float32',
+  'uint64',
+  'uint32',
+  'int32',
+  'int8',
+  'uint8',
+  'int16',
+  'uint16',
+  'double',
+];
 export const BOOLEAN_TYPES = ['boolean'];
 
 export const CONSTANT_ACTION_CONFIGS = {
@@ -347,6 +385,48 @@ export const CONSTANT_ACTION_CONFIGS = {
     action: { type: 'constant', value: 'load' },
     method: { type: 'constant', value: 'wallet' },
   },
+  ORDER_FULFILLED: {
+    type: {
+      type: 'constant',
+      value: 'credit',
+      is_points_field: false,
+    },
+    email: {
+      type: 'dynamic',
+      value: 'shopify.order.customer_details.email',
+      is_points_field: false,
+    },
+    action: {
+      type: 'constant',
+      value: 'load',
+      is_points_field: false,
+    },
+    method: {
+      type: 'constant',
+      value: 'wallet',
+      is_points_field: false,
+    },
+    mobile: {
+      type: 'dynamic',
+      value: 'shopify.order.customer_details.contact',
+      is_points_field: false,
+    },
+    user_id: {
+      type: 'dynamic',
+      value: 'shopify.order.customer_details.id',
+      is_points_field: false,
+    },
+    currency: {
+      type: 'constant',
+      value: 'INR',
+      is_points_field: false,
+    },
+    partner_user_id: {
+      type: 'dynamic',
+      value: 'shopify.order.customer_details.external_customer_id',
+      is_points_field: false,
+    },
+  },
 };
 
 export const CAMPAIGN_STATUS_CONFIRMATION_MESSAGES = {
@@ -373,8 +453,8 @@ export const AMOUNT_ATTRIBUTES = [
   'debit',
   'amount',
   'balance',
-  'order.amount',
-  'order.line_items_total',
-  'shopify.order.amount',
-  'shopify.order.line_items_total',
+  'line_items_total',
+  'price',
+  'offer_price',
+  'tax_amount',
 ];

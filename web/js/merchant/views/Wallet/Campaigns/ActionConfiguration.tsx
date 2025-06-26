@@ -50,7 +50,14 @@ const ActionConfiguration = ({
   const AVAILABLE_CONFIG_ATTRIBUTES = useMemo(
     () =>
       Object.entries(allAttributes)
-        .filter(([_, value]) => NUMBER_TYPES.includes(value.type))
+        // Filter for numeric types and exclude array fields
+        .filter(
+          ([key, value]) =>
+            // Keep only numeric types
+            NUMBER_TYPES.includes(value.type) &&
+            // Exclude any attributes with array notation
+            !key.includes('[]'),
+        )
         .reduce((acc, [key, value]) => {
           acc[key] = value;
           return acc;
@@ -226,7 +233,7 @@ const ActionConfiguration = ({
                             validationState={fieldState.error ? 'error' : 'none'}
                             isDisabled={viewOnly}
                           />
-                          <DropdownOverlay>
+                          <DropdownOverlay width="400px">
                             <ActionList>
                               {Object.keys(AVAILABLE_CONFIG_ATTRIBUTES).map((attribute) => (
                                 <ActionListItem
