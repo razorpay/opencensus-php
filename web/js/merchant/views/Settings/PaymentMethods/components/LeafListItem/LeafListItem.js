@@ -199,7 +199,7 @@ class LeafListItem extends React.Component {
 
   handleCreateRequest = () => {
     this.setState({ loading: true });
-    const { instrument, intermediateInstrument, leafInstrument, instrumentsTat } = this.props;
+    const { instrument, intermediateInstrument, leafInstrument, instrumentsTat, user } = this.props;
     const slugParts = ['pg', intermediateInstrument?.slug, leafInstrument?.slug, instrument?.slug];
 
     /**
@@ -231,6 +231,7 @@ class LeafListItem extends React.Component {
         header: 'Confirmation',
         message: (
           <ConfirmBoxContext
+            isCCEmiEnabled={user.isShowSegregatedCreditEmi}
             instrumentSlug={instrument?.slug}
             numberOfDays={instrumentsTat && instrumentsTat[requestSlug]}
             onRequestAbort={() => this.handleOnCancelRequest(instrument, leafInstrument)}

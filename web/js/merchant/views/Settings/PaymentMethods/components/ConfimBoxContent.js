@@ -32,11 +32,47 @@ const ConfirmCheckbox = ({ isSodexoInstrument, isChecked, toggleCheckBox }) => {
   );
 };
 
-const ConfirmBoxContext = ({ instrumentSlug, numberOfDays, onRequestAbort, onRequest }) => {
+const ConfirmBoxContext = ({
+  isCCEmiEnabled = false,
+  instrumentSlug,
+  numberOfDays,
+  onRequestAbort,
+  onRequest,
+}) => {
   const isSodexoInstrument = instrumentSlug === 'domestic.sodexo';
+  const isCCInstrument = instrumentSlug === 'credit';
   const [isChecked, setIsChecked] = useState(isSodexoInstrument);
 
   const toggleCheckBox = () => setIsChecked(!isChecked);
+
+  if (isCCInstrument && isCCEmiEnabled)
+    return (
+      <>
+        <Input.Check
+          name="instruments"
+          defaultValue={false}
+          checked={isChecked}
+          onChange={toggleCheckBox}
+          autoRender
+          fieldLabel={
+            'I confirm that Credit card EMI for the mentioned banks to be enabled for my customers'
+          }
+        />
+        <div className="Modal__actions">
+          <button type="button" className="btn btn-outline" onClick={onRequestAbort}>
+            Cancel
+          </button>
+          <AsyncButton
+            type="button"
+            className="btn btn-primary"
+            onClick={onRequest}
+            text="Request"
+            pendingText="Requesting..."
+            disabled={!isChecked}
+          />
+        </div>
+      </>
+    );
 
   return (
     <>
