@@ -218,7 +218,7 @@ describe('Refund Modal', () => {
         payment: { ...payment, currency: 'KWD', amount: 1001, amount_refunded: 0 },
       });
       const issueRefund = screen.getByRole('button', {
-        name: /Issue partial refund/,
+        name: /Issue full refund/,
       });
       await userEvent.click(issueRefund);
       expect(

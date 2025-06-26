@@ -19,7 +19,7 @@
     "playwright-msw": "^3.0.1",
     "@playwright/test": "1.45.3",
     "@reportportal/agent-js-playwright": "5.1.9",
-    "@razorpay/i18nify-js": "1.12.3",
+    "@razorpay/i18nify-js": "1.12.5",
     "moment": "2.29.4"
   },
   "devDependencies": {

@@ -24,7 +24,7 @@ importers:
         version: 2.27.1
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(d41cf90c30de5063c446a091b5650749)
+        version: 12.31.5(494c35b75713c568217b34c3cede0a67)
       '@razorpay/blade-old':
         specifier: npm:@razorpay/blade-old@0.0.6-hotfix-styled-components
         version: 0.0.6-hotfix-styled-components(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@17.0.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))
@@ -32,11 +32,11 @@ importers:
         specifier: npm:@razorpay/blade-old@0.0.1
         version: '@razorpay/blade-old@0.0.1(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@17.0.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))'
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/i18nify-react':
         specifier: 4.0.12
-        version: 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+        version: 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(2d3e2529a2a8c49186ed02743820eb49)
@@ -484,10 +484,10 @@ importers:
         version: 3.2.2(react@17.0.2)
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(8bafcd1148ed426ec8bc2e4fbcc7a949)
+        version: 12.31.5(59bd9c11517f11aadf43f1d6e62d829e)
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(16d7e9093730054082d74cd2a2b49fa5)
@@ -587,10 +587,10 @@ importers:
         version: link:../../libs/shared-core
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(8bafcd1148ed426ec8bc2e4fbcc7a949)
+        version: 12.31.5(59bd9c11517f11aadf43f1d6e62d829e)
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(e6f78ccc33bc196b95b03c90a99dcb72)
@@ -672,10 +672,10 @@ importers:
     dependencies:
       '@razorpay/blade':
         specifier: 12.17.1
-        version: 12.17.1(2e415b398e3a3bb7af9d8c9e7298e14f)
+        version: 12.17.1(2fb0695b3884026b145c8fb40f1a0a0d)
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(7e6ff280bda95c0cb09d0a8d21976390)
@@ -772,10 +772,10 @@ importers:
         version: link:../../libs/shared-core
       '@razorpay/blade':
         specifier: 12.8.2
-        version: 12.8.2(8bafcd1148ed426ec8bc2e4fbcc7a949)
+        version: 12.8.2(59bd9c11517f11aadf43f1d6e62d829e)
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(e6f78ccc33bc196b95b03c90a99dcb72)
@@ -857,10 +857,10 @@ importers:
     dependencies:
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(8bafcd1148ed426ec8bc2e4fbcc7a949)
+        version: 12.31.5(59bd9c11517f11aadf43f1d6e62d829e)
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(e6f78ccc33bc196b95b03c90a99dcb72)
@@ -996,13 +996,13 @@ importers:
     dependencies:
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(8bafcd1148ed426ec8bc2e4fbcc7a949)
+        version: 12.31.5(59bd9c11517f11aadf43f1d6e62d829e)
       '@razorpay/blade-old':
         specifier: npm:@razorpay/blade-old@0.0.6-hotfix-styled-components
         version: 0.0.6-hotfix-styled-components(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@17.0.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2))
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(e6f78ccc33bc196b95b03c90a99dcb72)
@@ -1132,7 +1132,7 @@ importers:
         version: 0.8.9(@rspack/core@1.2.2(@swc/helpers@0.5.15))(bufferutil@4.0.8)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(typescript@5.5.2)(utf-8-validate@5.0.10)(vue-tsc@1.8.27(typescript@5.5.2))(webpack@5.76.0(@swc/core@1.10.15(@swc/helpers@0.5.15))(esbuild@0.19.12))
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(8bafcd1148ed426ec8bc2e4fbcc7a949)
+        version: 12.31.5(59bd9c11517f11aadf43f1d6e62d829e)
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(729a3087621d9d979e5e8f240a543b9e)
@@ -1352,8 +1352,8 @@ importers:
         specifier: 1.45.3
         version: 1.45.3
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@reportportal/agent-js-playwright':
         specifier: 5.1.9
         version: 5.1.9
@@ -1375,10 +1375,10 @@ importers:
         version: link:../shared-core
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(8bafcd1148ed426ec8bc2e4fbcc7a949)
+        version: 12.31.5(59bd9c11517f11aadf43f1d6e62d829e)
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@types/graphql':
         specifier: ^14.5.0
         version: 14.5.0
@@ -1396,10 +1396,10 @@ importers:
     dependencies:
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(8bafcd1148ed426ec8bc2e4fbcc7a949)
+        version: 12.31.5(59bd9c11517f11aadf43f1d6e62d829e)
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(e6f78ccc33bc196b95b03c90a99dcb72)
@@ -1457,10 +1457,10 @@ importers:
     dependencies:
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(8bafcd1148ed426ec8bc2e4fbcc7a949)
+        version: 12.31.5(59bd9c11517f11aadf43f1d6e62d829e)
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(e6f78ccc33bc196b95b03c90a99dcb72)
@@ -1557,7 +1557,7 @@ importers:
     dependencies:
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(93459ab6e07db02798df5394c25fbc60)
+        version: 12.31.5(78fe1f64e3e0edcb5df796a7edbe1d7e)
       '@razorpay/blade-old':
         specifier: npm:@razorpay/blade-old@0.0.6-hotfix-styled-components
         version: 0.0.6-hotfix-styled-components(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@16.13.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))
@@ -1568,11 +1568,11 @@ importers:
         specifier: 0.9.35
         version: 0.9.35(1b25ede663b84ad7acc25b21b7389c23)
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/i18nify-react':
         specifier: 4.0.12
-        version: 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+        version: 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(1bf4ef604ddc7615a948975169ce3fb6)
@@ -1993,7 +1993,7 @@ importers:
         version: 3.1.0(react-hook-form@7.52.1(react@17.0.2))
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(7b29ea1aea3306423ee5327d20f70760)
+        version: 12.31.5(129937087f8c748e76ab2fb83f7bc42a)
       '@razorpay/blade-old':
         specifier: npm:@razorpay/blade-old@0.0.6-hotfix-styled-components
         version: 0.0.6-hotfix-styled-components(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@16.13.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))
@@ -2004,11 +2004,11 @@ importers:
         specifier: 0.9.35
         version: 0.9.35(87b062754ee000f0676cc47d368fcc8d)
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/i18nify-react':
         specifier: 4.0.12
-        version: 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+        version: 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(a32a3bda700dfa5ed5fdca7ae7237fde)
@@ -2438,7 +2438,7 @@ importers:
     dependencies:
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(7b29ea1aea3306423ee5327d20f70760)
+        version: 12.31.5(129937087f8c748e76ab2fb83f7bc42a)
       '@razorpay/blade-old':
         specifier: npm:@razorpay/blade-old@0.0.6-hotfix-styled-components
         version: 0.0.6-hotfix-styled-components(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@16.13.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))
@@ -2449,11 +2449,11 @@ importers:
         specifier: 0.9.35
         version: 0.9.35(87b062754ee000f0676cc47d368fcc8d)
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/i18nify-react':
         specifier: 4.0.12
-        version: 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+        version: 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(a32a3bda700dfa5ed5fdca7ae7237fde)
@@ -2862,7 +2862,7 @@ importers:
     dependencies:
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(7b29ea1aea3306423ee5327d20f70760)
+        version: 12.31.5(129937087f8c748e76ab2fb83f7bc42a)
       '@razorpay/blade-old':
         specifier: npm:@razorpay/blade-old@0.0.6-hotfix-styled-components
         version: 0.0.6-hotfix-styled-components(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@16.13.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))
@@ -2873,11 +2873,11 @@ importers:
         specifier: 0.9.35
         version: 0.9.35(87b062754ee000f0676cc47d368fcc8d)
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/i18nify-react':
         specifier: 4.0.12
-        version: 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+        version: 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(a32a3bda700dfa5ed5fdca7ae7237fde)
@@ -3286,7 +3286,7 @@ importers:
     dependencies:
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(7b29ea1aea3306423ee5327d20f70760)
+        version: 12.31.5(129937087f8c748e76ab2fb83f7bc42a)
       '@razorpay/blade-old':
         specifier: npm:@razorpay/blade-old@0.0.6-hotfix-styled-components
         version: 0.0.6-hotfix-styled-components(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@16.13.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))
@@ -3297,11 +3297,11 @@ importers:
         specifier: 0.9.35
         version: 0.9.35(87b062754ee000f0676cc47d368fcc8d)
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/i18nify-react':
         specifier: 4.0.12
-        version: 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+        version: 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(a32a3bda700dfa5ed5fdca7ae7237fde)
@@ -3710,7 +3710,7 @@ importers:
     dependencies:
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(7b29ea1aea3306423ee5327d20f70760)
+        version: 12.31.5(129937087f8c748e76ab2fb83f7bc42a)
       '@razorpay/blade-old':
         specifier: npm:@razorpay/blade-old@0.0.6-hotfix-styled-components
         version: 0.0.6-hotfix-styled-components(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@16.13.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))
@@ -3721,11 +3721,11 @@ importers:
         specifier: 0.9.35
         version: 0.9.35(87b062754ee000f0676cc47d368fcc8d)
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/i18nify-react':
         specifier: 4.0.12
-        version: 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+        version: 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(a32a3bda700dfa5ed5fdca7ae7237fde)
@@ -4134,7 +4134,7 @@ importers:
     dependencies:
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(7b29ea1aea3306423ee5327d20f70760)
+        version: 12.31.5(129937087f8c748e76ab2fb83f7bc42a)
       '@razorpay/blade-old':
         specifier: npm:@razorpay/blade-old@0.0.6-hotfix-styled-components
         version: 0.0.6-hotfix-styled-components(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@16.13.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))
@@ -4145,11 +4145,11 @@ importers:
         specifier: 0.9.35
         version: 0.9.35(87b062754ee000f0676cc47d368fcc8d)
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/i18nify-react':
         specifier: 4.0.12
-        version: 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+        version: 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(a32a3bda700dfa5ed5fdca7ae7237fde)
@@ -4558,7 +4558,7 @@ importers:
     dependencies:
       '@razorpay/blade':
         specifier: 12.31.5
-        version: 12.31.5(7b29ea1aea3306423ee5327d20f70760)
+        version: 12.31.5(129937087f8c748e76ab2fb83f7bc42a)
       '@razorpay/blade-old':
         specifier: npm:@razorpay/blade-old@0.0.6-hotfix-styled-components
         version: 0.0.6-hotfix-styled-components(prop-types@15.7.2)(react-dom@17.0.2(react@17.0.2))(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-svg@12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react-test-renderer@16.13.1(react@17.0.2))(react@17.0.2)(styled-components@5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2))
@@ -4569,11 +4569,11 @@ importers:
         specifier: 0.9.35
         version: 0.9.35(87b062754ee000f0676cc47d368fcc8d)
       '@razorpay/i18nify-js':
-        specifier: 1.12.3
-        version: 1.12.3
+        specifier: 1.12.5
+        version: 1.12.5
       '@razorpay/i18nify-react':
         specifier: 4.0.12
-        version: 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+        version: 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@razorpay/universe-cli':
         specifier: 20.2.13
         version: 20.2.13(a32a3bda700dfa5ed5fdca7ae7237fde)
@@ -8537,6 +8537,11 @@ packages:
       react-native-svg: ^12.3.0
       react-native-tab-view: ^3.5.2
       styled-components: ^5
+    peerDependenciesMeta:
+      react-native:
+        optional: true
+      react-native-reanimated:
+        optional: true
 
   '@razorpay/blade@12.8.2':
     resolution: {integrity: sha512-H5d5oxM8dVsAXKaTfBcfHQW4806jDtTvZccnNEnNnB2W4gZr14T++rBGb1dHY5l9hp9BV9v072AJG8P6XOKyRw==, tarball: https://npm.pkg.github.com/download/@razorpay/blade/12.8.2/675b031080d5bdf1ed51c30783958d112a92d434}
@@ -8573,8 +8578,8 @@ packages:
       react-dom: 17.0.2
       xss: ^1.0.11
 
-  '@razorpay/i18nify-js@1.12.3':
-    resolution: {integrity: sha512-e5WtYcA9LQAJ+9h4Iasyftj3c6qIg9XrieAgl6vvk1JHFOkGHgoM7EQmo0ztttTOLxwkLp38VTdCI4B1H0fiLg==, tarball: https://npm.pkg.github.com/download/@razorpay/i18nify-js/1.12.3/6fa86ba0f9277a436df5eae1fa1db9ce3d2bbb6a}
+  '@razorpay/i18nify-js@1.12.5':
+    resolution: {integrity: sha512-V3eVRgdNIutLqqAm+h2gTP9GT0QsJPEs7XSgNzqwyJk1qsp6sQRCgKGquerft1xR/hbYHuKEqwuk4U5BBw8Qgg==, tarball: https://npm.pkg.github.com/download/@razorpay/i18nify-js/1.12.5/e4183d2a8e0108b864e772f45200174d71b935dc}
 
   '@razorpay/i18nify-react@4.0.12':
     resolution: {integrity: sha512-0q573j1bGN3CcF1UCMfg0JTDZlM9wTiiQEUprRMPviS3QG5yhTRFrswkY3K+9CXf0wHV5Fu4SKOCCQoJHueMMg==, tarball: https://npm.pkg.github.com/download/@razorpay/i18nify-react/4.0.12/e440fb70e3034ef314e6fc404f513035b99d7bbf}
@@ -30056,7 +30061,7 @@ snapshots:
     transitivePeerDependencies:
       - react-test-renderer
 
-  '@razorpay/blade@11.21.3(4449895c399dd1bbabe2469e5b08a255)':
+  '@razorpay/blade@11.21.3(511576c349f23ef979bbda34edd6253b)':
     dependencies:
       '@babel/runtime': 7.20.0
       '@emotion/react': 11.11.1(@types/react@17.0.39)(react@17.0.2)
@@ -30067,8 +30072,8 @@ snapshots:
       '@mantine/core': 6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@mantine/dates': 6.0.21(@mantine/core@6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(dayjs@1.11.10)(react@17.0.2)
       '@mantine/hooks': 6.0.21(react@17.0.2)
-      '@razorpay/i18nify-js': 1.12.3
-      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@razorpay/i18nify-js': 1.12.5
+      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@table-library/react-table-library': 4.1.7(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@use-gesture/react': 10.2.24(react@17.0.2)
       body-scroll-lock-upgrade: 1.1.0
@@ -30092,7 +30097,7 @@ snapshots:
       - '@types/react'
       - supports-color
 
-  '@razorpay/blade@11.21.3(87307c93bf549f4f473d8a68afdac167)':
+  '@razorpay/blade@11.21.3(c8d3fa15097faaf8e553f93405fa85a9)':
     dependencies:
       '@babel/runtime': 7.20.0
       '@emotion/react': 11.11.1(@types/react@17.0.39)(react@17.0.2)
@@ -30103,8 +30108,8 @@ snapshots:
       '@mantine/core': 6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@mantine/dates': 6.0.21(@mantine/core@6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(dayjs@1.11.10)(react@17.0.2)
       '@mantine/hooks': 6.0.21(react@17.0.2)
-      '@razorpay/i18nify-js': 1.12.3
-      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@razorpay/i18nify-js': 1.12.5
+      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@table-library/react-table-library': 4.1.7(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@use-gesture/react': 10.2.24(react@17.0.2)
       body-scroll-lock-upgrade: 1.1.0
@@ -30128,7 +30133,7 @@ snapshots:
       - '@types/react'
       - supports-color
 
-  '@razorpay/blade@12.17.1(2e415b398e3a3bb7af9d8c9e7298e14f)':
+  '@razorpay/blade@12.17.1(2fb0695b3884026b145c8fb40f1a0a0d)':
     dependencies:
       '@babel/runtime': 7.20.0
       '@emotion/react': 11.11.1(@types/react@17.0.39)(react@17.0.2)
@@ -30139,8 +30144,8 @@ snapshots:
       '@mantine/core': 6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@mantine/dates': 6.0.21(@mantine/core@6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(dayjs@1.11.10)(react@17.0.2)
       '@mantine/hooks': 6.0.21(react@17.0.2)
-      '@razorpay/i18nify-js': 1.12.3
-      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@razorpay/i18nify-js': 1.12.5
+      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@table-library/react-table-library': 4.1.7(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@use-gesture/react': 10.2.24(react@17.0.2)
       body-scroll-lock-upgrade: 1.1.0
@@ -30166,7 +30171,7 @@ snapshots:
       - '@types/react'
       - supports-color
 
-  '@razorpay/blade@12.31.5(7b29ea1aea3306423ee5327d20f70760)':
+  '@razorpay/blade@12.31.5(129937087f8c748e76ab2fb83f7bc42a)':
     dependencies:
       '@babel/runtime': 7.20.0
       '@emotion/react': 11.11.1(@types/react@17.0.39)(react@17.0.2)
@@ -30177,8 +30182,8 @@ snapshots:
       '@mantine/core': 6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@mantine/dates': 6.0.21(@mantine/core@6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(dayjs@1.11.10)(react@17.0.2)
       '@mantine/hooks': 6.0.21(react@17.0.2)
-      '@razorpay/i18nify-js': 1.12.3
-      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@razorpay/i18nify-js': 1.12.5
+      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@table-library/react-table-library': 4.1.7(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@use-gesture/react': 10.2.24(react@17.0.2)
       body-scroll-lock-upgrade: 1.1.0
@@ -30187,10 +30192,8 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
       react-hot-toast: 2.4.1(csstype@3.1.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      react-native: 0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
       react-native-gesture-handler: 2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-pager-view: 6.3.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-native-reanimated: 3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-svg: 12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-tab-view: 2.15.1(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-window: 1.8.11(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -30199,85 +30202,14 @@ snapshots:
       tinycolor2: 1.6.0
       ts-deepmerge: 6.2.0
       use-presence: 1.3.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-    transitivePeerDependencies:
-      - '@types/react'
-      - supports-color
-
-  '@razorpay/blade@12.31.5(8bafcd1148ed426ec8bc2e4fbcc7a949)':
-    dependencies:
-      '@babel/runtime': 7.20.0
-      '@emotion/react': 11.11.1(@types/react@17.0.39)(react@17.0.2)
-      '@floating-ui/react': 0.26.13(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      '@floating-ui/react-native': 0.10.4(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      '@gorhom/bottom-sheet': 4.6.1(@types/react-native@0.65.10)(@types/react@17.0.39)(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      '@gorhom/portal': 1.0.14(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      '@mantine/core': 6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      '@mantine/dates': 6.0.21(@mantine/core@6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(dayjs@1.11.10)(react@17.0.2)
-      '@mantine/hooks': 6.0.21(react@17.0.2)
-      '@razorpay/i18nify-js': 1.12.3
-      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      '@table-library/react-table-library': 4.1.7(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      '@use-gesture/react': 10.2.24(react@17.0.2)
-      body-scroll-lock-upgrade: 1.1.0
-      dayjs: 1.11.10
-      framer-motion: 6.5.1(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      react: 17.0.2
-      react-dom: 17.0.2(react@17.0.2)
-      react-hot-toast: 2.4.1(csstype@3.1.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+    optionalDependencies:
       react-native: 0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
-      react-native-gesture-handler: 2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-native-pager-view: 6.3.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-reanimated: 3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-native-svg: 12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-native-tab-view: 2.15.1(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-window: 1.8.11(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      react-zoom-pan-pinch: 3.7.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      styled-components: 5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2)
-      tinycolor2: 1.6.0
-      ts-deepmerge: 6.2.0
-      use-presence: 1.3.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
     transitivePeerDependencies:
       - '@types/react'
       - supports-color
 
-  '@razorpay/blade@12.31.5(93459ab6e07db02798df5394c25fbc60)':
-    dependencies:
-      '@babel/runtime': 7.20.0
-      '@emotion/react': 11.11.1(@types/react@17.0.39)(react@17.0.2)
-      '@floating-ui/react': 0.26.13(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      '@floating-ui/react-native': 0.10.4(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      '@gorhom/bottom-sheet': 4.6.1(@types/react-native@0.65.10)(@types/react@17.0.39)(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      '@gorhom/portal': 1.0.14(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      '@mantine/core': 6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      '@mantine/dates': 6.0.21(@mantine/core@6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(dayjs@1.11.10)(react@17.0.2)
-      '@mantine/hooks': 6.0.21(react@17.0.2)
-      '@razorpay/i18nify-js': 1.12.3
-      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      '@table-library/react-table-library': 4.1.7(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      '@use-gesture/react': 10.2.24(react@17.0.2)
-      body-scroll-lock-upgrade: 1.1.0
-      dayjs: 1.11.10
-      framer-motion: 6.5.1(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      react: 17.0.2
-      react-dom: 17.0.2(react@17.0.2)
-      react-hot-toast: 2.4.1(csstype@3.1.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      react-native: 0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
-      react-native-gesture-handler: 2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-native-pager-view: 6.3.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-native-reanimated: 3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-native-svg: 12.5.1(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-native-tab-view: 2.15.1(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-window: 1.8.11(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      react-zoom-pan-pinch: 3.7.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      styled-components: 5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2)
-      tinycolor2: 1.6.0
-      ts-deepmerge: 6.2.0
-      use-presence: 1.3.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-    transitivePeerDependencies:
-      - '@types/react'
-      - supports-color
-
-  '@razorpay/blade@12.31.5(d41cf90c30de5063c446a091b5650749)':
+  '@razorpay/blade@12.31.5(494c35b75713c568217b34c3cede0a67)':
     dependencies:
       '@babel/runtime': 7.20.0
       '@emotion/react': 11.11.1(@types/react@17.0.39)(react@17.0.2)
@@ -30288,8 +30220,8 @@ snapshots:
       '@mantine/core': 6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@mantine/dates': 6.0.21(@mantine/core@6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(dayjs@1.11.10)(react@17.0.2)
       '@mantine/hooks': 6.0.21(react@17.0.2)
-      '@razorpay/i18nify-js': 1.12.3
-      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@razorpay/i18nify-js': 1.12.5
+      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@table-library/react-table-library': 4.1.7(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@use-gesture/react': 10.2.24(react@17.0.2)
       body-scroll-lock-upgrade: 1.1.0
@@ -30298,10 +30230,8 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
       react-hot-toast: 2.4.1(csstype@3.1.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
-      react-native: 0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
       react-native-gesture-handler: 2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-pager-view: 6.3.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
-      react-native-reanimated: 3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-svg: 12.5.1(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-native-tab-view: 2.15.1(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
       react-window: 1.8.11(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -30310,11 +30240,14 @@ snapshots:
       tinycolor2: 1.6.0
       ts-deepmerge: 6.2.0
       use-presence: 1.3.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+    optionalDependencies:
+      react-native: 0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
+      react-native-reanimated: 3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.16.11(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
     transitivePeerDependencies:
       - '@types/react'
       - supports-color
 
-  '@razorpay/blade@12.8.2(8bafcd1148ed426ec8bc2e4fbcc7a949)':
+  '@razorpay/blade@12.31.5(59bd9c11517f11aadf43f1d6e62d829e)':
     dependencies:
       '@babel/runtime': 7.20.0
       '@emotion/react': 11.11.1(@types/react@17.0.39)(react@17.0.2)
@@ -30325,8 +30258,84 @@ snapshots:
       '@mantine/core': 6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@mantine/dates': 6.0.21(@mantine/core@6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(dayjs@1.11.10)(react@17.0.2)
       '@mantine/hooks': 6.0.21(react@17.0.2)
-      '@razorpay/i18nify-js': 1.12.3
-      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@razorpay/i18nify-js': 1.12.5
+      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@table-library/react-table-library': 4.1.7(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@use-gesture/react': 10.2.24(react@17.0.2)
+      body-scroll-lock-upgrade: 1.1.0
+      dayjs: 1.11.10
+      framer-motion: 6.5.1(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      react: 17.0.2
+      react-dom: 17.0.2(react@17.0.2)
+      react-hot-toast: 2.4.1(csstype@3.1.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      react-native-gesture-handler: 2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
+      react-native-pager-view: 6.3.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
+      react-native-svg: 12.5.1(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
+      react-native-tab-view: 2.15.1(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
+      react-window: 1.8.11(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      react-zoom-pan-pinch: 3.7.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      styled-components: 5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@18.2.0)(react@17.0.2)
+      tinycolor2: 1.6.0
+      ts-deepmerge: 6.2.0
+      use-presence: 1.3.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+    optionalDependencies:
+      react-native: 0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
+      react-native-reanimated: 3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
+    transitivePeerDependencies:
+      - '@types/react'
+      - supports-color
+
+  '@razorpay/blade@12.31.5(78fe1f64e3e0edcb5df796a7edbe1d7e)':
+    dependencies:
+      '@babel/runtime': 7.20.0
+      '@emotion/react': 11.11.1(@types/react@17.0.39)(react@17.0.2)
+      '@floating-ui/react': 0.26.13(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@floating-ui/react-native': 0.10.4(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
+      '@gorhom/bottom-sheet': 4.6.1(@types/react-native@0.65.10)(@types/react@17.0.39)(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
+      '@gorhom/portal': 1.0.14(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
+      '@mantine/core': 6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@mantine/dates': 6.0.21(@mantine/core@6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(dayjs@1.11.10)(react@17.0.2)
+      '@mantine/hooks': 6.0.21(react@17.0.2)
+      '@razorpay/i18nify-js': 1.12.5
+      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@table-library/react-table-library': 4.1.7(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@use-gesture/react': 10.2.24(react@17.0.2)
+      body-scroll-lock-upgrade: 1.1.0
+      dayjs: 1.11.10
+      framer-motion: 6.5.1(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      react: 17.0.2
+      react-dom: 17.0.2(react@17.0.2)
+      react-hot-toast: 2.4.1(csstype@3.1.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      react-native-gesture-handler: 2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
+      react-native-pager-view: 6.3.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
+      react-native-svg: 12.5.1(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
+      react-native-tab-view: 2.15.1(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
+      react-window: 1.8.11(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      react-zoom-pan-pinch: 3.7.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      styled-components: 5.3.11(react-dom@17.0.2(react@17.0.2))(react-is@17.0.1)(react@17.0.2)
+      tinycolor2: 1.6.0
+      ts-deepmerge: 6.2.0
+      use-presence: 1.3.0(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+    optionalDependencies:
+      react-native: 0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10)
+      react-native-reanimated: 3.8.1(@babel/core@7.17.8)(react-native@0.66.5(@babel/core@7.17.8)(@babel/preset-env@7.24.4(@babel/core@7.17.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
+    transitivePeerDependencies:
+      - '@types/react'
+      - supports-color
+
+  '@razorpay/blade@12.8.2(59bd9c11517f11aadf43f1d6e62d829e)':
+    dependencies:
+      '@babel/runtime': 7.20.0
+      '@emotion/react': 11.11.1(@types/react@17.0.39)(react@17.0.2)
+      '@floating-ui/react': 0.26.13(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@floating-ui/react-native': 0.10.4(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
+      '@gorhom/bottom-sheet': 4.6.1(@types/react-native@0.65.10)(@types/react@17.0.39)(react-native-gesture-handler@2.16.0(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native-reanimated@3.8.1(@babel/core@7.25.8)(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2))(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
+      '@gorhom/portal': 1.0.14(react-native@0.66.5(@babel/core@7.25.8)(@babel/preset-env@7.24.4(@babel/core@7.25.8))(bufferutil@4.0.8)(encoding@0.1.13)(react@17.0.2)(utf-8-validate@5.0.10))(react@17.0.2)
+      '@mantine/core': 6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@mantine/dates': 6.0.21(@mantine/core@6.0.21(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(@types/react@17.0.39)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(@mantine/hooks@6.0.21(react@17.0.2))(dayjs@1.11.10)(react@17.0.2)
+      '@mantine/hooks': 6.0.21(react@17.0.2)
+      '@razorpay/i18nify-js': 1.12.5
+      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@table-library/react-table-library': 4.1.7(@emotion/react@11.11.1(@types/react@17.0.39)(react@17.0.2))(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@use-gesture/react': 10.2.24(react@17.0.2)
       body-scroll-lock-upgrade: 1.1.0
@@ -30354,9 +30363,9 @@ snapshots:
 
   '@razorpay/frontend-care@0.9.35(1b25ede663b84ad7acc25b21b7389c23)':
     dependencies:
-      '@razorpay/blade': 11.21.3(87307c93bf549f4f473d8a68afdac167)
-      '@razorpay/i18nify-js': 1.12.3
-      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@razorpay/blade': 11.21.3(c8d3fa15097faaf8e553f93405fa85a9)
+      '@razorpay/i18nify-js': 1.12.5
+      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       botframework-directlinejs: 0.15.5(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
       chart.js: 4.4.2
       react: 17.0.2
@@ -30384,9 +30393,9 @@ snapshots:
 
   '@razorpay/frontend-care@0.9.35(87b062754ee000f0676cc47d368fcc8d)':
     dependencies:
-      '@razorpay/blade': 11.21.3(4449895c399dd1bbabe2469e5b08a255)
-      '@razorpay/i18nify-js': 1.12.3
-      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@razorpay/blade': 11.21.3(511576c349f23ef979bbda34edd6253b)
+      '@razorpay/i18nify-js': 1.12.5
+      '@razorpay/i18nify-react': 4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       botframework-directlinejs: 0.15.5(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@5.0.10)
       chart.js: 4.4.2
       react: 17.0.2
@@ -30412,13 +30421,13 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@razorpay/i18nify-js@1.12.3':
+  '@razorpay/i18nify-js@1.12.5':
     dependencies:
       '@internationalized/date': 3.5.2
 
-  '@razorpay/i18nify-react@4.0.12(@razorpay/i18nify-js@1.12.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
+  '@razorpay/i18nify-react@4.0.12(@razorpay/i18nify-js@1.12.5)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
     dependencies:
-      '@razorpay/i18nify-js': 1.12.3
+      '@razorpay/i18nify-js': 1.12.5
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
 

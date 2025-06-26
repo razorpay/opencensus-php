@@ -21,7 +21,7 @@
   "dependencies": {
     "@razorpay/universe-cli": "20.2.13",
     "@razorpay/blade": "12.17.1",
-    "@razorpay/i18nify-js": "1.12.3",
+    "@razorpay/i18nify-js": "1.12.5",
     "react-dom": "17.0.2",
     "react-query": "2.23.0",
     "react-router-dom": "6.14.2",

@@ -27,7 +27,7 @@
   "devDependencies": {
     "@libs/shared-core": "workspace:*",
     "@razorpay/blade": "12.31.5",
-    "@razorpay/i18nify-js": "1.12.3",
+    "@razorpay/i18nify-js": "1.12.5",
     "@types/graphql": "^14.5.0",
     "@types/react": "17.0.39",
     "graphql": "16.8.1",

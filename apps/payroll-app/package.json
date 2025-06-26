@@ -16,7 +16,7 @@
     "react-dom": "17.0.2",
     "@razorpay/universe-cli": "20.2.13",
     "@razorpay/blade": "12.8.2",
-    "@razorpay/i18nify-js": "1.12.3",
+    "@razorpay/i18nify-js": "1.12.5",
     "react-router-dom": "6.14.2",
     "styled-components": "5.3.11",
     "moment": "2.29.4",
