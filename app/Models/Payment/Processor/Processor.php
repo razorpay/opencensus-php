@@ -11424,14 +11424,21 @@ class Processor
             //$this subscription data is not being initialize for the initial payment. if subscription is not present do fetching.
             if ($this->subscription == null)
             {
+                $subscriptionData = [
+                    Payment\Entity::AMOUNT          => $this->payment->getAmount(),
+                    Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($this->payment->getSubscriptionId()),
+                    Payment\Entity::METHOD          => $this->payment->getMethod(),
+                ];
+
+                if ($gatewayData['token'] == null)
+                {
+                    $subscriptionData[Payment\Entity::TOKEN] = $this->payment->getTokenId();
+                }
+
                 $this->subscription = $this->app['module']
                     ->subscription
                     ->fetchSubscriptionInfo(
-                        [
-                            Payment\Entity::AMOUNT          => $this->payment->getAmount(),
-                            Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($this->payment->getSubscriptionId()),
-                            Payment\Entity::METHOD          => $input['method'],
-                        ],
+                        $subscriptionData,
                         $this->payment->merchant,
                     );
             }
