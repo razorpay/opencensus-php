@@ -1140,6 +1140,22 @@ export const splitzConfig: SplitzInitConfig = {
           ],
         },
       },
+      {
+        uniqueHashKey: 'versioning_modal_june_2025',
+        experimentId: {
+          beta: 'QlpcWpNCcMfTM4',
+          production: 'QljR2C2TuoSrgT',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
     ],
     linkedAccount: [],
     pokedex: [],

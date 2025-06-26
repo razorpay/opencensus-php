@@ -16,6 +16,15 @@ import {
 playwrightTest.beforeEach(async ({ context, page }) => {
   await hideSearchFTUXBannerByLocalStorage({ page });
   await setUserInteractedWithHomeConsent({ page });
+
+  // Set versioning modal auto open count to prevent modal from showing
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      'versioning_modal_auto_open',
+      JSON.stringify({ count: 20, expiresAt: 100 })
+    );
+  });
+
   await page.goto(routes.SIGN_IN_PATH);
   await expect(page).toHaveTitle(/Razorpay Accounts/);
 });

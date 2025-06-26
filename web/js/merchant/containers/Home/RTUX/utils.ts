@@ -47,3 +47,11 @@ export const isDateRangeForInsightChartsEnabled = (abExperiments: any = {}): boo
 export const isOmniHomepageEnabled = (abExperiments: any = {}): boolean => {
   return isExperimentEnabled(abExperiments.omni_homepage_enabled);
 };
+
+export const isVersioningBannerEnabled = (splitz, user: User) => {
+  return (
+    isExperimentEnabled(splitz?.abExperiments?.versioning_modal_june_2025) &&
+    user.isCountryIndia &&
+    user.isOrgRZP
+  );
+};

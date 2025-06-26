@@ -1,7 +1,8 @@
 import { moment } from './moment';
 import { User } from 'common/typings';
 import { isExperimentEnabled } from 'common/splitz/utils';
-import { SELF_SERVE_REKYC_HIDE_MODAL } from 'merchant/components/SelfServeRekyc/constants';
+import { SELF_SERVE_REKYC_HIDE_MODAL, STATUSES_TO_SHOW_MODAL } from 'merchant/components/SelfServeRekyc/constants';
+import { camelize } from '@libs/shared-utils';
 export const getDaysFromDeadline = (deadline: number | undefined): number => {
   if(!deadline){
     return 0;
@@ -66,4 +67,23 @@ export const shouldShowModal = (deadline: number) => {
     // Show daily
     return true;
   }
+}
+
+// modal opening logic depends on 
+export function getRekycModalIsOpen(rekycStatus: string, deadline: number): boolean {
+  if (STATUSES_TO_SHOW_MODAL.includes(rekycStatus)) {
+    if (shouldShowModal(deadline)) {
+      const isModalConfigAvailable = localStorage.getItem(SELF_SERVE_REKYC_HIDE_MODAL);
+      if (isModalConfigAvailable) {
+        localStorage.removeItem(SELF_SERVE_REKYC_HIDE_MODAL);
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
+export function getRekycStatus(status: string) {
+  const statusString = status?.split('_')?.join(' ');
+  return camelize(statusString || '');
 }

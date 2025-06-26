@@ -20,8 +20,9 @@ import FestivalThemeBanner from '../FestivalThemeBanner';
 import { isEligibleForRazorpayRewind } from 'merchant/components/RazorpayRewind/utils';
 import { isEligibleForSelfServeRekyc } from 'merchant/components/SelfServeRekyc/utils';
 import FeedbackForm from './FeedbackForm';
-import { isRTUXLeftoutSegmentEnabled } from './utils';
+import { isRTUXLeftoutSegmentEnabled, isVersioningBannerEnabled } from './utils';
 import { rtuxFeedbackFormKeys } from './FeedbackForm/utils';
+import VersioningBanner from '../Versioning/Index';
 import {
   getItemFromLocalStorage,
   isExperimentEnabled,
@@ -151,6 +152,8 @@ const RTUXHomepage = (): JSX.Element => {
 
   const dataSource = isFetching ? layoutData : data;
 
+  const isVersioningBanner = isVersioningBannerEnabled(splitz, user);
+
   return (
     <ResponsiveWrapper>
       <ErrorBoundary tags={{ module: DASHBOARD_TEAMS.GROWTH }}>
@@ -158,6 +161,7 @@ const RTUXHomepage = (): JSX.Element => {
       </ErrorBoundary>
 
       <Box display="flex" flexDirection="column" paddingY="spacing.5" gap="spacing.6">
+        {isVersioningBanner && <VersioningBanner />}
         {shouldShowReKycBanner ? (
           <Suspense fallback={null}>
             <ReKycStatusBanner isRtux={true} />
@@ -168,25 +172,29 @@ const RTUXHomepage = (): JSX.Element => {
             <SelfServeRekycNotifications />
           </Suspense>
         ) : null}
-        {shouldShowRazorpayRewind ? (
-          <Suspense fallback={null}>
-            <RazorpayRewind isRtux={true} />
-          </Suspense>
-        ) : null}
+        {
+          shouldShowRazorpayRewind ? (
+            <Suspense fallback={null}>
+              <RazorpayRewind isRtux={true} />
+            </Suspense>
+          ) : null
+        }
         <FestivalThemeBanner isRtux={true} />
         <DiwaliReportBanner isRtux={true} />
-        {dataSource.components.map((widgetData) => (
-          <Fragment key={widgetData.type}>
-            {getBaseWidget({
-              widget: widgetData,
-              isLoading: isFetching,
-              queryKey: RTUX_HOMEPAGE_DATA_KEY,
-            })}
-          </Fragment>
-        ))}
-      </Box>
+        {
+          dataSource.components.map((widgetData) => (
+            <Fragment key={widgetData.type}>
+              {getBaseWidget({
+                widget: widgetData,
+                isLoading: isFetching,
+                queryKey: RTUX_HOMEPAGE_DATA_KEY,
+              })}
+            </Fragment>
+          ))
+        }
+      </Box >
       {isRTUXLeftoutSegment && !isMobile ? <FeedbackForm /> : null}
-    </ResponsiveWrapper>
+    </ResponsiveWrapper >
   );
 };
 

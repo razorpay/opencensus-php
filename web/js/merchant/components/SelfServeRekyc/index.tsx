@@ -13,18 +13,18 @@ import {
   NON_OWNER_REKYC_BANNER_INFO,
   OWNER_MODAL_CONTENT,
   OWNER_REKYC_BANNER_INFO,
-  STATUSES_TO_SHOW_MODAL,
+  SELF_SERVE_REKYC_HIDE_MODAL,
   STATUSES_TO_SHOW_TIMELINE,
-  SELF_SERVE_REKYC_HIDE_MODAL
 } from 'merchant/components/SelfServeRekyc/constants';
 
 import {
   getDaysFromDeadline,
   getDeadlineDate,
+  getRekycModalIsOpen,
+  getRekycStatus,
   getTimelineString,
   shouldShowModal as shouldShowModalUtil
 } from 'merchant/components/SelfServeRekyc/utils';
-import { camelize } from '@libs/shared-utils';
 
 import RekycBanner from 'merchant/components/SelfServeRekyc/components/RekycBanner';
 import RekycModalWrapper from 'merchant/components/SelfServeRekyc/containers/RekycModalWrapper';
@@ -54,8 +54,7 @@ const SelfServeRekycNotification: React.FC<SelfServeRekycNotificationProps> = (p
 
   useEffect(() => {
     if(rekycDetails && Object.keys(rekycDetails).length){
-      const status = rekycDetails?.status?.split('_')?.join(' ');
-      const rekycStatus = camelize(status || '');
+      const rekycStatus = getRekycStatus(rekycDetails?.status);
 
       const ACTIONABLE_STATUSES = DYNAMIC_REKYC_STATUS;
 
@@ -81,19 +80,18 @@ const SelfServeRekycNotification: React.FC<SelfServeRekycNotificationProps> = (p
         }
       }
 
-      if(STATUSES_TO_SHOW_MODAL.includes(rekycStatus)){
-        if(timelineKey){
+      const isOpen = getRekycModalIsOpen(rekycStatus, rekycDetails?.deadline);
+      setShouldShowModal(isOpen);
+      if (isOpen) {
+        if (timelineKey) {
           setModalInfo(MODAL_INFO_MAP[rekycStatus][timelineKey])
-        }else{
+        } else {
           setModalInfo(MODAL_INFO_MAP[rekycStatus])
         }
-
-        if(shouldShowModalUtil(rekycDetails?.deadline)){
-          const isModalConfigAvailable = localStorage.getItem(SELF_SERVE_REKYC_HIDE_MODAL);
-          if(isModalConfigAvailable){
-            localStorage.removeItem(SELF_SERVE_REKYC_HIDE_MODAL);
-          }
-          setShouldShowModal(true);
+        // run sideeffects
+        const isModalConfigAvailable = localStorage.getItem(SELF_SERVE_REKYC_HIDE_MODAL);
+        if (isModalConfigAvailable) {
+          localStorage.removeItem(SELF_SERVE_REKYC_HIDE_MODAL);
         }
       }
     }
