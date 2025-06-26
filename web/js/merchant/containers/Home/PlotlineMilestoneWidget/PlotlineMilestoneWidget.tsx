@@ -168,14 +168,6 @@ const PlotlineMilestoneWidget = () => {
         subheading: `Each payment gets you closer to your next reward. ${daysRemainingSinceActivation} days left.`,
       };
 
-    if (transactionCount >= 5)
-      titleDetails = {
-        heading: 'First 5 transactions completed!',
-        subheading: "You've unlocked all rewards. View them in the ",
-        ctaText: 'Rewards section.',
-        showCta: true,
-      };
-
     if (titleDetails)
       return (
         <Box
