@@ -15,7 +15,14 @@ const ExplorePartnerProgramCard = ({ onClick }: ExplorePartnerProgramCardProps) 
   return (
     <Box display="flex" backgroundColor="surface.background.primary.subtle" borderRadius="large">
       <Box display="flex" flexDirection="column" margin="spacing.5" marginRight="spacing.4">
-        <Text marginBottom="spacing.4">Partner with us and start earning on every referral</Text>
+        <Box marginBottom="spacing.4">
+          <Text as="span" size="medium" color="surface.text.gray.normal" weight="medium">
+            Help brands go online? Become a Partner.
+          </Text>{' '}
+          <Text as="span" size="medium" color="surface.text.gray.normal">
+            Delight clients. Unlock additional revenue.
+          </Text>
+        </Box>
         <Button variant="primary" onClick={onClick}>
           Explore Partner Program
         </Button>

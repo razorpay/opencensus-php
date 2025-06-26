@@ -28,6 +28,7 @@ import PaymentHandleSlug from 'merchant/views/PaymentHandle/components/DropDownS
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { withI18Service } from 'common/i18';
 import ProfileDropdownV2 from './ProfileDropdownV2';
+import ExplorePartnerProgramCard from '../ExplorePartnerProgramCard';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { checkIfPosSalesAgent } from 'common/utils/posAgent';
 import { withSplitzService } from 'common/splitz';
@@ -576,17 +577,7 @@ class ProfileDropdown extends Component {
                       !isConfigTagEnabled('partnership.partnership_program')
                     }
                   >
-                    <div className="media loggedin-as">
-                      <div className="media-body">
-                        <p className="small-txt">
-                          Partner with us and start earning on every referral
-                        </p>
-
-                        <a className="partner-link" onClick={this.showPartnerIntent}>
-                          <strong>Explore Partner Program</strong>{' '}
-                        </a>
-                      </div>
-                    </div>
+                    <ExplorePartnerProgramCard onClick={this.showPartnerIntent} />
                   </ShowWhen>
                 </ShowWhen>
               </React.Fragment>

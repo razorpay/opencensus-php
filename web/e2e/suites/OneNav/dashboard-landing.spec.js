@@ -137,7 +137,7 @@ test.describe.parallel('One nav "Partner Onboarding Modal" @project=oneNav', () 
       page,
       expectedUrl:
         'https://dashboard.dev.razorpay.in/app/dashboard?openModal=partners_onboarding_modal',
-      expectedTextRegex: 'Welcome to your Partner Dashboard',
+      expectedTextRegex: 'Razorpay Partner Program',
     });
   });
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { SliderDots } from 'common/new-ui/Slider';
-import { AsyncBtn } from 'common/new-ui/Button';
+import { Box, Button } from '@razorpay/blade/components';
 
 const SlideController = ({
   sliderProps,
@@ -8,38 +8,38 @@ const SlideController = ({
   disNext = false,
   nextBtnLabel,
   nextBtnPendingLabel,
+  isLoading = false,
 }) => {
   const { next, prev, active } = sliderProps;
   const nextLabel = nextBtnLabel ? nextBtnLabel : 'Next';
 
   return (
-    <div className="slide-controller-wrapper">
-      <div className="slide-controller">
-        <div>
+    <Box padding="spacing.4">
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        gap="spacing.4"
+        position="relative"
+      >
+        <Box>
           <SliderDots {...sliderProps} />
-        </div>
-        <div style={{ textAlign: 'end' }} className="slide-nav-btns">
-          {Boolean(active) && (
-            <a onClick={() => prev && prev()} className="btn btn-link slider-btn back">
-              Back
-            </a>
-          )}
-
-          <AsyncBtn.Primary
-            className="btn btn-primary slider-btn next"
-            disabled={disNext}
+        </Box>
+        <Box position="absolute" left="50%" transform="translateX(-50%)">
+          <Button
+            size="medium"
+            isDisabled={disNext}
             onClick={() => {
               !disNext && next && next();
               return onNext && onNext();
             }}
-            pendingState={nextBtnPendingLabel}
+            isLoading={isLoading}
           >
             {nextLabel}
-            <i className="i i-arrow-forward" />
-          </AsyncBtn.Primary>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

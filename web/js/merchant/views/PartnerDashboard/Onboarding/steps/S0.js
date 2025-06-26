@@ -1,11 +1,15 @@
 import React from 'react';
-import { Box, Text } from '@razorpay/blade/components';
+import { Box, Text, Heading, List, ListItem, ListItemText } from '@razorpay/blade/components';
+
+import logoEdumerge from 'assets/onboarding/logo-edumerge.svg';
+import logoDukaan from 'assets/onboarding/logo-dukaan.svg';
+import logoDjubo from 'assets/onboarding/logo-djubo.svg';
+import logoShopaccino from 'assets/onboarding/logo-shopaccino.svg';
 
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import { track } from 'merchant/views/PartnerDashboard/Onboarding/ga';
-import { PARTNERSHIPS_WEBSITE_LINKS } from 'merchant/views/PartnerDashboard/constants';
 
 import SlideContoller from './SlideController';
 
@@ -13,6 +17,29 @@ const PARTNER_PROGRAM_URL = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]: 'https://razorpay.com/partners/',
   [ORG_CUSTOM_CODE_MAP.CURLEC]: 'https://curlec.com/docs/partners/',
 };
+
+const PARTNER_LOGOS = [
+  {
+    src: logoDukaan,
+    alt: 'logo-dukaan',
+    id: 'dukaan',
+  },
+  {
+    src: logoEdumerge,
+    alt: 'logo-edumerge',
+    id: 'edumerge',
+  },
+  {
+    src: logoDjubo,
+    alt: 'logo-djubo',
+    id: 'djubo',
+  },
+  {
+    src: logoShopaccino,
+    alt: 'logo-shopaccino',
+    id: 'shopaccino',
+  },
+];
 
 const S0 = (props) => {
   const orgCode = props.orgDetails.custom_code;
@@ -64,14 +91,16 @@ const S0 = (props) => {
   };
 
   return (
-    <>
-      <div className="partner-onbr-info">
-        <div className="title">Welcome to your Partner Dashboard</div>
+    <Box display="flex" flexDirection="column" height="380px">
+      <Box flex="1" maxWidth="55%">
+        <Heading size="large" weight="medium">
+          Razorpay Partner Program
+        </Heading>
         {orgCode === ORG_CUSTOM_CODE_MAP.CURLEC ? (
           <>
             <div className="" style={{ marginTop: '20px' }}>
               <p className="">
-                Refer Merchants to a complete suite of payment products. What’s more, get rewarded
+                Refer Merchants to a complete suite of payment products. What's more, get rewarded
                 for it!
               </p>
               <p style={{ marginTop: '20px' }}>
@@ -98,41 +127,43 @@ const S0 = (props) => {
           </>
         ) : (
           <>
-            <div className="" style={{ marginTop: '20px' }}>
-              <p className="">
-                Get started with referring clients and track all your clients and do more, all
-                directly from your partner dashboard.
-              </p>
-              <p style={{ marginTop: '20px' }}>
-                You can also help your clients onboard faster by performing their KYC directly from
-                your partner dashboard.
-              </p>
-            </div>
-            <Box marginTop="spacing.6">
-              <Text size="small" weight="medium">
-                By signing up you agree to our{' '}
-                <a
-                  href={PARTNERSHIPS_WEBSITE_LINKS.PRIVACY_POLICY_URL}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  privacy policy
-                </a>{' '}
-                and{' '}
-                <a
-                  href={PARTNERSHIPS_WEBSITE_LINKS.TERMS_AND_CONDITION_URL}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  terms of use
-                </a>
-              </Text>
+            <Text marginTop="spacing.3" size="large" color="surface.text.staticBlack.normal">
+              Designed for digital enablers helping businesses go or grow online.
+            </Text>
+            <Box display="flex" marginY="spacing.7" gap="spacing.5">
+              {PARTNER_LOGOS.map((logo) => (
+                <img key={logo.id} src={logo.src} alt={logo.alt} style={{ minHeight: '26px' }} />
+              ))}
+            </Box>
+            <Box>
+              <Heading size="large" weight="medium">
+                Wondering if you're a fit?
+              </Heading>
+              <List variant="ordered" marginTop="spacing.3" size="large">
+                <ListItem>
+                  <ListItemText color="surface.text.staticBlack.normal">
+                    Do you offer web development, consulting, or SaaS/ERP solutions?
+                  </ListItemText>
+                </ListItem>
+                <ListItem>
+                  <ListItemText color="surface.text.staticBlack.normal">
+                    Do your clients need reliable payment solutions?
+                  </ListItemText>
+                </ListItem>
+              </List>
             </Box>
           </>
         )}
-      </div>
-      <SlideContoller sliderProps={props.sliderProps} onNext={handleNextClick} />
-    </>
+      </Box>
+
+      <Box>
+        <SlideContoller
+          sliderProps={props.sliderProps}
+          onNext={handleNextClick}
+          nextBtnLabel="Yes, I'm a Fit"
+        />
+      </Box>
+    </Box>
   );
 };
 
