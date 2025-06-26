@@ -7,10 +7,9 @@ import { withSplitzService } from 'common/splitz';
 import { isExperimentEnabled } from 'common/splitz/utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import Popover, { PopoverBody } from 'common/ui/Popover';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
-import { Button } from '@razorpay/blade/components';
+import { Button, Tooltip } from '@razorpay/blade/components';
 
 import PropTypes from 'prop-types';
 
@@ -416,7 +415,7 @@ class LeafListItem extends React.Component {
       this.handleCreateRequest();
     }
   };
-  
+
   handleRequest = () => {
     const { instrument } = this.props;
 
@@ -535,16 +534,11 @@ class LeafListItem extends React.Component {
                 <div className="instrument-description-container">
                   <div className="detail">
                     <strong>Live Mode</strong>
-                    <div className="activated status" style={{ marginRight: '0' }}>
-                      {instrument.status.replace('_', ' ')}
-                      <Popover align="bottom" theme="dark">
-                        <PopoverBody>
-                          <div style={{ textAlign: 'left', textTransform: 'none' }}>
-                            {statusPopoverText[instrument.status]}
-                          </div>
-                        </PopoverBody>
-                      </Popover>
-                    </div>
+                    <Tooltip content={statusPopoverText[instrument.status]} placement="bottom">
+                      <div className="activated status" style={{ marginRight: '0' }}>
+                        {instrument.status.replace('_', ' ')}
+                      </div>
+                    </Tooltip>
                   </div>
                   <p id="status">
                     Paytm Wallet is enabled on Live Mode, customers can transact with Paytm wallet.
@@ -571,36 +565,41 @@ class LeafListItem extends React.Component {
             {!user.isInstrumentRequestHidden &&
               [REQUESTABLE, CANCELLED, GREYED].includes(instrument.status) && (
                 <div className="flex-end">
-                  <Button
-                    testID="pm-request-cta"
-                    isDisabled={isInstrumentDisabled}
-                    isLoading={this.state.loading}
-                    onClick={isWebScrapperEnabled ? this.handleScrapperModal : this.handleRequest}
-                  >
-                    Request
-                  </Button>
-                  {isGrayed && (
-                    <Popover align="bottom" theme="dark">
-                      <PopoverBody>{instrument?.fade_comment || ''}</PopoverBody>
-                    </Popover>
+                  {isGrayed ? (
+                    <Tooltip placement="bottom" content={instrument.fade_comment}>
+                      <Button
+                        testID="pm-request-cta"
+                        isDisabled={isInstrumentDisabled}
+                        isLoading={this.state.loading}
+                        onClick={
+                          isWebScrapperEnabled ? this.handleScrapperModal : this.handleRequest
+                        }
+                      >
+                        Request
+                      </Button>
+                    </Tooltip>
+                  ) : (
+                    <Button
+                      testID="pm-request-cta"
+                      isDisabled={isInstrumentDisabled}
+                      isLoading={this.state.loading}
+                      onClick={isWebScrapperEnabled ? this.handleScrapperModal : this.handleRequest}
+                    >
+                      Request
+                    </Button>
                   )}
                 </div>
               )}
             {![REQUESTABLE, CANCELLED, GREYED, ACCOUNT_LINKABLE].includes(instrument.status) &&
               instrument.path !== 'pg.wallet.paytm' && (
                 <div className="flex-end">
-                  <div className={statusClass[instrument.status]}>
-                    {instrument.status === ACTIVATED_ACTION_REQUIRED
-                      ? ACTIVATED
-                      : instrument.status.replace('_', ' ')}
-                    <Popover align="bottom" theme="dark">
-                      <PopoverBody>
-                        <div style={{ textAlign: 'left', textTransform: 'none' }}>
-                          {statusPopoverText[instrument.status]}
-                        </div>
-                      </PopoverBody>
-                    </Popover>
-                  </div>
+                  <Tooltip content={statusPopoverText[instrument.status]} placement="bottom">
+                    <div className={statusClass[instrument.status]}>
+                      {instrument.status === ACTIVATED_ACTION_REQUIRED
+                        ? ACTIVATED
+                        : instrument.status.replace('_', ' ')}
+                    </div>
+                  </Tooltip>
                 </div>
               )}
           </div>
