@@ -54,6 +54,8 @@ export const SIDEEBAR_PRODUCTS_TITLES = {
   x_payroll: 'X Payroll',
   cash_advance: 'Cash Advance',
   line_of_credit: 'Line of Credit',
+  working_capital_loans: 'Working Capital Loans',
+  company_registration: 'Company Registration',
   wallet: 'Wallet',
   home: 'Home',
   transactions: 'Transactions',

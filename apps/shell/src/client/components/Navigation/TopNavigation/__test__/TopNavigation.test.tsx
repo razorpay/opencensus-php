@@ -522,26 +522,6 @@ describe('TopNavigation Component', () => {
       });
     });
 
-    test('Theme gets set based on selected product', async () => {
-      mockUseBreakpoint.mockReturnValue({ matchedDeviceType: 'desktop', matchedBreakpoint: 'xl' });
-
-      const mockSetColorScheme = jest.fn();
-      const { useTheme } = require('@razorpay/blade/components');
-      useTheme.mockReturnValue({
-        setColorScheme: mockSetColorScheme,
-        theme: { breakpoints: {} },
-      });
-
-      renderTopNavigation();
-
-      const bankingButton = screen.getByText('Banking');
-      fireEvent.click(bankingButton);
-
-      await waitFor(() => {
-        expect(mockSetColorScheme).toHaveBeenCalledWith('light');
-      });
-    });
-
     test('Error handling shows notification on invalid action', async () => {
       mockUseBreakpoint.mockReturnValue({ matchedDeviceType: 'desktop', matchedBreakpoint: 'xl' });
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   SideNavBody,
   SideNav,
@@ -52,6 +52,7 @@ type NavItemProps = {
   routeRegex?: string;
   items?: Array<any>;
   titleSuffix?: ReactElement | TitleSuffixConfig;
+  tooltip_content?: string;
 };
 
 type NavItemAnalyticsProps = {
@@ -70,6 +71,7 @@ const getSection = (section_id) => {
     [FALLBACK_PRODUCTS[1].section_id]: 'Offerings',
     [CUSTOMERS_PRODUCTS_SECTION.section_id]: 'Others',
     [FTUX_SECTION.section_id]: 'Ftux Section',
+    recommended_products: 'Recommended Products',
   };
   if (accountsAndSettingsIds.has(section_id)) return 'Mode and Settings';
   return navItemsToSection[section_id] ?? '';
@@ -110,6 +112,7 @@ export const NavItem: React.FC<NavItemProps & NavItemAnalyticsProps> = ({
   items,
   routeRegex,
   titleSuffix,
+  tooltip_content,
 }) => {
   const location = useLocation();
   const active = isItemActive({ href, routeRegex, items, icon }, location.pathname);
@@ -218,6 +221,22 @@ export const NavItem: React.FC<NavItemProps & NavItemAnalyticsProps> = ({
     );
   }
 
+  if (section_id === 'recommended_products') {
+    return (
+      <div onClick={trackNavItemClick}>
+        <SideNavLink
+          title={title}
+          as={Link}
+          href={href}
+          icon={icon}
+          isActive={active}
+          titleSuffix={finalTitleSuffix}
+          {...(Boolean(tooltip_content) && { tooltip: { content: tooltip_content as string } })}
+        />
+      </div>
+    );
+  }
+
   return (
     <div onClick={trackNavItemClick}>
       <SideNavLink
@@ -239,6 +258,34 @@ const SideBar: React.FC<{ renderFullPageView: React.ReactNode }> = ({ renderFull
   const { products } = useConnectedNavigationStore();
 
   const { listItems, footer } = useSideNavigation(products.selectedProduct?.alias);
+
+  useEffect(() => {
+    const recommendedSection = listItems.find(
+      (section) => section.section_id === 'recommended_products',
+    );
+
+    if (recommendedSection) {
+      const page = location.pathname?.replace(/[\/_-]/g, '');
+
+      //Only one product is shown in the recommended products section
+      const productDetails = recommendedSection?.product_options?.[0];
+
+      analyticsTrack({
+        objectName: 'Recommended Products',
+        actionName: 'Displayed',
+        screen: ANALYTICS_ONENAV.SCREEN,
+        properties: {
+          ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties: true }),
+          version: 'v1',
+          option_name: productDetails?.title,
+          page,
+          section: getSection(recommendedSection.section_id),
+          bu_title: products.selectedProduct?.title,
+          experiment_name: ANALYTICS_ONENAV.EXPERIMENT_NAME,
+        },
+      });
+    }
+  }, []);
 
   // Determine if a section should be expanded based on any nested active items
   const isSectionExpanded = (items: any[]): boolean =>

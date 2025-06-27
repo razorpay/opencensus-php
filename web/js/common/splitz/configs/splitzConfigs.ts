@@ -1141,6 +1141,22 @@ export const splitzConfig: SplitzInitConfig = {
         },
       },
       {
+        uniqueHashKey: 'sidebar_recommended_products',
+        experimentId: {
+          beta: 'QkcgJSfl8vHULr',
+          production: 'QlQoDMM1yDNbRu',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: 'off',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'versioning_modal_june_2025',
         experimentId: {
           beta: 'QlpcWpNCcMfTM4',

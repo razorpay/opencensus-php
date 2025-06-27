@@ -10,6 +10,7 @@ import {
   ProductTypeProp,
   getL1ProductItems,
   FTUX_COMMON_PRODUCTS,
+  RECOMMENDED_PRODUCTS,
 } from 'merchant/components/SidebarV2/utils/Products';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { useLocation } from 'react-router-dom';
@@ -21,6 +22,7 @@ import SidebarFooter from './components/SidebarFooter';
 import ActivationProgress from './components/ActivationProgress';
 import { useIsFtuxV2Enabled } from '@dashboards/payments/containers/Home/FTUX/utils';
 import useInsightsProducts from 'merchant/views/Insights/hooks/useInsightsProducts';
+import { getRecommendedProductsSection } from './utils';
 
 export const accountsAndSettingsIds = new Set(['settings', 'accountsettings', 'my_account']);
 
@@ -142,7 +144,12 @@ const useSideNavHook = () => {
     if (isFtuxV2Enabled) {
       return [FTUX_SECTION];
     }
-    return [COMMON_SECTION, ...listItemsV2, CUSTOMERS_PRODUCTS_SECTION];
+    return [
+      COMMON_SECTION,
+      getRecommendedProductsSection(abExperiments),
+      ...listItemsV2,
+      CUSTOMERS_PRODUCTS_SECTION,
+    ];
   }, [isFtuxV2Enabled]);
 
   const sideNavFooterListItems = useMemo(() => [FOOTER_PRODUCTS_SECTION], []);
