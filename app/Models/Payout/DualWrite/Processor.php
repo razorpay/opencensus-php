@@ -135,10 +135,14 @@ class Processor
                 ]
             );
 
+            if ($this->isFeeRecoveryForPSAPayoutExperimentEnabled($apiPayout->getMerchantId())) {
+                // Create Debit Entry If Not Present
+                $this->createFeeRecoveryDebitEntryForPSCAPayout($apiPayout);
+            }
+
             // Ignoring reversed status since this only comes on T+1, and a delay of 24hrs is not expected in dual write
             if(($status === Status::PROCESSED || $status === Status::FAILED) && $previousStatus === null)
             {
-                // TODO: move experiment ID to a const
                 $properties = [
                     "experiment_id" => "fee_recovery_dual_write_flow",
                     "id" => $apiPayout->getMerchantId(),
@@ -199,6 +203,42 @@ class Processor
         }
     }
 
+    public function createFeeRecoveryDebitEntryForPSCAPayout(Entity $payout) {
+        // Skip debit entry creation, when payout not initiated or Fee Recovery (FR) Entry already exists
+        if ($payout->getInitiatedAt() == null || $this->IsFeeRecoveryEntryCreated($payout->getId())) {
+            return;
+        }
+
+        $this->feeRecoveryForPSCAPayout($payout);
+    }
+
+    private function isFeeRecoveryForPSAPayoutExperimentEnabled(string $merchantId): bool
+    {
+        $properties = [
+            "experiment_id" => "fee_recovery_for_ps_payouts",
+            "id" => $merchantId,
+        ];
+
+        $expResp = (new MerchantCore())->isSplitzExperimentEnable($properties, "enabled");
+
+        $this->trace->info(
+            TraceCode::FEE_RECOVERY_SPLITZ_RESPONSE,
+            [
+                "properties" => $properties,
+                "experiment_response" => $expResp
+            ]
+        );
+
+        return $expResp;
+    }
+
+    private function IsFeeRecoveryEntryCreated(string $payoutId) :bool {
+        $existingFeeRecovery = (new FeeRecovery\Core)->fetchFeeRecoveryBySourceAndType($payoutId,FeeRecovery\Type::DEBIT);
+        if ($existingFeeRecovery->count() > 0) {
+            return true;
+        }
+        return false;
+    }
 
     public function feeRecoveryForPSCAPayout(Entity $payout)
     {
@@ -212,7 +252,7 @@ class Processor
 
                 if ($featureEnabled === true and $payout->getFeeType() === null)
                 {
-                    $feeRecovery = (new FeeRecovery\Core)->createFeeRecoveryEntityForSource($payout);
+                    $feeRecovery = (new FeeRecovery\Core)->createFeeRecoveryEntityForSourceAndType($payout,FeeRecovery\Type::DEBIT);
 
                     if ($feeRecovery === null)
                     {

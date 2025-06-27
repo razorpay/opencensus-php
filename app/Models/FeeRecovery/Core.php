@@ -2426,4 +2426,27 @@ class Core extends Base\Core
         }
     }
 
+    public function fetchFeeRecoveryBySourceAndType(string $entityId, string $type): Base\PublicCollection
+    {
+        $this->trace->info(TraceCode::FEE_RECOVERY_FETCH_BY_SOURCE_ID_AND_TYPE_REQUEST, [
+            'entity_id' => $entityId,
+            'type' => $type
+        ]);
+
+        $params = [
+            Entity::ENTITY_ID      => $entityId,
+            Entity::TYPE           => $type
+        ];
+
+        $this->repo->fee_recovery->setMerchantIdRequiredForMultipleFetch(false);
+
+        $existingData = $this->repo->fee_recovery->fetch($params);
+
+        $this->trace->info(TraceCode::FEE_RECOVERY_FETCH_BY_SOURCE_ID_AND_TYPE_SUCCESS, [
+            'entity_id' => $entityId,
+            'type' => $type
+        ]);
+
+        return $existingData;
+    }
 }

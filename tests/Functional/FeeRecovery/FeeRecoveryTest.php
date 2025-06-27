@@ -4416,4 +4416,88 @@ class FeeRecoveryTest extends TestCase
         Queue::assertPushed(FeeRecoveryDataCorrection::class, 1);
 
     }
+
+    public function testFetchFeeRecoveryBySourceAndType(){
+        $accountNumber = '5224440041626905';
+        $bankingAccountId = 'randomBaAccId1';
+        $balanceAmount = 500001;
+        $payoutAmount = 500;
+
+        /** @var Merchant\Entity $merchant */
+        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905','randomBaAccId1', 5, 500001, [
+            Feature\Constants::PAYOUT
+        ]);
+        $merchant = $this->fixtures->create('merchant', [
+            'name'  => 'merchantName',
+            'email' => 'merchant@merchantMail.com'
+        ]);
+
+        $balance = $this->fixtures->create('balance', [
+            'merchant_id'       => $merchant->getId(),
+            'type'              => 'banking',
+            'account_type'      => 'direct',
+            'account_number'    => $accountNumber,
+            'balance'           => $balanceAmount,
+        ]);
+
+        $payout = $this->fixtures->payout->createPayoutWithoutTransaction([
+            'merchant_id'   => $merchant->getId(),
+            'balance_id'    => $balance->getId(),
+            'purpose'       => 'salary',
+            'amount'        => $payoutAmount,
+            'fees'          => $payoutAmount,
+            'status'        => 'processed',
+        ]);
+
+        $feeRecovery  = $this->fixtures->create('fee_recovery', [
+            'entity_id'         => $payout->getId(),
+            'entity_type'       => 'payout',
+            'status'            => 'unrecovered',
+            'attempt_number'    => 0,
+            'type'              => 'debit',
+        ]);
+
+        $fetchedFeeRecoveries = (new FeeRecovery\Core)->fetchFeeRecoveryBySourceAndType($payout->getId(),'debit');
+
+        $this->assertEquals($feeRecovery['id'],$fetchedFeeRecoveries[0]['id']);
+        $this->assertEquals($feeRecovery['type'],$fetchedFeeRecoveries[0]['type']);
+        $this->assertEquals($feeRecovery['entity_type'],$fetchedFeeRecoveries[0]['entity_type']);
+
+    }
+
+    public function testFetchFeeRecoveryBySourceAndType_NoFeeRecoveryEntries(){
+        $accountNumber = '5224440041626905';
+        $bankingAccountId = 'randomBaAccId1';
+        $balanceAmount = 500001;
+        $payoutAmount = 500;
+
+        /** @var Merchant\Entity $merchant */
+        $merchant = $this->prepareEntitiesForFeeRecoveryLowBalanceAlert('5224440041626905','randomBaAccId1', 5, 500001, [
+            Feature\Constants::PAYOUT
+        ]);
+        $merchant = $this->fixtures->create('merchant', [
+            'name'  => 'merchantName',
+            'email' => 'merchant@merchantMail.com'
+        ]);
+
+        $balance = $this->fixtures->create('balance', [
+            'merchant_id'       => $merchant->getId(),
+            'type'              => 'banking',
+            'account_type'      => 'direct',
+            'account_number'    => $accountNumber,
+            'balance'           => $balanceAmount,
+        ]);
+
+        $payout = $this->fixtures->payout->createPayoutWithoutTransaction([
+            'merchant_id'   => $merchant->getId(),
+            'balance_id'    => $balance->getId(),
+            'purpose'       => 'salary',
+            'amount'        => $payoutAmount,
+            'fees'          => $payoutAmount,
+            'status'        => 'processed',
+        ]);
+
+        $fetchedFeeRecoveries = (new FeeRecovery\Core)->fetchFeeRecoveryBySourceAndType($payout->getId(),'debit');
+        $this->assertEquals(0,$fetchedFeeRecoveries->count());
+    }
 }
