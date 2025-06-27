@@ -40,10 +40,7 @@ export async function closeWelcomeModal(page) {
 }
 
 export async function clickMore(page) {
-  await page.locator('.main-content--one-dashboard').waitFor({
-    state: 'visible',
-    timeout: 60000,
-  });
+  await waitForOneDashboard(page);
   await page.locator('div[data-blade-component="top-nav-content"] button:has-text("More")').click();
 }
 
@@ -54,4 +51,11 @@ export async function scrollAndVerify(page, selector) {
   await page.waitForTimeout(6000);
   const newY = await container.evaluate((el) => el.getBoundingClientRect().y);
   expect(newY).not.toBe(initialY);
+}
+
+export async function waitForOneDashboard(page) {
+  await page.locator('.main-content--one-dashboard').waitFor({
+    state: 'visible',
+    timeout: 60000,
+  });
 }

@@ -54,6 +54,10 @@ export const playwrightEnvs = {
   ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_2: process.env.ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_2,
   ACTIVATED_ONE_NAV_MERCHANT_USERNAME_3: process.env.ACTIVATED_ONE_NAV_MERCHANT_USERNAME_3,
   ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_3: process.env.ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_3,
+  ACTIVATED_ONE_NAV_MERCHANT_USERNAME_4: process.env.ACTIVATED_ONE_NAV_MERCHANT_USERNAME_4,
+  ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_4: process.env.ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_4,
+  ACTIVATED_ONE_NAV_MERCHANT_USERNAME_5: process.env.ACTIVATED_ONE_NAV_MERCHANT_USERNAME_5,
+  ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_5: process.env.ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_5,
 
   TEST_ENV: process.env.TEST_ENV ?? 'devstack',
 };
@@ -82,6 +86,8 @@ export const getStorageStatePath = (targetMode?: 'live' | 'test') => {
     ACTIVATED_ONE_NAV_MERCHANT_1: `${BASE_PATH}/activated-one-nav-merchant-1.json`,
     ACTIVATED_ONE_NAV_MERCHANT_2: `${BASE_PATH}/activated-one-nav-merchant-2.json`,
     ACTIVATED_ONE_NAV_MERCHANT_3: `${BASE_PATH}/activated-one-nav-merchant-3.json`,
+    ACTIVATED_ONE_NAV_MERCHANT_4: `${BASE_PATH}/activated-one-nav-merchant-4.json`,
+    ACTIVATED_ONE_NAV_MERCHANT_5: `${BASE_PATH}/activated-one-nav-merchant-5.json`,
   };
 
   const isTestMode = mode === 'test';
@@ -176,6 +182,18 @@ export const getEmailCredentials = () => {
       username: playwrightEnvs.ACTIVATED_ONE_NAV_MERCHANT_USERNAME_3,
       password: playwrightEnvs.ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_3,
       storagePath: StorageStatePath.ACTIVATED_ONE_NAV_MERCHANT_3,
+    },
+    {
+      type: 'activated-one-nav-merchant-4.json',
+      username: playwrightEnvs.ACTIVATED_ONE_NAV_MERCHANT_USERNAME_4,
+      password: playwrightEnvs.ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_4,
+      storagePath: StorageStatePath.ACTIVATED_ONE_NAV_MERCHANT_4,
+    },
+    {
+      type: 'activated-one-nav-merchant-5.json',
+      username: playwrightEnvs.ACTIVATED_ONE_NAV_MERCHANT_USERNAME_5,
+      password: playwrightEnvs.ACTIVATED_ONE_NAV_MERCHANT_PASSWORD_5,
+      storagePath: StorageStatePath.ACTIVATED_ONE_NAV_MERCHANT_5,
     },
   ];
 };
@@ -343,4 +361,8 @@ export const routes: Record<string, string> = {
   ACTIVATION_DETAILS: 'business-settings/account-activation-details',
   BANKING: '/app/banking',
   COMPANY_REGISTRATION: '/app/company-registration',
+  HOME: '/app/home',
+  CUSTOMER_TRUST: '/app/customer-trust',
+  RANDOM_ROUTE: '/app/random-route',
+  ROOT_PATH: '/app',
 };

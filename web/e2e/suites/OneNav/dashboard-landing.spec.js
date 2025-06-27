@@ -55,6 +55,15 @@ test.describe.parallel('One nav dashboard landing page @project=oneNav', () => {
       expectedTextRegex: 'What is Razorpay Rize?',
     });
   });
+
+  test('should navigate to homepage', async ({ page }) => {
+    await page.locator(`button:has-text("Razorpay Home")`).click();
+    await tabOpenInSameTab({
+      page,
+      expectedUrl: routes.HOME,
+      expectedTextRegex: 'Quick Actions Payments',
+    });
+  });
 });
 
 test.describe.parallel('One nav partner dashboard landing page @project=oneNav', () => {

@@ -1,4 +1,5 @@
 import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/playwright';
+import { waitForOneDashboard } from './utils';
 
 test.describe.parallel('One nav header action @project=oneNav', () => {
   test.use({
@@ -51,11 +52,46 @@ test.describe.parallel('One nav header action @project=oneNav', () => {
     await expect(bodyLocator).toHaveText(new RegExp('Ecosystem Health', 'i'));
   });
 
-  // test('should show login page after logout', async ({ page }) => {
-  //   await page.locator('button:has-text("Log out")').click();
-  //   await page.waitForURL('**');
-  //   await expect(page.locator('text=Login to Dashboard')).toBeVisible();
-  // });
+  test('individual ecosystem downtime card should open', async ({ page }) => {
+    await page.locator('button[data-testid="ecosystem-health-check-icon"]').click();
+    await page.locator('li[role="listitem"]').first().click();
+    await page.getByLabel('ecosystem-downtime-details', { exact: true }).click();
+    await page.getByTestId('ds-button').click();
+  });
+});
+
+//logout is flaky on devstack, which makes asserting on the actual logout functionality test case flaky as well
+test.describe.parallel('One nav header action - Logout @project=oneNav', () => {
+  test.use({
+    storageState: getStorageStatePath().ACTIVATED_ONE_NAV_MERCHANT_4,
+  });
+
+  test('should be able to logout', async ({ page }) => {
+    await page.locator('div[data-blade-component="avatar"] button').click();
+    await page.locator('button:has-text("Log out")').click();
+    await expect(page.locator('button:has-text("Log out")')).not.toBeVisible();
+  });
+});
+
+test.describe.parallel('One nav header action when oneDashboard is enabled @project=oneNav', () => {
+  test.use({
+    storageState: getStorageStatePath().ACTIVATED_ONE_NAV_MERCHANT_2,
+  });
+
+  test('should show search in payments', async ({ page }) => {
+    await page.goto(routes.DASHBOARD);
+    await waitForOneDashboard(page);
+    await expect(
+      page.getByPlaceholder('Search payment products, settings, and more'),
+    ).toBeVisible();
+  });
+  test('should not show search in partners', async ({ page }) => {
+    await page.goto(routes.PARTNER_DASHBOARD);
+    await waitForOneDashboard(page);
+    await expect(
+      page.getByPlaceholder('Search payment products, settings, and more'),
+    ).not.toBeVisible();
+  });
 });
 
 test.describe.parallel('One nav header action - Mobile @project=oneNav', () => {
@@ -124,5 +160,33 @@ test.describe.parallel('One nav header action - Mobile @project=oneNav', () => {
     await page.locator('button[data-testid="ecosystem-health-check-icon"]').click();
     const bodyLocator = page.locator('body');
     await expect(bodyLocator).toHaveText(new RegExp('Ecosystem Health', 'i'));
+  });
+});
+
+test.describe
+  .parallel('One nav header action when oneDashboard is enabled - Mobile @project=oneNav', () => {
+  test.use({
+    storageState: getStorageStatePath().ACTIVATED_ONE_NAV_MERCHANT_2,
+    viewport: {
+      width: 480,
+      height: 568,
+    },
+    deviceScaleFactor: 2,
+  });
+
+  test('should show search in payments', async ({ page }) => {
+    await page.goto(routes.DASHBOARD);
+    await waitForOneDashboard(page);
+    await expect(
+      page.getByPlaceholder('Search payment products, settings, and more'),
+    ).toBeVisible();
+  });
+
+  test('should not show search in partners', async ({ page }) => {
+    await page.goto(routes.PARTNER_DASHBOARD);
+    await waitForOneDashboard(page);
+    await expect(
+      page.getByPlaceholder('Search payment products, settings, and more'),
+    ).not.toBeVisible();
   });
 });
