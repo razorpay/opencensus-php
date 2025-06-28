@@ -209,7 +209,7 @@ export const getDeviceConfigurationDetailsFromModularConfig = ({
     deviceName: currentDeviceDetails?.details_page_name || '',
     hideLanguageSettings:
       languageFieldData?.isHidden ||
-      currentDeviceDetails.display_name === DeviceModel.STICKER_AND_STANDEE, //TODO: revert this change once BE SDK for isHidden is fixed
+      currentDeviceDetails.display_name === DeviceModel.STICKER_AND_STANDEE, //TODO: revert once BE SDK for isHidden is fixed
     hideWifiConfiguration:
       wifiConfigField?.isHidden ||
       currentDeviceDetails.display_name === DeviceModel.STICKER_AND_STANDEE,

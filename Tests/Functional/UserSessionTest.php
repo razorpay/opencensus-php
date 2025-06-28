@@ -241,6 +241,30 @@ class UserSessionTest extends IlluminateTestCase
         self::assertEquals(Constants::OAUTH_ACTION_REDIRECT, $sessionData[User\Service::OAUTH_ACTION]);
     }
 
+    /**
+     * Tests getSessionData with input containing query and source attributes for activated mcc pending merchant
+     */
+    public function testGetSessionDataForEddPendingMerchant()
+    {
+        $data = [
+            'activation_status' => 'edd_pending',
+            'merchant'          => [
+                'suspended_at'  => null
+            ]
+        ];
+        $userData = $this->setUpMockData($data, true);
+        $merchantData = $userData['merchants']->toArray();
+
+        $response = (new User\Service())->getSessionData($this->getQueryParams(true));
+
+        self::assertCount(2, $response);
+        self::assertNull($response[0]);
+
+        $sessionData = $response[1];
+        $this->checkAndVerifyResponse($sessionData, $userData, $merchantData[0]);
+        self::assertEquals(Constants::OAUTH_ACTION_RENDER, $sessionData[User\Service::OAUTH_ACTION]);
+    }
+
     private function getQueryParams(bool $source = false) : array
     {
         $params = [

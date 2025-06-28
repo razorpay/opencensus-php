@@ -281,7 +281,8 @@ class Constants
         'under_review',
         'needs_clarification',
         'activated_mcc_pending',
-        'instantly_activated'
+        'instantly_activated',
+        'edd_pending',
     ];
 
     const OAUTH_SOURCE = 'oauth';
