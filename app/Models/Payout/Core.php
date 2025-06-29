@@ -900,23 +900,31 @@ class Core extends Base\Core
             case Status::PROCESSED:
                 $oldStatus = $payout->getStatus();
 
+                $this->trace->info(
+                    TraceCode::FTA_INFO_IN_PAYOUT_WEBHOOK,
+                    [
+                        PayoutConstants::FTA => $ftaData
+                    ]
+                );
+
                 if (isset($ftaData[PayoutConstants::PAYEE_IFSC]) === true) {
                     $requestPayload = [
                         "id" => $payout->getMerchantId(),
                         "experiment_name" =>  $this->app['config']->get('app.payouts_to_phone_number_splitz_experiment'),
-                        'request_data'  => json_encode(['id' => $payout->getMerchantId()])
+                        'request_data'  => json_encode(['merchant_id' => $payout->getMerchantId()])
                     ];
-                    $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload, Merchant\RazorxTreatment::VARIANT_ENABLE, TraceCode::SEND_IFSC_IN_WEBHOOK_SPLITZ_ERROR);
+                    $isExperimentEnabled = $this->isSplitzExperimentEnable($requestPayload, 'enable', TraceCode::SEND_IFSC_IN_WEBHOOK_SPLITZ_ERROR);
 
                     if ($isExperimentEnabled === true) {
                         $ifsc = $ftaData[PayoutConstants::PAYEE_IFSC];
                         $payeeBankName = IFSC::getBankName(strtoupper($ifsc));
 
                         $this->trace->info(
-                            TraceCode::FTA_INFO_IN_PAYOUT_WEBHOOK,
+                            TraceCode::FTA_INFO_IN_PAYOUT_WEBHOOK_IN_EXPERIMENT,
                             [
                                 PayoutConstants::FTA => $ftaData,
                                 PayoutConstants::PAYEE_BANK_NAME => $payeeBankName,
+                                PayoutConstants::PAYEE_IFSC => $ifsc
                             ]
                         );
 
