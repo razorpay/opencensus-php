@@ -1023,6 +1023,10 @@ export const PARAMETERS: Parameter[] = [
         value: "UJVN",
         label: "Ujjivan Small Finance Bank",
       },
+      {
+        value: "BARB_C",
+        label: "Bank of Baroda - Corporate Banking",
+      },
     ],
     operators: {
       '==': {
