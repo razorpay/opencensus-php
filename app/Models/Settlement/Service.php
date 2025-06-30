@@ -1706,23 +1706,13 @@ class Service extends Base\Service
 
         $experimentVariable = UniqueIdEntity::generateUniqueId();
         // shadow mode experiment
-        $shadow = $this->app->razorx->getTreatment($experimentVariable,
-            Settlement\Constants::RAZORX_SETL_FETCH_DETAILS_FROM_NSS_SHADOW,
-            $this->mode
-        );
-
-        if ($shadow === Settlement\Constants::RAZORX_VARIANT_ON)
+        if ($this->isSetlFetchDetailsFromNssShadowEnabled($experimentVariable))
         {
             $nssResponse = app('settlements_dashboard')->settlementFetchDetails($input);
 
             $experimentVariable = UniqueIdEntity::generateUniqueId();
-            // shadow mode experiment
-            $reverseShadow = $this->app->razorx->getTreatment($experimentVariable,
-                Settlement\Constants::RAZORX_SETL_FETCH_DETAILS_FROM_NSS_REVERSE_SHADOW,
-                $this->mode
-            );
-
-            if ($reverseShadow === Settlement\Constants::RAZORX_VARIANT_ON)
+            // reverse shadow mode experiment
+            if ($this->isSetlFetchDetailsFromNssReverseShadowEnabled($experimentVariable))
             {
                 return $nssResponse;
             }
@@ -1733,6 +1723,69 @@ class Service extends Base\Service
         }
         return $this->settlementTimelineOld($input);
     }
+
+    private function isSetlFetchDetailsFromNssShadowEnabled($experimentVariable): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $experimentVariable,
+                'experiment_id' => $this->app['config']->get('app.setl_fetch_details_from_nss_shadow_exp_id')
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SETL_FETCH_DETAILS_FROM_NSS_SHADOW, [
+                'merchant_id'   => $experimentVariable,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SETL_FETCH_DETAILS_FROM_NSS_SHADOW_EXPERIMENT_FAILURE, [
+                'merchant_id'   => $experimentVariable,
+                'experiment_id' => $this->app['config']->get('app.setl_fetch_details_from_nss_shadow_exp_id') ?? null
+            ]);
+
+            return false;
+        }
+    }
+
+    private function isSetlFetchDetailsFromNssReverseShadowEnabled($experimentVariable): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $experimentVariable,
+                'experiment_id' => $this->app['config']->get('app.setl_fetch_details_from_nss_reverse_shadow_exp_id')
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SETL_FETCH_DETAILS_FROM_NSS_REVERSE_SHADOW, [
+                'merchant_id'   => $experimentVariable,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SETL_FETCH_DETAILS_FROM_NSS_REVERSE_SHADOW_EXPERIMENT_FAILURE, [
+                'merchant_id'   => $experimentVariable,
+                'experiment_id' => $this->app['config']->get('app.setl_fetch_details_from_nss_reverse_shadow_exp_id') ?? null
+            ]);
+
+            return false;
+        }
+    }
+
     public function settlementTimelineOld(array $input) : array
     {
         $merchant = $this->merchant;

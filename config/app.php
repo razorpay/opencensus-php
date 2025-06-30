@@ -1261,6 +1261,14 @@ return array(
 
     'setl_fetch_by_id_from_nss_shadow_exp_id' => env('SETL_FETCH_BY_ID_FROM_NSS_SHADOW_EXP_ID'),
 
+    'setl_get_details_from_nss_shadow_exp_id' => env('SETL_GET_DETAILS_FROM_NSS_SHADOW_EXP_ID'),
+
+    'setl_get_details_from_nss_reverse_shadow_exp_id' => env('SETL_GET_DETAILS_FROM_NSS_REVERSE_SHADOW_EXP_ID'),
+
+    'setl_fetch_details_from_nss_shadow_exp_id' => env('SETL_FETCH_DETAILS_FROM_NSS_SHADOW_EXP_ID'),
+
+    'setl_fetch_details_from_nss_reverse_shadow_exp_id' => env('SETL_FETCH_DETAILS_FROM_NSS_REVERSE_SHADOW_EXP_ID'),
+
     'setl_fetch_by_id_from_nss_reverse_shadow_exp_id' => env('SETL_FETCH_BY_ID_FROM_NSS_REVERSE_SHADOW_EXP_ID'),
 
     'setl_fetch_multiple_from_nss_shadow_exp_id' => env('SETL_FETCH_MULTIPLE_FROM_NSS_SHADOW_EXP_ID'),
