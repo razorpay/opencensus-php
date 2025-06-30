@@ -1015,6 +1015,9 @@ class Repository extends Base\Repository
     // Returns true if experiment and env is present for MID
     protected function ledgerTidbMerchantAccountIDCacheExperiment($merchantID): bool
     {
+
+        return true;
+
         $variant = $this->app->razorx->getTreatment($merchantID,
             Merchant\RazorxTreatment::LEDGER_TIDB_MERCHANT_ACCOUNT_ID_CACHE,
             $this->app['basicauth']->getMode() ?? Mode::LIVE

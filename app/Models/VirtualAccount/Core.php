@@ -116,12 +116,9 @@ class Core extends Base\Core
 
         (new Metric)->pushCreateSuccessMetrics($input);
 
-        $createVirtualvariant  = $this->app->razorx->getTreatment($merchant->getId(),
-                                                                  RazorxTreatment::BT_RBL_CREATE_VIRTUAL_ACCOUNT,
-                                                                  $this->mode);
-
-        if (($createVirtualvariant == 'on')  and
-            ($virtualAccount->isBalanceTypeBanking() === false) and
+        // razorx checked removed for experiment 'bt_rbl_create_virtual_account'
+        // https://admin-dashboard.razorpay.com/razorx/experiments?feature_id=1434
+        if (($virtualAccount->isBalanceTypeBanking() === false) and
             ($virtualAccount->bankAccount !== null) and
             in_array($virtualAccount->bankAccount->getIfscCode(), Provider::getGatewaySyncProvider()))
         {
