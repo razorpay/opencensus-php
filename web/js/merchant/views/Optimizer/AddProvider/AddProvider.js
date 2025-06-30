@@ -718,40 +718,53 @@ class AddProvider extends React.Component {
     );
   };
 
-  changeGatewayWallets = ({ values }) => {
-    this.setState((prevState) => {
-      const { provider } = prevState;
-      const updatedProvider = {
-        ...provider,
-        Gateway_details: {
-          ...provider.Gateway_details,
-          wallet_metadata: {
-            ...provider.Gateway_details.wallet_metadata,
-            wallets: values,
+  changeGatewayMultiSelectOptions = ({ name, values }) => {
+    if (name === 'Currency') {
+      this.setState((prevState) => {
+        const { provider } = prevState;
+        const updatedProvider = {
+          ...provider,
+          Gateway_details: {
+            ...provider.Gateway_details,
+            Currency: [ ...values ],
           },
-        },
-      };
-
-      return { provider: updatedProvider };
-    });
-  };
-
-  changeGatewayPaylaters = ({ values }) => {
-    this.setState((prevState) => {
-      const { provider } = prevState;
-      const updatedProvider = {
-        ...provider,
-        Gateway_details: {
-          ...provider.Gateway_details,
-          paylater_metadata: {
-            ...provider.Gateway_details.paylater_metadata,
-            paylaters: values,
+        };
+  
+        return { provider: updatedProvider };
+      });
+    } else if (name === 'Paylaters') {
+      this.setState((prevState) => {
+        const { provider } = prevState;
+        const updatedProvider = {
+          ...provider,
+          Gateway_details: {
+            ...provider.Gateway_details,
+            paylater_metadata: {
+              ...provider.Gateway_details.paylater_metadata,
+              paylaters: values,
+            },
           },
-        },
-      };
-
-      return { provider: updatedProvider };
-    });
+        };
+  
+        return { provider: updatedProvider };
+      });
+    } else if (name === 'Wallets') {
+      this.setState((prevState) => {
+        const { provider } = prevState;
+        const updatedProvider = {
+          ...provider,
+          Gateway_details: {
+            ...provider.Gateway_details,
+            wallet_metadata: {
+              ...provider.Gateway_details.wallet_metadata,
+              wallets: values,
+            },
+          },
+        };
+  
+        return { provider: updatedProvider };
+      });
+    }
   };
 
   changeEnableAutoDebitSwitch = (isChecked) => {
@@ -1270,8 +1283,7 @@ class AddProvider extends React.Component {
                   isSubmitting={isSaving}
                   hasSeamlessOption={hasSeamlessOption || hasAccountTypeOption}
                   changeGatewayDetails={this.changeGatewayDetails}
-                  changeGatewayWallets={this.changeGatewayWallets}
-                  changeGatewayPaylaters={this.changeGatewayPaylaters}
+                  changeGatewayMultiSelectOptions={this.changeGatewayMultiSelectOptions}
                   changeEnableAutoDebitSwitch={this.changeEnableAutoDebitSwitch}
                   onLinkClick={this.howtoGetDetails}
                   onEditClick={this.onEditClick}

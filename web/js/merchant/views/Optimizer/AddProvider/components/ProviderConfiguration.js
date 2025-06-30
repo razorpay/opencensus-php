@@ -36,8 +36,7 @@ import {
 } from 'merchant/views/Optimizer/AddProvider/utils';
 
 import WalletAutoDebit from './WalletAutoDebit';
-import WalletsMultiSelect from './WalletsMultiSelect';
-import PaylatersMultiSelect from './PaylatersMultiSelect';
+import MultiSelectDropdown from './MultiSelectDropdown';
 
 const ProviderConfiguration = (props) => {
   const {
@@ -51,8 +50,7 @@ const ProviderConfiguration = (props) => {
     hasSeamlessOption,
     validationErrors,
     changeGatewayDetails,
-    changeGatewayWallets,
-    changeGatewayPaylaters,
+    changeGatewayMultiSelectOptions,
     changeEnableAutoDebitSwitch,
     onLinkClick,
     onEditClick,
@@ -69,7 +67,8 @@ const ProviderConfiguration = (props) => {
   const walletOptions = paymentMethodMetaData?.wallet_metadata?.wallets ?? [];
   const paylaterOptions = paymentMethodMetaData?.paylater_metadata?.paylaters ?? [];
   const canSelectPaylaterOptions =
-    paymentMethodMetaData?.paylater_metadata?.can_select_paylaters ?? false;
+    paymentMethodMetaData?.paylater_metadata?.can_select_paylaters ?? true;
+  const currenciesList = selectedProviderDetails?.['Currency']?.data_value ?? [];
 
   // Check if 'Sodexo' is enabled in provider
   const isSodexoSupported = selectedProviderDetails?.hasOwnProperty(PROVIDER_KEYS.SODEXO);
@@ -294,10 +293,11 @@ const ProviderConfiguration = (props) => {
                   </Box>
                   {walletOptions?.length > 0 &&
                     Gateway_details?.['Payment Methods']?.includes('wallet') && (
-                      <WalletsMultiSelect
-                        walletOptions={walletOptions}
-                        walletSelected={Gateway_details?.wallet_metadata?.wallets || []}
-                        changeGatewayWallets={changeGatewayWallets}
+                      <MultiSelectDropdown
+                        label="Wallets"
+                        options={walletOptions}
+                        selectedOptions={Gateway_details?.wallet_metadata?.wallets || []}
+                        changeOptions={changeGatewayMultiSelectOptions}
                         disabled={selectedProvider === 'paytm'} // For paytm wallets get enabled by default
                         isFormEdit={isFormEdit}
                       />
@@ -305,13 +305,26 @@ const ProviderConfiguration = (props) => {
                   {paylaterOptions?.length > 0 &&
                     canSelectPaylaterOptions &&
                     Gateway_details?.['Payment Methods']?.includes('paylater') && (
-                      <PaylatersMultiSelect
-                        paylaterOptions={paylaterOptions}
-                        paylaterSelected={Gateway_details?.paylater_metadata?.paylaters || []}
-                        changeGatewayPaylaters={changeGatewayPaylaters}
+                      <MultiSelectDropdown
+                        label="Paylaters"
+                        options={paylaterOptions}
+                        selectedOptions={Gateway_details?.paylater_metadata?.paylaters || []}
+                        changeOptions={changeGatewayMultiSelectOptions}
+                        disabled={false}
                         isFormEdit={isFormEdit}
                       />
                     )}
+                    {currenciesList?.length > 0 &&
+                      Gateway_details?.['Payment Methods']?.includes('card') && (
+                        <MultiSelectDropdown
+                          label="Currency"
+                          options={currenciesList}
+                          selectedOptions={Gateway_details?.['Currency'] || []}
+                          changeOptions={changeGatewayMultiSelectOptions}
+                          disabled={false}
+                          isFormEdit={isFormEdit}
+                        />
+                      )}
                 </Fragment>
               );
             } else if (label === 'TPV' && showMethods) {
