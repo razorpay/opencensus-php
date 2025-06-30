@@ -154,6 +154,24 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
             $this->logPaymentRoutingInfo($payment, $card, false);
 
             $cardInput = $processor->createCardForNetworkTokenCardMandate($card, $token, [], $payment);
+
+            // Add payment_account_reference for tokenized recurring payments
+            try {
+                $networkToken = (new \RZP\Models\Customer\Token\Core)->fetchToken($token, false);
+                if (!empty($networkToken) && !empty($networkToken[0]['provider_data'])) {
+                    $par = $networkToken[0]['provider_data']['payment_account_reference'] ?? '';
+                    if (!empty($par)) {
+                        $cardInput['payment_account_reference'] = $par;
+                    }
+                }
+            } catch (\Throwable $e) {
+                $this->trace->warning(TraceCode::VAULT_TOKEN_ERROR, [
+                    'card_id' => $card->getId(),
+                    'token_id' => $token->getId(),
+                    'payment_id' => $payment->getId(),
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
         else
         {
