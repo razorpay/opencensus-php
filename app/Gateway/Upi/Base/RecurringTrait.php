@@ -37,6 +37,16 @@ trait RecurringTrait
         Action::PRE_DEBIT       => 'notify',
     ];
 
+    /**
+     * Gateway error codes that should be excluded from UPI Autopay OTM deemed debit processing
+     */
+    public static $upiAutopayDeemedDebitExclusionErrorCodes = [
+        '59',
+        'K1',
+        'VO',
+        'VH'
+    ];
+
     protected $entityActionMapFromGateway = [
         'create'                => Action::AUTHENTICATE,
         'execte'                => Action::AUTHORIZE,
@@ -516,9 +526,12 @@ trait RecurringTrait
                 null,
                 $this->action);
 
-            $exception->setData($this->getResponseForAutoRecurring($input, $input['gateway']['data'], $upi, $exception));
-
-            throw $exception;
+            $deemedDebitResponse = $this->handleUpiAutopayDeemedDebitForCallback($input, $input['gateway']);
+            if ($deemedDebitResponse === false)
+            {
+                $exception->setData($this->getResponseForAutoRecurring($input, $input['gateway']['data'], $upi, $exception));
+                throw $exception;
+            }
         }
 
         return $this->getResponseForAutoRecurring($input, $input['gateway']['data'], $upi);
@@ -569,12 +582,75 @@ trait RecurringTrait
                 ]);
             }
 
-            $exception->setData($this->getResponseForAutoRecurring($input, $response['data'], $upi, $exception));
-
-            throw $exception;
+            // Handle UPI Autopay deemed debit for one-time frequency payments
+            $deemedDebitResponse = $this->handleUpiAutopayDeemedDebitForCallback($input, $response);
+            if ($deemedDebitResponse === false)
+            {
+                $exception->setData($this->getResponseForAutoRecurring($input, $response['data'], $upi, $exception));
+                throw $exception;
+            }
         }
 
         return $this->getResponseForAutoRecurring($input, $response['data'], $upi);
+    }
+
+    /**
+     * Handle UPI Autopay deemed debit logic for callback flow
+     * Checks if the payment qualifies for deemed debit and returns success response if applicable
+     *
+     * @param array $input
+     * @param array $response
+     * @param Entity $upi
+     * @return bool Returns success response if deemed debit applies, null otherwise
+     */
+    protected function handleUpiAutopayDeemedDebitForCallback(array $input, array &$response)
+    {
+        // Check if this payment qualifies for UPI Autopay deemed debit processing
+        if (isset($input['payment']['recurring_type']) &&
+            $input['payment']['recurring_type'] === Payment\RecurringType::AUTO &&
+            isset($input['upi_mandate']['frequency']) &&
+            $input['upi_mandate']['frequency'] === UpiMandate\Frequency::ONETIME &&
+            isset($response['error']['gateway_error_code']) &&
+            !$this->containsErrorCodes($response['error']['gateway_error_code'], self::$upiAutopayDeemedDebitExclusionErrorCodes)) {
+
+            $this->trace->info(TraceCode::UPI_AUTOPAY_DEEMED_DEBIT, [
+                'payment_id' => $input['payment']['id'],
+                'error_code' => $response['error']['gateway_error_code'],
+                'gateway' => $input['payment']['gateway']
+            ]);
+
+            // Return success response for deemed debit case
+            $response['data']['success'] = true;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the gateway error code contains any of the specified error codes as substrings
+     *
+     * @param string|null $gatewayErrorCode
+     * @param array $errorCodes
+     * @return bool
+     */
+    protected function containsErrorCodes($gatewayErrorCode, array $errorCodes): bool
+    {
+        if (empty($gatewayErrorCode)) {
+            return false;
+        }
+
+        $pspErrorCode = $gatewayErrorCode;
+
+        // If gateway error code contains underscore, split and use the second part
+        if (str_contains($gatewayErrorCode, '_')) {
+            $parts = explode('_', $gatewayErrorCode, 2);
+            $pspErrorCode = $parts[1];
+        }
+
+        // Check if the code is present in the error codes list
+        return in_array($pspErrorCode, $errorCodes, true);
     }
 
     protected function getRecurringDetailsFromServerCallback(array $response): array

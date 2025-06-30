@@ -1779,6 +1779,9 @@ class Gateway extends Base\Gateway
 
         $verify->gatewaySuccess = $content['success'];
 
+        // Handle UPI Autopay deemed debit logic for verify flow for one_time frequency mandates
+        $this->handleUpiAutopayDeemedDebitForVerify($verify, $content);
+
         $this->checkApiSuccess($verify);
 
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
@@ -1819,6 +1822,58 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentEntity($verify->payment, $attributes, false);
 
         return $verify->status;
+    }
+
+    /**
+     * Handle UPI Autopay deemed debit logic for verify flow
+     * Checks if the payment qualifies for deemed debit and processes it accordingly
+     */
+    protected function handleUpiAutopayDeemedDebitForVerify($verify, $content)
+    {
+        // Check if this payment qualifies for UPI Autopay deemed debit processing
+        if (($this->isUpiRecurringPayment($verify->input['payment']) === true) and
+            ($verify->input['upi']['action'] === Base\Action::AUTHORIZE) and
+            ($content['success'] === false) and
+            (isset($content['error']['gateway_error_code']) === true) and
+            (isset($verify->input['upi_mandate']['frequency']) === true) and
+            ($verify->input['upi_mandate']['frequency'] === Frequency::ONETIME))
+        {
+            $this->processUpiAutopayDeemedDebitForVerify($verify, $content);
+        }
+    }
+
+    /**
+     * Process UPI Autopay deemed debit logic for verify flow
+     * Similar to the logic in RecurringTrait but adapted for verify context
+     */
+    protected function processUpiAutopayDeemedDebitForVerify($verify, $content)
+    {
+        $gatewayErrorCode = $content['error']['gateway_error_code'];
+
+        // Check if gateway error code contains any exclusion error codes as substrings
+        $shouldExclude = $this->containsErrorCodes($gatewayErrorCode, self::$upiAutopayDeemedDebitExclusionErrorCodes);
+
+        if (!$shouldExclude)
+        {
+            // Mark as deemed debit - set gateway success to true
+            $verify->gatewaySuccess = true;
+
+            // Update the content to reflect deemed debit success
+            $content['success'] = true;
+            $verify->verifyResponseContent = $content;
+
+            $this->trace->info(TraceCode::UPI_AUTOPAY_DEEMED_DEBIT_VERIFY, [
+                'payment_id'         => $verify->input['payment']['id'],
+                'gateway_error_code' => $gatewayErrorCode,
+            ]);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::UPI_AUTOPAY_DEEMED_DEBIT_VERIFY_EXCLUDED, [
+                'payment_id'         => $verify->input['payment']['id'],
+                'gateway_error_code' => $gatewayErrorCode,
+            ]);
+        }
     }
 
     protected function getMozartRequestArray($input, $mode = null)
