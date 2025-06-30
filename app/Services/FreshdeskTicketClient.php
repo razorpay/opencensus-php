@@ -43,12 +43,22 @@ class FreshdeskTicketClient
     ];
 
     const URL_TOKEN_MAP = [
-        Constants::URL2        => 'token2',
-        Constants::URLX        => 'tokenx',
-        Constants::URLCAP      => 'tokencap',
-        Constants::URLIND      => 'tokenind',
-        Constants::URL_EZETAP  => 'token_ezetap',
-        Constants::URLMY      => 'tokenmy'
+        'cmma' => [
+            Constants::URL2        => 'token2',
+            Constants::URLX        => 'tokenx',
+            Constants::URLCAP      => 'tokencap',
+            Constants::URLIND      => 'tokenind_cmma',
+            Constants::URL_EZETAP  => 'token_ezetap',
+            Constants::URLMY       => 'tokenmy'
+        ],
+        'default' => [
+            Constants::URL2        => 'token2',
+            Constants::URLX        => 'tokenx',
+            Constants::URLCAP      => 'tokencap',
+            Constants::URLIND      => 'tokenind',
+            Constants::URL_EZETAP  => 'token_ezetap',
+            Constants::URLMY       => 'tokenmy'
+        ]
     ];
 
     public function __construct(Application $app)
@@ -641,7 +651,27 @@ class FreshdeskTicketClient
 
     private function getAuthKey($urlKey) : string
     {
-        return self::URL_TOKEN_MAP[$urlKey] ?? 'token';
+        $internalAuthApp = $this->app['basicauth']->getInternalApp() ?? 'default';
+        
+        $authKey = null;
+        
+        // Check if we have a mapping for this internal app
+        if (isset(self::URL_TOKEN_MAP[$internalAuthApp])) {
+            $authKey = self::URL_TOKEN_MAP[$internalAuthApp][$urlKey] ?? 'token';
+        } else {
+            // Fallback to default mapping
+            $authKey = self::URL_TOKEN_MAP['default'][$urlKey] ?? 'token';
+        }
+        
+        $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_AUTH_KEY,
+            [
+                'internal_auth_app' => $internalAuthApp,
+                'url_key'          => $urlKey,
+                'auth_key'         => $authKey
+            ]
+        );
+        
+        return $authKey;
     }
 
     private function getRedactedRequest(array $request) : array

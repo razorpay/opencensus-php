@@ -447,6 +447,7 @@ return [
         'sandbox_url'               => env('FRESHDESK_SANDBOX_URL'),
         'sandbox_url_my'            => env('FRESHDESK_SANDBOX_URL_MY'),
         'token'                     => env('FRESHDESK_TOKEN'),
+        'tokenind_cmma'             => env('FRESHDESK_TOKEN_IND_CMMA'),
         'tokenind'                  => env('FRESHDESK_TOKEN_IND'),
         'tokenmy'                   => env('FRESHDESK_TOKEN_MY'),
         'token2'                    => env('FRESHDESK_TOKEN2'),
