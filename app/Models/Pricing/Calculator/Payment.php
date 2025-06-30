@@ -1121,9 +1121,27 @@ class Payment extends Base
 
             if ($e->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT) {
 
-                $isExpEnabled = $this->isFallbackRuleExpEnabled();;
-
                 $merchant = $this->entity->merchant;
+
+                $existingPaymentPricingRule = (!empty($this->pricingRules) && ($this->pricingRules[0]?->getFeature() == Pricing\Feature::PAYMENT));
+
+                // This metric records no. of times merchant's pricing plan had no-pricing-rule
+                $this->trace->count(Metrics::NO_RULE_FOUND_IN_MERCHANT_PRICING_PLAN_COUNT,
+                    [
+                        'is_rzp_org_id' => ($merchant?->org->getId() === Pricing\Constants::RZP_ORG_ID) ? true : false,
+                        'feature' => $existingPaymentPricingRule ? 'addon' : 'payment',
+                        'payment_method' => $this->entity->getMethod(),
+                        'type' => $pricing->getType(),
+                    ]);
+
+                $this->trace->info(TraceCode::NO_RULE_FOUND_IN_MERCHANT_PRICING_PLAN, [
+                    'org_id' => $merchant?->org->getId(),
+                    'feature' => $existingPaymentPricingRule ? 'addon' : 'payment',
+                    'payment_method' => $this->entity->getMethod(),
+                    'type' => $pricing->getType(),
+                ]);
+
+                $isExpEnabled = $this->isFallbackRuleExpEnabled();;
 
                 $this->trace->count(Metrics::SERVER_ERROR_PRICING_RULE_ABSENT_COUNT,
                     [
@@ -1132,7 +1150,6 @@ class Payment extends Base
                         'on_fallback_plan' => $pricing->getId() == Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID,
                     ]);
 
-                $existingPaymentPricingRule = (!empty($this->pricingRules) && ($this->pricingRules[0]?->getFeature() == Pricing\Feature::PAYMENT));
 
                 if ($merchant?->org->getId() === Org\Entity::RAZORPAY_ORG_ID && $pricing->isTypePricing() && $isExpEnabled === true){
 
@@ -1152,18 +1169,39 @@ class Payment extends Base
                                 'org_id' => $merchant?->org->getId(),
                                 'fallback_plan_id' => $defaultFallbackPlanId,
                                 'payment_method' => $this->entity->getMethod(),
+                                'feature' => $existingPaymentPricingRule ? 'addon' : 'payment',
+                                'type' => $pricing->getType(),
                             ]);
 
                         try {
-                            $pricing = (new Fee())->getPricingPlanForFeesCalculation($defaultFallbackPlanId, $this->entity, $merchant);
-                        } catch (\Exception $e) {
-                            $this->trace->info("Pricing plan not fetched from repo",
+                            try {
+                                $pricing = (new Fee())->getPricingPlanForFeesCalculation($defaultFallbackPlanId, $this->entity, $merchant);
+                            } catch (\Exception $e) {
+                                $this->trace->info("Pricing plan not fetched from repo",
+                                    [
+                                        "planId" => $defaultFallbackPlanId,
+                                        "error" => $e->getMessage(),
+                                    ]);
+                                $defaultFallbackPlanId = Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID;
+                                $pricing = (new Fee())->getPricingPlanForFeesCalculation($defaultFallbackPlanId, $this->entity, $merchant);
+                            }
+                        } catch  (\Exception $e) {
+                            // This metric and log record the no. of times fallback pricing plan fetch fails.
+                            $this->trace->count(Metrics::FALLBACK_PRICING_SKIPPED_COUNT,
                                 [
-                                    "planId" => $defaultFallbackPlanId,
-                                    "error" => $e->getMessage(),
+                                    'is_rzp_org_id' => ($merchant?->org->getId() === Pricing\Constants::RZP_ORG_ID) ? true : false,
+                                    'is_experiment_enabled' => $isExpEnabled,
+                                    'type' => $pricing->getType(),
+                                    'reason' => 'error_fetching_fallback_plan',
                                 ]);
-                            $defaultFallbackPlanId = Pricing\DefaultPlan::NO_RULE_FALLBACK_PLAN_ID;
-                            $pricing = (new Fee())->getPricingPlanForFeesCalculation($defaultFallbackPlanId, $this->entity, $merchant);
+
+                            $this->trace->info(TraceCode::FALLBACK_PRICING_SKIPPED, [
+                                'org_id' => $merchant?->org->getId(),
+                                'is_experiment_enabled' => $isExpEnabled,
+                                'type' => $pricing->getType(),
+                                'reason' => 'error_fetching_fallback_plan',
+                            ]);
+                            throw $e;
                         }
 
                         try {
@@ -1174,20 +1212,88 @@ class Payment extends Base
                             }
 
                         }catch (Exception\LogicException $e) {
+                            // this metric records failure in applying fallback pricing plan
+                            $this->trace->count(Metrics::FALLBACK_PRICING_PLAN_APPLY_FAILURE_COUNT,
+                                [
+                                    'is_rzp_org_id' => ($merchant?->org->getId() === Pricing\Constants::RZP_ORG_ID) ? true : false,
+                                    'feature' => $existingPaymentPricingRule ? 'addon' : 'payment',
+                                    'type' => $pricing->getType(),
+                                    'payment_method' => $this->entity->getMethod(),
+                                    'reason' => $e->getCode(),
+                                    'message' => str_replace(' ', '_', $e->getMessage()),
+                                ]);
+
+                            $this->trace->info(TraceCode::FALLBACK_PRICING_PLAN_APPLY_FAILURE, [
+                                'org_id' => $merchant?->org->getId(),
+                                'feature' => $existingPaymentPricingRule ? 'addon' : 'payment',
+                                'type' => $pricing->getType(),
+                                'payment_method' => $this->entity->getMethod(),
+                                'reason' => $e->getCode(),
+                                'message' => str_replace(' ', '_', $e->getMessage()),
+                            ]);
+
                             if ($e->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT) {
                                 $this->logPricingFailureDetails($pricing);
-
-                                $this->trace->count(Metrics::PRICING_ERROR_NO_RULE_FOUND_ON_FALLBACK_PRICING);
+                                // this metric records no rule found on fallback pricing
+                                $this->trace->count(Metrics::PRICING_ERROR_NO_RULE_FOUND_ON_FALLBACK_PRICING,[
+                                    'feature' => $existingPaymentPricingRule ? 'addon' : 'payment',
+                                    'type' => $pricing->getType(),
+                                    'payment_method' => $this->entity->getMethod(),
+                                    'message' => str_replace(' ', '_', $e->getMessage()),
+                                ]);
                             }
                             throw $e;
                         }
                     }else{
+                        // this metric records merchant_plan_id_is_fallback_plan
+                        $this->trace->count(Metrics::FALLBACK_PRICING_SKIPPED_COUNT,
+                            [
+                                'is_rzp_org_id' => ($merchant?->org->getId() === Pricing\Constants::RZP_ORG_ID) ? true : false,
+                                'is_experiment_enabled' => $isExpEnabled,
+                                'type' => $pricing->getType(),
+                                'reason' => 'merchant_plan_id_is_fallback_plan',
+                            ]);
+
+                        $this->trace->info(TraceCode::FALLBACK_PRICING_SKIPPED, [
+                            'org_id' => $merchant?->org->getId(),
+                            'is_experiment_enabled' => $isExpEnabled,
+                            'type' => $pricing->getType(),
+                            'reason' => 'merchant_plan_id_is_fallback_plan',
+                        ]);
                         throw $e;
                     }
                 }else{
+                    // this metric records fallback_not_applicable
+                    $this->trace->count(Metrics::FALLBACK_PRICING_SKIPPED_COUNT,
+                        [
+                            'is_rzp_org_id' => ($merchant?->org->getId() === Pricing\Constants::RZP_ORG_ID) ? true : false,
+                            'type' => $pricing->getType(),
+                            'is_experiment_enabled' => $isExpEnabled,
+                            'reason' => 'fallback_not_applicable',
+                        ]);
+
+                    $this->trace->info(TraceCode::FALLBACK_PRICING_SKIPPED, [
+                        'org_id' => $merchant?->org->getId(),
+                        'type' => $pricing->getType(),
+                        'is_experiment_enabled' => $isExpEnabled,
+                        'reason' => 'fallback_not_applicable',
+                    ]);
                     throw $e;
                 }
             }else{
+                // this metric records failure in applying merchant pricing plan
+                $this->trace->count(Metrics::MERCHANT_PRICING_PLAN_APPLY_FAILURE_COUNT,
+                    [
+                        'type' => $pricing->getType(),
+                        'reason' => $e->getCode(),
+                        'message' => str_replace(' ', '_', $e->getMessage()),
+                    ]);
+
+                $this->trace->info(TraceCode::MERCHANT_PRICING_PLAN_APPLY_FAILURE, [
+                    'type' => $pricing->getType(),
+                    'reason' => $e->getCode(),
+                    'message' => str_replace(' ', '_', $e->getMessage()),
+                ]);
                 throw $e;
             }
         }
