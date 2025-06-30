@@ -364,7 +364,8 @@ class Service extends Base
         $dimension = [
             'feature_name' => 'many',
             'mode' => $mode,
-            'function' => __FUNCTION__
+            'function' => __FUNCTION__,
+            'route'    => app('request.ctx')->getRoute() ?? app('worker.ctx')->getJobName(),
         ];
 
         try
