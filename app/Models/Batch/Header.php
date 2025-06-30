@@ -1062,8 +1062,20 @@ class Header
     const UPI_TERMINAL_ONBOARDING_ALLOW_CREDIT_LINE    = 'Allow Credit Line';
     const UPI_TERMINAL_ONBOARDING_DIRECT_PUSH          = 'Direct Push';
 
+    //
 
-    // Pricing Rules Addition Headers
+    // Merchant Instrument Request creation constants
+    const MIR_MERCHANT_ID = 'Merchant Id';
+    const MIR_INSTRUMENT = 'Instrument';
+    const MIR_CREATED_BY = 'Created By';
+    const MIR_IS_TPV = 'Is TPV';
+    const MIR_CUSTOM_IIR_LIST = 'Custom IIR List';
+    const MERCHANT_INSTRUMENT_REQUEST_ID = 'Merchant Instrument Request Id';
+    const MIR_STATUS = "Status";
+    const MIR_FEATURES = "Features";
+    const MIR_SOURCE_CHANNEL = "Source Channel";
+
+        // Pricing Rules Addition Headers
     const PRICING_RULE_PLAN_ID                  = 'plan_id';
     const PRICING_RULE_PLAN_NAME                = 'plan_name';
     const PRICING_RULE_MERCHANT_ID              = 'merchant_id';
@@ -2958,6 +2970,28 @@ class Header
             self::OUTPUT => [
                 self::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID,
                 self::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::CREATE_MERCHANT_INSTRUMENT_REQUEST => [
+            self::INPUT => [
+                self::MIR_MERCHANT_ID,
+                self::MIR_INSTRUMENT,
+                self::MIR_CREATED_BY,
+                self::MIR_IS_TPV,
+                self::MIR_CUSTOM_IIR_LIST
+            ],
+            self::OUTPUT => [
+                self::MERCHANT_INSTRUMENT_REQUEST_ID,
+                self::MIR_MERCHANT_ID,
+                self::MIR_INSTRUMENT,
+                self::MIR_STATUS,
+                self::MIR_CREATED_BY,
+                self::MIR_FEATURES,
+                self::MIR_SOURCE_CHANNEL,
+                self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],

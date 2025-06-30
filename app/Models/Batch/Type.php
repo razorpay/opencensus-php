@@ -117,6 +117,7 @@ class Type
     // Batch Terminal Creation
     const TERMINAL                  = 'terminal';
     const CREATE_TERMINAL                  = 'create_terminal';
+    const CREATE_MERCHANT_INSTRUMENT_REQUEST = 'create_merchant_instrument_request';
 
     const LINKED_ACCOUNT_REVERSAL   = 'linked_account_reversal';
 
@@ -369,6 +370,7 @@ class Type
         self::TERMINAL,
         self::TERMINAL_CREATION,
         self::CREATE_TERMINAL,
+        self::CREATE_MERCHANT_INSTRUMENT_REQUEST,
         self::MERCHANT_ONBOARDING,
         self::SUB_MERCHANT,
         self::SUBMERCHANT_ASSIGN,
@@ -762,6 +764,7 @@ class Type
         self::CREDIT,
         self::TERMINAL_CREATION,
         self::CREATE_TERMINAL,
+        self::CREATE_MERCHANT_INSTRUMENT_REQUEST,
         self::MERCHANT_STATUS_ACTION,
         self::NACH_MIGRATION,
         self::MPAN,
@@ -861,6 +864,7 @@ class Type
         self::BUY_PRICING_ASSIGN                 => Name::EDIT_TERMINAL,
         self::TERMINAL_CREATION                  => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
         self::CREATE_TERMINAL                    => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
+        self::CREATE_MERCHANT_INSTRUMENT_REQUEST => Name::CREATE_MERCHANT_INSTRUMENT_REQUESTS_BULK,
         self::TERMINAL                           => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
         self::UPI_TERMINAL_ONBOARDING            => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
         self::UPI_ONBOARDED_TERMINAL_EDIT        => Name::EDIT_TERMINAL,

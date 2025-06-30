@@ -130,6 +130,7 @@ class Name
     const EDIT_TERMINAL_GOD_MODE              = 'edit_terminal_god_mode';
     const ENABLE_TERMINALS_BULK               = 'enable_terminals_bulk';
     const PAYMENTS_BATCH_CREATE_TERMINALS_BULK = "payments_batch_create_terminals_bulk";
+    const CREATE_MERCHANT_INSTRUMENT_REQUESTS_BULK = "create_merchant_instrument_requests_bulk";
     const TERMINAL_MANAGE_MERCHANT            = 'terminal_manage_merchant';
     const TOGGLE_TERMINAL                     = 'toggle_terminal';
     const CREATE_SETTLEMENTS_RECONCILE        = 'create_settlements_reconcile';
