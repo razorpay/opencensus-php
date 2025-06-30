@@ -21,6 +21,7 @@ export interface RefundsListFilterProps extends RouteComponentProps {
   loading: boolean;
   user: User;
   terminalProviders?: { [key: string]: string }[];
+  supportedGateways: { [key: string]: any };
 }
 
 export interface DefaultDateAndOption {

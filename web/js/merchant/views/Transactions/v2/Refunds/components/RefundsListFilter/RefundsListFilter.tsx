@@ -70,6 +70,7 @@ const RefundsListFilter = ({
   location: { pathname },
   terminalProviders,
   openModal,
+  supportedGateways,
 }: RefundsListFilterProps): JSX.Element => {
   const {
     defaultRefundsDuration,
@@ -301,6 +302,7 @@ const RefundsListFilter = ({
                 providers={terminalProviders}
                 onChange={onTerminalProviderChange}
                 isLoading={loading}
+                supportedGateways={supportedGateways}
               />
             )}
         </StyledSubListFilter>
@@ -372,6 +374,7 @@ const RefundsListFilter = ({
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
+  supportedGateways: state.navigator.supportedGateways,
 });
 
 const mapDispatchToProps = (dispatch) =>

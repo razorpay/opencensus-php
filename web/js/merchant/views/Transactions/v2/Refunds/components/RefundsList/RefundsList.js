@@ -7,7 +7,7 @@ import { withRouter } from 'common/deprecated/withRouter';
 import { withSplitzService } from 'common/splitz';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchRefunds as fetchAll } from 'merchant/reducers/collection';
-import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
+import { fetchTerminalProviders, fetchSupportedGateways } from 'merchant/reducers/navigator/details';
 import { isOmniChannelMerchant } from 'merchant/utils/omniUtils';
 import RefundsListFilter from 'merchant/views/Transactions/v2/Refunds/components/RefundsListFilter';
 import RefundsTable from 'merchant/views/Transactions/v2/Refunds/components/RefundsTable';
@@ -26,9 +26,10 @@ const RefundsListWrapper = (props) => {
 
 class RefundsList extends ListContainer {
   componentDidMount() {
-    const { fetchProviders, user } = this.props;
+    const { fetchProviders, fetchSupportedGateways, user } = this.props;
     if (user.isOptimizerEnabled) {
       fetchProviders();
+      fetchSupportedGateways();
     }
   }
 
@@ -79,6 +80,7 @@ function mapDispatchToProps(dispatch) {
     {
       fetchAll,
       fetchProviders: fetchTerminalProviders,
+      fetchSupportedGateways,
     },
     dispatch,
   );
