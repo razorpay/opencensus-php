@@ -14,6 +14,7 @@ use RZP\Gateway\Wallet\Razorpaywallet;
 use RZP\Http\Edge\PassportUtil;
 use RZP\Http\RequestContextV2;
 use RZP\Jobs\WebhookEvent;
+use RZP\Models\BankingConfig\Constants as BankingConstants;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Partner\Core as PartnerCore;
@@ -2269,7 +2270,7 @@ class Processor
 
             if ((isset($input['auth_type']) === true) and ($input['auth_type'] === AuthType::SKIP))
             {
-                if ($merchant->gertOrgId() === '100000Razorpay')
+                if ($merchant->getOrgId() === BankingConstants::RZP_ORG)
                 {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         'reason' => "MOTO_Payment",
