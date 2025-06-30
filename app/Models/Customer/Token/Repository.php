@@ -81,49 +81,15 @@ class Repository extends Base\Repository
 
             if($tokenList != null)
             {
-                if ($isIndianMerchant) {
-                    // metrics for token service fetch for Indian merchants
-                    $this->trace->count(
-                        Token\Metric::TOKENS_FETCHED_FROM_TOKEN_SERVICE_FETCH_FOR_INDIAN_MERCHANT,
-                        [
-                            'token_count' => $tokenList->count()
-                        ]
-                    );
-                }
-                else {
-                    return $tokenList;
-                }
+                $this->trace->count(
+                    Token\Metric::TOKENS_FETCHED_FROM_TOKEN_SERVICE_AND_API,
+                    [
+                        'merchant_country' => $this->merchant->getCountry(),
+                        'token_count' => count($tokenList),
+                    ]
+                );
+                return $tokenList;
             }
-        }
-
-        if ($isSaveTokenViaTokenServiceAllowed) {
-            $dbResults = $this->newQuery()
-                ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
-                ->where(function ($query) use ($isPassUnusedRejectedTokensExperimentEnabled) {
-                    if ($isPassUnusedRejectedTokensExperimentEnabled === true) {
-                        $query->whereNull(Token\Entity::USED_AT)
-                            ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::REJECTED);
-                    }
-                    $query->orwhereNull(Token\Entity::USED_AT)
-                        ->where(Token\Entity::FREQUENCY, '=', Token\Constants::ONE_TIME_FREQUENCY)
-                        ->where(Token\Entity::RECURRING_STATUS, '!=', Token\RecurringStatus::INITIATED);
-                    $query->orWhereNotNull(Token\Entity::USED_AT);
-                })
-                ->where(function ($query) {
-                    $query->whereNull(Token\Entity::EXPIRED_AT)
-                        ->orWhere(Token\Entity::EXPIRED_AT, '>', time());
-                })
-                ->withVpaTokens($withVpas)
-                ->orderBy(Token\Entity::CREATED_AT, 'desc')
-                ->orderBy(Token\Entity::ID, 'desc')
-                ->get();
-
-            if ($tokenList != null) {
-                $tokenList = $tokenList->merge($dbResults);
-            } else {
-                $tokenList = $dbResults;
-            }
-            return $tokenList;
         }
 
         return $this->newQuery()

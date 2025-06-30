@@ -2056,6 +2056,7 @@ class Processor
         return false;
     }
 
+
     private function saveInternationalcardforIndianMerchantExperimentEnabled(): bool {
 
         try
@@ -2108,16 +2109,20 @@ class Processor
 
             if ($merchant->getCountry() === 'IN' &&  isset($input[Payment\Entity::TOKEN]) === true && (empty($input[Payment\Entity::METHOD]) === false) && ($input[Payment\Entity::METHOD] === Payment\METHOD::CARD)&& (empty($input[Payment\Entity::RECURRING]) === true)) {
                 $tokenId = $input[Payment\Entity::TOKEN];
-                $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
-                $card = $this->repo->card->fetchForToken($token);
-                if ($card !== null && $card->getCountry() !== 'IN' && $this->saveInternationalcardforIndianMerchantExperimentEnabled()) {
-                    $this->trace->count(
-                        Token\Metric::ROUTING_VIA_REARCH_FOR_INDIAN_MERCHANT_INTERNATIONAL_TOKEN,
-                        [
-                            'card_country' => $card->getCountry()
-                        ]
-                    );
-                    return true;
+                $token = (new Token\Core)->getByTokenId($tokenId);
+
+                if ($token !== null) {
+                    $card = $this->repo->card->fetchForToken($token);
+
+                    if ($card !== null && strtoupper($card->getCountry()) !== 'IN' && $card->getNetwork() !== 'American Express' && $this->saveInternationalcardforIndianMerchantExperimentEnabled()) {
+                        $this->trace->count(
+                            Token\Metric::ROUTING_VIA_REARCH_FOR_INDIAN_MERCHANT_INTERNATIONAL_TOKEN,
+                            [
+                                'card_country' => $card->getCountry()
+                            ]
+                        );
+                        return true;
+                    }
                 }
             }
 
@@ -8256,6 +8261,7 @@ class Processor
         $merchant = $this->merchant;
 
         $isMalaysianMerchant = Country::matches($merchant->getCountry(), Country::MY);
+        $isIndianMerchant = Country::matches($merchant->getCountry(), Country::IN);
 
         if( strtolower($variant) === 'on')
         {
@@ -8284,9 +8290,19 @@ class Processor
                     $token = (new Customer\Token\Core)->getByTokenId($tokenId);
                     if (($token->getMerchantId() !== $merchant->getId()))
                     {
+                        $isGlobalTokenForInMerchantsAllowed = (new Token\Service())->isGlobalTokenForInMerchants();
+
+                        $isIndianMerchantWithNonIndianNonRecurringToken = $isIndianMerchant
+                        and strtoupper($token->merchant->getCountry()) === 'IN'
+                        and $token->card->getNetwork() !== 'American Express'
+                        and strtoupper($token->card->getCountry()) !== 'IN'
+                        and $token->isRecurring() === false
+                        and $isGlobalTokenForInMerchantsAllowed;
+
                         if (!$isMalaysianMerchant
                             and (($token->getMerchantId() !== self::RAZORPAY_ORG_ID)
-                            or ($token->card->isInternational() === false)))
+                                or ($token->card->isInternational() === false))
+                            and !$isIndianMerchantWithNonIndianNonRecurringToken)
                         {
                             throw new Exception\BadRequestException(
                                 ErrorCode::BAD_REQUEST_TOKEN_NOT_APPLICABLE,

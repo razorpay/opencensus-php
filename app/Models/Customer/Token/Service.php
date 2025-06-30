@@ -3248,6 +3248,45 @@ class Service extends Base\Service
         return false;
     }
 
+    public function isGlobalTokenForInMerchants(): bool
+    {
+        $isIndianMerchant = Country::matches($this->merchant->getCountry(), Country::IN);
+
+        if ($isIndianMerchant)
+        {
+            try
+            {
+                $experimentId = $this->app['config']->get('app.global_token_for_in_merchants_splitz_experiment_id');
+
+                $properties = [
+                    'id' => $this->app['request']->getTaskId(),
+                    'experiment_id' => $experimentId,
+                    'request_data' => json_encode(['merchant_id' => $this->merchant->getId(), 'mode' => $this->mode]),
+                ];
+
+                $response = $this->app['splitzService']->evaluateRequest($properties);
+
+                $variant = $response['response']['variant']['name'] ?? 'control';
+
+                $this->trace->info(TraceCode::GLOBAL_TOKENS_FOR_IN_MERCHANTS_SPLITZ_EXPERIMENT_RESPONSE, [
+                    'merchant_id' =>  $this->merchant->getId(),
+                    'variant' => $variant,
+                    'experiment_id' => $experimentId
+                ]);
+
+                return $variant === 'variant_on';
+            }
+            catch (\Exception $e)
+            {
+                $this->app['trace']->traceException(
+                    $e,
+                    null,
+                    TraceCode::GLOBAL_TOKENS_FOR_IN_MERCHANTS_SPLITZ_EXPERIMENT_FAILURE);
+            }
+        }
+        return false;
+    }
+
     public function createTokenOptimizerInternal($input)
     {
         if (empty($input['optimizer_mandate_continuity']) === false && $input['optimizer_mandate_continuity'] === true)

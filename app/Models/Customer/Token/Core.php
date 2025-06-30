@@ -5,6 +5,7 @@ namespace RZP\Models\Customer\Token;
 use Illuminate\Support\Arr;
 use RZP\Constants;
 use Carbon\Carbon;
+use RZP\Constants\Country;
 use RZP\Constants\Environment;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
@@ -1323,7 +1324,7 @@ class Core extends Base\Core
 
         $tokens = $this->fetchTokensByCustomer($customer, $merchant);
 
-        $merchantTokens = $this->removeOtherMerchantTokens($tokens, $merchant->getId());
+        $merchantTokens = $this->removeOtherMerchantTokens($tokens, $merchant);
 
         return $this->removeGlobalCardTokens($merchantTokens);
     }
@@ -1336,10 +1337,22 @@ class Core extends Base\Core
      *
      * @return Base\PublicCollection
      */
-    protected function removeOtherMerchantTokens(Base\PublicCollection $tokens, string $merchantId): Base\PublicCollection
+    protected function removeOtherMerchantTokens(Base\PublicCollection $tokens, Merchant\Entity $merchant): Base\PublicCollection
     {
-        return $tokens->filter(static function (Entity $token) use ($merchantId) {
-            return $token->getMerchantId() === $merchantId || $token->isGlobal();
+        $isGlobalTokenForInMerchantsAllowed = (new Token\Service())->isGlobalTokenForInMerchants();
+        $merchantId = $merchant->getId();
+        $isIndianMerchant = Country::matches($merchant->getCountry(), Country::IN);
+
+        return $tokens->filter(static function (Entity $token) use ($merchantId, $isIndianMerchant, $isGlobalTokenForInMerchantsAllowed) {
+            return $token->getMerchantId() === $merchantId ||
+                $token->isGlobal() ||
+                ($isIndianMerchant &&
+                    $isGlobalTokenForInMerchantsAllowed &&
+                    $token->merchant && strtoupper($token->merchant->getCountry()) === 'IN' &&
+                    $token->isRecurring() === false &&
+                    $token->isCard() && $token->card &&
+                    $token->card->getNetwork() !== 'American Express' &&
+                    strtoupper($token->card->getCountry()) !== 'IN');
         })->values();
     }
 

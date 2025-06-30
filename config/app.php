@@ -1369,6 +1369,8 @@ return array(
 
     'in_save_int_card_splitz_experiment_id' => env('IN_SAVE_INT_CARD_SPLITZ_EXPERIMENT_ID'),
 
+    'global_token_for_in_merchants_splitz_experiment_id' => env('GLOBAL_TOKEN_FOR_IN_MERCHANTS_SPLITZ_EXPERIMENT_ID'),
+
     'partner_qr_code_feature_override_exp_id'=> env('PARTNER_QR_CODE_OVERRIDE_EXP_ID'),
 
     'ignore_tos_acceptance_exp_id'=> env('IGNORE_TOS_ACCEPTANCE_EXP_ID'),
