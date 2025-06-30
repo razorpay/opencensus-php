@@ -103,6 +103,21 @@ class webhookForm extends Component {
         if (resp.success && resp.data) {
           const allWebhooks = resp.data;
           const events = resp.data.reduce((_events, rawEvent) => {
+            // hide webhooks individually based on the i18 tag
+            if (isConfigTagEnabled(`webhooks.${rawEvent.replaceAll('.', '_')}`)) {
+              // example: webhooks.payment.dispute.created is referred as webhooks.payment_dispute_created
+              // have to do the replacement because if a nested value is passed in current implementation,
+              // isConfigTagEnabled returns the nested object as value instead of boolean.
+              // for example, isConfigTagEnabled('webhooks.payment') returns
+              // {
+              //    dispute: {
+              //      created: true
+              //    }
+              //  } 
+              // thereby resulting in hiding the whole webhook type.
+              // so replacing the dots with underscores and then check if a nested webhook type is enabled.
+              return _events;
+            }
             const [eventGroup] = rawEvent.split('.');
             return {
               ..._events,

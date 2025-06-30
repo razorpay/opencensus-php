@@ -129,7 +129,7 @@ const BankAccountDetails = ({
         {showRequestChange &&
           (isWorkflowChangeAllowed(bank_detail_update_workflow) &&
           isBankAccountChangeAllowed &&
-          (!user.isCountrySingapore || !user.isOrgCurlec) ? (
+          (user.isCountryIndia) ? (
             <span
               className="nav-link pull-right"
               onClick={(...e) => {
@@ -178,7 +178,7 @@ const BankAccountDetails = ({
         customerRespondedStatus={REVIEW_STATUS}
       />
       <div className="list-group details-row-container">
-        {(!user.isCountrySingapore || !user.isOrgCurlec) && (
+        {(user.isCountryIndia) && (
           <DetailRow label="IFSC Code" value={bankAccount.ifsc} />
         )}
         <DetailRow label="Account Number" value={bankAccount.account_number} />

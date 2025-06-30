@@ -503,7 +503,22 @@ const normalizeConfig = (config) => {
     !/^https:\/\/cdn\.razorpay\.com/.test(logoUrl) &&
     (!/^http/.test(logoUrl) || !/^https:\/\/cdn-/.test(logoUrl))
   ) {
-    logoUrl = `https://cdn.razorpay.com${logoUrl.replace(/\.([^.]+$)/, '_medium.$1')}`;
+    let baseUrl = 'https://cdn.razorpay.com';
+
+    // Extract domain from logo_large_size_url using regex, fallback to baseUrl
+    if (config.logo_large_size_url) {
+      // Logo large URL has the complete URL including the domain on initial config fetch api
+      // Logo large size url is not present in the response of update logo call. Therefore
+      // falls back to using cdn.razorpay.com as base url. ensuring Indian merchants are not affected.
+      // As verified on manual testing, on update, the returned config has the complete URL 
+      // resulting in skipping the entire code block from 501 to 519 and is used as is.
+      const domainMatch = config.logo_large_size_url.match(/^(https?:\/\/[^\/]+)/);
+      if (domainMatch) {
+        baseUrl = domainMatch[1];
+      }
+    }
+    
+    logoUrl = `${baseUrl}${logoUrl.replace(/\.([^.]+$)/, '_medium.$1')}`;
   }
   config.logo_url = logoUrl;
 

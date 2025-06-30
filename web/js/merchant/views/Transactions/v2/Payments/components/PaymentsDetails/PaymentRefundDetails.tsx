@@ -57,6 +57,7 @@ import type { RouteComponentProps } from 'common/deprecated/RouteComponentProps'
 import GatewayData from 'merchant/views/Transactions/v1/Refunds/components/GatewayData';
 import { User } from 'common/typings';
 import PaymentOptimizerDetails from './PaymentOptimizerDetails';
+import { useI18Service } from '@libs/web-nexus/common/i18';
 
 interface IPaymentRefundDetails {
   paymentDetails: IPaymentDetails | null;
@@ -275,6 +276,8 @@ function PaymentRefundContent({
 
   const shouldShowGatewayResponse = user.isOptimizerView();
 
+  const { isConfigTagEnabled } = useI18Service();
+
   return (
     <Box testID={`payment-refunded-${refund.id}`}>
       <CardWrapper
@@ -310,42 +313,44 @@ function PaymentRefundContent({
                 </CopyWrapper>
               </RowWrapper>
               <Divider dividerStyle="solid" thickness="thick" variant="muted" />
-              <RowWrapper>
-                <Text
-                  variant="body"
-                  size="medium"
-                  weight="regular"
-                  color="surface.text.gray.subtle"
-                >
-                  ARN/RRN <Tooltip size="small" type="rrnARN" />
-                </Text>
-                {bankCode ? (
-                  <CopyWrapper
-                    onClick={onCopy('ARN/RRN', { transactionIDActual, rrnNumber: bankCode }).bind(
-                      null,
-                      bankCode,
-                    )}
+              {!isConfigTagEnabled('transactions.bank_rrn') && (
+                <RowWrapper>
+                  <Text
+                    variant="body"
+                    size="medium"
+                    weight="regular"
+                    color="surface.text.gray.subtle"
                   >
+                    ARN/RRN <Tooltip size="small" type="rrnARN" />
+                  </Text>
+                  {bankCode ? (
+                    <CopyWrapper
+                      onClick={onCopy('ARN/RRN', { transactionIDActual, rrnNumber: bankCode }).bind(
+                        null,
+                        bankCode,
+                      )}
+                    >
+                      <Text
+                        variant="body"
+                        size="medium"
+                        weight="regular"
+                        color="surface.text.gray.normal"
+                      >
+                        {bankCode}
+                      </Text>
+                    </CopyWrapper>
+                  ) : (
                     <Text
                       variant="body"
                       size="medium"
                       weight="regular"
                       color="surface.text.gray.normal"
                     >
-                      {bankCode}
+                      --
                     </Text>
-                  </CopyWrapper>
-                ) : (
-                  <Text
-                    variant="body"
-                    size="medium"
-                    weight="regular"
-                    color="surface.text.gray.normal"
-                  >
-                    --
-                  </Text>
-                )}
-              </RowWrapper>
+                  )}
+                </RowWrapper>
+              )}
               <Divider dividerStyle="solid" thickness="thick" variant="muted" />
               <RowWrapper>
                 <Text

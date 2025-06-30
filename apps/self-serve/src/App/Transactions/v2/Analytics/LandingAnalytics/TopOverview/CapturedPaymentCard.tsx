@@ -21,6 +21,7 @@ import {
 } from 'apps/self-serve/src/App/Transactions/v2/Analytics/styled';
 import { TooltipWrapper } from 'apps/self-serve/src/App/Transactions/v2/Payments/components/PaymentsDetails/styled';
 import { track } from 'apps/self-serve/src/App/Transactions/v2/common/tracking';
+import { useI18Service } from '@libs/web-nexus/common/i18';
 
 const CapturedPaymentCard = ({
   currency,
@@ -30,6 +31,8 @@ const CapturedPaymentCard = ({
   durationOption,
 }: CapturedPaymentCardProps): JSX.Element => {
   const openModal = useStore((state) => state.openModal);
+  const { isConfigTagEnabled } = useI18Service();
+
   const viewSettlementCycle = () => {
     openModal({
       size: 'medium',
@@ -95,7 +98,7 @@ const CapturedPaymentCard = ({
               from {paymentCapturedCount} captured payments
             </Text>
           </Box>
-          {paymentCapturedAmount > 0 ? (
+          {paymentCapturedAmount > 0 && !isConfigTagEnabled('settlements.settlement') ? (
             <BoxWithWordBreak>
               <Text size={isMobile ? 'small' : 'medium'} as="div" marginX="spacing.2">
                 Net settlement amount will be deposited as per your&nbsp;

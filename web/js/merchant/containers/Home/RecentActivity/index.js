@@ -311,7 +311,8 @@ class RecentActivity extends Component {
             {selectedTabTitle === 'Refunds' &&
             !showWhenUtil({
               featureEnabled: 'disable_instant_refunds',
-            }) &&
+            },) &&
+            !this.props.i18.isConfigTagEnabled('refunds.instant_refunds') &&
             this.props.default_refund_speed == 'normal' ? (
               <div className="pull-left main-page-process-instantly">
                 <p>

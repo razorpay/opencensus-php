@@ -4,19 +4,32 @@ import Api from 'merchant/views/Developers/Api/index';
 import Webhooks from 'merchant/views/Developers/Webhooks/List';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { trackDeveloperConsoleOpened } from './events';
+import { useI18Service } from '@libs/web-nexus/common/i18';
+import { RouteGuard } from 'merchant_common/components/RouteGuard';
 
 const Developers = ({ location: { pathname } }) => {
+  const { isConfigTagEnabled } = useI18Service();
+
   useEffect(() => {
     trackDeveloperConsoleOpened();
   }, []);
-  console.log(pathname);
+
   return (
     <tabbed-container>
       <header>
-        <ShowWhen additionalCondition={(user) => user.isDeveloperConsoleEnabled}>
+        <ShowWhen
+          additionalCondition={(user) =>
+            user.isDeveloperConsoleEnabled && !isConfigTagEnabled('developers_console.api')
+          }
+        >
           <NavLink to="/developers/apis">API</NavLink>
         </ShowWhen>
-        <ShowWhen additionalCondition={(user) => user.isDeveloperConsoleWebhooksTabEnabled}>
+        <ShowWhen
+          additionalCondition={(user) =>
+            user.isDeveloperConsoleWebhooksTabEnabled &&
+            !isConfigTagEnabled('developers_console.webhooks')
+          }
+        >
           <NavLink to="/developers/webhooks">Webhooks</NavLink>
         </ShowWhen>
       </header>
@@ -25,17 +38,25 @@ const Developers = ({ location: { pathname } }) => {
           <Route
             path="apis/*"
             element={
-              <ShowWhen additionalCondition={(user) => user.isDeveloperConsoleEnabled}>
+              <RouteGuard
+                additionalCondition={(user) => user.isDeveloperConsoleEnabled && !isConfigTagEnabled('developers_console.api')}
+                defaultPath="/developers/webhooks"
+              >
                 <Api />
-              </ShowWhen>
+              </RouteGuard>
             }
           />
           <Route
             path="webhooks/*"
             element={
-              <ShowWhen additionalCondition={(user) => user.isDeveloperConsoleWebhooksTabEnabled}>
+              <RouteGuard
+                additionalCondition={(user) =>
+                  user.isDeveloperConsoleWebhooksTabEnabled &&
+                  !isConfigTagEnabled('developers_console.webhooks')
+                }
+              >
                 <Webhooks />
-              </ShowWhen>
+              </RouteGuard>
             }
           />
         </Routes>

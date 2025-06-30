@@ -456,7 +456,9 @@ class AnalyticsMobile extends Component {
                 }
                 isOutsideRange={IsOutsideDateRangeForHPAnalytics}
               />
-              <DateRangeTooltip />
+              <ShowWhen additionalCondition={() => !isConfigTagEnabled('reports.reports')}>
+                <DateRangeTooltip />
+              </ShowWhen>
             </div>
           </Header>
         </Sticky>

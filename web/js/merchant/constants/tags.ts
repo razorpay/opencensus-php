@@ -120,6 +120,7 @@ export enum CONFIG_TAGS_ENUM {
   'qr_code.qr_code' = 'qr_code.qr_code',
   'refunds.instant_refunds' = 'refunds.instant_refunds',
   'refunds.refund' = 'refunds.refund',
+  'refunds.batch_refunds' = 'refunds.batch_refunds',
   'reminders.reminder' = 'reminders.reminder',
   'reports.reports' = 'reports.reports',
   'reports.contacts' = 'reports.contacts',
@@ -158,6 +159,7 @@ export enum CONFIG_TAGS_ENUM {
   'webhooks.refund' = 'webhooks.refund',
   'webhooks.subscription' = 'webhooks.subscription',
   'transactions.upload_invoices' = 'transactions.upload_invoices',
+  'transactions.bank_rrn' = 'transactions.bank_rrn',
 }
 
 export type ConfigTagType = keyof typeof CONFIG_TAGS_ENUM;

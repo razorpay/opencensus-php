@@ -21,6 +21,7 @@ import { TooltipWrapper } from 'merchant/views/Transactions/v2/Payments/componen
 import { track } from 'merchant/views/Transactions/v2/common/tracking';
 import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
+import { useI18Service } from '@libs/web-nexus/common/i18';
 
 const CapturedPaymentCard = ({
   openModal,
@@ -30,6 +31,9 @@ const CapturedPaymentCard = ({
   isMobile,
   durationOption,
 }: CapturedPaymentCardProps): JSX.Element => {
+
+  const { isConfigTagEnabled } = useI18Service();
+
   const viewSettlementCycle = () => {
     openModal({
       size: 'medium',
@@ -90,7 +94,7 @@ const CapturedPaymentCard = ({
               from {paymentCapturedCount} captured payments
             </Text>
           </Box>
-          {paymentCapturedAmount > 0 ? (
+          {paymentCapturedAmount > 0 && !isConfigTagEnabled('settlements.settlement') ? (
             <BoxWithWordBreak>
               <Text size={isMobile ? 'small' : 'medium'} as="div" marginX="spacing.2">
                 Net settlement amount will be deposited as per your&nbsp;

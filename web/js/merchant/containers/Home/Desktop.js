@@ -830,7 +830,9 @@ class AnalyticsDesktop extends Component {
               onSelectPreset={trackPresetChange}
               isOutsideRange={IsOutsideDateRangeForHPAnalytics}
             />
-            <DateRangeTooltip />
+            <ShowWhen additionalCondition={() => !isConfigTagEnabled('reports.reports')}>
+              <DateRangeTooltip />
+            </ShowWhen>
           </div>
 
           <ShowWhen

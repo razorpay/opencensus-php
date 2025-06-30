@@ -184,15 +184,26 @@ export const exporterRewardsOnboardingStatus = (user: User): boolean => {
   return !user.isFeatureEnabled('intl_exporter_rewards_tnc');
 };
 
-export const accountAccessHoverDescription = (user: User): boolean => {
+export const accountAccessHoverDescription = (user: User): string => {
   if (user?.has_key_access) {
-    return user?.isOrgCurlec
-      ? ATTR_DETAILS.curlec_access_user_account.desc
-      : ATTR_DETAILS.access_user_account.desc;
+    switch(true){
+      case user?.isOrgCurlec:
+        return ATTR_DETAILS.curlec_access_user_account.desc;
+      case user?.isCountryUS:
+        return ATTR_DETAILS.us_access_user_account.desc;
+      default:
+        return ATTR_DETAILS.access_user_account.desc;
+    }
   }
-  return user?.isOrgCurlec
-    ? ATTR_DETAILS.curlec_restricted_access_user_account.desc
-    : ATTR_DETAILS.restricted_access_user_account.desc;
+
+  switch(true){
+    case user?.isOrgCurlec:
+      return ATTR_DETAILS.curlec_restricted_access_user_account.desc;
+    case user?.isCountryUS:
+      return ATTR_DETAILS.us_restricted_access_user_account.desc;
+    default:
+      return ATTR_DETAILS.restricted_access_user_account.desc;
+  }
 };
 
 export const shouldShowTeamInvitations = (user: User): boolean =>

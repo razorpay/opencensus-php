@@ -122,7 +122,7 @@ describe('getURLsByCountry', () => {
         },
         {
           label: LEGAL_DOCS_NAMES.PRIVACY_POLICY,
-          link: `https://razorpay.com/us/privacy/`,
+          link: `https://razorpay.com/us/privacy-policy/`,
           key: 'privacy_policy',
         },
       ],
@@ -142,7 +142,7 @@ describe('getURLsByCountry', () => {
         },
         {
           label: LEGAL_DOCS_NAMES.PRIVACY_POLICY,
-          link: `https://razorpay.com/sg/privacy/`,
+          link: `https://razorpay.com/sg/privacy-policy/`,
           key: 'privacy_policy',
         },
       ],

@@ -75,7 +75,7 @@ const AccountSection = ({
           ) : !isMobile &&
             isCtaAction &&
             isBankAccountUpdateAllowed &&
-            (!user.isCountrySingapore || !user.isOrgCurlec) ? (
+            (user.isCountryIndia) ? (
             <Button
               variant="primary"
               icon={EditIcon}
@@ -90,7 +90,7 @@ const AccountSection = ({
         {isMobile &&
           isCtaAction &&
           isBankAccountUpdateAllowed &&
-          (!user.isCountrySingapore || !user.isOrgCurlec) && (
+          (user.isCountryIndia) && (
             <Button
               variant="primary"
               icon={EditIcon}

@@ -44,6 +44,10 @@ export const ATTR_DETAILS = {
     label: 'Account Access',
     desc: 'You have access to all products and API keys',
   },
+  us_access_user_account: {
+    label: 'Account Access',
+    desc: 'You have access to all our products and API keys. Start using Payment Links or integrate our robust APIs to get started'
+  },
   restricted_access_user_account: {
     label: 'Account Access',
     // eslint-disable-next-line prettier/prettier
@@ -53,6 +57,10 @@ export const ATTR_DETAILS = {
     label: 'Account Access',
     // eslint-disable-next-line prettier/prettier
     desc: 'You can only access Payment Links and Invoices. Please provide website/app link to get access to our API’s and other products',
+  },
+  us_restricted_access_user_account: {
+    label: 'Account Access',
+    desc: 'You can only access Payment Links. Please provide website/app link to get access to our APIs'
   },
   billing_label: {
     label: 'Billing Label',

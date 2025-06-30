@@ -127,7 +127,9 @@ function MerchantNavLinks(props) {
           to="/settlements"
           isSettlementEnabled={isSettlementEnabled && !isRecommendProduct}
           additionalCondition={(currentUser) =>
-            currentUser.isAllowedView('settlements') && currentUser.hideForNIASupportRole
+            currentUser.isAllowedView('settlements') &&
+            currentUser.hideForNIASupportRole &&
+            !isConfigTagEnabled('settlements.settlements')
           }
         />
         <MainNavLink
@@ -494,7 +496,8 @@ function MerchantNavLinks(props) {
         to="/reports"
         additionalCondition={(currentUser) =>
           (currentUser.isAllowedView('reports') || currentUser.isCareHealthOwner) &&
-          currentUser.hideForNIASupportRole
+          currentUser.hideForNIASupportRole &&
+          !isConfigTagEnabled('reports.reports')
         }
         isPending={isReportsPending}
       />

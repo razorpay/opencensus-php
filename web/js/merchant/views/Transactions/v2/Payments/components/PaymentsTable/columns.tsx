@@ -36,6 +36,7 @@ import {
   DesktopColumns,
   MobileColumns,
 } from 'merchant/views/Transactions/v2/Payments/components/PaymentsListFilter/types';
+import { useI18Service } from '@libs/web-nexus/common/i18';
 
 const { FAILED_PAYMENTS, PAYMENTS } = TransactionsEntityRoute;
 
@@ -430,8 +431,16 @@ export const getDesktopColumns = ({
   isJnKOmniEnabled,
   isPosOrderIDEnabled,
 }: DesktopColumns) => {
+  const {isConfigTagEnabled} = useI18Service();
+  
   const isFailedPaymentView = window.location.pathname.includes(FAILED_PAYMENTS);
   let updatedDesktopColumns = isFailedPaymentView ? failedPaymentDesktopColumns : desktopColumns;
+  
+  // isConfigTag returning true indicates that the section has to be hidden.
+  // therefore not using a negation like in other places.
+  if (isConfigTagEnabled('transactions.bank_rrn')) {
+    updatedDesktopColumns = updatedDesktopColumns.filter((column) => column !== bankRRN);
+  }
 
   if (isJnKOmniEnabled) {
     return jnkDesktopColumns;

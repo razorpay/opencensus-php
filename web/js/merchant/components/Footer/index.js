@@ -72,7 +72,7 @@ export const getURLsByCountry = (_countryCode) => {
     },
     {
       label: LEGAL_DOCS_NAMES.PRIVACY_POLICY,
-      link: `https://razorpay.com/${countryCode}/privacy/`,
+      link: `https://razorpay.com/${countryCode}/privacy-policy/`,
       key: 'privacy_policy',
     },
   ];

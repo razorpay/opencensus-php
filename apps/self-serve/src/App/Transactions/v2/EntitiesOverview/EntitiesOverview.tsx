@@ -63,7 +63,7 @@ const EntitiesOverview = ({ location: { pathname } }: EntitiesOverviewProps): JS
           </ShowWhen>
           <ShowWhen
             additionalCondition={(usr) =>
-              usr.isAllowedView('refunds_batch_uploads') && !isConfigTagEnabled('refunds.refund')
+              usr.isAllowedView('refunds_batch_uploads') && !isConfigTagEnabled('refunds.refund') && !isConfigTagEnabled('refunds.batch_refunds')
             }
           >
             <StyledTabItem
