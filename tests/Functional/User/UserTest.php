@@ -17850,4 +17850,141 @@ class UserTest extends TestCase
     }
 
 
+    public function testPartnerAgentAssignsMerchantWithExistingSalesMapping()
+    {
+
+        $ezetapMerchantId = 'NBmMve28Nvwq11';
+
+        $merchantId = 'NBmMve28Nvwq44';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', [
+            'id' => $ezetapMerchantId,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $partnerAgentUser = $this->fixtures->user->createUserForMerchant($ezetapMerchantId,['contact_mobile' =>'9892818372','contact_mobile_verified'=>true],'partner_agent');
+
+        $razorpaySalesUser = $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $merchantId,
+            'user_id'       => $partnerAgentUser->getId(),
+            'role'          => 'razorpay_sales',
+            'product'       =>'primary'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $ezetapMerchantId, $partnerAgentUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testPartnerAgentAssignsMerchantWitNoOwnerMapping()
+    {
+
+        $ezetapMerchantId = 'NBmMve28Nvwq11';
+
+        $merchantId = 'NBmMve28Nvwq44';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', [
+            'id' => $ezetapMerchantId,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $partnerAgentUser = $this->fixtures->user->createUserForMerchant($ezetapMerchantId,['contact_mobile' =>'9892818372','contact_mobile_verified'=>true],'partner_agent');
+
+        $this->ba->proxyAuth('rzp_test_' . $ezetapMerchantId, $partnerAgentUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testPartnerAgentAssignsMerchantWithNoExistingSalesMappingAndCreateWorkFlowError()
+    {
+
+        $ezetapMerchantId = 'NBmMve28Nvwq11';
+
+        $merchantId = 'NBmMve28Nvwq44';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', [
+            'id' => $ezetapMerchantId,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $partnerAgentUser = $this->fixtures->user->createUserForMerchant($ezetapMerchantId,['contact_mobile' =>'9892818372','contact_mobile_verified'=>true],'partner_agent');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId,['contact_mobile' =>'9891817377','email'=>'udittest16@gmail.com','contact_mobile_verified'=>true],'owner');
+
+        $this->ba->proxyAuth('rzp_test_' . $ezetapMerchantId, $partnerAgentUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testPartnerAgentAssignsMerchantWithNoExistingSalesMappingAndCreateWorkFlowSuccess()
+    {
+
+        $this->app['config']['pgos.proxy.request.mock'] = true;
+
+        $ezetapMerchantId = 'NBmMve28Nvwq11';
+
+        $merchantId = 'NBmMve28Nvwq44';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant', [
+            'id' => $ezetapMerchantId,
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $partnerAgentUser = $this->fixtures->user->createUserForMerchant($ezetapMerchantId,['contact_mobile' =>'9892818372','contact_mobile_verified'=>true],'partner_agent');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId,['contact_mobile' =>'9891817377','email'=>'udittest16@gmail.com','contact_mobile_verified'=>true],'owner');
+
+        $this->ba->proxyAuth('rzp_test_' . $ezetapMerchantId, $partnerAgentUser->getId());
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey('id', $response);
+        $this->assertArrayHasKey('email', $response);
+        $this->assertArrayHasKey('contact_mobile', $response);
+
+        $userDeviceDetails = $this->getDbEntity('user_device_detail', ['merchant_id' => $merchantId]);
+
+        $this->assertNotEmpty($userDeviceDetails);
+        $this->assertEquals($merchantId, $userDeviceDetails['merchant_id']);
+        $this->assertEquals($merchantUser->getId(), $userDeviceDetails['user_id']);
+        $this->assertEquals('assisted_onboarding', $userDeviceDetails['signup_campaign']);
+        $this->assertEquals("pgos", $userDeviceDetails["metadata"]["service"]);
+    }
+
 }

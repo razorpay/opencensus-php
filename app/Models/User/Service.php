@@ -68,6 +68,7 @@ use RZP\User\Constants as UserConstants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Environment;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Merchant\Detail as MerchantDetail;
 
 use function Clue\StreamFilter\append;
 use function GuzzleHttp\Promise\exception_for;
@@ -4831,8 +4832,18 @@ class Service extends Base\Service
         $this->validator->validateInput('addSalesUserToMerchant', $input);
 
         try {
-            // Fetch the user using the provided email
-            $user = $this->repo->user->getUserFromEmail(strtolower($input['email']));
+
+            $loggedInUser = $this->app['basicauth'];
+            $loggedInUserEmail = optional($loggedInUser->getUser())->getEmail() ?? $input['email'];
+            $user = null;
+
+            // For Partner Agent role, fetch the user using the logged-in user's email.
+            // For POS Sales Admin and other roles, fetch the user using the email provided in the input.
+            if (optional($loggedInUser)->getUserRole() === Role::PARTNER_AGENT){
+                $user = $this->repo->user->getUserFromEmail($loggedInUserEmail);
+            } else {
+                $user = $this->repo->user->getUserFromEmail(strtolower($input['email']));
+            }
 
             // Check if the user was found, if not, throw an exception
             if (empty($user))
@@ -4845,6 +4856,10 @@ class Service extends Base\Service
             if (empty($merchant))
             {
                 throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_FOUND);
+            }
+
+            if (optional($loggedInUser)->getUserRole() === Role::PARTNER_AGENT){
+                $this->onboardDirectBankMerchantAsAssistedWithDeviceDetails($input, $loggedInUserEmail);
             }
 
             // Check if the user is already assigned to the merchant with the specified role and product
@@ -4877,8 +4892,75 @@ class Service extends Base\Service
         }
         catch (\Throwable $exception)
         {
+            $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+                'message'        => "Error in addSalesUserToMerchant()",
+                'merchant_id'    => $input['merchant_id'],
+                'error_message'  => $exception->getMessage()
+            ]);
+
             throw new Exception\BadRequestValidationFailureException($exception->getMessage());
         }
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws \Throwable
+     */
+    private function onboardDirectBankMerchantAsAssistedWithDeviceDetails(array $input, string $loggedInUserEmail): void
+    {
+        // Check if the merchant already has a RAZORPAY_SALES mapping
+        $existingSalesUser = $this->repo->merchant_user
+            ->findByRolesAndMerchantId([Role::RAZORPAY_SALES], $input['merchant_id'])
+            ->first();
+
+        if (!empty($existingSalesUser)) {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_MERCHANT_IS_ALREADY_ASSIGNED_TO_SOME_OTHER_PARTNER_AGENT
+            );
+        }
+
+        // Fetch the merchant user with OWNER role
+        $ownerMerchantUser = $this->repo->merchant_user
+            ->findByRolesAndMerchantId([Role::OWNER], $input['merchant_id'])
+            ->first();
+
+        if (empty($ownerMerchantUser)) {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_OWNER_MERCHANT_USER_NOT_FOUND
+            );
+        }
+
+        $payloadForOnboarding['product'] = DeviceDetailConstants::ASSISTED_ONBOARDING;
+
+    try {
+        $this->handlePGOSOnboardingForAssistedMerchant(
+            $input['merchant_id'],
+            DeviceDetailConstants::ASSISTED_ONBOARDING,
+            "IN",
+            $payloadForOnboarding,
+            $ownerMerchantUser->getUserId(),
+            $loggedInUserEmail
+        );
+    } catch (\Throwable $e) {
+        $this->trace->error(TraceCode::PGOS_PROXY_ERROR, [
+            'message'        => "Failed to onboard merchant to PGOS",
+            'merchant_id'    => $input['merchant_id'],
+            'error_message'  => $e->getMessage()
+        ]);
+
+        throw $e;
+    }
+
+        $deviceDetailInput = [
+            DeviceDetail\Entity::MERCHANT_ID    => $input['merchant_id'],
+            DeviceDetail\Entity::USER_ID        => $ownerMerchantUser->getUserId(),
+            DeviceDetail\Entity::SIGNUP_CAMPAIGN => DeviceDetailConstants::ASSISTED_ONBOARDING,
+            DeviceDetail\Entity::METADATA       => [
+                DeviceDetailConstants::SERVICE => DeviceDetailConstants::SERVICE_PGOS
+            ],
+        ];
+
+        (new DeviceDetail\Core)->createDeviceDetail($deviceDetailInput);
     }
 
     /**

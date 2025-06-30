@@ -9576,5 +9576,88 @@ return [
             ]
         ],
     ],
-]
+],
+    'testPartnerAgentAssignsMerchantWithExistingSalesMapping' => [
+        'request' => [
+            'content' => [
+                'merchant_id' => 'NBmMve28Nvwq44'
+            ],
+            'url' => '/merchants/assign_sales_user',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'BAD_REQUEST_MERCHANT_IS_ALREADY_ASSIGNED_TO_SOME_OTHER_PARTNER_AGENT',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+
+    ],
+    'testPartnerAgentAssignsMerchantWitNoOwnerMapping' => [
+        'request' => [
+            'content' => [
+                'merchant_id' => 'NBmMve28Nvwq44'
+            ],
+            'url' => '/merchants/assign_sales_user',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'BAD_REQUEST_OWNER_MERCHANT_USER_NOT_FOUND',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+
+    ],
+    'testPartnerAgentAssignsMerchantWithNoExistingSalesMappingAndCreateWorkFlowError' => [
+        'request' => [
+            'content' => [
+                'merchant_id' => 'NBmMve28Nvwq44'
+            ],
+            'url' => '/merchants/assign_sales_user',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'ASSISTED_WORKFLOW_CREATION_FAILED',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+
+    ],
+   'testPartnerAgentAssignsMerchantWithNoExistingSalesMappingAndCreateWorkFlowSuccess' => [
+        'request' => [
+            'content' => [
+                'merchant_id' => 'NBmMve28Nvwq44'
+            ],
+            'url' => '/merchants/assign_sales_user',
+            'method' => 'POST',
+        ],
+       'response' => [
+           'content' => [],
+           'status_code' => 200,
+       ],
+       ],
+
 ];
