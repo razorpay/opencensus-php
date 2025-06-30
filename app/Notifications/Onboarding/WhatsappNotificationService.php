@@ -153,6 +153,11 @@ class WhatsappNotificationService extends BaseNotificationService
             $payload[Constants::BUTTON_URL_PARAM] = $this->getCTATemplate($this->event);
         }
 
+        if (array_key_exists($this->event, Events::WHATSAPP_TEMPLATES_HEADER) === true)
+        {
+            $payload[Constants::HEADER] = Events::WHATSAPP_TEMPLATES_HEADER[$this->event];
+        }
+
         return $payload;
     }
 

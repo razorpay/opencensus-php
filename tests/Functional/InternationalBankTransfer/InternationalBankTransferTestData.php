@@ -23,6 +23,20 @@ return [
             ]
         ]
     ],
+    
+    'testCreateAccountForCurrencyCloudForCommunications' => [
+        'request' => [
+            'url' => '/international/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            
+            ]
+        ]
+    ],
 
     'testCreateAccountForCurrencyCloudForAllCurrenciesAtOnce' => [
         'request' => [

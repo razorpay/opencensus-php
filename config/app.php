@@ -1210,6 +1210,8 @@ return array(
     'banking_mail_rejection_notification_exp_id' => env('BANKING_MAIL_REJECTION_NOTIFICATION_EXP_ID'),
 
     'banking_mail_activated_mcc_pending_success_exp_id' => env('BANKING_MAIL_ACTIVATED_MCC_PENDING_SUCCESS_EXP_ID'),
+    
+    'banking_mail_moneysaver_payments_enabled_exp_id' => env('BANKING_MAIL_MONEYSAVER_PAYMENTS_ENABLED_EXP_ID'),
 
     'api_stork_banking_mail_reset_password_id' => env('STORK_BANKING_MAIL_RESET_PASSWORD_EXPERIMENT_ID'),
 

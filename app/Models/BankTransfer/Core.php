@@ -64,7 +64,7 @@ class Core extends Base\Core
         Currency\Currency::HRK => 200000,
         Currency\Currency::DKK => 198000,
         Currency\Currency::CZK => 670000,
-        Currency\Currency::EUR => 26500,
+        Currency\Currency::EUR => 22000,
         Currency\Currency::HKD => 225000,
         Currency\Currency::HUF => 106000,
         Currency\Currency::ILS => 109000,
@@ -80,7 +80,7 @@ class Core extends Base\Core
         Currency\Currency::SEK => 300000,
         Currency\Currency::CHF => 24900,
         Currency\Currency::THB => 960000,
-        Currency\Currency::GBP => 22200,
+        Currency\Currency::GBP => 19000,
         Currency\Currency::AED => 106000,
     ];
 

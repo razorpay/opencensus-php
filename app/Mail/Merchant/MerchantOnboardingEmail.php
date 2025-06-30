@@ -131,7 +131,7 @@ class MerchantOnboardingEmail extends Mailable
             $storkParams =
                 [
                     'template_name' => 'banking_mail_'.strtolower($this->event),
-                    'template_namespace' => 'payments_banking',
+                    'template_namespace' => Events::EMAIL_TEMPLATES_CUSTOM_NAMESPACES[$this->event] ?? 'payments_banking',
                     'org_id'             => $this->org['id'],
                     'params' => $this->data,
                 ];

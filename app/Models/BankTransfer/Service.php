@@ -27,6 +27,9 @@ use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\UpiTransfer\Entity as UpiTransferEntity;
 use RZP\Models\UpiTransfer\Service as UpiTransferService;
 use RZP\Models\UpiTransferRequest\Service as UpiTransferRequestService;
+use RZP\Models\Merchant\Detail\Status;
+use RZP\Notifications\Onboarding\Events;
+use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Trace\Tracer;
 use RZP\Models\Merchant\RazorxTreatment;
 use Symfony\Component\HttpFoundation\File\File;
@@ -1847,6 +1850,7 @@ class Service extends Base\Service
             }
 
             $this->sendSegmentEventForMoneySaverAccountActivated($this->merchant);
+            $this->sendMoneySaverActivatedCommunications($this->merchant);
 
             return (new InternationalIntegration\Core)->fetchIntlVirtualBankAccountsForGateway($merchantId, Constants\Entity::CURRENCY_CLOUD);
         } catch (\Exception $ex)
@@ -1861,6 +1865,32 @@ class Service extends Base\Service
             ]);
 
             throw $ex;
+        }
+    }
+
+    public function sendMoneySaverActivatedCommunications($merchant): void
+    {
+        $merchantID = $merchant->getId();
+        try{
+            $this->trace->info(TraceCode::MONEYSAVER_ACTIVATED_COMMUNICATIONS_REQUEST, [
+                'merchant_id' => $merchantID,
+            ]);
+
+            $args = [
+                'activationStatus'         => Status::ACTIVATED,
+                'merchant'                 => $merchant,
+            ];
+
+            (new OnboardingNotificationHandler($args))->sendForEvent(Events::MONEYSAVER_PAYMENTS_ENABLED);
+
+            $this->trace->info(TraceCode::MONEYSAVER_ACTIVATED_COMMUNICATIONS_SUCCESS, [
+                'merchant_id' => $merchantID,
+            ]);
+        } catch (\Exception $ex) {
+            $this->trace->info(TraceCode::MONEYSAVER_ACTIVATED_COMMUNICATIONS_FAILED, [
+                'error_message' => $ex->getMessage(),
+                'merchant_id' => $merchantID,
+            ]);
         }
     }
 
@@ -2135,7 +2165,7 @@ class Service extends Base\Service
        } else {
            $this->app['rzp.mode'] = Mode::LIVE;
        }
-       
+
         switch ($header) {
             case self::CASH_MANAGER_TRANSACTION_NOTIFICATION:
                 $this->fundsArrivedFlowFromCurrencyCloud($input);

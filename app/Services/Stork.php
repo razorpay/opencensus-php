@@ -494,6 +494,10 @@ class Stork
                 $whatsappChannels = json_decode(json_encode($multmediaPayload));
             }
 
+            if(isset($input["header"])){
+                $whatsappChannels->header = $input["header"];
+            }
+
             $requestPayload = [
                 'message' => [
                     'service'           => $this->service,

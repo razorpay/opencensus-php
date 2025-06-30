@@ -59,6 +59,7 @@ class Handler extends BaseHandler
         Events::REGISTERED_SETTLEMENTS_ENABLED                       => [Channel::SMS, Channel::WHATSAPP],
         Events::REGISTERED_PAYMENTS_ENABLED                          => [Channel::SMS, Channel::WHATSAPP],
         Events::UNREGISTERED_PAYMENTS_ENABLED                        => [Channel::SMS, Channel::WHATSAPP],
+        Events::MONEYSAVER_PAYMENTS_ENABLED                          => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         Events::PENNY_TESTING_FAILURE                                => [Channel::SMS, Channel::WHATSAPP],
         Events::ACTIVATED_MCC_PENDING                                => [Channel::WHATSAPP],
         Events::ACTIVATED_MCC_PENDING_SUCCESS                        => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],

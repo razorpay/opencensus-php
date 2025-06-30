@@ -10,6 +10,11 @@ use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\User\Role;
 use RZP\Models\Payment\Status;
+use RZP\Mail\Base\EmailHelper;
+use RZP\Mail\Merchant\MerchantOnboardingEmail;
+use RZP\Notifications\Onboarding\Constants;
+use RZP\Notifications\Onboarding\Events;
+use RZP\Services\Mock\Stork;
 use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Models\BankTransfer\Constants as BankTransferConstants;
 use RZP\Tests\Functional\TestCase;
@@ -133,6 +138,133 @@ class InternationalBankTransferTest extends TestCase
         $this->assertCount(2,$content['accounts']);
         $this->assertEquals("activated",$content['status']);
 
+    }
+
+    public function testCreateAccountForCurrencyCloudForCommunications()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            "contact_mobile" => "+919912952141",
+            "contact_name" => "Rohith Yelagam",
+            "contact_email" => "rohith.yelagam@razorpay.com"
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        Mail::fake();
+
+        $this->setupMockForCommunications();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['accept_b2b_tnc'] = 1;
+        $request['content']['va_currency'] = "USD";
+        $request['content']['enable_all_currencies'] = false;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->sendRequest($request);
+        }, BadRequestException::class, 'Selected purpose code is not eligible for this payment method.');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
+            [
+                'purpose_code' => PurposeCodeList::P1004,
+                'category' => '5813',
+            ]);
+
+        $this->makeRequestAndCatchException(function() use ($request)
+        {
+            $this->sendRequest($request);
+        }, BadRequestException::class, 'Currently, we do not support ACH and SWIFT account for the MCC 5813');
+
+        $this->fixtures->edit('merchant', $merchantDetail['merchant_id'],
+            [
+                'category' => '8211',
+            ]);
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertCount(1,$content['accounts']);
+        $this->assertEquals("activated",$content['status']);
+
+        $mii = $this->getLastEntity('merchant_international_integrations',true);
+
+        $this->assertEquals($merchantDetail['merchant_id'],$mii['merchant_id']);
+
+        $this->assertEquals("currency_cloud",$mii['integration_entity']);
+
+        $this->assertNotNull($mii['integration_key']);
+
+        $this->assertNotNull($mii['reference_id']);
+
+        $this->assertNotNull($mii['bank_account']);
+
+        Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
+            $this->assertEquals('banking_mail_moneysaver_payments_enabled', $mail->getTemplate());
+            return true;
+        });
+
+    }
+
+    private function setupMockForCommunications()
+    {
+        $emailHelperMock = Mockery::mock(EmailHelper::class)->makePartial()->shouldAllowMockingProtectedMethods();
+        $emailHelperMock
+            ->shouldReceive('isStorkSupportedCheckViaSplitz')
+            ->andReturn(true);
+
+        $storkMock = Mockery::mock(Stork::class)->makePartial()->shouldAllowMockingProtectedMethods();
+        $this->app->instance('stork_service', $storkMock);
+
+        $storkMock
+            ->shouldReceive('sendSMS')
+            ->times(1)
+            ->withArgs(function($mode, $message) {
+                s($message);
+                $this->assertEquals("+919912952141", $message['destination']);
+                $this->assertEquals(Events::SMS_TEMPLATES[Events::MONEYSAVER_PAYMENTS_ENABLED], $message['templateName']);
+                $this->assertEquals(Constants::PAYMENTS_ONBOARDING, $message['templateNamespace']);
+                $this->assertEquals("default",$message['source']);
+                $this->assertNotNull($message['params']['merchantName']);
+                $this->assertNotNull($message['contentParams']['merchantName']);
+                return true;
+            })->andReturn(['message_id' => '10000000000msg']);
+
+        $storkMock
+            ->shouldReceive('traceWhatsAppRequest')
+            ->times(1)
+            ->with(
+                Mockery::on(function ($request)
+                {
+                    return true;
+                })
+            );
+
+        $storkMock
+            ->shouldReceive('requestAndGetParsedBody')
+            ->times(1)
+            ->withArgs(function ($route, $params){
+                $this->assertEquals($route, \RZP\Services\Stork::WHATSAPP_SEND_MSG_PATH);
+                $message = $params['message'];
+                $this->assertEquals('payments_onboarding_moneysaver', $message['context']->template);
+                $this->assertCount(1, $message['whatsapp_channels']);
+                $channel = $message['whatsapp_channels'][0];
+                $this->assertEquals(Events::WHATSAPP_TEMPLATES_CTA_TEMPLATE[Events::MONEYSAVER_PAYMENTS_ENABLED], $channel->button_url_param);
+                $this->assertEquals('+919912952141', $channel->destination);
+                $this->assertEquals(Events::WHATSAPP_TEMPLATES_HEADER[Events::MONEYSAVER_PAYMENTS_ENABLED], $channel->header);
+                $this->assertTrue($channel->is_cta_template);
+                return true;
+            })
+            ->andReturnUsing(function () {
+                return [
+                    'success' => true
+                ];
+            });
     }
 
     public function testCreateAccountForCurrencyCloudForAllCurrenciesAtOnce()

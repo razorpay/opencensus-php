@@ -43,6 +43,7 @@ class Events
     const UNREGISTERED_SETTLEMENTS_ENABLED            = 'UNREGISTERED_SETTLEMENTS_ENABLED';
     const REGISTERED_PAYMENTS_ENABLED                 = 'REGISTERED_PAYMENTS_ENABLED';
     const REGISTERED_SETTLEMENTS_ENABLED              = 'REGISTERED_SETTLEMENTS_ENABLED';
+    const MONEYSAVER_PAYMENTS_ENABLED                 = 'MONEYSAVER_PAYMENTS_ENABLED';
     const PENNY_TESTING_FAILURE                       = 'PENNY_TESTING_FAILURE';
     const NEEDS_CLARIFICATION                         = 'NEEDS_CLARIFICATION';
     const EDD_PENDING                                 = 'EDD_PENDING';
@@ -126,6 +127,7 @@ class Events
         self::UNREGISTERED_SETTLEMENTS_ENABLED            => 'sms.onboarding.unregistered.settlements_enabled',
         self::REGISTERED_PAYMENTS_ENABLED                 => 'sms.onboarding.registered.payments_enabled',
         self::REGISTERED_SETTLEMENTS_ENABLED              => 'sms.onboarding.registered.settlements_enabled',
+        self::MONEYSAVER_PAYMENTS_ENABLED                 => 'sms.onboarding.moneysaver_enabled',
         self::PENNY_TESTING_FAILURE                       => 'sms.onboarding.penny_test_failure',
         self::ACTIVATED_MCC_PENDING                       => 'sms.onboarding.activated_mcc_pending',
         self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => 'sms.onboarding.escalation.payments_limit_breach_v2',
@@ -187,6 +189,7 @@ class Events
     const SMS_TEMPLATES_CUSTOM_NAMESPACES = [
         self::PARTNER_ADDED_SUBMERCHANT               => 'partnerships',
         self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION => 'partnerships-experience',
+        self::MONEYSAVER_PAYMENTS_ENABLED             => 'payments_crossborder'
     ];
 
     const SMS_TEMPLATES_SPLITZ_EXPERIMENTS = [
@@ -231,6 +234,7 @@ class Events
         self::NEEDS_CLARIFICATION              => 'Hi {merchantName}, we need more clarifications on your KYC, please visit your dashboard and make the necessary changes at {dashboardUrl}',
         self::UNREGISTERED_SETTLEMENTS_ENABLED => 'Congratulations {merchantName}, your KYC is approved and settlements have been enabled for your Razorpay account. Visit your dashboard to accept payments {dashboardUrl}',
         self::REGISTERED_SETTLEMENTS_ENABLED   => 'Congratulations {merchantName}, your account is activated, you can now accept payments and get funds settled to your bank account. Visit your dashboard to accept payments {dashboardUrl}',
+        self::MONEYSAVER_PAYMENTS_ENABLED      => "Congratulations {merchantName},\n\nYour KYC is approved and International Bank Transfers have been activated for your account. You now have access to a Global Virtual Account – it's like having a local bank account in the US, UK, EU and more.\n\nVisit your Razorpay dashboard and copy your account details from the International Bank Transfer Section under the Accounts & Settings tab. Share it with your customers to accept payments in USD, EUR, GBP and many more currencies.",
         self::PENNY_TESTING_FAILURE            => "Hi {merchantName}, we couldn't verify your Bank Account, kindly visit your Dashboard and upload scanned copy of cheque/bank statement at {dashboardUrl}",
         self::ACTIVATED_MCC_PENDING            => "Dear Customer, Congratulations! You can now start accepting payments and the payments will be settled in your bank account as per your settlement schedule. Please note that as part of the routine compliance checks mandated by our banking partners, we will review your business model, website details and reach out for further clarifications. You can now visit your dashboard to accept payments at {dashboardUrl}.",
     ];
@@ -267,6 +271,7 @@ class Events
         self::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE                  => 'whatsapp_partnerships_partner_submerchant_nc_count_onboarding_pause',
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE    => 'whatsapp_partnerships_partner_submerchant_nc_count_payments_live_settlements_live',
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE                 => 'whatsapp_partnerships_partner_submerchant_nc_count_payments_not_live',
+        self::MONEYSAVER_PAYMENTS_ENABLED                                    => 'payments_onboarding_moneysaver',
 
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE       => 'in_person_under_review_with_device',
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE    => 'in_person_under_review_without_device',
@@ -371,6 +376,7 @@ class Events
         self::WEBSITE_ADHERENCE_HARD_NUDGE            => 'app/website-app-detail',
         self::WEBSITE_ADHERENCE_SOFT_NUDGE            => 'app/website-app-detail',
         self::FIRST_PAYMENT_OFFER                     => 'signin?utm_source=Reactivation&utm_medium=whatsapp&utm_campaign=10k_referral_content',
+        self::MONEYSAVER_PAYMENTS_ENABLED             => 'payment-methods/international-payments',
         self::PARTNER_ADDED_SUBMERCHANT               => 'app/partners/submerchants',
         self::PARTNER_SUBMERCHANT_KYC_ACCESS_APPROVED => 'app/partners',
         self::PARTNER_SUBMERCHANT_KYC_ACCESS_REJECTED => 'app/partners',
@@ -402,6 +408,10 @@ class Events
         self::IN_PERSON_MERCHANT_NC_COUNT_2_WITH_DEVICE         => 'onboarding/needs-clarification',
         self::IN_PERSON_MERCHANT_NC_COUNT_2_WITHOUT_DEVICE      => 'onboarding/needs-clarification',
 
+    ];
+
+    const WHATSAPP_TEMPLATES_HEADER = [
+        self::MONEYSAVER_PAYMENTS_ENABLED             => 'Now live: Accept USD, EUR, GBP and more with your global account',
     ];
 
     // blade templates
@@ -518,6 +528,7 @@ class Events
         self::FUNDS_ON_HOLD                               => 'emails.merchant.onboarding.funds_on_hold',
         self::FUNDS_ON_HOLD_REMINDER                      => 'emails.merchant.onboarding.funds_on_hold_reminder',
         self::EDD_PENDING                                 => 'emails.merchant.onboarding.edd_pending',
+        self::MONEYSAVER_PAYMENTS_ENABLED                 => 'banking_mail_moneysaver_payments_enabled',
 
         self::DOWNLOAD_MERCHANT_WEBSITE_SECTION       => 'emails.merchant.onboarding.website_section_downloaded',
         self::WEBSITE_SECTION_PUBLISHED               => 'emails.merchant.onboarding.website_section_published',
@@ -597,6 +608,7 @@ class Events
         self::FUNDS_ON_HOLD                               => '[Urgent] Settlements have been paused for your Razorpay account',
         self::FUNDS_ON_HOLD_REMINDER                      => '[Urgent] Settlements have been paused for your Razorpay account',
         self::EDD_PENDING                                 => 'Get Ready to Go Live: Complete Your Video KYC in Minutes!',
+        self::MONEYSAVER_PAYMENTS_ENABLED                 => 'Now live: Accept USD, EUR, GBP and more with your global account',
 
         self::DOWNLOAD_MERCHANT_WEBSITE_SECTION       => 'Content for your website/app pages',
         self::WEBSITE_SECTION_PUBLISHED               => 'Published links for your website/app pages',
@@ -676,6 +688,10 @@ class Events
         self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
         self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
         self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED
+    ];
+    
+    const EMAIL_TEMPLATES_CUSTOM_NAMESPACES = [
+        self::MONEYSAVER_PAYMENTS_ENABLED             => 'payments_crossborder'
     ];
 
     const PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION_EVENTS = [
