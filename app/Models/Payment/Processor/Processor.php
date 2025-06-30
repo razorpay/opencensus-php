@@ -2509,6 +2509,27 @@ class Processor
                         Card\Entity::TOKENISED => true,
                         Card\Entity::REWARD => $input['card']['reward']
                     ];
+
+                    if ($card->isInternational()) {
+                        try {
+                            $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
+                        } catch (\Throwable $e) {
+                            $this->trace->traceException(
+                                $e,
+                                Trace::CRITICAL,
+                                TraceCode::CARD_VAULT_REQUEST,
+                                [
+                                    'token'   => $card->getVaultToken(),
+                                    'message' => 'failed to get card number from vault token',
+                                ]
+                            );
+                            return false;
+                        }
+
+                        $cardInput[Card\Entity::NUMBER]    = $cardNumber;
+                        $cardInput[Card\Entity::NAME]      = $card->getName();
+                        $cardInput[Card\Entity::TOKENISED] = false;
+                    }
                 }
 
                 if (self::isCardRecurringAutoRearchRoute($currentRouteName)) {
