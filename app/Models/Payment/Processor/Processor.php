@@ -9375,6 +9375,86 @@ class Processor
         return (new CredcaseSigner)->sign($str, $publicKey);
     }
 
+    private function fetchOmniEnabledDcsFeatureFlag($merchantId)
+    {
+        try
+        {
+            $featureNames = [
+                Feature::OMNI_ENABLED     => "direct"
+            ];
+
+            $dcs = App::getFacadeRoot()['dcs'];
+            $features = $dcs->fetchByEntityIdAndNamesViaProxy(
+                $merchantId,
+                $featureNames,
+                $this->mode,
+                Feature::MERCHANT,
+            );
+
+            $this->trace->info(
+                TraceCode::DCS_FEATURE_FLAGS_FETCHED,
+                [
+                    'merchant_id' => $merchantId,
+                    'features' => $features
+                ]
+            );
+
+            return $features;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::DCS_FEATURE_FLAGS_FETCH_FAILED,
+                [
+                    'features' => 'OmniEnabled',
+                    'merchant_id' => $merchantId ?? null,
+                ]
+            );
+        }
+
+        return [];
+    }
+
+    public function isOmniStackEnabled($merchant): bool
+    {
+        try
+        {
+            if ($merchant->isOmniEnabled() === true)
+            {
+                return true;
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::OMNI_ENABLED_FEATURE_DISABLED,
+                    [
+                        'merchant_id' => $merchant->getMerchantId(),
+                        'features' => 'OmniEnabled',
+                        'message' => 'Checking DCS as feature is disabled on api'
+                    ]
+                );
+
+                $features =  $this->fetchOmniEnabledDcsFeatureFlag($merchant->getMerchantId());
+                $isOmniEnabled = in_array(Feature::OMNI_ENABLED, $features, true);
+                return $isOmniEnabled;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::OMNI_ENABLED_FEATURE_FETCH_FAILED,
+                [
+                    'features' => 'OmniEnabled',
+                    'message' => 'Exception while fetching feature'
+                ]
+            );
+            return false;
+        }
+
+    }
+
     protected function checkMerchantPermissions()
     {
         $merchant = $this->merchant;
@@ -9384,13 +9464,13 @@ class Processor
         $route = $this->app['request.ctx']->getRoute();
 
         $routeName = $this->app['api.route']?->getCurrentRouteName();
-
+        $omniEnabled = $this->isOmniStackEnabled($merchant);
         $this->trace->info(
             TraceCode::MERCHANT_PERMISSIONS_CHECK_IN_PERSON_PAYMENT,
             [
                 'merchant_id'                   => $merchant->getId(),
                 'route_name'                    => $routeName,
-                'omni_enabled feature enabled'  => $merchant->isOmniEnabled(),
+                'omni_enabled feature enabled'  => $omniEnabled,
                 'merchant actiavted'            => $merchant->getActivated(),
                 'payment_input'                 => $this->paymentInput
             ]
@@ -9398,7 +9478,7 @@ class Processor
 
         $offlineCardSkipRoutes = ['payment_notify','internal_transactions'];
 
-        if ((in_array($route, $offlineCardSkipRoutes)) && $merchant->isOmniEnabled() === true) {
+        if ((in_array($route, $offlineCardSkipRoutes)) && $omniEnabled === true) {
             return;
         }
 
@@ -9408,7 +9488,7 @@ class Processor
         {
             return;
         }
-        else if ($route === Payment\Constant::INTERNAL_PRICING && $merchant->isOmniEnabled() === true)
+        else if ($route === Payment\Constant::INTERNAL_PRICING && $omniEnabled === true)
         {
             //This is fix is for skipping permissions on pricing route only for omni enabled offline payments
             $request = $this->app['request.ctx']->getRequest();
@@ -9430,7 +9510,7 @@ class Processor
             return;
         }
 
-        if ($merchant->isOmniEnabled() === true)
+        if ($omniEnabled === true)
         {
             $this->trace->info(
                 TraceCode::POS_ACTIVATION_VALIDATED_FOR_OFFLINE_PAYMENT,
