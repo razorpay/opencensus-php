@@ -1155,7 +1155,7 @@ class ApiEventSubscriber extends Base\Core
             // List of feature flags needed for QR code processing
             $featureNames = [
                 Feature\Constants::OMNI_SINGLE_STACK => "direct",
-                DcsConstant::OmniMerchantEnabled     => "direct"
+                Feature\Constants::OMNI_ENABLED     => "direct"
             ];
 
             $dcs = App::getFacadeRoot()['dcs'];
