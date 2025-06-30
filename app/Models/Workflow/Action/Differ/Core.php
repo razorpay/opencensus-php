@@ -142,7 +142,13 @@ class Core extends Base\Core
         {
             if (DocumentType::isValid($key) === true)
             {
-                $diff[$key] = (function($value) use ($detailService, $merchantId) {
+                $diff[$key] = (function($value) use ($detailService, $merchantId, $key) {
+
+                    // Special handling for 'nach' field to prevent TypeError when it's used as boolean payment flag
+                    if ($key === 'nach' && is_bool($value))
+                    {
+                        return $value; // Return boolean as-is for payment method flags
+                    }
 
                     if (empty($value) === false)
                     {
