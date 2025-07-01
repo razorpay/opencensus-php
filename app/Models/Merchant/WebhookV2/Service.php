@@ -206,6 +206,10 @@ class Service extends Base\Service
                 [
                     'header_key' => 'X-IBM-Client-Id',
                     'header_value' => '{{.Org' . $merchant->org->getId() . 'XIBMClientID}}',
+                ],
+                [
+                    'header_key' => 'X-IBM-Client-Certificate',
+                    'header_value' => '{{.Org' . $merchant->org->getId() . 'XIBMCertificate}}',
                 ]
             ];
         }

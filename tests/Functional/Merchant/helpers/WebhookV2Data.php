@@ -1770,5 +1770,35 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
         ],
     ],
+    'testAddCustomRequestHeadersWithCertPresent' => [
+        'request' => [
+            'url'    => '/v1/webhooks',
+            'method' => 'POST',
+            'content' => $sampleApiWebhookRequest,
+        ],
+        'response' => [
+            'content' => $sampleApiWebhookResponse,
+        ],
+    ],
+    'testAddCustomRequestHeadersWithCertNotPresent' => [
+        'request' => [
+            'url'    => '/v1/webhooks',
+            'method' => 'POST',
+            'content' => $sampleApiWebhookRequest,
+        ],
+        'response' => [
+            'content' => $sampleApiWebhookResponse,
+        ],
+    ],
+    'createWebhookForPrimaryStorkExpectations' => [
+        'expected_request' => [
+            'path' => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create',
+            'payload' => ['webhook' => $sampleStorkWebhookRequest],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => $sampleStorkWebhookResponse,
+        ],
+    ],
 ];
 

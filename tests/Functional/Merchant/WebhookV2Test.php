@@ -1036,4 +1036,45 @@ class WebhookV2Test extends TestCase
 
         $this->ba->oauthBearerAuth($token->toString());
     }
+
+    public function testAddCustomRequestHeadersWithCertPresent()
+    {
+        $this->fixtures->merchant->addFeatures(['add_webhook_headers_mx']);
+        $matcher = function(array $payload) {
+            
+            $this->assertArrayHasKey('webhook', $payload);
+
+            $this->assertArrayHasKey('request_headers', $payload['webhook']);
+
+            $headers = $payload['webhook']['request_headers'];
+            $this->assertCount(3, $headers);
+
+            $this->assertEquals('X-IBM-Client-Secret', $headers[0]['header_key']);
+            $this->assertStringContainsString('{{.Org', $headers[0]['header_value']);
+            $this->assertStringContainsString('XIBMClientSecret}}', $headers[0]['header_value']);
+
+            $this->assertEquals('X-IBM-Client-Id', $headers[1]['header_key']);
+            $this->assertStringContainsString('{{.Org', $headers[1]['header_value']);
+            $this->assertStringContainsString('XIBMClientID}}', $headers[1]['header_value']);
+
+            $this->assertEquals('X-IBM-Client-Certificate', $headers[2]['header_key']);
+            $this->assertStringContainsString('{{.Org', $headers[2]['header_value']);
+            $this->assertStringContainsString('XIBMCertificate}}', $headers[2]['header_value']);
+            return true;
+        };
+        $this->expectStorkServiceRequestForAction('createWebhookForPrimary', $matcher);
+        $this->startTest();
+    }
+
+    public function testAddCustomRequestHeadersWithCertNotPresent()
+    {
+        $matcher = function(array $payload) {
+            $this->assertArrayHasKey('webhook', $payload);
+
+            $this->assertArrayNotHasKey('request_headers', $payload['webhook']);
+            return true;
+        };
+        $this->expectStorkServiceRequestForAction('createWebhookForPrimary', $matcher);
+        $this->startTest();
+    }
 }
