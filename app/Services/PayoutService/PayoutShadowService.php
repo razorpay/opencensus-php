@@ -3,6 +3,8 @@
 namespace RZP\Services\PayoutService;
 
 use GuzzleHttp\Client;
+use RZP\Constants\Environment;
+use RZP\Http\Request\Requests;
 use RZP\Http\RequestHeader;
 use RZP\Models\Payout\SourceRequestIDMapping\Core as SourceRequestIDMappingCore;
 use RZP\Trace\TraceCode;
@@ -15,14 +17,37 @@ class PayoutShadowService
      *
      * @return bool
      */
-    public static function shouldMirrorRequest($merchantID, $killSwitch): bool
+    public static function shouldMirrorRequest($merchantID, $killswitch): bool
     {
-        if (!$killSwitch) {
+        $app = \App::getFacadeRoot();
+        $trace = $app['trace'];
+
+        if ($killswitch)
+        {
             return false;
         }
 
-        // Check split experiment
-        return self::isSplitzExperimentEnable($merchantID);
+        $trace->info(
+            TraceCode::SHADOW_REQUEST_KILLSWITCH_PASSED,
+            [
+                'merchant_id' => $merchantID,
+                'killswitch' => $killswitch,
+            ]
+        );
+
+
+        $splitzResponse = self::isSplitzExperimentEnable($merchantID);
+
+        $trace->info(
+            TraceCode::SHADOW_REQUEST_KILLSWITCH_RESULT,
+            [
+                'merchant_id' => $merchantID,
+                'killswitch' => $killswitch,
+                'splitz_experiment_enabled' => $splitzResponse,
+            ]
+        );
+
+        return $splitzResponse;
     }
 
     /**
@@ -39,17 +64,34 @@ class PayoutShadowService
         $app = \App::getFacadeRoot();
         $config = $app['config']->get('applications.payouts_shadow_router');
 
-        $requestId = app('request')->getTaskId();
+        $requestId = $app['request']->getTaskId();
+        $killSwitch = $config['kill_switch'] ?? false;
         $startTime = microtime(true);
-        $trace = app('trace');
+        $trace = $app['trace'];
         $url = null;
 
         $merchantId = $body['merchant_id'];
 
+        $trace->info(
+            TraceCode::SHADOW_REQUEST_MIRROR_START,
+            [
+                'request_id' => $requestId,
+                'kill_switch' => $config['kill_switch'],
+                'shadow_service_url' => $config['payouts_shadow_router_url'],
+                'shadow_service_connect_timeout' => $config['payouts_shadow_router_connect_timeout'],
+                'shadow_service_timeout' => $config['payouts_shadow_router_timeout'],
+                'method' => $method,
+                'path' => $path,
+                'merchant_id' => $merchantId,
+                'body_hash' => md5(json_encode($body)),
+                'start_time' => $startTime,
+            ]
+        );
+
         //$redis = app('redis')->Connection('mutex_redis');
 
         try {
-            if (self::shouldMirrorRequest($merchantId, $config['kill_switch']) === false) {
+            if (self::shouldMirrorRequest($merchantId, $killSwitch) === false) {
                 return;
             }
 
@@ -89,33 +131,39 @@ class PayoutShadowService
 
             $url = rtrim($config['payouts_shadow_router_url'], '/') . '/' . ltrim($path, '/');
 
-            if ($config['debug']) {
-                $trace->info(
-                    TraceCode::SHADOW_REQUEST_MIRROR_ATTEMPT,
-                    [
-                        'request_id' => $requestId,
-                        'url' => $url,
-                        'method' => $requestMethod,
-                        'headers' => $requestHeaders,
-                        'body' => $requestContent,
-                    ]
-                );
-            }
 
-            // Create client for each request with original timeouts
-            $client = new Client([
-                                     'timeout' => $config['timeout'] ?? 0.02,
-                                     'connect_timeout' => $config['connect_timeout'] ?? 0.02,
-                                 ]);
+            $trace->info(
+                TraceCode::SHADOW_REQUEST_MIRROR_ATTEMPT,
+                [
+                    'request_id' => $requestId,
+                    'url' => $url,
+                    'method' => $requestMethod,
+                    'headers' => $requestHeaders,
+                    'body' => $requestContent,
+                ]
+            );
 
-            // Send request synchronously with timeout
-            $response = $client->request($requestMethod, $url, [
-                'json' => $requestContent,
-                'headers' => $requestHeaders,
-            ]);
+            $options = [
+                'timeout' => $config['timeout'] ?? 2.5, // Default to 1 second
+                'auth'    => [
+                    $config['key'],
+                    $config['secret'],
+                ],
+            ];
+
+            $response = Requests::request(
+                $url,
+                $requestHeaders,
+                $requestContent,
+                $requestMethod,
+                $options);
 
             $endTime = microtime(true);
             $duration = ($endTime - $startTime) * 1000; // in milliseconds
+
+            $trace->info(TraceCode::SHADOW_SERVICE_RESPONSE, [
+                'response' => json_decode($response->body, true)
+            ]);
 
             // Log success
             $trace->info(
@@ -128,17 +176,6 @@ class PayoutShadowService
                     'caller' => $caller,
                 ]
             );
-
-            // Only log response body in debug mode
-            if ($config['debug']) {
-                $trace->info(
-                    TraceCode::SHADOW_REQUEST_MIRROR_SUCCESS,
-                    [
-                        'request_id' => $requestId,
-                        'response' => $response->getBody()->getContents(),
-                    ]
-                );
-            }
         }
         catch (\Throwable $e) {
             $endTime = microtime(true);
@@ -210,6 +247,7 @@ class PayoutShadowService
     protected static function isSplitzExperimentEnable($merchantId): bool
     {
         $app = \App::getFacadeRoot();
+        $trace = $app['trace'];
 
         try
         {
@@ -221,6 +259,9 @@ class PayoutShadowService
 
             $app = \App::getFacadeRoot();
             $response   = $app['splitzService']->evaluateRequest($properties);
+
+            $trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
             $variant = $response['response']['variant']['name'] ?? '';
 
             if (strtolower($variant) === 'enable'){
@@ -229,7 +270,6 @@ class PayoutShadowService
         }
         catch (\Throwable $e)
         {
-            $trace = app('trace');
             $trace->warning(
                 TraceCode::SHADOW_REQUEST_MIRROR_EXPERIMENT_EXCEPTION,
                 [
