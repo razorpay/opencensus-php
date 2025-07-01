@@ -65,20 +65,30 @@ jobs:
         if: env.changes_in_cases_folder == 'true'
         id: extract_jira
         continue-on-error: false
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_TITLE="$PR_TITLE"
           regex='CDT-[0-9]+'
+          devrevRegex='TKT-[0-9]+'
           extracted_id=$(echo "$PR_TITLE" | grep -ioE "$regex" | head -n 1)
+          extracted_devrev_id=$(echo "$PR_TITLE" | grep -ioE "$devrevRegex" | head -n 1)
           if [[ -n "$extracted_id" ]]; then
             echo "Jira ticket ID found in PR title: $extracted_id"
             echo "jira_found=true" >> $GITHUB_ENV
             echo "extracted_id=$extracted_id" >> $GITHUB_ENV
             PR_COMMENT="Jira ticket ID found in PR title: $extracted_id"
+          elif [[ -n "$extracted_devrev_id" ]]; then
+             echo "Devrev TKT ticket ID found in PR title: $extracted_devrev_id"
+             echo "devrev_found=true" >> $GITHUB_ENV
+             echo "extracted_devrev_id=$extracted_devrev_id" >> $GITHUB_ENV
+             PR_COMMENT="Devrev ticket ID found in PR title: $extracted_devrev_id"
           else
-            echo "No CDT ticket ID found in the PR title."
+            echo "No CDT ticket ID  and Deverev found in the PR title."
             echo "If you have recently updated the PR, please try re-running the workflow to extract the CDT ticket ID."
             echo "jira_found=false" >> $GITHUB_ENV
-            PR_COMMENT="No CDT ticket ID found in the PR title. If you have recently updated the PR, please try re-running the workflow to extract the CDT ticket ID."
+            echo "devrev_found=false" >> $GITHUB_ENV
+            PR_COMMENT="No CDT jira/devrev ticket ID found in the PR title. If you have recently updated the PR, please try re-running the workflow to extract the CDT ticket ID."
           fi
           echo "pr_comment=$PR_COMMENT" >> $GITHUB_ENV
       - name: Comment on PR
@@ -92,16 +102,18 @@ jobs:
           number: ${{ steps.findPr.outputs.pr }}
           message: ${{ env.pr_comment }}
 
-      - name: Fail if Jira not found
-        if: env.changes_in_cases_folder == 'true' && env.jira_found == 'false'
+      - name: Fail if Jira and devrev not found
+        if: env.changes_in_cases_folder == 'true' && env.jira_found == 'false' && env.devrev_found == 'false'
         run: exit 1 # Fail the workflow if Jira ticket is not found
 
       - name: Check Issue status
-        if: env.changes_in_cases_folder == 'true' && env.jira_found == 'true'
+        if: env.changes_in_cases_folder == 'true' && (env.jira_found == 'true' || env.devrev_found == 'true')
         env:
           JIRA_ISSUE_ID: ${{ env.extracted_id }}
+          DEVREV_ISSUE_ID: ${{ env.extracted_devrev_id }}
           BASE_URL: ${{secrets.JIRA_BASE_URL}}
           USER_EMAIL: ${{secrets.JIRA_USER_EMAIL}}
           API_TOKEN: ${{secrets.JIRA_API_TOKEN}}
+          DEVREV_API_TOKEN: ${{ secrets.DEVREV_API_TOKEN }}
         run: |
           bash ./.github/actions/cdtTicketStatusCheck.sh

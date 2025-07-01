@@ -241,6 +241,7 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
             if ($this->permissionName === PermissionName::NEEDS_CLARIFICATION_RESPONDED)
             {
+                
                 if ($this->isMetroMigrateOutExperimentEnabledForCmmaEvents($this->entityId) === true)
                 {
                     $cmmaCaseEventData = [
