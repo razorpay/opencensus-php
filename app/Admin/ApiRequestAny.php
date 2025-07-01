@@ -436,6 +436,8 @@ class ApiRequestAny
 
                 $this->options['headers']['X-Admin-Token'] = $adminUser->token;
 
+                $this->options['headers']['X-Admin-Id'] = $adminUser->id  ?? null;
+
                 $accountId = Request::header(self::RAZORPAY_ACCOUNT_HEADER);
 
                 if ($accountId)
@@ -752,7 +754,7 @@ class ApiRequestAny
             $referer = Request::header('referer') ?? '';
             $baseUrl = env('BASE_URL') ?? '';
             $adminPath = str_replace(['http://', 'https://'], '', $baseUrl . '/admin');
-            
+
             if (str_contains($referer, $adminPath) === true) {
                 app('trace')->info(TraceCode::ADMIN_DASHBOARD_REQUEST_RECEIVED, [
                     'path' => $path,
@@ -760,7 +762,7 @@ class ApiRequestAny
                     'method' => $method,
                     'json' => Util::sanitizeJsonForLogging($this->options['json'] ?? []),
                 ]);
-            } 
+            }
         } catch (\Throwable $e) {
             app('trace')->warning(TraceCode::ADMIN_DASHBOARD_REQUEST_RECEIVED, [
                 'trace' => $e->getTrace() ?? "unknown_trace",
@@ -848,7 +850,7 @@ class ApiRequestAny
 
             $response = json_decode($clientBody, true);
 
-            
+
             try {
                 app('edgeResponseForwarder')->setHeaders($path, $method, $client->getheaders());
                 app('edgeMismatchRecorder')->setEdgeData($path, $method, $client->getheaders());
@@ -860,7 +862,7 @@ class ApiRequestAny
             }
 
 
-            
+
 
             $this->setResponseHeaders($headersToBeAppended);
 

@@ -82,6 +82,7 @@ export const getDeviceDeploymentStatus = ({
 export const getDeviceListDataFromModularConfig = ({
   modularConfig,
 }: ModularConfigType): GetDeviceListDataFromModularConfig => {
+    // Run github actions
   const component = getComponentFromStep({
     modularConfig,
     step: DEVICE_DEPLOYMENT_FIELDS.DEVICE_DEPLOYMENT_STEP,
