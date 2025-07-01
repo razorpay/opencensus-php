@@ -261,7 +261,9 @@ class Details extends Component {
     const isAllowToEdit = showWhenUtil({
       additionalCondition: (_user) => _user.isAllowedEdit('accounts'),
     });
-    const isCreationDisabled = user.isRouteLinkedAccountCreationDisabled;
+
+    const isRouteDSEnabled = user.isRouteDSEnabled;
+    const isCreationDisabled = user.isRouteLinkedAccountCreationDisabled || isRouteDSEnabled;
 
     return (
       <div className="content-wrapper content-sm txn-details">
@@ -348,6 +350,7 @@ class Details extends Component {
                       isLACreationDisabled={isCreationDisabled}
                       checked={!!account.dashboard_access}
                       onChange={this.onToggleDashboardAccess}
+                      isDisabled={isRouteDSEnabled}
                       isDashboard
                     />
                   </EntityDetailRow>
@@ -376,6 +379,7 @@ class Details extends Component {
                       isLACreationDisabled={isCreationDisabled}
                       checked={!!account.allow_reversals}
                       onChange={this.onToggleAllowRefunds}
+                      isDisabled={isRouteDSEnabled}
                     />
                   </EntityDetailRow>
                 )}

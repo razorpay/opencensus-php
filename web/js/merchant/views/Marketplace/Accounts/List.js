@@ -305,7 +305,9 @@ class AccountsListContainer extends ListContainer {
     const status = this.state.status;
     const feeBearer = user.merchant.fee_bearer;
     const isCustomerFeeBearer = feeBearer === FEE_BEARER_TYPES.CUSTOMER;
-    const isCreationDisabled = user.isRouteLinkedAccountCreationDisabled || isCustomerFeeBearer;
+    const isRouteDSEnabled = user.isRouteDSEnabled;
+    const isCreationDisabled =
+      user.isRouteLinkedAccountCreationDisabled || isCustomerFeeBearer || isRouteDSEnabled;
     const is2FaExperimentActive = is2FaExperimentEnabled(splitz.abExperiments);
 
     const {

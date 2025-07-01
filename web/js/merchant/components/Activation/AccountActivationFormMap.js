@@ -137,7 +137,7 @@ const bankAccountFields = [
         }
       },
       _when: (activation) => {
-        const isLocked = activation.props.data.locked;
+        const isLocked = activation.props.data.locked || activation.isFormLocked;
 
         return !isLocked;
       },

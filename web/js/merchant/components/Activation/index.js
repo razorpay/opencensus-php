@@ -1212,7 +1212,11 @@ class ActivationWizard extends React.Component {
   }
 
   get isFormLocked() {
-    return !!this.props.data.locked || this.isNeedsClarificationMode();
+    return (
+      !!this.props.data.locked ||
+      this.isNeedsClarificationMode() ||
+      this.props.user?.isRouteDSEnabled
+    );
   }
 
   get hasFilledClarificationDetails() {

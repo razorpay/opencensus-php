@@ -62,6 +62,8 @@ const FEATURE_FLAG_MAPS = {
   checkoutrewards: 'chk_reward',
 };
 
+const ROUTE_DS_ORGID = 'ISCBolfdHQnhj4';
+
 // TODO: Rename fn. name
 export function setFeatures(features) {
   const enabledFeatures = filterBy(features, 'value', true);
@@ -1344,6 +1346,10 @@ export default class User {
     return this.isSubscriptionsEnabled;
   }
 
+  get isRouteDSEnabled() {
+    return this.merchant?.org_id === ROUTE_DS_ORGID;
+  }
+
   get isBharatQREnabled() {
     return this.isFeatureEnabled('bharat_qr');
   }
@@ -2124,11 +2130,15 @@ export default class User {
   }
 
   get isPaymentReceiptCustomizerEnabled() {
-    return ((isOrgFeatureExist('enable_cust_rcpt_org') || this.isFeatureEnabled('enable_cust_rcpt_mrchnt')) && !this.isFeatureEnabled('disable_cust_rcpt_mrchnt'));
+    return (
+      (isOrgFeatureExist('enable_cust_rcpt_org') ||
+        this.isFeatureEnabled('enable_cust_rcpt_mrchnt')) &&
+      !this.isFeatureEnabled('disable_cust_rcpt_mrchnt')
+    );
   }
 
   get isPosOrderIDEnabled() {
-    return this.orgCustomCode === ORG_CUSTOM_CODE_MAP.HDFC_COLLECT_NOW  && this.isVASOrg;
+    return this.orgCustomCode === ORG_CUSTOM_CODE_MAP.HDFC_COLLECT_NOW && this.isVASOrg;
   }
 }
 

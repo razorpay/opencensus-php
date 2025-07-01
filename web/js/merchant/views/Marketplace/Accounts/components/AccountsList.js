@@ -19,11 +19,13 @@ export const ToggleField = ({
   isLACreationDisabled,
   onChange,
   checked,
+  isDisabled = false,
 }) => {
-  const isDisabled = (isLACreationDisabled && isLAEmailAbsent) || isLAEmailAbsent;
+  const isSwitchDisabled =
+    (isLACreationDisabled && isLAEmailAbsent) || isLAEmailAbsent || isDisabled;
 
   const _SwitchField = (
-    <SwitchField checked={checked} onChange={onChange} disabled={isDisabled} type="prime" />
+    <SwitchField checked={checked} onChange={onChange} disabled={isSwitchDisabled} type="prime" />
   );
 
   if (isLACreationDisabled && isLAEmailAbsent) {
@@ -76,7 +78,9 @@ const AccountsListItem = ({
     : account.activated_at;
 
   const user = getUser();
+  const isRouteDSEnabled = user.isRouteDSEnabled;
   const noLAEmail = user.merchants[user.current].email === account.email;
+  const isDisabled = isCreationDisabled || isRouteDSEnabled;
 
   return (
     <EntityItemRow id={account.id}>
@@ -88,7 +92,7 @@ const AccountsListItem = ({
       <td>
         {showEditAccountModal && noLAEmail ? (
           <span>
-            {isCreationDisabled && (
+            {isDisabled && (
               <Popover align="top" theme="dark">
                 <PopoverBody>This action is not allowed for your business type</PopoverBody>
               </Popover>
@@ -103,7 +107,7 @@ const AccountsListItem = ({
                 });
                 showEditAccountModal(account);
               }}
-              disabled={isCreationDisabled}
+              disabled={isDisabled}
             >
               Add Email
             </button>
@@ -120,7 +124,7 @@ const AccountsListItem = ({
           timeStamp={timeStamp}
           showActivationForm={onEdit}
           errorDetails={account.activation_details?.bank_details_verification_error}
-          isCreationDisabled={isCreationDisabled}
+          isCreationDisabled={isDisabled}
         />
       </td>
       {onToggleDashboardAccess && !user.isOrgCurlec && (
@@ -132,6 +136,7 @@ const AccountsListItem = ({
             isLACreationDisabled={isCreationDisabled}
             onChange={onToggleDashboardAccess}
             checked={!!account.dashboard_access}
+            isDisabled={isRouteDSEnabled}
           />
         </td>
       )}
@@ -144,6 +149,7 @@ const AccountsListItem = ({
               isLACreationDisabled={isCreationDisabled}
               checked={!!account.allow_reversals}
               onChange={onToggleAllowRefunds}
+              isDisabled={isRouteDSEnabled}
             />
           }
         </td>

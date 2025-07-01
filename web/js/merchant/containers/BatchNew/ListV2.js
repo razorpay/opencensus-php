@@ -126,10 +126,10 @@ class BatchList extends ListContainer {
       shouldShowSampleDownloadBtn = false,
     } = this.props;
     const { user } = session;
-    const showBatchUploadButton =
-      (showUploadForAdminOrOwner ? user?.isAdminOrOwner : true);
+    const showBatchUploadButton = showUploadForAdminOrOwner ? user?.isAdminOrOwner : true;
     const { tabsData } = this.state;
     const tabData = propsTabData?.length > 0 ? propsTabData : tabsData;
+    const isRouteDSEnabled = user.isRouteDSEnabled;
 
     return (
       <ProductWrapper
@@ -169,15 +169,21 @@ class BatchList extends ListContainer {
             {showBatchUploadButton &&
               (this.props.multiBatch ? (
                 <div className="pull-right MultiBatch--action">
-                  <div className="btn btn-primary">Upload New Batch</div>
-                  <PopoverComponent align="bottom" className="MultiBatch--popover">
-                    <PopoverTitle>
-                      <h4>
-                        <strong>Upload New Batch</strong>
-                      </h4>
-                    </PopoverTitle>
-                    <PopoverBody>{this.props.renderBatchOptions(this.openUploadModal)}</PopoverBody>
-                  </PopoverComponent>
+                  <button className="btn btn-primary" disabled={isRouteDSEnabled}>
+                    Upload New Batch
+                  </button>
+                  {!isRouteDSEnabled && (
+                    <PopoverComponent align="bottom" className="MultiBatch--popover">
+                      <PopoverTitle>
+                        <h4>
+                          <strong>Upload New Batch</strong>
+                        </h4>
+                      </PopoverTitle>
+                      <PopoverBody>
+                        {this.props.renderBatchOptions(this.openUploadModal)}
+                      </PopoverBody>
+                    </PopoverComponent>
+                  )}
                 </div>
               ) : (
                 ((session.mode !== 'live' || !user.isRejected) && (

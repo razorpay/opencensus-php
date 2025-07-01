@@ -37,6 +37,7 @@ const settlementStatus = {
 class TransfersListContainer extends ListContainer {
   render() {
     const { isPlatformFeeTabEnabled, user, isPartnerPlatformFeeEnabled } = this.props;
+    const isRouteDSEnabled = user.isRouteDSEnabled;
     return (
       <ProductWrapper
         tabsData={navItems(user, isPlatformFeeTabEnabled, isPartnerPlatformFeeEnabled)}
@@ -46,7 +47,7 @@ class TransfersListContainer extends ListContainer {
 
             <DocsLink url="ROUTE_TRANSFER_DOC_URL" />
 
-            {user.isDirectTransferEnabled && (
+            {user.isDirectTransferEnabled && !isRouteDSEnabled && (
               <NavLink className="btn btn-primary" to="/route/transfers/direct_transfer">
                 <i className="i i-plus" />
                 Create Direct Transfer
