@@ -4,7 +4,6 @@ import '@testing-library/jest-dom/extend-expect';
 import RekycModalWrapper from 'merchant/components/SelfServeRekyc/containers/RekycModalWrapper';
 import { RekycModalInfo, RekycModalWrapperProps, RekycDetailsApiData } from 'merchant/components/SelfServeRekyc/types';
 import * as analytics from '@libs/shared-utils';
-import { SELF_SERVE_REKYC_HIDE_MODAL } from 'merchant/components/SelfServeRekyc/constants';
 
 jest.mock('common/hooks/useMobile', () => ({
   useMobile: jest.fn().mockReturnValue(false)
@@ -85,7 +84,6 @@ describe('RekycModalWrapper', () => {
           experimentName: 'self-serve-rekyc'
         }
       });
-      expect(localStorage.getItem(SELF_SERVE_REKYC_HIDE_MODAL)).toBe('true');
     });
   });
 

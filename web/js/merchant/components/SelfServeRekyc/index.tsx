@@ -13,8 +13,8 @@ import {
   NON_OWNER_REKYC_BANNER_INFO,
   OWNER_MODAL_CONTENT,
   OWNER_REKYC_BANNER_INFO,
-  SELF_SERVE_REKYC_HIDE_MODAL,
   STATUSES_TO_SHOW_TIMELINE,
+  SELF_SERVE_REKYC_HIDE_MODAL,
 } from 'merchant/components/SelfServeRekyc/constants';
 
 import {
@@ -23,7 +23,6 @@ import {
   getRekycModalIsOpen,
   getRekycStatus,
   getTimelineString,
-  shouldShowModal as shouldShowModalUtil
 } from 'merchant/components/SelfServeRekyc/utils';
 
 import RekycBanner from 'merchant/components/SelfServeRekyc/components/RekycBanner';
@@ -50,10 +49,10 @@ const SelfServeRekycNotification: React.FC<SelfServeRekycNotificationProps> = (p
 
   const {
     data: rekycDetails,
-  } = useGetRekycDetails({merchantId, showCurrentData: true});
+  } = useGetRekycDetails({ merchantId, showCurrentData: true });
 
   useEffect(() => {
-    if(rekycDetails && Object.keys(rekycDetails).length){
+    if (rekycDetails && Object.keys(rekycDetails).length) {
       const rekycStatus = getRekycStatus(rekycDetails?.status);
 
       const ACTIONABLE_STATUSES = DYNAMIC_REKYC_STATUS;
@@ -61,38 +60,39 @@ const SelfServeRekycNotification: React.FC<SelfServeRekycNotificationProps> = (p
       const isMerchantActionable = ACTIONABLE_STATUSES.includes(rekycStatus);
 
       let timelineKey = ''
-      if(isMerchantActionable){
+      if (isMerchantActionable) {
         timelineKey = getTimelineString(rekycDetails?.deadline);
         setRekycUrl(MERCHANT_ACTION[rekycStatus]);
       }
 
-      if(timelineKey){
+      if (timelineKey) {
         setBannerDetails(BANNER_INFO_MAP[rekycStatus][timelineKey])
-      }else{
+      } else {
         setBannerDetails(BANNER_INFO_MAP[rekycStatus])
       }
 
-      if(STATUSES_TO_SHOW_TIMELINE.includes(rekycStatus)){
-        if(timelineKey){
+      if (STATUSES_TO_SHOW_TIMELINE.includes(rekycStatus)) {
+        if (timelineKey) {
           setStepsInfo(FINAL_STEPS_MAP[rekycStatus][timelineKey])
-        }else{
+        } else {
           setStepsInfo(FINAL_STEPS_MAP[rekycStatus])
         }
       }
 
       const isOpen = getRekycModalIsOpen(rekycStatus, rekycDetails?.deadline);
-      setShouldShowModal(isOpen);
       if (isOpen) {
         if (timelineKey) {
           setModalInfo(MODAL_INFO_MAP[rekycStatus][timelineKey])
         } else {
           setModalInfo(MODAL_INFO_MAP[rekycStatus])
         }
-        // run sideeffects
+
         const isModalConfigAvailable = localStorage.getItem(SELF_SERVE_REKYC_HIDE_MODAL);
         if (isModalConfigAvailable) {
           localStorage.removeItem(SELF_SERVE_REKYC_HIDE_MODAL);
         }
+
+        setShouldShowModal(isOpen);
       }
     }
   }, [rekycDetails]);
@@ -101,24 +101,24 @@ const SelfServeRekycNotification: React.FC<SelfServeRekycNotificationProps> = (p
     <>
       {
         bannerDetails ?
-        <RekycBanner
-          bannerDetails={bannerDetails}
-          deadlineDate={getDeadlineDate(rekycDetails?.deadline)}
-          daysFromDeadline={getDaysFromDeadline(rekycDetails?.deadline)}
-          stepsInfo={stepsInfo}
-          rekycUrl={rekycUrl}
-          rekycStatus={rekycDetails?.status}
-        /> : null
+          <RekycBanner
+            bannerDetails={bannerDetails}
+            deadlineDate={getDeadlineDate(rekycDetails?.deadline)}
+            daysFromDeadline={getDaysFromDeadline(rekycDetails?.deadline)}
+            stepsInfo={stepsInfo}
+            rekycUrl={rekycUrl}
+            rekycStatus={rekycDetails?.status}
+          /> : null
       }
       {
         shouldShowModal && modalInfo ?
-        <RekycModalWrapper
-          modalInfo={modalInfo}
-          deadlineDate={getDeadlineDate(rekycDetails?.deadline)}
-          daysFromDeadline={getDaysFromDeadline(rekycDetails?.deadline)}
-          rekycUrl={rekycUrl}
-          rekycStatus={rekycDetails?.status}
-        /> : null
+          <RekycModalWrapper
+            modalInfo={modalInfo}
+            deadlineDate={getDeadlineDate(rekycDetails?.deadline)}
+            daysFromDeadline={getDaysFromDeadline(rekycDetails?.deadline)}
+            rekycUrl={rekycUrl}
+            rekycStatus={rekycDetails?.status}
+          /> : null
       }
     </>
   )

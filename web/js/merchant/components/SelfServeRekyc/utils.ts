@@ -1,10 +1,13 @@
 import { moment } from './moment';
 import { User } from 'common/typings';
 import { isExperimentEnabled } from 'common/splitz/utils';
-import { SELF_SERVE_REKYC_HIDE_MODAL, STATUSES_TO_SHOW_MODAL } from 'merchant/components/SelfServeRekyc/constants';
+import {
+  SELF_SERVE_REKYC_HIDE_MODAL,
+  STATUSES_TO_SHOW_MODAL,
+} from 'merchant/components/SelfServeRekyc/constants';
 import { camelize } from '@libs/shared-utils';
 export const getDaysFromDeadline = (deadline: number | undefined): number => {
-  if(!deadline){
+  if (!deadline) {
     return 0;
   }
 
@@ -17,27 +20,27 @@ export const getDaysFromDeadline = (deadline: number | undefined): number => {
 export const getTimelineString = (deadline: number): string => {
   const dayCount = getDaysFromDeadline(deadline);
 
-  switch(true){
+  switch (true) {
     case dayCount <= 90 && dayCount >= 31:
       return 'firstThirtyDays';
-    case dayCount <=30 && dayCount >= 15:
+    case dayCount <= 30 && dayCount >= 15:
       return 'thirtyToFifteenDays';
     case dayCount <= 14 && dayCount >= 0:
       return 'foh';
     case dayCount < 0:
-      return 'liveDisabled'
+      return 'liveDisabled';
     default:
       return 'firstThirtyDays';
   }
-}
+};
 
 export const getDeadlineDate = (deadline: undefined | number) => {
-  if(!deadline){
+  if (!deadline) {
     return '';
   }
 
   return moment(deadline * 1000).format('Do MMMM');
-}
+};
 
 export const isEligibleForSelfServeRekyc = (splitz, user: Partial<User>) => {
   return (
@@ -53,8 +56,22 @@ export const shouldShowModal = (deadline: number) => {
 
   const isModalConfigAvailable = localStorage.getItem(SELF_SERVE_REKYC_HIDE_MODAL);
 
-  if(!isModalConfigAvailable){
+  if (!isModalConfigAvailable) {
     return true;
+  }
+
+  // Handle both old format ('true') and new format (JSON object)
+  let hideModalConfig;
+  try {
+    hideModalConfig = JSON.parse(isModalConfigAvailable);
+  } catch (e) {
+    // If parsing fails, it's the old format ('true')
+    hideModalConfig = { dismissedOn: null };
+  }
+
+  // If dismissed today, don't show
+  if (hideModalConfig.dismissedOn && getDaysFromDeadline(hideModalConfig.dismissedOn) === 0) {
+    return false;
   }
 
   if (daysLeft > 60) {
@@ -67,20 +84,10 @@ export const shouldShowModal = (deadline: number) => {
     // Show daily
     return true;
   }
-}
+};
 
-// modal opening logic depends on 
 export function getRekycModalIsOpen(rekycStatus: string, deadline: number): boolean {
-  if (STATUSES_TO_SHOW_MODAL.includes(rekycStatus)) {
-    if (shouldShowModal(deadline)) {
-      const isModalConfigAvailable = localStorage.getItem(SELF_SERVE_REKYC_HIDE_MODAL);
-      if (isModalConfigAvailable) {
-        localStorage.removeItem(SELF_SERVE_REKYC_HIDE_MODAL);
-      }
-      return true;
-    }
-  }
-  return false;
+  return STATUSES_TO_SHOW_MODAL.includes(rekycStatus) && shouldShowModal(deadline);
 }
 
 export function getRekycStatus(status: string) {
