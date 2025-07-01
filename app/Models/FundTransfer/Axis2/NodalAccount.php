@@ -5,6 +5,9 @@ namespace RZP\Models\FundTransfer\Axis2;
 use Mail;
 use Config;
 use Carbon\Carbon;
+use RZP\Signature\PfxSignature;
+use Storage;
+use ZipArchive;
 
 use RZP\Models\Base;
 use RZP\Encryption\Type;
@@ -17,12 +20,15 @@ use RZP\Mail\Base\Constants;
 use RZP\Services\Beam\Service;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Encryption\PGPEncryption;
+use RZP\Signature\Type as SignatureType;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Mail\Settlement\Settlement as SettlementMail;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 use RZP\Models\FundTransfer\Axis2\Constants as Axis2Constants;
+use RZP\Exception\RuntimeException;
+use RZP\Models\FileStore\Utility;
 
 class NodalAccount extends NodalBase\FileProcessor
 {
@@ -36,6 +42,10 @@ class NodalAccount extends NodalBase\FileProcessor
 
     const RZP_FILE_MIME_TYPE  = 'text/plain';
 
+    const RZP_PGP_ENCRYPTED_FILE_MIME_TYPE  = 'application/octet-stream';
+
+    const RZP_PFX_SIGNED_FILE_MIME_TYPE  = 'application/octet-stream';
+
     protected $id;
 
     protected $emptyRow;
@@ -43,6 +53,8 @@ class NodalAccount extends NodalBase\FileProcessor
     protected $data = null;
 
     protected $encryptionKey  = null;
+
+    protected $signatureKey = null;
 
     public function __construct()
     {
@@ -55,6 +67,10 @@ class NodalAccount extends NodalBase\FileProcessor
         $this->encryptionKey  = Config::get('nodal.axis2.axis2_nodal_pgp_encryption_key');
 
         $this->encryptionKey  = trim(str_replace('\n', "\n", $this->encryptionKey));
+
+        $this->signatureKey = Config::get('nodal.axis2.axis2_nodal_pfx_signature_key');
+
+        $this->signatureKey  = trim(str_replace('\n', "\n", $this->signatureKey));
     }
 
     /**
@@ -177,48 +193,73 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $metadata = $this->getH2HMetadata();
 
-        $creator = new FileStore\Creator;
-
         $this->trace->info(TraceCode::FTA_FILE_CREATED_IN_S3);
 
-        try
-        {
+        try {
             $this->trace->info(TraceCode::FTA_ENCRYPTED_FILE_CREATE_IN_S3_INIT);
 
-            $file = $creator->extension(FileStore\Format::TXT)
-                            ->content($textContent)
-                            ->name($fileName)
-                            ->store(FileStore\Store::S3)
-                            ->type(FileStore\Type::FUND_TRANSFER_H2H)
-                            ->headers(false)
-                            ->metadata($metadata)
-                            ->encrypt(Type::PGP_ENCRYPTION,
-                                [
-                                    PGPEncryption::PUBLIC_KEY  => $this->encryptionKey,
-                                    PGPEncryption::USE_ARMOR   => 1
-                                ])
-                            ->save();
+            $creator = new FileStore\Creator;
+            $pgpFile = $creator->extension(FileStore\Format::PGP)
+                ->name($fileName)
+                ->content($textContent)
+                ->mime(self::RZP_PGP_ENCRYPTED_FILE_MIME_TYPE)
+                ->store(FileStore\Store::S3)
+                ->type(FileStore\Type::FUND_TRANSFER_H2H)
+                ->headers(false)
+                ->metadata($metadata)
+                ->encrypt(Type::PGP_ENCRYPTION, [
+                    PGPEncryption::PUBLIC_KEY  => $this->encryptionKey,
+                    PGPEncryption::USE_ARMOR   => 1
+                ])
+                ->save();
 
             $this->trace->info(TraceCode::FTA_ENCRYPTED_FILE_CREATE_IN_S3_COMPLETE);
 
+            $this->trace->info(TraceCode::FTA_SIGNED_FILE_CREATE_IN_S3_INIT);
             $creator = new FileStore\Creator;
+            $sibFile = $creator->extension(FileStore\Format::SIG)
+                ->mime(self::RZP_PFX_SIGNED_FILE_MIME_TYPE)
+                ->name($fileName)
+                ->content($textContent)
+                ->store(FileStore\Store::S3)
+                ->type(FileStore\Type::FUND_TRANSFER_H2H)
+                ->headers(false)
+                ->metadata($metadata)
+                ->sign(SignatureType::PFX_SIGNATURE, [
+                        PfxSignature::PRIVATE_KEY => $this->signatureKey,
+                ])
+                ->save();
+
+            $this->trace->info(TraceCode::FTA_SIGNED_FILE_CREATE_IN_S3_COMPLETE);
+
+            $this->trace->info(TraceCode::FTA_ZIP_FILE_CREATE_IN_S3_INIT);
+            $creator = new FileStore\Creator;
+            $zipFile = $creator->name($fileName)
+                ->store(FileStore\Store::S3)
+                ->type(FileStore\Type::FUND_TRANSFER_H2H)
+                ->headers(false)
+                ->metadata($metadata)
+                ->compress("zip")
+                ->setUnzippedFilePaths([$pgpFile->getFullFilePath(), $sibFile->getFullFilePath()])
+                ->save();
+
+            $this->trace->info(TraceCode::FTA_ZIP_FILE_CREATE_IN_S3_COMPLETE);
 
             $this->trace->info(TraceCode::FTA_UNENCRYPTED_FILE_CREATE_IN_S3_INIT);
-
+            $creator = new FileStore\Creator;
             $rzpFile = $creator->extension(FileStore\Format::TXT)
-                               ->mime(self::RZP_FILE_MIME_TYPE)
-                               ->content($textContent)
-                               ->name($fileName)
-                               ->store(FileStore\Store::S3)
-                               ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
-                               ->headers(false)
-                               ->metadata($metadata)
-                               ->save();
+                ->mime(self::RZP_FILE_MIME_TYPE)
+                ->content($textContent)
+                ->name($fileName)
+                ->store(FileStore\Store::S3)
+                ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
+                ->headers(false)
+                ->metadata($metadata)
+                ->save();
 
             $this->trace->info(TraceCode::FTA_UNENCRYPTED_FILE_CREATE_IN_S3_COMPLETE);
-        }
-        catch (\Throwable $exception)
-        {
+
+        } catch (\Throwable $exception) {
             $this->trace->traceException(
                 $exception,
                 Trace::CRITICAL,
@@ -227,10 +268,21 @@ class NodalAccount extends NodalBase\FileProcessor
                     'file' => $fileName,
                 ]);
 
-            throw  $exception;
+            throw $exception;
         }
 
-        return [$file, $rzpFile];
+        return [$zipFile, $rzpFile];
+    }
+
+    protected function getLocalSaveDir(): string
+    {
+        $baseDir = storage_path('app/axis/poweraccess/outgoing_settlement');
+
+        if (!file_exists($baseDir)) {
+            (new Utility)->callFileOperation('mkdir', [$baseDir, 0777, true]);
+        }
+
+        return $baseDir;
     }
 
     protected function getFileData($file)

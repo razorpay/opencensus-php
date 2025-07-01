@@ -119,5 +119,6 @@ return [
 
     'axis2' => [
         'axis2_nodal_pgp_encryption_key'  => env('AXIS2_NODAL_PGP_ENCRYPTION_KEY'),
+        'axis2_nodal_pfx_signature_key'  => env('AXIS2_NODAL_PFX_SIGNATURE_KEY'),
     ],
 ];
