@@ -64,6 +64,7 @@ export const isEligibleForFtuxV2 = ({ user, abExperiments }: FTUXHomepageEnabled
   return Boolean(
     user.isOrgRZP &&
       user.isCountryIndia &&
+      user?.user?.signup_campaign === 'easy_onboarding' &&
       !user.isSubMerchant &&
       !user?.isPartner?.() &&
       !isPOSMerchant &&
