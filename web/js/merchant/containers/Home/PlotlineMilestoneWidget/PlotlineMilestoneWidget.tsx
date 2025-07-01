@@ -68,7 +68,7 @@ const PlotlineMilestoneWidget = () => {
   );
   const isTransactionCountInLimit =
     transactionCount !== null && transactionCount < NUMBER_OF_TRANSACTIONS_LIMIT;
-  const isUnregisteredMerchant = user.business_type === '11'; // Check for unregistered users
+
   const rewardCount = getRewardCount(transactionCount);
 
   const { shouldShowWidget, showRewardsBanner } = useMemo(() => {
@@ -77,8 +77,7 @@ const PlotlineMilestoneWidget = () => {
       transactionCountApiError ||
       transactionCount === null ||
       !doesUserHaveMerchant ||
-      isAccountOnTestMode ||
-      !isUnregisteredMerchant
+      isAccountOnTestMode
     )
       return {
         shouldShowWidget: false,
@@ -125,7 +124,6 @@ const PlotlineMilestoneWidget = () => {
     daysSinceActivation,
     isExperimentActive,
     isTransactionCountInLimit,
-    isUnregisteredMerchant,
   ]);
 
   const getTransactionCount = async () => {

@@ -27,14 +27,12 @@ const createMockData = ({
   isMIDWhitelisted = false,
   transactionCount = 2,
   hasMerchant = true,
-  businessType = '11', // not unregistered
   apiError = false,
   isLoading = false,
 }) => {
   const mockStoreValue = {
     session: {
       user: {
-        business_type: businessType,
         merchant: hasMerchant
           ? {
               id: merchantId,
