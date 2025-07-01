@@ -2972,7 +2972,10 @@ class Service extends Base\Service
     {
         if ($this->auth->isPrivilegeAuth() === true)
         {
-            return $this->repo->user->findOrFailPublic($id)->toArrayPublic();
+            $resp = $this->repo->user->findOrFailPublic($id)->toArrayPublic();
+
+            $this->trace->info(TraceCode::USER_ROLE_MAPPING, $resp);
+            return $resp;
         }
 
         return [];
@@ -4378,6 +4381,12 @@ class Service extends Base\Service
         ]);
 
         return $this->core->getUserAllRoles($userID, $merchantID);
+    }
+
+    public function getSalesManagerEmailByAssistedMerchant(string $merchantID)
+    {
+
+        return (new Core())->getSalesManagerEmailByAssistedMerchant($merchantID);
     }
 
     public function removeIncorrectPasswordCount(array $input)

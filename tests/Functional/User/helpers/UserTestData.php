@@ -2231,6 +2231,20 @@ return [
         ],
     ],
 
+    'testFetchManagerEmailFromSalesMid' => [
+        'request' => [
+            'url'     => '/user_fetch_manager_email/No72z8gsJTcHKu',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'user_id'=>'100AgentUserId',
+                'manager_email' => 'akshaj.k@razorpay.com'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testMobileSignupWithNewSmsTemplateAndSendsViaStork' => [
         'request' => [
             'url'     => '/users/register/otp',

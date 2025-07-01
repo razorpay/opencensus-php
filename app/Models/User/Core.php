@@ -6980,6 +6980,44 @@ class Core extends Base\Core
         }
     }
 
+    public function getSalesManagerEmailByAssistedMerchant(string $merchantID){
+
+        // get sales user id
+        $salesUserMapping = $this->repo->merchant_user->findByRolesAndMerchantId([Role::RAZORPAY_SALES], $merchantID)->first();
+
+        if (empty($salesUserMapping) === true)
+        {
+            return null;
+        }
+
+        // fetch user metadata from users table using the user id found from merchant mapping
+        $salesUser = $this->repo->user->findOrFail($salesUserMapping->user_id);
+
+        $this->trace->info(
+            TraceCode::DEBUG_LOGGING,
+            [
+                'found_sales_user'=> $salesUser
+            ]);
+
+        $userMetadata = $salesUser->getAttribute(Entity::METADATA);
+
+        if (empty($userMetadata) === true || empty($userMetadata['manager_email']) === true)
+        {
+            return null;
+        }
+
+        $this->trace->info(
+            TraceCode::DEBUG_LOGGING,
+            [
+                'manager_email_found'=> $userMetadata['manager_email']
+            ]);
+
+        return [
+            'manager_email' => $userMetadata['manager_email'],
+            'user_id' => $salesUserMapping->user_id,
+        ];
+    }
+
     public function removeIncorrectPasswordCount(array $emails)
     {
         $success = [];

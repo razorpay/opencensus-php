@@ -14430,6 +14430,38 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+
+    public function testFetchManagerEmailFromSalesMid()
+    {
+
+        $merchantId = 'No72z8gsJTcHKu';
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'],['contact_mobile' =>'9891817371','contact_mobile_verified'=>true],"owner");
+        $salesUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'],['id'=>'100AgentUserId', 'contact_mobile' =>'9891817375','contact_mobile_verified'=>true, 'metadata' => ['manager_email'=>'akshaj.k@razorpay.com']],"razorpay_sales");
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchantId,
+            'user_id'         => $merchantUser['id'],
+            'signup_campaign' => 'assisted_onboarding',
+            'metadata' => [
+                'service' => 'pgos',
+            ]
+        ]);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testMobileSignupWithNewSmsTemplateAndSendsViaStork()
     {
 

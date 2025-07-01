@@ -111,6 +111,13 @@ class UserController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getSalesManagerEmailByAssistedMerchant(string $id)
+    {
+        $response = $this->service()->getSalesManagerEmailByAssistedMerchant($id);
+
+        return ApiResponse::json($response);
+    }
+
     public function removeIncorrectPasswordCount()
     {
         $input = Request::all();

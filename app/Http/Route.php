@@ -2819,6 +2819,7 @@ class Route
         'user_internal_fetch_by_email'             => ['post',     'users_internal/fetch_user_by_email',             'UserController@getUserByEmail'                              ],
         'user_internal_fetch_by_verified_contact'  => ['post',     'users/internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
         'user_edit_internal'                       => ['patch',    'users_internal/{id}',                            'UserController@editUserInternal'                                   ],
+        'user_fetch_manager_email_by_mid'          => ['get',      'user_fetch_manager_email/{id}',                  'UserController@getSalesManagerEmailByAssistedMerchant'             ],
         'fetch_user_details'                       => ['get',      'users/details',                                  'UserController@getUserDetailsWithRelations'                                   ],
         'upsert_user_details'                      => ['post',     'users/details',                                  'UserController@upsertUserDetailsWithRelations'                                ],
         'delete_user_details'                      => ['delete',     'users/details',                                  'UserController@deleteUserDetailsWithRelations'                                ],
@@ -5878,6 +5879,7 @@ class Route
         'rupay_push_token',
         'vcpp_tokens_push',
         'pricing_fetch_plan_internal',
+        'user_fetch_manager_email_by_mid',
         'internal_fetch_merchant_users',
         'internal_workflow_create',
         'internal_post_website_update',
@@ -18573,6 +18575,7 @@ class Route
         ],
 
         'pgos' => [
+            'user_fetch_manager_email_by_mid',
             'user_internal_fetch_by_email',
             'pricing_fetch_plan_internal',
             'qr_code_merchant_create',
