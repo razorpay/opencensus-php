@@ -682,7 +682,9 @@ class Content extends Component {
       workflow_details,
     } = user;
 
-    const isMasterKyc = workflow_details?.pg_onboarding_workflow_type === 'MODULAR_ONBOARDING';
+    const isMOMerchant = workflow_details?.pg_onboarding_workflow_version === 'v2';
+    const isMasterKyc =
+      !isMOMerchant && workflow_details?.pg_onboarding_workflow_type === 'MODULAR_ONBOARDING';
 
     const isValidMerchant =
       isOrgRZP &&
