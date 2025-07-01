@@ -1,3 +1,4 @@
+import React from "react";
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import { classList } from 'common/utils/rzp-utils';
 

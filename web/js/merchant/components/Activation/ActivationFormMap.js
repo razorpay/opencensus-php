@@ -1,3 +1,4 @@
+import React from "react";
 /* eslint-disable */
 
 import Input from 'common/new-ui/Input';

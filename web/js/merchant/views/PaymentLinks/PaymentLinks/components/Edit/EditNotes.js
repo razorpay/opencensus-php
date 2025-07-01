@@ -1,3 +1,4 @@
+import React from "react";
 import { onChangeNotes } from 'common/new-ui/Input/PairList';
 import Input from 'common/new-ui/Input';
 import { AsyncBtn } from 'common/new-ui/Button';

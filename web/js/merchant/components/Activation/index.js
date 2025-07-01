@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { createRef } from 'react';
+import React, { createRef } from 'react';
 import { Link } from 'react-router-dom';
 import { withRouter } from 'common/deprecated/withRouter';
 import Form from 'common/new-ui/Form';

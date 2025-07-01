@@ -155,7 +155,7 @@ const HelpSection = ({
   const shouldOpenRaiseAQueryOnMount =
     history?.location?.pathname?.includes('/app-support') || isPartnerSupport;
 
-  const isDev = process.env.PUBLIC_ENV !== 'production';
+  const isDev = !['production', 'canary'].includes(process.env.PUBLIC_ENV);
 
   const splitzHost = isDev
     ? 'https://beta-api.stage.razorpay.in/v1'

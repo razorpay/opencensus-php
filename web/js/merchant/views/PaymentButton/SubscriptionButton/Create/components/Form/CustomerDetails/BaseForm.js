@@ -1,3 +1,4 @@
+import React from "react";
 import Alert from 'common/new-ui/Alert';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';

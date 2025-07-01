@@ -1,6 +1,6 @@
 import { isProductionEnv } from 'common/utils/rzp-utils';
 
-const isProd = isProductionEnv();
+const isProd = isProductionEnv() || window.APP_ENV === 'canary';
 
 export const INSIGHTS_SUPERSET_CONFIGS_KEYS = {
         'INSIGHTS_SUPERSET_URL': isProd ? 'https://superset-edge.razorpay.com' : 'https://superset.concierge.stage.razorpay.in' ,

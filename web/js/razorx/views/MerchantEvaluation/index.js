@@ -1,3 +1,4 @@
+import React from "react";
 import { notifyError } from 'razorx/components/Modal';
 import Form from 'razorx/components/ui/Form';
 import Field, { SelectField, SwitchField } from 'razorx/components/ui/Field';

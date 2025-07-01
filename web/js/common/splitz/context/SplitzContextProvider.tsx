@@ -93,7 +93,7 @@ const SpiltzServiceProviderComponent = ({
       const experimentsToEval = [...defaultExperimentsToEval, ...refDashboardExperimentsToEval].map(
         (experiment) => ({
           ...experiment,
-          requestData: getSplitzRequestData(experiment),
+          requestData: getSplitzRequestData?.(experiment),
         }),
       );
 

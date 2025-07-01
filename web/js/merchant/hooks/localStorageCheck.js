@@ -1,3 +1,4 @@
+import React from "react";
 import LocalStorageService from 'common/utils/localStorage';
 
 const useLocalStorageCheck = (key) => {

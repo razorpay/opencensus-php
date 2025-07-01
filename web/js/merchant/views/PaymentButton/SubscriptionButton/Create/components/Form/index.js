@@ -1,3 +1,4 @@
+import React from "react";
 import ButtonDetails from './ButtonDetails';
 import PlansDetails from './PlansDetails';
 import OneTimePaymentsDetails from './OneTimePaymentsDetails';

@@ -1,3 +1,4 @@
+import React from "react";
 import Popover, { PopoverBody, PopoverTitle } from 'common/ui/Popover';
 
 import { getCurrency } from 'common/ui/Amount';

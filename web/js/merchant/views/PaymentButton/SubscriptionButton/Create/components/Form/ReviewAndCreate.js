@@ -1,3 +1,4 @@
+import React from "react";
 import Button from 'common/new-ui/Button';
 import WidgetPreview from '../Preview/Types/WidgetPreview';
 import CustomerDetailsPreview from '../Preview/Types/CustomerDetailsPreview';

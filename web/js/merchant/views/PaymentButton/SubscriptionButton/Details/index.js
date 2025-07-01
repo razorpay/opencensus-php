@@ -1,3 +1,4 @@
+import React from "react";
 /* eslint-disable */
 import { connect } from 'react-redux';
 import { withRouter } from 'common/deprecated/withRouter';

@@ -77,6 +77,8 @@ export const generateEnvironmentKeysGetterScriptElement = () => {
     
         // Public API URL
         window.PUBLIC_API_URL = "${PUBLIC_API_URL}";
+
+        window.IS_WEBPACK_WITH_SWC = ${__IS_WEBPACK_WITH_SWC__};
           `,
       }}
     />

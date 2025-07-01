@@ -10,7 +10,7 @@ export const CONSUMER_APP_CONSTANTS = {
   // VERSION is passed via jobs in CI, keeping this the source of truth
   isCI: Boolean(VERSION),
   isModuleFederationV2: true,
-  isWebpackWithSwc: false,
+  isWebpackWithSwc: true,
 };
 
 export const envConfig = {

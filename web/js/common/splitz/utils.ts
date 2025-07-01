@@ -76,7 +76,7 @@ export const isExperimentEnabled = (experiment: ExperimentType): boolean => {
 };
 
 export const getSplitzRequestData = (experiment: VariantConfigArgs) => {
-  return experiment.requestData
+  return experiment?.requestData && typeof experiment.requestData === 'function'
     ? {
         ...experiment.requestData(requestDataArgs),
         ...defaultRequestData,

@@ -1,3 +1,4 @@
+import React from "react";
 import Input from 'common/new-ui/Input';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { getCustomNotesOptions } from 'merchant/views/PaymentLinks/PaymentLinks/Create/Fields';

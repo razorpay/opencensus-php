@@ -1,3 +1,4 @@
+import React from "react";
 /* eslint-disable */
 import { withRouter } from 'common/deprecated/withRouter';
 import { observer } from 'mobx-react';
