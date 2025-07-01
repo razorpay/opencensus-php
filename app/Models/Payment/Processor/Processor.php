@@ -2512,7 +2512,11 @@ class Processor
 
                     if ($card->isInternational()) {
                         try {
-                            $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
+                            $cardInput[Card\Entity::NUMBER]    = (new Card\CardVault)->getCardNumber($card->getVaultToken());;
+                            $cardInput[Card\Entity::NAME]      = $card->getName();
+                            $cardInput[Card\Entity::TOKENISED] = false;
+                            $cardInput[Card\Entity::EXPIRY_MONTH] = $card->getExpiryMonth();
+                            $cardInput[Card\Entity::EXPIRY_YEAR] = $card->getExpiryYear();
                         } catch (\Throwable $e) {
                             $this->trace->traceException(
                                 $e,
@@ -2525,10 +2529,6 @@ class Processor
                             );
                             return false;
                         }
-
-                        $cardInput[Card\Entity::NUMBER]    = $cardNumber;
-                        $cardInput[Card\Entity::NAME]      = $card->getName();
-                        $cardInput[Card\Entity::TOKENISED] = false;
                     }
                 }
 
