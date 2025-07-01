@@ -113,7 +113,10 @@ export const concurrentMiddlewareExecutor: MiddlewareType = (
         );
 
         if (failures.length > 0) {
-          const allFailureInfos = failures.map((f) => f.failureInfo);
+          // Ensure allFailureInfos is always a valid array with proper null filtering
+          const allFailureInfos = failures
+            .map((f) => f.failureInfo)
+            .filter((info) => info !== null && info !== undefined);
 
           // Log comprehensive failure information for debugging
           req.shellLogger.warn({
@@ -157,6 +160,7 @@ export const concurrentMiddlewareExecutor: MiddlewareType = (
             moduleName: '@concurrentMiddlewareExecutor',
             message: 'postConcurrentResHandler is not defined',
             statusCode: 500,
+            apiFailures: [],
           });
         }
 
@@ -179,6 +183,7 @@ export const concurrentMiddlewareExecutor: MiddlewareType = (
           message: `Unexpected middleware execution error: ${error.message}`,
           statusCode: 500,
           context: { originalError: error },
+          apiFailures: [],
         });
 
         return next(fallbackError);

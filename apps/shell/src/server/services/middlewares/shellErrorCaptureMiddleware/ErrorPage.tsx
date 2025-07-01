@@ -4,6 +4,8 @@ import { SHELL_ERROR_TRACE } from '@apps/shell/src/server/utils/error-utils';
 import { STAGE } from '@apps/shell/src/env';
 import type { Request, Response } from 'express';
 
+const IS_DEBUG_MODE = STAGE === 'development' || STAGE === 'devstack';
+
 // Essential colors
 const COLORS = {
   PRIMARY: '#58666e',
@@ -333,34 +335,36 @@ const ApiFailuresSection: React.FC<{ apiFailures: any[] }> = ({ apiFailures }) =
 const DeveloperDebugSection = ({ error, path }: { error: any; path?: string }) => {
   const apiFailures = error?.apiFailures;
 
-  // Only show debug info in development mode
-  if (STAGE !== 'development') {
-    return null;
-  }
-
-  return (
-    <div
-      style={{
-        marginTop: SPACING.XL,
-        maxWidth: '1200px',
-        width: '100%',
-        ...createCard('0px'),
-        overflow: 'hidden',
-        backgroundColor: COLORS.WHITE,
-      }}
-    >
-      <DebugConsoleHeader />
-
+  // Only show debug info in development and devstack modes
+  if (IS_DEBUG_MODE) {
+    return (
       <div
         style={{
-          padding: SPACING.LG,
+          marginTop: SPACING.XL,
+          maxWidth: '1200px',
+          width: '100%',
+          ...createCard('0px'),
+          overflow: 'hidden',
           backgroundColor: COLORS.WHITE,
         }}
       >
-        {apiFailures && apiFailures.length > 0 && <ApiFailuresSection apiFailures={apiFailures} />}
+        <DebugConsoleHeader />
+
+        <div
+          style={{
+            padding: SPACING.LG,
+            backgroundColor: COLORS.WHITE,
+          }}
+        >
+          {apiFailures && apiFailures.length > 0 && (
+            <ApiFailuresSection apiFailures={apiFailures} />
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  } else {
+    return null;
+  }
 };
 
 const DevelopmentErrorPage = ({
@@ -479,7 +483,11 @@ const BaseHTML = ({
         <meta name="author" content="Razorpay" />
         <link rel="icon" type="image/png" href="https://razorpay.com/favicon.png" />
         <title>Oops! | Razorpay</title>
-        <script dangerouslySetInnerHTML={{ __html: generateConsoleScript(error, traceId, path) }} />
+        {IS_DEBUG_MODE && (
+          <script
+            dangerouslySetInnerHTML={{ __html: generateConsoleScript(error, traceId, path) }}
+          />
+        )}
       </head>
       <body
         style={{
@@ -612,7 +620,7 @@ const ErrorPage = ({ error, traceId, path }: any) => {
   // Attach req id
   const { info, helpText, abstractedCode } = errorMessages?.[statusCode] || errorMessages.default;
 
-  if (STAGE === 'development') {
+  if (IS_DEBUG_MODE) {
     return (
       <DevelopmentErrorPage
         statusCode={statusCode}
