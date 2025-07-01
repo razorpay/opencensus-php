@@ -178,6 +178,7 @@ class Core extends Base\Core
 
             $requestHeaders = [
                 LedgerService::LEDGER_TENANT_HEADER    => self::PG,
+                LedgerService::LEDGER_COUNTRY_HEADER   => $merchant->getCountry(),
                 LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()->toString()
             ];
             $ledgerService = $this->app['ledger'];
@@ -315,6 +316,7 @@ class Core extends Base\Core
 
             $requestHeaders = [
                 LedgerService::LEDGER_TENANT_HEADER => self::PG,
+                LedgerService::LEDGER_COUNTRY_HEADER => $merchant->getCountry(),
                 LedgerService::IDEMPOTENCY_KEY_HEADER => Uuid::uuid1()->toString()
             ];
 
@@ -371,6 +373,7 @@ class Core extends Base\Core
 
             $requestHeaders = [
                 LedgerService::LEDGER_TENANT_HEADER => self::PG,
+                LedgerService::LEDGER_COUNTRY_HEADER => $merchant->getCountry(),
                 LedgerService::IDEMPOTENCY_KEY_HEADER => Uuid::uuid1()->toString()
             ];
 
@@ -417,6 +420,7 @@ class Core extends Base\Core
         try {
             $requestHeaders = [
                 LedgerService::LEDGER_TENANT_HEADER => self::PG,
+                LedgerService::LEDGER_COUNTRY_HEADER => $merchant->getCountry(),
                 LedgerService::IDEMPOTENCY_KEY_HEADER => Uuid::uuid1()->toString()
             ];
 
@@ -1077,6 +1081,7 @@ class Core extends Base\Core
 
             $requestHeaders = [
                 LedgerService::LEDGER_TENANT_HEADER    => self::PG,
+                LedgerService::LEDGER_COUNTRY_HEADER   => $merchant->getCountry(),
                 LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()->toString()
             ];
             $ledgerService = $this->app['ledger'];
