@@ -295,7 +295,8 @@ class Base
 
     protected function getMerchantEmail(): string
     {
-        return $this->auth->getUser()->getEmail() ?? '';
+        //handling null case for getUser() to avoid fatal error
+        return $this->auth->getUser()?->getEmail() ?? '';
     }
 
     /**
