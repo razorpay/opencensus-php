@@ -156,7 +156,6 @@ module.exports = withDashboardCore({
         },
       ].filter(Boolean),
     };
-
     return config;
   },
 });

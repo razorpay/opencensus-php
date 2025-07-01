@@ -150,7 +150,8 @@ class ApiRequestAny
         'dcs',
         'admin/offers',
         'admin/usage-limits',
-        'idp'
+        'idp',
+        'cross_border_import'
     ];
 
     /**
