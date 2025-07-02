@@ -850,12 +850,18 @@ class Core extends QrCode\Core
                 $tr = substr($tr, 3); // Remove first 3 characters
             }
 
-            if (str_ends_with($tr, QrCode\Constants::QR_CODE_V2_TR_SUFFIX))
+            [$qrCode, $mode] = $this->app['repo']->qr_code->returnLiveOrTestModeQrCodeByMerchantReference($tr);
+
+            if(empty($qrCode) === true)
             {
-                $tr = mb_substr($tr, 0, -mb_strlen(QrCode\Constants::QR_CODE_V2_TR_SUFFIX));
+                if (str_ends_with($tr, QrCode\Constants::QR_CODE_V2_TR_SUFFIX))
+                {
+                    $tr = mb_substr($tr, 0, -mb_strlen(QrCode\Constants::QR_CODE_V2_TR_SUFFIX));
+                }
+
+                [$qrCode, $mode] = $this->app['repo']->qr_code->returnLiveOrTestModeQrCodeByMerchantReference($tr);
             }
 
-            [$qrCode, $mode] = $this->app['repo']->qr_code->returnLiveOrTestModeQrCodeByMerchantReference($tr);
         }
         else if(isset($input['unmap_identifiers']) and !empty($input['unmap_identifiers']))
         {
