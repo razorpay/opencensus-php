@@ -506,7 +506,7 @@ class Core extends Base\Core
         try
         {
             // Capture source request ID mapping for payouts
-            $this->captureSourceRequestId($payout);
+            $this->captureSourceRequestId($payout, $merchant->getId());
         }
         catch (\Throwable $ex)
         {
@@ -12834,16 +12834,16 @@ class Core extends Base\Core
      * @param Entity $payout Payout entity to get merchant ID from
      * @return bool True if enabled, false otherwise
      */
-    protected function isSourceRequestIdMappingEnabled(Entity $payout): bool
+    protected function isSourceRequestIdMappingEnabled(Entity $payout, string $merchantID): bool
     {
 
         $eventExperimentName = Merchant\RazorxTreatment::PAYOUTS_CAPTURE_SOURCE_REQUEST_ID;
         $eventExperimentIdConfigKey = 'app.'.$eventExperimentName.'_id';
 
         $properties = [
-            'id'            => $payout->merchant->getId(),
+            'id'            => $merchantID,
             'experiment_id' => $this->app['config']->get($eventExperimentIdConfigKey),
-            'request_data' => json_encode(['merchant_id' => $payout->merchant->getId()])
+            'request_data' => json_encode(['merchant_id' => $merchantID])
         ];
 
         if ($this->isSplitzExperimentEnable($properties,Merchant\RazorxTreatment::VARIANT_ENABLE, TraceCode::PAYOUT_CAPTURE_REQUEST_ID_SPLITZ_ERROR))
@@ -12859,9 +12859,9 @@ class Core extends Base\Core
      *
      * @param Entity $payout Payout entity to associate with the source request ID
      */
-    protected function captureSourceRequestId(Entity $payout): void
+    protected function captureSourceRequestId(Entity $payout, string $merchantID): void
     {
-        if (!$this->isSourceRequestIdMappingEnabled($payout))
+        if (!$this->isSourceRequestIdMappingEnabled($payout, $merchantID))
         {
             return;
         }
