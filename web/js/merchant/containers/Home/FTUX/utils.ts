@@ -61,6 +61,10 @@ export const isEligibleForFtuxV2 = ({ user, abExperiments }: FTUXHomepageEnabled
   const hasAccessToFTUX =
     user.isTransacted === false || (isTransactionTimelineEnabled && !!user.show_ftux_dashboard);
 
+  const isIssuingDashboardEnabled = user.isIssuingDashboardEnabled;
+  const isIssuingGcmsEnabled = user.isIssuingGcmsEnabled;
+  const isWalletMerchant = isIssuingDashboardEnabled || isIssuingGcmsEnabled;
+
   // Check if user is eligible for FTUX V2
   return Boolean(
     user.isOrgRZP &&
@@ -69,6 +73,7 @@ export const isEligibleForFtuxV2 = ({ user, abExperiments }: FTUXHomepageEnabled
       !user.isSubMerchant &&
       !user?.isPartner?.() &&
       !isPOSMerchant &&
+      !isWalletMerchant &&
       hasAccessToFTUX,
   );
 };
