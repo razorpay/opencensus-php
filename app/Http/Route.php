@@ -17258,7 +17258,8 @@ class Route
             'org_admin_update',
             'org_admin_get',
             'org_admin_get_multiple',
-            'admin_authentication'
+            'admin_authentication',
+            'merchant_upload_miq_admin'
         ],
 
         'cron' => [
