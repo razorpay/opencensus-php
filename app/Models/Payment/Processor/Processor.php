@@ -2333,12 +2333,21 @@ class Processor
                 if ((empty($order) === false) and
                     ($order->hasOffers() === true && $order->isOfferForced() === true))
                 {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "offers",
-                        'merchant_id' => $merchant->getId(),
-                        'order_id' => $order->getId(),
-                    ]);
-                    return false;
+                    $divertForceOfferToCPSRearch = (new Payment\Service())->getSplitzExpResponse($merchant->getId(), 'app.cps_force_offers_rearch');
+                    if ($divertForceOfferToCPSRearch === 'switch_on') {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_SUCCESS_REASON, [
+                            'reason' => "force_offer_routed_via_splitz_to_rearch",
+                            'merchant_id' => $merchant->getId(),
+                            'order_id' => $order->getId(),
+                        ]);
+                    } else {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => "force_offer",
+                            'merchant_id' => $merchant->getId(),
+                            'order_id' => $order->getId(),
+                        ]);
+                        return false;
+                    }
                 }
 
                 if (empty($order) === false and $order->hasOffers() === true) {

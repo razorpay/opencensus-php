@@ -1506,6 +1506,8 @@ return array(
 
     'cps_offers_rearch' => env('CPS_OFFERS_REARCH'),
 
+    'cps_force_offers_rearch' => env('CPS_FORCE_OFFERS_REARCH'),
+
     'cps-pl-offers-ramp-exp' => env('CPS_PL_OFFERS_RAMP_EXP'),
 
     'emandate_pod_termination_reprocess_payment' => env('EMANDATE_POD_TERMINATION_REPROCESS_PAYMENT'),
