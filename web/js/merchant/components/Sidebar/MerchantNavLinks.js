@@ -129,7 +129,7 @@ function MerchantNavLinks(props) {
           additionalCondition={(currentUser) =>
             currentUser.isAllowedView('settlements') &&
             currentUser.hideForNIASupportRole &&
-            !isConfigTagEnabled('settlements.settlements')
+            !isConfigTagEnabled('settlements.settlement')
           }
         />
         <MainNavLink

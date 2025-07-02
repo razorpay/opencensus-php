@@ -19,7 +19,7 @@ const Developers = ({ location: { pathname } }) => {
       <header>
         <ShowWhen
           additionalCondition={(user) =>
-            user.isDeveloperConsoleEnabled && !isConfigTagEnabled('developers_console.api')
+            user.isDeveloperConsoleEnabled && !isConfigTagEnabled('developers.api_section')
           }
         >
           <NavLink to="/developers/apis">API</NavLink>
@@ -27,7 +27,7 @@ const Developers = ({ location: { pathname } }) => {
         <ShowWhen
           additionalCondition={(user) =>
             user.isDeveloperConsoleWebhooksTabEnabled &&
-            !isConfigTagEnabled('developers_console.webhooks')
+            !isConfigTagEnabled('developers.webhooks_section')
           }
         >
           <NavLink to="/developers/webhooks">Webhooks</NavLink>
@@ -39,7 +39,7 @@ const Developers = ({ location: { pathname } }) => {
             path="apis/*"
             element={
               <RouteGuard
-                additionalCondition={(user) => user.isDeveloperConsoleEnabled && !isConfigTagEnabled('developers_console.api')}
+                additionalCondition={(user) => user.isDeveloperConsoleEnabled && !isConfigTagEnabled('developers.api_section')}
                 defaultPath="/developers/webhooks"
               >
                 <Api />
@@ -52,7 +52,7 @@ const Developers = ({ location: { pathname } }) => {
               <RouteGuard
                 additionalCondition={(user) =>
                   user.isDeveloperConsoleWebhooksTabEnabled &&
-                  !isConfigTagEnabled('developers_console.webhooks')
+                  !isConfigTagEnabled('developers.webhooks_section')
                 }
               >
                 <Webhooks />
