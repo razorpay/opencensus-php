@@ -20,14 +20,35 @@ export const optimizedUserFetchMiddleware: OptimizedUserFetchMiddleware =
     const dashboardBackendBaseUrl = getPhpBaseUrl(req);
     let dashboardBackendRequestId: any;
 
+    const isUserNonCachedCall = req.cookies?.['user_cache_invalidate'] === '1';
+
+    const userOptimizedUrl = `${dashboardBackendBaseUrl}${
+      isUserNonCachedCall
+        ? SHELL_EXTERNAL_API_ROUTES.NON_CACHED_USER_OPTIMIZED
+        : SHELL_EXTERNAL_API_ROUTES.USER_OPTIMIZED
+    }`;
+
+    /**
+     * Cookie `user_cache_invalidate=1` bypasses cache by appending `skip_cached_data=1` on /user route
+     * to fetch fresh user data.
+     */
+
+    if (isUserNonCachedCall) {
+      req.shellLogger.info({
+        message: `Non-cached user data fetch initiated.`,
+        moduleName: '@optimizedUserFetchMiddleware',
+        context: {
+          isUserNonCachedCall,
+          path: SHELL_EXTERNAL_API_ROUTES.NON_CACHED_USER_OPTIMIZED,
+        },
+      });
+    }
+
     // &payouts=0&credits=0
-    return await shellFetch(
-      `${dashboardBackendBaseUrl}${SHELL_EXTERNAL_API_ROUTES.USER_OPTIMIZED}`,
-      {
-        method: 'GET',
-        headers: getMandatoryHeaders(req) as unknown as HeadersInit,
-      },
-    )
+    return await shellFetch(userOptimizedUrl, {
+      method: 'GET',
+      headers: getMandatoryHeaders(req) as unknown as HeadersInit,
+    })
       .then((response) => {
         const setCookies = response.headers.raw()['set-cookie'];
         dashboardBackendRequestId = response.headers.get('x-request-id');

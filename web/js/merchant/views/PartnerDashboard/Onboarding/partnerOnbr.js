@@ -14,7 +14,7 @@ import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { track } from './ga';
 import rTracking from 'react-tracking';
-import { getCookie } from 'common/utils/cookies';
+import { getCookie, setCookie } from '@libs/shared-utils';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { compose } from 'redux';
@@ -138,6 +138,20 @@ class BaseScreen extends React.Component {
         if (url === 'merchant/partner_type') {
           this.trackSignupSuccessEvents();
         }
+
+        /**
+         *
+         * This cookie is added to ensure that the M2P flow is not cached
+         *
+         * We get cached data from the shell server for this route /user:
+         * Having the cookie ensures that we don't get cached data by adding a query param skip_cached_data=1
+         *
+         * apps/shell/src/server/services/middlewares/optimizedUserFetch.ts
+         *
+         * This cookie is set to expire in 60 seconds to ensure it's only used for this M2P flow reload
+         *
+         */
+        setCookie('user_cache_invalidate', '1', 60);
 
         // reloading the page because window object was not getting updated
         window.location.reload();
