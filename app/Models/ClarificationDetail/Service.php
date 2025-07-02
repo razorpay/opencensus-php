@@ -170,7 +170,30 @@ class Service extends Base\Service
 
         if ($merchant->isSignupCampaignAnyOf(Detail\Constants::EASY_ELIGIBLE_SIGNUP_CAMPAIGNS) === false)
         {
-            return false;
+            $posActivationStatus = "";
+            // Check POS activation status - if not needs_clarification, return false
+            // This check is introduced to cover merchants whose signup_campaign is not present for pos/omni merchants
+            try
+            {
+                $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
+
+                if ($merchantDetails !== null)
+                {
+                    $posActivationStatus = $this->merchantDetailCore->fetchMerchantPosActivationStatus($merchantDetails);
+                }
+            }
+            catch (\Throwable $exception)
+            {
+                // If POS activation status fetch fails, continue with the flow
+                $this->trace->error(TraceCode::IS_ELIGIBLE_FOR_REVAMP_NC_FETCH_POS_ACTIVATION_STATUS_ERROR, [
+                    'merchant_id'   => $merchantId,
+                    'error_message' => $exception->getMessage(),
+                    'context'       => 'isEligibleForRevampNC_POS_status_check'
+                ]);
+            }
+            if ($posActivationStatus !== Status::NEEDS_CLARIFICATION) {
+                return false;
+            }
         }
 
         $isExptEnabled = $this->merchantCore->isRazorxExperimentEnable($merchantId, Merchant\RazorxTreatment::NC_REVAMP);

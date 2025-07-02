@@ -645,6 +645,67 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testNCRevampEligibilityForSignupCampaignNilAndPosStatusNotNeedsClarification()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->mockAllSplitzTreatment();
+        $MerchantOnboardingProxyControllerMock = \Mockery::mock(MerchantOnboardingProxyController::class)->makePartial();
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_pgos_fetch_activation_status';
+            })->andReturn(["pos_activation_status"=>'under_review']);
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => NULL,
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testNCRevampEligibilityForSignupCampaignNilAndPosStatusNeedsClarification()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->mockAllSplitzTreatment();
+
+        $MerchantOnboardingProxyControllerMock = \Mockery::mock(MerchantOnboardingProxyController::class)->makePartial();
+        $MerchantOnboardingProxyControllerMock->shouldReceive('handlePGOSProxyRequests')
+            ->withArgs(function ($operation, $request, $additionalArgs) {
+                return $operation === 'merchant_pgos_fetch_activation_status';
+            })->andReturn(["pos_activation_status"=>'needs_clarification']);
+        $this->app->instance('MerchantOnboardingProxyController', $MerchantOnboardingProxyControllerMock);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => NULL,
+        ]);
+
+        Config::set('pgos.proxy.request.mock', true);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
     public function testAddClarificationReasonsForPhantomOnboarding()
     {
         $this->enableRazorXTreatmentForRazorX();
