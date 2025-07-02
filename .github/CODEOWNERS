@@ -370,5 +370,7 @@ app/Models/Merchant/Detail/Transformers                  @razorpay/pg-onboarding
 app/Models/Payment/Entity.php                                @razorpay/techpaymentscore
 
 
-app/Models/Merchant/Methods/                             @razorpay/TechOnlinePaymentsOnboarding
+app/Models/Merchant/Methods/                                @razorpay/TechOnlinePaymentsOnboarding
 
+
+app/Models/Admin/Admin/Service.php                          @razorpay/onesupport-dev

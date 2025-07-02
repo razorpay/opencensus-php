@@ -2,7 +2,6 @@
 
 **[Documentation][docs]**
 
-
 [docs]: https://drive.google.com/file/d/0B1nJ2ASYCHZuZ0d5d3dQVVRzb2c/view?usp=sharing
 ## Moto Transactions
 
