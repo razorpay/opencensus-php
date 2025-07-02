@@ -84,7 +84,7 @@ class Validator extends Base\Validator
         'wallet'                        => 'required_if:method,wallet|custom',
         'bank_transfer'                 => 'sometimes_if:method,bank_transfer|array',
         'bank_transfer.type'            => 'sometimes_if:method,bank_transfer|string|in:ach,swift,sepa,fps',
-        'emi_duration'                  => 'required_if:method,emi|integer|in:2,3,6,9,12,18,24,30,36,48',
+        'emi_duration'                  => 'required_if:method,emi|integer|in:2,3,4,6,9,12,18,24,30,36,48',
         'description'                   => 'sometimes|nullable|string|max:255|utf8',
         'email'                         => 'sometimes|nullable|email',
         'upi.vpa'                       => 'sometimes_if:method,upi|filled|string',
