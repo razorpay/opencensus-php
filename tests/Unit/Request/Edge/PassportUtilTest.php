@@ -24,7 +24,7 @@ class PassportUtilTest extends TestCase
     {
         $mock = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['isPartnerAuth', 'isPartnerAuthAllowed', 'getAccountId', 'setPartnerMerchantId', 'setOAuthApplicationId', 'setPartnerAuth', 'setMerchant'])
+            ->onlyMethods(['isPartnerAuth', 'isPartnerAuthAllowed', 'getAccountId', 'setPartnerMerchantId', 'setOAuthApplicationId', 'setPartnerAuth', 'setMerchant'])
             ->getMock();
         $this->app->instance('basicauth', $mock);
 
@@ -35,7 +35,7 @@ class PassportUtilTest extends TestCase
     {
         $mock = $this->getMockBuilder(Route::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getRouteType'])
+            ->onlyMethods(['getRouteType'])
             ->getMock();
         $this->app->instance('api.route', $mock);
 

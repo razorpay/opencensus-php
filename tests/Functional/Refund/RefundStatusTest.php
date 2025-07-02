@@ -514,7 +514,7 @@ class RefundStatusTest extends TestCase
 
             $scroogeMock = $this->getMockBuilder(Scrooge::class)
                                 ->setConstructorArgs([$this->app])
-                                ->setMethods(['getPublicRefund'])
+                                ->onlyMethods(['getPublicRefund'])
                                 ->getMock();
 
             $this->app->instance('scrooge', $scroogeMock);
@@ -1464,7 +1464,7 @@ class RefundStatusTest extends TestCase
     {
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['getPublicRefund'])
+                            ->onlyMethods(['getPublicRefund'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);

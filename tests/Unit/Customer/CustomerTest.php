@@ -10,10 +10,11 @@ use RZP\Trace\TraceCode;
 
 class CustomerTest extends TestCase
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
+//    public function __construct()
+//    {
+//        parent::__construct("CustomerTest");
+////        parent::__construct("testRequestInvalidJson");
+//    }
 
     protected function setUp(): void
     {

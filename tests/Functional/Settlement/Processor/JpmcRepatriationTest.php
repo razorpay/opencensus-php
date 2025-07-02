@@ -107,7 +107,7 @@ class JpmcRepatriationTest extends TestCase
 //        $ufhService->shouldReceive('uploadFileAndGetResponse')->times(1);
 //
 //        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-//                    ->setMethods(['pushIdentifyAndTrackEvent'])
+//                    ->onlyMethods(['pushIdentifyAndTrackEvent'])
 //                    ->getMock();
 //
 //        $this->app->instance('segment-analytics', $segmentMock);

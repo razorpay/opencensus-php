@@ -92,8 +92,28 @@ class SaveApiHelperTest extends TestCase
 
         $saveApiHelperMock = $this->getMockedSaveApiHelper(['isShadowOrReverseShadowOnForOperation']);
         $saveApiHelperMock->saveApiAsvClient = $saveApiAsvClientMock;
-        $saveApiHelperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
-            ->withConsecutive(['10000000000000', 'shadow', 'write'], ['10000000000000', 'reverse_shadow', 'write'])->willReturnOnConsecutiveCalls(false, true);
+//        $saveApiHelperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
+//            ->withConsecutive(['10000000000000', 'shadow', 'write'], ['10000000000000', 'reverse_shadow', 'write'])->willReturnOnConsecutiveCalls(false, true);
+
+        $saveApiHelperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args) use($merchantId){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', 'shadow', 'write'], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', 'reverse_shadow', 'write'], $args);
+                    return true;
+                }
+
+                return null;
+            });
+
 
         $saveApiHelperMock->saveOrFail($merchantId, $entityName, $childEntityName, $entity);
         #T3 Ends
@@ -107,8 +127,27 @@ class SaveApiHelperTest extends TestCase
 
         $saveApiHelperMock = $this->getMockedSaveApiHelper(['isShadowOrReverseShadowOnForOperation']);
         $saveApiHelperMock->saveApiAsvClient = $saveApiAsvClientMock;
-        $saveApiHelperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
-            ->withConsecutive(['10000000000000', 'shadow', 'write'], ['10000000000000', 'reverse_shadow', 'write'])->willReturnOnConsecutiveCalls(false, true);
+//        $saveApiHelperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
+//            ->withConsecutive(['10000000000000', 'shadow', 'write'], ['10000000000000', 'reverse_shadow', 'write'])->willReturnOnConsecutiveCalls(false, true);
+
+        $saveApiHelperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args) use($merchantId){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', 'shadow', 'write'], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', 'reverse_shadow', 'write'], $args);
+                    return true;
+                }
+
+                return null;
+            });
 
         try {
             $saveApiHelperMock->saveOrFail($merchantId, $entityName, $childEntityName, $entity);

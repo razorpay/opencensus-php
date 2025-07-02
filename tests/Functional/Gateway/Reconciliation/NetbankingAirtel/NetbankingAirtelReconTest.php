@@ -335,7 +335,7 @@ class NetbankingAirtelReconTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getRefundsFromPaymentIdAndGatewayId'])
+            ->onlyMethods(['getRefundsFromPaymentIdAndGatewayId'])
             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);

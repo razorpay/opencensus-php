@@ -61,7 +61,7 @@ class CommissionCreateTest extends TestCase
         $this->mockPartnershipsServiceTreatment([], [], 'pushMetricForPartnershipsSwitchOver');
 
     }
-    
+
     private function enableVirtualAccountQrcodeAndMethods(string $merchantId, string $appId) {
         $this->fixtures->merchant->enableMethod($merchantId, 'bank_transfer');
         $this->fixtures->merchant->enableMethod($merchantId, 'upi');
@@ -2804,7 +2804,7 @@ class CommissionCreateTest extends TestCase
         $testData['request']['url'] = '/payments/'.$response['razorpay_payment_id'].'/capture';
 
         $data = $this->startTest($testData);
-        
+
         $this->assertEquals(850, $data['fee']);
 
         list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::EXPLICIT);

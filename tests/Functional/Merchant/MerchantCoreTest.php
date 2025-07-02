@@ -122,7 +122,7 @@ class MerchantCoreTest extends OAuthTestCase
 
         $this->expectException(LogicException::class);
 
-        $this->expectErrorMessage("Data is not synced on Live and Test DB");
+        $this->expectExceptionMessage("Data is not synced on Live and Test DB");
 
         $this->core->migrateAggregatorToResellerPartner($merchantId);
     }

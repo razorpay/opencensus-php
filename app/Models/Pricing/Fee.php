@@ -68,8 +68,8 @@ class Fee extends Base\Core
     ];
 
     const OAUTH_CUSTOM_PRICING_FEATURE_BY_ENTITY = [
-        EntityConstants::PAYMENT => 'pp_oauth_pricing_payment', 
-        EntityConstants::TRANSFER => 'pp_oauth_pricing_transfer', 
+        EntityConstants::PAYMENT => 'pp_oauth_pricing_payment',
+        EntityConstants::TRANSFER => 'pp_oauth_pricing_transfer',
     ];
 
     public function __construct()

@@ -135,7 +135,7 @@ class ThrottlerTest extends TestCase
         $throttlerMock = $this->createThrottlerMock(['attemptThrottle', 'initRedisConnection']);
         $throttlerMock->expects($this->once())
                       ->method('initRedisConnection')
-                      ->will($this->throwException(new \Exception));
+                      ->willThrowException(new \Exception);
         $throttlerMock->expects($this->never())
                       ->method('attemptThrottle');
 
@@ -154,7 +154,7 @@ class ThrottlerTest extends TestCase
         $throttlerMock = $this->createThrottlerMock(['blockIfApplicable', 'initRedisConnection']);
         $throttlerMock->expects($this->once())
                       ->method('initRedisConnection')
-                      ->will($this->throwException(new \Exception));
+                      ->willThrowException(new \Exception);
         $throttlerMock->expects($this->never())
                       ->method('blockIfApplicable');
 
@@ -202,7 +202,7 @@ class ThrottlerTest extends TestCase
             $throttlerMock = $this->createThrottlerMock(['loadSettingsFromRedis']);
             $throttlerMock->expects($this->exactly(count($settings)))
                           ->method('loadSettingsFromRedis')
-                          ->will($this->onConsecutiveCalls(...array_values($settings)));
+                          ->willReturn(...array_values($settings));
 
             $this->assertEquals($expected['id_settings_key'], $throttlerMock->getIdSettingsKey());
             $this->assertEquals($expected['throttle_key'], $throttlerMock->getThrottleKey());

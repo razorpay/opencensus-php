@@ -117,6 +117,7 @@
             <exclude>./tests/Functional/Customer/CustomerTokensInternalTest.php</exclude>
             <exclude>./tests/Functional/Customer/TruecallerTest.php</exclude>
             <directory>./tests/Functional/Invitation/</directory>
+            <file>./tests/Unit/Models/Base/UniqueIdEntityTest.php</file>
             <file>./tests/Unit/Models/Merchant/Methods/PaymentMethodsServiceTest.php</file>
             <file>./tests/Unit/Models/Merchant/Methods/RepositoryTest.php</file>
 <!--            <directory>./tests/Functional/AutoGenerateApiDocsTest/</directory>-->

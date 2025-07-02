@@ -19,19 +19,19 @@ class ServiceTest extends TestCase
 
         $this->service = $this->getMockBuilder(Elfin\Service::class)
                             ->setConstructorArgs([$config, $trace])
-                            ->setMethods(['createDriver'])
+                            ->onlyMethods(['createDriver'])
                             ->getMock();
 
         $gimliConfig = $config['applications.elfin.gimli'];
         $this->gimli = $this->getMockBuilder(Elfin\Impl\Gimli::class)
                             ->setConstructorArgs([$gimliConfig])
-                            ->setMethods(['makeRequestAndValidateHeader'])
+                            ->onlyMethods(['makeRequestAndValidateHeader'])
                             ->getMock();
 
         $bitlyConfig = $config['applications.elfin.bitly'];
         $this->bitly = $this->getMockBuilder(Elfin\Impl\Bitly::class)
                             ->setConstructorArgs([$bitlyConfig])
-                            ->setMethods(['makeRequestAndValidateHeader'])
+                            ->onlyMethods(['makeRequestAndValidateHeader'])
                             ->getMock();
 
         $this->testUrl = 'https://www.duckduckgo.com';
@@ -93,7 +93,7 @@ class ServiceTest extends TestCase
 
         $this->gimli->expects($this->once())
                     ->method('makeRequestAndValidateHeader')
-                    ->will($this->throwException($exception));
+                    ->willThrowException($exception);
 
         $this->bitly->expects($this->once())
                     ->method('makeRequestAndValidateHeader')
@@ -168,11 +168,11 @@ class ServiceTest extends TestCase
 
         $this->gimli->expects($this->once())
                             ->method('makeRequestAndValidateHeader')
-                            ->will($this->throwException($exception));
+                            ->willThrowException($exception);
 
         $this->bitly->expects($this->once())
                             ->method('makeRequestAndValidateHeader')
-                            ->will($this->throwException($exception));
+                            ->willThrowException($exception);
 
         $shortUrl = $this->service->shorten($this->testUrl, [], true);
     }
@@ -202,11 +202,11 @@ class ServiceTest extends TestCase
 
         $this->gimli->expects($this->once())
                             ->method('makeRequestAndValidateHeader')
-                            ->will($this->throwException($exception));
+                            ->willThrowException($exception);
 
         $this->bitly->expects($this->once())
                             ->method('makeRequestAndValidateHeader')
-                            ->will($this->throwException($exception));
+                            ->willThrowException($exception);
 
         $shortUrl = $this->service->shorten($this->testUrl);
 

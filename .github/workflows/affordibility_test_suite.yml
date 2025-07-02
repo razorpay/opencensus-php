@@ -19,7 +19,7 @@ jobs:
       - api-public
       - X64
     container:
-      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
+      image: c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.2-api-web-v4
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -41,6 +41,7 @@ jobs:
         run: ci-assets/prepare_test.sh
         env:
           GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+
       - name: UT_affordibility_test_suite
         run: ci-assets/affordibility_test_suite.sh
         env:

@@ -171,7 +171,7 @@ class MerchantOneCcConfigTest extends TestCase
     private function setUpShippingServiceMock() {
         $shippingServiceMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['create'])
+            ->onlyMethods(['create'])
             ->getMock();
 
         $this->app->instance('shipping_provider_service', $shippingServiceMock);

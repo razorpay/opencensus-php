@@ -311,14 +311,14 @@ class MerchantXIpFilterNewTest extends TestCase
 
 //    protected function mockRedisResponse()
 //    {
-//        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['smembers'])
+//        $redisMock = $this->getMockBuilder(Redis::class)->onlyMethods(['smembers'])
 //                          ->getMock();
 //
 //        Redis::shouldReceive('connection')
 //               ->andReturn($redisMock);
 //
 //        $redisMock->method('smembers')
-//                  ->will($this->throwException(new Exception('failed to getv value from redis')));
+//                  ->willThrowException(new Exception('failed to getv value from redis'));
 //
 //    }
 

@@ -1,8 +1,8 @@
 <?php
 namespace RZP\Tests\Unit\Models\Payment;
 
-use Carbon\Carbon;
 use Mockery;
+use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Http\Middleware\AdminAccess;
 use RZP\Models\Customer\Repository;

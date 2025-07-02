@@ -52,7 +52,7 @@ class ConfigTest extends TestCase
             ->getMock();
         $res = $this->getMockBuilder('\Psr\Http\Message\ResponseInterface')
         ->onlyMethods(['getStatusCode', 'getBody'])
-        ->getMockForAbstractClass();
+        ->getMock();
         $res->expects($this->exactly(1))->method('getStatusCode')->willReturn(200);
         $res->expects($this->exactly(1))->method('getBody')->willReturn(json_encode(['errors' => null]));
         $integrationService->expects($this->exactly(1))->method('makeMultipartRequest')->willReturn($res);

@@ -5,7 +5,7 @@ namespace RZP\Models\RawAddress;
 use Carbon\Carbon;
 use RZP\Constants\IndianStates;
 use RZP\Trace\TraceCode;
-use RZP\Models\{Base,Merchant};
+use RZP\Models\{Base, Base\UniqueIdEntity as UniqueIdEntity, Merchant};
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
@@ -175,7 +175,7 @@ class Service extends Base\Service
     {
         foreach ($input as $key => $value)
         {
-            if(strlen(stringify($value)) != strlen(utf8_decode(stringify($value))))
+            if(strlen(stringify($value)) != strlen(UniqueIdEntity::encodeData(stringify($value), 'ISO-8859-1', 'UTF-8')))
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
             }

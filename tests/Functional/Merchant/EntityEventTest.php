@@ -9,11 +9,12 @@ class EntityEventTest extends TestCase
 {
     protected $testData;
 
-    public function __construct()
+    protected function setUp():void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/EntityEventTestData.php';
 
-        parent::__construct();
+//        parent::__construct("EntityEventTest");
+//        parent::__construct("testEntityEvent");
     }
 
     public function testEntityEvent()

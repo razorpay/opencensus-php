@@ -841,7 +841,7 @@ class PassportAuthTest extends TestCase
     {
         $mockBA = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['deviceAuth'])
+            ->onlyMethods(['deviceAuth'])
             ->getMock();
         $this->app->instance('basicauth', $mockBA);
 

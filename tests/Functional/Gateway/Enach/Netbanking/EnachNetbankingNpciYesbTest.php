@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Enach\Netbanking;
 use Mail;
 use Excel;
 use Queue;
-Use Carbon\Carbon;
+use Carbon\Carbon;
 
 use RZP\Models\Feature;
 use RZP\Models\Payment;
@@ -1094,10 +1094,10 @@ class EnachNetbankingNpciYesbTest extends TestCase
     {
         $beamServiceMock = $this->getMockBuilder(BeamService::class)
                                 ->setConstructorArgs([$this->app])
-                                ->setMethods(['beamPush'])
+                                ->onlyMethods(['beamPush'])
                                 ->getMock();
 
-        $beamServiceMock->method('beamPush')->will($this->returnCallback($callback));
+        $beamServiceMock->method('beamPush')->willReturnCallback($callback);
 
         $this->app['beam']->setMockService($beamServiceMock);
     }
@@ -1106,10 +1106,10 @@ class EnachNetbankingNpciYesbTest extends TestCase
     {
         $beamServiceMock = $this->getMockBuilder(BeamService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['beamPush'])
+            ->onlyMethods(['beamPush'])
             ->getMock();
 
-        $beamServiceMock->method('beamPush')->will($this->returnCallback($callback));
+        $beamServiceMock->method('beamPush')->willReturnCallback($callback);
 
         $this->app['beam'] = $beamServiceMock;
     }

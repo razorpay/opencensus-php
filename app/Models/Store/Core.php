@@ -685,14 +685,14 @@ class Core extends Base\Core
     {
         try {
             $id = Entity::stripDefaultSign($id);
-    
+
             $storeDetails = $this->nocodeAppsFetchStore($id);
-    
+
             $this->trace->info(TraceCode::NOCODE_SERVICE_RESPONSE_RECIEVED, [
                 'id' => $id,
                 'response' => $storeDetails
             ]);
-    
+
             if (empty($storeDetails) || empty($storeDetails['data'])) {
                 $this->trace->info(TraceCode::STORE_NOT_FOUND, [
                     'id' => $id,
@@ -704,9 +704,9 @@ class Core extends Base\Core
                     null
                 );
             }
-    
+
             $merchantDetails = $this->repo->merchant->findOrFail($storeDetails['data']['merchant_id']);
-    
+
             return [
                 'entity'         => 'store',
                 'entity_id'      => $storeDetails['data']['id'],
@@ -720,21 +720,21 @@ class Core extends Base\Core
                 'error' => $e->getMessage(),
                 'id' => $id
             ]);
-    
+
             throw new Exception\BadRequestValidationFailureException(
                 'Failed to retrieve store details.'
             );
         }
-    }    
+    }
 
     public function nocodeAppsFetchStore(string $storeId)
     {
         $ncaService = new NoCodeAppsService($this->app);
-        
+
         $res = $ncaService->fetchStoreDetails($storeId);
-        
+
         $this->trace->info(TraceCode::NOCODE_SERVICE_RESPONSE_RECIEVED, [$res]);
-        
+
         return $res;
     }
 

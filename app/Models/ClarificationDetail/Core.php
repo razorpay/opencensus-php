@@ -3,10 +3,10 @@
 namespace RZP\Models\ClarificationDetail;
 
 use Mail;
-use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Http\Controllers\NeedsClarificationProxyController;

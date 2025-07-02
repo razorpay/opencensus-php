@@ -215,7 +215,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 //        $this->mockRazorxTreatment();
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -248,7 +248,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);

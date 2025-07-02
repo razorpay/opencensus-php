@@ -291,7 +291,7 @@ class AsvRouterTest extends TestCase
     {
         $mock = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getMerchantId'])
+            ->onlyMethods(['getMerchantId'])
             ->getMock();
 
         if ($exception) {

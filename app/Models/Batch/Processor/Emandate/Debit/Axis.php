@@ -19,7 +19,7 @@ class Axis extends Base
     const STATUS_SUCCESS  = 'success';
     const STATUS_FAILURE  = 'failure';
     const STATUS_REJECTED = 'rejected';
-    
+
     // for instrumentation only
     const PAYMENT_SUCCESS   = 'success';
     const PAYMENT_FAILED    = 'failed';
@@ -93,21 +93,21 @@ class Axis extends Base
     {
         unset($payloadEntry[Headings::HEADING_DEBIT_ACCOUNT]);
     }
-    
+
     public function shouldSendToBatchService(): bool
     {
         return true;
     }
-    
+
     protected function getBankStatus($status): string
     {
         $status = strtolower($status);
-        
+
         if (in_array($status, $this->allowedStatuses) === false)
         {
             return "";
         }
-        
+
         if ($status === self::STATUS_SUCCESS)
         {
             return self::PAYMENT_SUCCESS;
@@ -116,17 +116,17 @@ class Axis extends Base
         {
             return self::PAYMENT_FAILED;
         }
-        
+
         return "";
     }
-    
+
     // emandate rearch changes: for axis changes
     public function fetchGatewayDetails(& $content)
     {
         $content['type'] = 'emandate';
-        
+
         $content['sub_type'] = 'debit';
-        
+
         $content['gateway'] = 'axis';
     }
 }

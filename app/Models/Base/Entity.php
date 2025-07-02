@@ -114,10 +114,10 @@ class Entity extends \RZP\Base\EloquentEx
         return false;
     }
 
-    public function hasAttribute($key): bool
-    {
-        return (array_key_exists($key, $this->attributes) === true);
-    }
+//    public function hasAttribute($key): bool
+//    {
+//        return (array_key_exists($key, $this->attributes) === true);
+//    }
 
     public function fromDateTime($value)
     {

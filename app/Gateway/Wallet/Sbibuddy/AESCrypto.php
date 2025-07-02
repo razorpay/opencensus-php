@@ -3,12 +3,13 @@
 namespace RZP\Gateway\Wallet\Sbibuddy;
 
 use RZP\Gateway\Base;
+use RZP\Models\Base\UniqueIdEntity as UniqueIdEntity;
 
 class AESCrypto extends Base\AESCrypto
 {
     public function encryptString(string $data)
     {
-        $encoded = utf8_encode($data);
+        $encoded = UniqueIdEntity::encodeData($data, 'UTF-8', 'ISO-8859-1');
 
         $encryptedData = parent::encryptString($encoded);
 
@@ -21,6 +22,6 @@ class AESCrypto extends Base\AESCrypto
 
         $decryptedData = parent::decryptString($decoded);
 
-        return utf8_decode($decryptedData);
+        return UniqueIdEntity::encodeData($decryptedData, 'ISO-8859-1', 'UTF-8');
     }
 }

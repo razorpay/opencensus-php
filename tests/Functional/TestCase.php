@@ -109,13 +109,35 @@ class TestCase extends ParentTestCase
         }
         else
         {
-            Redis::connection('unit_tests_connection')->flushall();
+            $retries = 3;
 
-            foreach ($this->config->get('database.redis.clusters') as $cluster => $config)
+            while($retries--)
             {
-                foreach (Redis::connection($cluster)->getConnection() as $node)
+                try {
+                    Redis::connection('unit_tests_connection')->flushall();
+
+                    foreach ($this->config->get('database.redis.clusters') as $cluster => $config)
+                    {
+                        foreach (Redis::connection($cluster)->getConnection() as $node)
+                        {
+                            $node->executeCommand(new \Predis\Command\Redis\FLUSHDB());
+                        }
+                    }
+                }
+                catch (\Exception $e)
                 {
-                    $node->executeCommand(new \Predis\Command\Redis\FLUSHDB());
+                    \Log::error('Error while flushing Redis cache', [
+                        'exception' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                        'retries_left' => $retries
+                    ]);
+
+                    if($retries <= 0)
+                    {
+                        throw $e;
+                    }
+
+                    sleep(1);
                 }
             }
         }
@@ -204,7 +226,7 @@ class TestCase extends ParentTestCase
     {
         $esMock = $this->getMockBuilder(EsClient::class)
                        ->setConstructorArgs([$this->app])
-                       ->setMethods($withMethods)
+                       ->onlyMethods($withMethods)
                        ->getMock();
 
         $this->app->instance('es', $esMock);
@@ -402,7 +424,7 @@ class TestCase extends ParentTestCase
                                 ->onlyMethods(['beamPush'])
                                 ->getMock();
 
-        $beamServiceMock->method('beamPush')->will($this->returnCallback($callback));
+        $beamServiceMock->method('beamPush')->willReturnCallback($callback);
 
         $this->app['beam']->setMockService($beamServiceMock);
     }

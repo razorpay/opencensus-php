@@ -4,6 +4,7 @@ namespace RZP\Gateway\Card\Fss;
 
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Base;
+use RZP\Models\Base\UniqueIdEntity as UniqueIdEntity;
 
 class AesCrypto extends Base\AESCrypto
 {
@@ -13,7 +14,7 @@ class AesCrypto extends Base\AESCrypto
     {
         $cipherdText = parent::encryptString($str);
 
-        return utf8_encode(base64_encode($cipherdText));
+        return UniqueIdEntity::encodeData(base64_encode($cipherdText), 'UTF-8', 'ISO-8859-1');
     }
 
     public function decryptString(string $string)

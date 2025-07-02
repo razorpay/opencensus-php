@@ -62,7 +62,7 @@ trait MocksRequest
 
         $requestMock = $this->getMockBuilder(Request::class)
                             ->setConstructorArgs([$query, $input, [], [], [], $server, null])
-                            ->setMethods(array_merge($methods, ['path', 'ip']))
+                            ->onlyMethods(array_merge($methods, ['path', 'ip']))
                             ->getMock();
 
         // Sets actual path and ip address expectation for request mock

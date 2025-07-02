@@ -87,14 +87,14 @@ class ThrottleTest extends TestCase
 //    {
 //        $this->ba->adminAuth();
 //
-//        $redisMockThrottle = $this->getMockBuilder(Redis::class)->setMethods(['hmset', 'srem'])
+//        $redisMockThrottle = $this->getMockBuilder(Redis::class)->onlyMethods(['hmset', 'srem'])
 //            ->getMock();
 //
-//        $configRedis = $this->getMockBuilder(Redis::class)->setMethods(['set'])
+//        $configRedis = $this->getMockBuilder(Redis::class)->onlyMethods(['set'])
 //            ->getMock();
 //
 //
-//        $redisMockOld = $this->getMockBuilder(Redis::class)->setMethods(['smembers', 'hgetall', 'get'])
+//        $redisMockOld = $this->getMockBuilder(Redis::class)->onlyMethods(['smembers', 'hgetall', 'get'])
 //            ->getMock();
 //
 //        Redis::shouldReceive('connection')
@@ -109,17 +109,17 @@ class ThrottleTest extends TestCase
 //            ->andReturn($redisMockOld);
 //
 //        $redisMockOld->method('smembers')
-//            ->will($this->returnValue(array("MID1")));
+//            ->willReturn(array("MID1"));
 //
 //        $redisMockOld->method('hgetall')
-//            ->will($this->returnValue(array("abc")));
+//            ->willReturn(array("abc"));
 //
 //        $map = array(
 //            array('throttle:{merchant}:MID1', array("abc")),
 //            array('throttle:{merchant}:MID1', array("abc"))
 //        );
 //
-//        $redisMockThrottle->method('hmset')->will($this->returnValueMap($map));
+//        $redisMockThrottle->method('hmset')->willReturnMap($map);
 //
 //
 //        $this->makeRequestAndGetContent($this->testData['testMigrateThrottleKeysFromRedisLabs']['request']);

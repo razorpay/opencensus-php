@@ -3127,7 +3127,7 @@ Secondary reference id should be unique, duplicate value for test123";
     {
         $gimli = $this->getMockBuilder(Elfin\Impl\Gimli::class)
                       ->setConstructorArgs([$this->app['config']->get('applications.elfin.gimli')])
-                      ->setMethods(['expand'])
+                      ->onlyMethods(['expand'])
                       ->getMock();
 
         $gimli->expects($this->once())
@@ -3136,7 +3136,7 @@ Secondary reference id should be unique, duplicate value for test123";
 
         $elfin = $this->getMockBuilder(Elfin\Mock\Service::class)
                       ->setConstructorArgs([$this->app['config'], $this->app['trace']])
-                      ->setMethods(['driver'])
+                      ->onlyMethods(['driver'])
                       ->getMock();
 
         $elfin->expects($this->once())
@@ -5507,7 +5507,7 @@ Secondary reference id should be unique, duplicate value for test123";
 
         $this->expectException(BadRequestValidationFailureException::class);
 
-        $this->expectErrorMessage(PaymentLink\Core::AMOUT_QUANTITY_TAMPERED);
+        $this->expectExceptionMessage(PaymentLink\Core::AMOUT_QUANTITY_TAMPERED);
 
         $this->makePaymentForPaymentLinkWithOrderAndAssert(
             $page,
@@ -5553,7 +5553,7 @@ Secondary reference id should be unique, duplicate value for test123";
 
         $this->expectException(BadRequestValidationFailureException::class);
 
-        $this->expectErrorMessage(PaymentLink\Core::AMOUT_QUANTITY_TAMPERED);
+        $this->expectExceptionMessage(PaymentLink\Core::AMOUT_QUANTITY_TAMPERED);
 
         $this->makePaymentForPaymentLinkWithOrderAndAssert(
             $page,
@@ -6479,7 +6479,7 @@ Secondary reference id should be unique, duplicate value for test123";
 
         $this->expectException($exceptionClass);
 
-        $this->expectErrorMessage($exceptionMessage);
+        $this->expectExceptionMessage($exceptionMessage);
 
         $this->makePaymentForPaymentLinkWithOrderAndAssert(
             $page,
@@ -6527,7 +6527,7 @@ Secondary reference id should be unique, duplicate value for test123";
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->onlyMethods(['getTreatment', 'getCachedTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -6549,7 +6549,7 @@ Secondary reference id should be unique, duplicate value for test123";
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);

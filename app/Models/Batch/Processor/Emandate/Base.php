@@ -85,7 +85,7 @@ abstract class Base extends BaseProcessor
         $merchant = $entity->merchant;
 
         $txn = $this->repo->transaction->findByEntityIdWithoutMerchantTidb($entity->getId());
-        
+
         if (($txn !== null && $txn->getReference3() === "enabled") || $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
         {
             (new SubReconciliate())->sendPaymentReconNFCDataToCLS($entity, $data);

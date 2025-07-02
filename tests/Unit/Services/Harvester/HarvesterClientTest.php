@@ -124,7 +124,7 @@ class HarvesterClientTest extends TestCase
     {
         $mock = $this->getMockBuilder($this->classname)
               ->disableOriginalConstructor()
-              ->setMethods(null)
+              ->onlyMethods(null)
               ->getMock();
 
         return $mock;

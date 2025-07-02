@@ -272,7 +272,7 @@ class KeyTest extends TestCase
     {
         $mock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $mock->method('getTreatment')

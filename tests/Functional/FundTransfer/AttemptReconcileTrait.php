@@ -40,7 +40,7 @@ trait AttemptReconcileTrait
 
         $this->assertArrayHasKey('setlReconciliationFile', $content);
 
-        // $this->assertFileNotExists($setlFile);
+        // $this->assertFileDoesNotExist($setlFile);
 
         return $content['setlReconciliationFile'];
     }
@@ -76,7 +76,7 @@ trait AttemptReconcileTrait
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertFileNotExists($setlReconciliationFile);
+        $this->assertFileDoesNotExist($setlReconciliationFile);
 
         return $content;
     }
@@ -105,7 +105,7 @@ trait AttemptReconcileTrait
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertFileNotExists($setlReconciliationFile);
+        $this->assertFileDoesNotExist($setlReconciliationFile);
 
         return $content;
     }

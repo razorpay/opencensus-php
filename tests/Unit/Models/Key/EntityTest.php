@@ -31,7 +31,7 @@ class EntityTest extends TestCase
     {
         $mock = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getMode'])
+            ->onlyMethods(['getMode'])
             ->getMock();
         $this->app->instance('basicauth', $mock);
 

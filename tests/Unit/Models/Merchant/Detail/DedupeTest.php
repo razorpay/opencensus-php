@@ -23,7 +23,7 @@ class DedupeTest extends OAuthTestCase
     {
 
         $mockMR = $this->getMockBuilder(MerchantRiskClient::class)
-            ->setMethods(['getMerchantRiskScores'])
+            ->onlyMethods(['getMerchantRiskScores'])
             ->getMock();
 
 
@@ -46,7 +46,7 @@ class DedupeTest extends OAuthTestCase
 
         $mockDedupeMethods = array_merge($defaultMockDedupeMethods, $mockDedupeMethods);
         $mockMC = $this->getMockBuilder(DedupeCore::class)
-            ->setMethods($mockDedupeMethods)
+            ->onlyMethods($mockDedupeMethods)
             ->getMock();
 
         $mockMC->expects($this->any())
@@ -54,7 +54,7 @@ class DedupeTest extends OAuthTestCase
             ->willReturn($isDedupeRequired);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['canSubmitActivationForm', 'triggerWorkflowFlowForImpersonatedMerchant'])
+            ->onlyMethods(['canSubmitActivationForm', 'triggerWorkflowFlowForImpersonatedMerchant'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -732,7 +732,7 @@ class DedupeTest extends OAuthTestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);

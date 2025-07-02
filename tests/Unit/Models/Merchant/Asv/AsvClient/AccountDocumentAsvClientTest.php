@@ -60,7 +60,7 @@ class AccountDocumentAsvClientTest extends TestCase
         $mockError = new accountDocumentV1\TwirpError('invalid_argument', "id doesn't exists hence can't be deleted");
         $expectedError = new IntegrationException('Could not receive proper response from Account service');
         $mockAccountDocumentAsvAPIClient = $this->createMock(accountDocumentv1\DocumentAPIClient::class);
-        $mockAccountDocumentAsvAPIClient->method('Delete')->will($this->throwException($mockError));
+        $mockAccountDocumentAsvAPIClient->method('Delete')->willThrowException($mockError);
 
         $accountDocumentAsvClient = new AccountDocumentAsvClient($mockAccountDocumentAsvAPIClient);
 
@@ -106,7 +106,7 @@ class AccountDocumentAsvClientTest extends TestCase
         $mockError = new accountDocumentV1\TwirpError('invalid_argument', "id doesn't exists hence can't be deleted");
         $expectedError = new IntegrationException('Could not receive proper response from Account service');
         $mockAccountDocumentAsvAPIClient = $this->createMock(accountDocumentv1\DocumentAPIClient::class);
-        $mockAccountDocumentAsvAPIClient->method('FetchMerchantDocuments')->will($this->throwException($mockError));
+        $mockAccountDocumentAsvAPIClient->method('FetchMerchantDocuments')->willThrowException($mockError);
 
         $accountDocumentAsvClient = new AccountDocumentAsvClient($mockAccountDocumentAsvAPIClient);
 

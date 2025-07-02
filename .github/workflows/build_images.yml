@@ -27,7 +27,7 @@ jobs:
       - api-public
       - X64
     container:
-      image: c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-worker-v3
+      image: c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.2-api-worker-v4
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -58,7 +58,7 @@ jobs:
       - api-public
       - X64
     container:
-      image: c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-php8.1-v3
+      image: c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.2-api-web-v4
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -114,8 +114,8 @@ jobs:
           push: true
           file: ./Dockerfile.fetchCredstash
           build-args: |
-            API_BASE_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.1-api-web-v3
-            CURL_CLI_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-curl-v3
+            API_BASE_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.2-api-web-v4
+            CURL_CLI_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-curl-v4
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
 
@@ -179,9 +179,9 @@ jobs:
             GIT_COMMIT_HASH=${{ github.event.pull_request.head.sha || github.sha }}
             CACHEBUST=${{ github.event.pull_request.head.sha || github.sha }}
             GIT_USERNAME=rzp
-            API_BASE_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.1-api-web-v3
-            CURL_CLI_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-curl-v3
-            OPENCENSUS_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.1-opencensus-v3
+            API_BASE_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.2-api-web-v4
+            CURL_CLI_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-curl-v4
+            OPENCENSUS_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.2-opencensus
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
 
@@ -245,7 +245,7 @@ jobs:
             GIT_COMMIT_HASH=${{ github.event.pull_request.head.sha || github.sha }}
             GIT_USERNAME=rzp
             CACHEBUST=${{ github.event.pull_request.head.sha || github.sha }}
-            API_BASE_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-worker-v3
+            API_BASE_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.2-api-worker-v4
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
 

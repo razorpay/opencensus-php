@@ -209,7 +209,7 @@ class FundAccountValidationTest extends TestCase
     {
         $diagMock = $this->getMockBuilder(DiagClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['trackEvent'])
+            ->onlyMethods(['trackEvent'])
             ->getMock();
 
         $this->app->instance('diag', $diagMock);
@@ -413,7 +413,7 @@ class FundAccountValidationTest extends TestCase
     {
         $basMock = $this->getMockBuilder(\RZP\Services\Mock\BankingAccountService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['fetchBankingCredentials'])
+            ->onlyMethods(['fetchBankingCredentials'])
             ->getMock();
 
         $basMock->method('fetchBankingCredentials')

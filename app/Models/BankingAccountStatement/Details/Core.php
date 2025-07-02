@@ -326,7 +326,7 @@ class Core extends Base\Core
 
         // Fetch all entities in one query
         $basDetailEntities = $this->repo->banking_account_statement_details->getAccountStatementDetailsByBalanceIds($balanceIds);
-        
+
         // Process entities and collect updates
         $missingBalanceIds = array_diff($balanceIds, array_map(function($entity) {
             return $entity->getBalanceId();
@@ -384,10 +384,10 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($basDetailEntity);
                 $this->updateGatewayBalanceInPS($basDetailEntity);
             }
-            
+
             $this->repo->commit();
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_DUAL_WRITE_UPDATED_SUCCESSFULLY);
-            
+
             return ['success' => 'true'];
         } catch (Throwable $e) {
             $this->repo->rollBack();

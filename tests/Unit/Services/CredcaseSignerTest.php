@@ -62,7 +62,7 @@ class CredcaseSignerTest extends TestCase
         $this->redis->expects($this->exactly(2))
             ->method('get')
             ->with('credcase:ks:v1:rzp_test_1DP5mmOlF5G5ag')
-            ->will($this->throwException(new Exception('failed to getv value from redis')));
+            ->willThrowException(new Exception('failed to getv value from redis'));
 
         $this->ba->expects($this->once())
             ->method('sign')
@@ -78,7 +78,7 @@ class CredcaseSignerTest extends TestCase
     {
         $this->ba = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sign', 'getMerchantId', 'getMode'])
+            ->onlyMethods(['sign', 'getMerchantId', 'getMode'])
             ->getMock();
         $this->app->instance('basicauth', $this->ba);
 
@@ -91,7 +91,7 @@ class CredcaseSignerTest extends TestCase
     {
         $this->redis = $this->getMockBuilder(PredisConnection::class)
             ->setConstructorArgs([null])
-            ->setMethods(['get'])
+            ->onlyMethods(['get'])
             ->getMock();
     }
 
@@ -116,7 +116,7 @@ class CredcaseSignerTest extends TestCase
         $this->redis->expects($this->exactly(2))
             ->method('get')
             ->with('credcase:ks:v1:rzp_test_partner_1DP5mmOlF5G5ag')
-            ->will($this->throwException(new Exception('failed to getv value from redis')));
+            ->willThrowException(new Exception('failed to getv value from redis'));
 
         $this->ba->expects($this->once())
             ->method('sign')
@@ -163,7 +163,7 @@ class CredcaseSignerTest extends TestCase
         $this->redis->expects($this->exactly(2))
             ->method('get')
             ->with('credcase:ks:v1:' . self::KEYS['OAUTH_KEY_1'])
-            ->will($this->throwException(new Exception('failed to getv value from redis')));
+            ->willThrowException(new Exception('failed to getv value from redis'));
 
         $this->ba->expects($this->once())
             ->method('sign')

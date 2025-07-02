@@ -41,7 +41,7 @@ class OtpPaymentTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         // we are ramping up auth terminal selection hence to make sure all test cases passes
@@ -1464,7 +1464,7 @@ class OtpPaymentTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -2384,7 +2384,7 @@ class OtpPaymentTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);

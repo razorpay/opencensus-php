@@ -966,7 +966,7 @@ class MerchantUploadMiqBatchTest extends TestCase
         ]);
 
         $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
-         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_TYPE] = 'llp';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_TYPE] = 'llp';
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_CIN] = 'ABC123';
 
         $response = $this->startTest();
@@ -1469,7 +1469,7 @@ class MerchantUploadMiqBatchTest extends TestCase
         ]);
 
         $this->testData[__FUNCTION__] = $this->testData['defaultFailure'];
-                $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_TYPE] = 'not_yet_registered';
+        $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_TYPE] = 'not_yet_registered';
         $this->testData[__FUNCTION__]['request']['content'][Header::MIQ_BUSINESS_PAN] = 'AARCA5484G';
 
         $response = $this->startTest();
@@ -1744,7 +1744,7 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->assertEquals('BAD_REQUEST_ERROR', $response[Header::ERROR_CODE]);
     }
 
-     public function testCreateMerchantUploadMIQInvalidDebitCardFeeType()
+    public function testCreateMerchantUploadMIQInvalidDebitCardFeeType()
     {
         $this->ba->appAuth();
 
@@ -1763,7 +1763,7 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->assertEquals('BAD_REQUEST_ERROR', $response[Header::ERROR_CODE]);
     }
 
-     public function testCreateMerchantUploadMIQInvalidDebitCardFeeBearer()
+    public function testCreateMerchantUploadMIQInvalidDebitCardFeeBearer()
     {
         $this->ba->appAuth();
 
@@ -1782,7 +1782,7 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->assertEquals('BAD_REQUEST_ERROR', $response[Header::ERROR_CODE]);
     }
 
-     public function testCreateMerchantUploadMIQInvalidDebitCardFee2K()
+    public function testCreateMerchantUploadMIQInvalidDebitCardFee2K()
     {
         $this->ba->appAuth();
 
@@ -1801,7 +1801,7 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->assertEquals('BAD_REQUEST_ERROR', $response[Header::ERROR_CODE]);
     }
 
-     public function testCreateMerchantUploadMIQInvalidDebitCardFee1CR()
+    public function testCreateMerchantUploadMIQInvalidDebitCardFee1CR()
     {
         $this->ba->appAuth();
 
@@ -2519,9 +2519,9 @@ class MerchantUploadMiqBatchTest extends TestCase
     }
 
     protected function triggerMockBvsVerification(string $test,
-                                               array $merchantDetailsData,
-                                               bool $bvsMock = true,
-                                               string $responseSuccess = 'success')
+                                                  array $merchantDetailsData,
+                                                  bool $bvsMock = true,
+                                                  string $responseSuccess = 'success')
     {
         $mid = $merchantDetailsData['merchant_id'];
         if ($responseSuccess === 'success') {
@@ -2563,7 +2563,7 @@ class MerchantUploadMiqBatchTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -2715,4 +2715,3 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->assertEquals('success', $response2[Header::STATUS]);
     }
 }
-

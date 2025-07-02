@@ -57,7 +57,7 @@ class AxisCaptureFileTest extends TestCase
 
         $beamServiceMock = $this->getMockBuilder(BeamService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['beamPush'])
+            ->onlyMethods(['beamPush'])
             ->getMock();
 
         $this->app['beam'] = $beamServiceMock;

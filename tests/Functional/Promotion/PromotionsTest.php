@@ -383,7 +383,7 @@ class PromotionsTest extends TestCase
     {
         $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods([$methodName])
+            ->onlyMethods([$methodName])
             ->getMock();
 
         $this->app->instance('hubspot', $hubSpotMock);

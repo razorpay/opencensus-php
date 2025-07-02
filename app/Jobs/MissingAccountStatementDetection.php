@@ -257,12 +257,20 @@ class MissingAccountStatementDetection extends Job
 
     private function setTimeRangeDetails($fromDate, $toDate)
     {
+        if ($fromDate == null)
+        {
+            $fromDate = 0;
+        }
+        if ($toDate == null)
+        {
+            $toDate = 0;
+        }
         $this->fromDate = Carbon::createFromTimestamp($fromDate, Timezone::IST);
 
         $this->toDate = Carbon::createFromTimestamp($toDate, Timezone::IST);
 
-        if (($fromDate === null) and
-            ($toDate === null))
+        if (($fromDate === 0) and
+            ($toDate === 0))
         {
             $currentTime = Carbon::now(Timezone::IST);
 
@@ -273,8 +281,8 @@ class MissingAccountStatementDetection extends Job
             return;
         }
 
-        if (($fromDate === null) and
-            ($toDate !== null))
+        if (($fromDate === 0) and
+            ($toDate !== 0))
         {
             $this->fromDate = Carbon::createFromTimestamp($toDate, Timezone::IST)->startOfMonth()->startOfDay()->timestamp;
 

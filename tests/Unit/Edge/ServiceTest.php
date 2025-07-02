@@ -38,10 +38,60 @@ class ServiceTest extends TestCase
 
     use HasRequestCases;
 
-    public function __construct()
-    {
-        parent::__construct();
+//    protected function __construct()
+//    {
+////        parent::__construct("testAppAuthHappyCase");
+//        parent::__construct("ServiceTest");
+//
+//        $this->sampleInput1 = [
+//            'dashboard' => [
+//                'key' => 'rzp_live',
+//                'secret' => 'RANDOM_DASH_PASSWORD',
+//                'account_id' => 'Mh73OcxLsoSqIl',
+//                'org_id' => '100000razorpay',
+//                'headers' => [
+//                    'X-Admin-Token' => 'qsKKZ5bvrmOWezO2bp9MMgwiQLfKdIHf7U',
+//                    'X-Dashboard-Merchant' => 'BT73OPxLsoSqIl',
+//                ],
+//                'route_params' => [
+//                    'merchant_id' => 'PT1qOPYrsoSqIl'
+//                ]
+//            ],
+//            'auth' => 'internal',
+//            'admin_token_required' => true,
+//            'apps' => ['dashboard', 'admin_dashboard'],
+//        ];
+//
+//        $this->dashboardRequest1Info =  & $this->sampleInput1['dashboard'];
+//
+//        $this->sampleInput2 = [
+//            'dashboard' => [
+//                'key' => 'rzp_live_PT1qOPYrsoSqIl',
+//                'secret' => 'RANDOM_DASH_PASSWORD',
+//                'account_id' => 'Mh73OcxLsoSqIl',
+//                'headers' => [
+//                    RequestHeader::X_DASHBOARD_USER_ID => 'XYZ123userSqIP',
+//                    RequestHeader::X_REQUEST_ORIGIN => 'https://x.razorpay.com',
+//                    RequestHeader::X_Creator_Id => '',
+//                    RequestHeader::X_Creator_Type => '',
+//                    RequestHeader::X_DASHBOARD_IP => '1.1.1.1'
+//                ]
+//            ],
+//            'auth' => 'proxy',
+//            'admin_token_required' => false,
+//            'apps' => ['dashboard', 'admin_dashboard'],
+//        ];
+//
+//        $this->dashboardRequest2Info = & $this->sampleInput2['dashboard'];
+//
+//
+//        putenv('BANKING_SERVICE_URL=https://x.razorpay.com');
+//        putenv('BANK_LMS_BANKING_SERVICE_URL=https://partner-lms.razorpay.com');
+//    }
 
+    protected function setUp(): void
+    {
+        parent::setUp();
         $this->sampleInput1 = [
             'dashboard' => [
                 'key' => 'rzp_live',
@@ -86,11 +136,7 @@ class ServiceTest extends TestCase
 
         putenv('BANKING_SERVICE_URL=https://x.razorpay.com');
         putenv('BANK_LMS_BANKING_SERVICE_URL=https://partner-lms.razorpay.com');
-    }
 
-    protected function setUp(): void
-    {
-        parent::setUp();
         $this->baMock = $this->mockBasicAuth();
         $this->keyAuthCredsMock = $this->mockKeyAuthCreds();
         $this->repoMock = $this->mockRepo();
@@ -830,7 +876,7 @@ class ServiceTest extends TestCase
     {
         $mock = $this->getMockBuilder(KeyAuthCreds::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['setMerchant', 'getKey'])
+            ->onlyMethods(['setMerchant', 'getKey'])
             ->getMock();
 
         $this->baMock->authCreds = $mock;
@@ -842,7 +888,7 @@ class ServiceTest extends TestCase
     {
         $mock = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['setType', 'setAppAuth', 'isKeyBlank', 'setCredentials', 'verifyInternalAppSecret',
+            ->onlyMethods(['setType', 'setAppAuth', 'isKeyBlank', 'setCredentials', 'verifyInternalAppSecret',
                 'getInternalApp', 'fetchAndSetAdminUsingToken', 'setDashboardHeaders', 'checkAndSetAccountScope', 'setProxyTrue', 'isAdminAuth', 'setOrgId', 'getAdmin',
                 'getDashboardHeaders', 'setUserAndRoles', 'getUserRole', 'getMerchant', 'getUser', 'getMerchantId', 'getCustomAccessRoles'])
             ->getMock();
@@ -876,7 +922,7 @@ class ServiceTest extends TestCase
     {
         return $this->getMockBuilder(AdminAccess::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['setOrgType', 'getMerchant', 'resolveOrgIdFromHostname'])
+            ->onlyMethods(['setOrgType', 'getMerchant', 'resolveOrgIdFromHostname'])
             ->getMock();
     }
 
@@ -891,7 +937,7 @@ class ServiceTest extends TestCase
     {
         return $this->getMockBuilder(Core::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['groupCheck'])
+            ->onlyMethods(['groupCheck'])
             ->getMock();
     }
 
@@ -899,7 +945,7 @@ class ServiceTest extends TestCase
     {
         return $this->getMockBuilder(\RZP\Models\Roles\Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getAuthzRolesUsingExperiment'])
+            ->onlyMethods(['getAuthzRolesUsingExperiment'])
             ->getMock();
     }
 
@@ -907,7 +953,7 @@ class ServiceTest extends TestCase
     {
         return $this->getMockBuilder(MerchantIpFilter::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['authenticateIpForProxyAuth'])
+            ->onlyMethods(['authenticateIpForProxyAuth'])
             ->getMock();
     }
 
@@ -915,7 +961,7 @@ class ServiceTest extends TestCase
     {
         $mock = $this->getMockBuilder(Entity::class)
             ->setConstructorArgs([])
-            ->setMethods(['isCACEnabled'])
+            ->onlyMethods(['isCACEnabled'])
             ->getMock();
 
         $mock->setAttribute(Entity::ID, '10000000000000');

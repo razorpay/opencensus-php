@@ -6,6 +6,7 @@ use App;
 use Mockery;
 use Request;
 use ReflectionObject;
+use Carbon\Carbon;
 use RZP\Models\Terminal\Options as TerminalOptions;
 use Illuminate\Foundation\Testing\TestCase as IlluminateTestCase;
 
@@ -67,6 +68,22 @@ class TestCase extends IlluminateTestCase
         $this->config = $this->app['config'];
 
         $this->mockCardVault();
+
+        $redisConn = $this->app['redis']->Connection('mutex_redis');
+        $retries = 3;
+        while($retries--)
+        {
+            try
+            {
+                $redisConn->connect();
+            } catch (\Throwable $ex) {
+                sleep(1);
+                if($retries <= 0)
+                {
+                    throw $ex;
+                }
+            }
+        }
 
         $this->disbaleCpsConfig();
     }

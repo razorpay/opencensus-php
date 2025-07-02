@@ -33,7 +33,7 @@ class CompanyPanVerificationTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -95,7 +95,7 @@ class CompanyPanVerificationTest extends TestCase
 
         $mockDedupeMethods = array_merge($defaultMockDedupeMethods, $mockDedupeMethods);
         $mockMC = $this->getMockBuilder(DedupeCore::class)
-            ->setMethods($mockDedupeMethods)
+            ->onlyMethods($mockDedupeMethods)
             ->getMock();
 
         $mockMC->expects($this->any())
@@ -103,7 +103,7 @@ class CompanyPanVerificationTest extends TestCase
             ->willReturn($isDedupeRequired);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['canSubmitActivationForm', 'triggerWorkflowFlowForImpersonatedMerchant'])
+            ->onlyMethods(['canSubmitActivationForm', 'triggerWorkflowFlowForImpersonatedMerchant'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())

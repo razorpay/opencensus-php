@@ -73,7 +73,7 @@ class CardRedactionTest extends TestCase
     {
         $routerMock = $this->getMockBuilder(Router::class)
                            ->setConstructorArgs([$this->app['events'],$this->app])
-                           ->setMethods(['currentRouteName'])
+                           ->onlyMethods(['currentRouteName'])
                            ->getMock();
 
         $routerMock->method('currentRouteName')
@@ -88,7 +88,7 @@ class CardRedactionTest extends TestCase
     {
         $authMock = $this->getMockBuilder(BasicAuth::class)
                          ->setConstructorArgs([$this->app])
-                         ->setMethods(['getProduct'])
+                         ->onlyMethods(['getProduct'])
                          ->getMock();
 
         $authMock->method('getProduct')
@@ -647,7 +647,7 @@ class CardRedactionTest extends TestCase
 
         $routerMock = $this->getMockBuilder(Router::class)
                            ->setConstructorArgs([$this->app['events'],$this->app])
-                           ->setMethods(['currentRouteName'])
+                           ->onlyMethods(['currentRouteName'])
                            ->getMock();
 
         $routerMock->method('currentRouteName')
@@ -1304,7 +1304,7 @@ class CardRedactionTest extends TestCase
         // BasicAuth resolves to Dashboard app
         $authMock = $this->getMockBuilder(BasicAuth::class)
                          ->setConstructorArgs([$this->app])
-                         ->setMethods(['isDashboardApp','setProduct'])
+                         ->onlyMethods(['isDashboardApp','setProduct'])
                          ->getMock();
 
         $authMock->method('isDashboardApp')

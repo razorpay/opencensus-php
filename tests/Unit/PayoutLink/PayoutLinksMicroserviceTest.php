@@ -50,7 +50,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         // use razorx feature
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -95,7 +95,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -349,7 +349,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getAmazonPayWalletFeatureEnabled", "getEnvironment", "getKeylessHeader", "getModeForPublicPage"))
+            ->onlyMethods(array("makeRequest", "getBankingAccountInfo", "getAmazonPayWalletFeatureEnabled", "getEnvironment", "getKeylessHeader", "getModeForPublicPage"))
             ->getMock();
         $mock->method("makeRequest")
             ->willReturn($response);
@@ -388,7 +388,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled", "getKeylessHeader", "getModeForPublicPage"))
+            ->onlyMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled", "getKeylessHeader", "getModeForPublicPage"))
             ->getMock();
         $mock->method("makeRequest")
             ->willReturn($response);
@@ -426,7 +426,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled", "getKeylessHeader", "getModeForPublicPage"))
+            ->onlyMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled", "getKeylessHeader", "getModeForPublicPage"))
             ->getMock();
         $mock->method("makeRequest")
             ->willReturn($response);
@@ -467,7 +467,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled", "getKeylessHeader", "getModeForPublicPage"))
+            ->onlyMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled", "getKeylessHeader", "getModeForPublicPage"))
             ->getMock();
         $mock->method("makeRequest")
             ->willReturn($response);
@@ -497,7 +497,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $plMock = $this->getMockBuilder("RZP\Services\PayoutLinks")
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array("makeRequest", "notifySettingsChangeOnSlack"))
+            ->onlyMethods(array("makeRequest", "notifySettingsChangeOnSlack"))
             ->getMock();
 
         $mode["AMAZONPAY"] = "1";
@@ -521,7 +521,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $plMock = $this->getMockBuilder("RZP\Services\PayoutLinks")
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array("makeRequest", "sendSlackNotification"))
+            ->onlyMethods(array("makeRequest", "sendSlackNotification"))
             ->getMock();
 
         $mode["AMAZONPAY"] = "1";
@@ -541,7 +541,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $plMock = $this->getMockBuilder("RZP\Services\PayoutLinks")
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array("makeRequest"))
+            ->onlyMethods(array("makeRequest"))
             ->getMock();
         $response['count'] = 1;
         $response['items'] = [];
@@ -558,7 +558,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $plMock = $this->getMockBuilder("RZP\Services\PayoutLinks")
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array("makeRequest"))
+            ->onlyMethods(array("makeRequest"))
             ->getMock();
         $response = array();
         $plMock->method('makeRequest')
@@ -592,7 +592,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->onlyMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($response);
         $mock->method('allowUpi')->willReturn(false);
@@ -633,7 +633,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->onlyMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($response);
         $mock->method('allowUpi')->willReturn(false);
@@ -674,7 +674,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->onlyMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($response);
         $mock->method('allowUpi')->willReturn(false);
@@ -715,7 +715,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->onlyMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($response);
         $mock->method('allowUpi')->willReturn(false);
@@ -740,7 +740,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->onlyMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($response);
         $mock->method('allowUpi')->willReturn(false);
@@ -763,7 +763,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->onlyMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($response);
         $mock->method('allowUpi')->willReturn(false);
@@ -786,7 +786,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->onlyMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($response);
         $mock->method('allowUpi')->willReturn(false);
@@ -809,7 +809,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->onlyMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($response);
         $mock->method('allowUpi')->willReturn(false);
@@ -988,7 +988,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array('makeRequest', 'getEnvironment', 'getKeylessHeader', "getModeForPublicPage"))
+            ->onlyMethods(array('makeRequest', 'getEnvironment', 'getKeylessHeader', "getModeForPublicPage"))
             ->getMock();
 
         $mock->method('makeRequest')
@@ -1073,7 +1073,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest'))
+            ->onlyMethods(array('makeRequest'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($mockedMSResponse);
 
@@ -1104,7 +1104,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest'))
+            ->onlyMethods(array('makeRequest'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($mockedMSResponse);
 
@@ -1142,7 +1142,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest'))
+            ->onlyMethods(array('makeRequest'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($mockedMSResponse);
 
@@ -1172,7 +1172,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest'))
+            ->onlyMethods(array('makeRequest'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($mockedMSResponse);
 
@@ -1205,7 +1205,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest'))
+            ->onlyMethods(array('makeRequest'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($mockedMSResponse);
 
@@ -1235,7 +1235,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest'))
+            ->onlyMethods(array('makeRequest'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($mockedMSResponse);
 
@@ -1379,7 +1379,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->onlyMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($response);
         $mock->method('allowUpi')->willReturn(false);
@@ -1406,7 +1406,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->onlyMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($response);
         $mock->method('allowUpi')->willReturn(false);
@@ -1431,7 +1431,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->onlyMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($response);
         $mock->method('allowUpi')->willReturn(false);
@@ -1454,7 +1454,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->onlyMethods(array('makeRequest', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($response);
         $mock->method('allowUpi')->willReturn(false);
@@ -1520,7 +1520,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest', 'getBankingAccountInfo', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->onlyMethods(array('makeRequest', 'getBankingAccountInfo', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($response);
         $mock->method("getBankingAccountInfo")->willReturn($bankingAccountMock);
@@ -1552,7 +1552,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest', 'getBankingAccountInfo', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->onlyMethods(array('makeRequest', 'getBankingAccountInfo', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
             ->getMock();
         $mock->method('makeRequest')->willReturn($response);
         $mock->method("getBankingAccountInfo")->willReturn($bankingAccountMock);
@@ -1573,7 +1573,7 @@ class PayoutLinkMicroserviceTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->onlyMethods(['getTreatment', 'getCachedTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -1594,7 +1594,7 @@ class PayoutLinkMicroserviceTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->onlyMethods(['getTreatment', 'getCachedTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -1626,7 +1626,7 @@ class PayoutLinkMicroserviceTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);

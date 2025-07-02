@@ -41,7 +41,7 @@ class BankingUserTest extends TestCase
     protected function createAndFetchMocks()
     {
         $mockMC = $this->getMockBuilder(MerchantCore::class)
-            ->setMethods(['isRazorxExperimentEnable'])
+            ->onlyMethods(['isRazorxExperimentEnable'])
             ->getMock();
 
         $mockMC->expects($this->any())

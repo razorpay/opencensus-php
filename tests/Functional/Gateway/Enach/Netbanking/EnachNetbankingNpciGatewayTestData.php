@@ -435,8 +435,8 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_ORDER_BANK_INVALID,
         ],
     ],
-    
-    
+
+
     'testEmandatePreferencesWithAccountMasking' => [
         'request' => [
             'content' => [],
@@ -448,7 +448,7 @@ return [
             ],
         ],
     ],
-    
+
     'testEmandateRegistrationWithAccountMasking' => [
         'request' => [
             'content' => [

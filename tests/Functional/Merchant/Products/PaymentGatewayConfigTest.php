@@ -112,7 +112,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         (new Methods\Core())->setDefaultMethods($merchant);
     }
 
-    public function testCreateProductConfigWithExperimentOnSetMethods()
+    public function testCreateProductConfigWithExperimentOnonlyMethods()
     {
         Mail::fake();
 
@@ -664,7 +664,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         Mail::fake();
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -1825,7 +1825,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -2528,8 +2528,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
     private function createMerchantConsentsForL2Documents(string $merchantId) {
         $documents = [
-            'KdSCny9TA9OrmA' => 'L2_Terms and Conditions', 
-            'KdSCny9TA9OrmB' => 'L2_Privacy Policy', 
+            'KdSCny9TA9OrmA' => 'L2_Terms and Conditions',
+            'KdSCny9TA9OrmB' => 'L2_Privacy Policy',
             'KdSCny9TA9OrmC' => 'L2_Service Agreement'
         ];
         foreach ($documents as $id => $document) {

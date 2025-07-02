@@ -1031,7 +1031,7 @@ class UpiRecurringPaymentSharpTest extends TestCase
 
         $this->app->razorx
             ->method('getTreatment')
-            ->will($this->returnCallback($closure));
+            ->willReturnCallback($closure);
     }
 
     public function testRecurringOneTimeMandateCreate()

@@ -239,7 +239,8 @@ abstract class Generator extends Base
      */
     protected function getAccountOwnerInfo(BankingAccountEntity $bankingAccount): array
     {
-        $accountOpeningDate = Carbon::createFromTimestamp($bankingAccount->getAccountActivationDate(), Timezone::IST)
+        $accountActivationDate = $bankingAccount->getAccountActivationDate() ?? 0;
+        $accountOpeningDate = Carbon::createFromTimestamp($accountActivationDate, Timezone::IST)
                                     ->format(self::DATE_FORMAT);
 
         $fromDate = Carbon::createFromTimestamp($this->fromDate, Timezone::IST)

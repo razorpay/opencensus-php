@@ -3949,7 +3949,7 @@ class FeeRecoveryTest extends TestCase
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment', 'getCachedTreatment'])
+                           ->onlyMethods(['getTreatment', 'getCachedTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);

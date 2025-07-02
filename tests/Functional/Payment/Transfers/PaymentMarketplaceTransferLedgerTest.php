@@ -48,7 +48,7 @@ class PaymentMarketplaceTransferLedgerTest extends TestCase
 
         $mockTransferCore = $this->createMock(Core::class);
         $mockTransferCore->method('createTransferTransactionsInReverseShadow')
-            ->will($this->throwException(new \Exception("Some error occurred")));
+            ->willThrowException(new \Exception("Some error occurred"));
     }
 
     protected function initializeTestSetup()

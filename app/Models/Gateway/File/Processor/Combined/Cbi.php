@@ -62,7 +62,7 @@ class Cbi extends Base
         $date = Carbon::yesterday(Timezone::IST)->format('d.m.Y');
 
         $config = $this->app['config']->get('nodal.axis');
-        
+
         $config_cbi = $this->app['config']->get('gateway.mozart')['netbanking_cbi'];
 
         $account = [

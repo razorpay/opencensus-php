@@ -12,7 +12,6 @@ use RZP\Error\ErrorCode;
 use Illuminate\Support\Arr;
 use RZP\Http\RequestContext;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Merchant\RazorxTreatment;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
@@ -55,13 +54,7 @@ class Handler extends ExceptionHandler
 
         $this->app = App::getFacadeRoot();
 
-        $this->trace = $this->app['trace'];
-
         $this->throwExceptionInTesting = $this->app['config']->get('app.throw_exception_in_testing');
-
-        $this->route = $this->app['api.route'];
-
-        $this->ba = $this->app['basicauth'];
 
         if (($this->app['config']['app.sentry_mock'] === false) and
             ($this->app->bound('sentry') === true))
@@ -252,7 +245,7 @@ class Handler extends ExceptionHandler
 
         // Gets default level and code based on exception
 
-        $defaultLevel = $this->route->isCriticalRoute() ? Trace::CRITICAL : Trace::ERROR;
+        $defaultLevel = app('api.route')->isCriticalRoute() ? Trace::CRITICAL : Trace::ERROR;
         $defaultCode  = TraceCode::ERROR_EXCEPTION;
 
         switch (true)
@@ -273,7 +266,7 @@ class Handler extends ExceptionHandler
         $level = $level ?: $defaultLevel;
         $code  = $code ?: $defaultCode;
 
-        $this->trace->addRecord($level, $code, $traceData);
+        app('trace')->addRecord($level, $code, $traceData);
     }
 
     protected function genericExceptionHandler(Exception|\Throwable $exception)
@@ -335,7 +328,7 @@ class Handler extends ExceptionHandler
             ((isset($data['gateway']) === true) and ($data['gateway'] === 'enach_npci_netbanking')) and
             ((isset($data['merchant_id']) === true) and ($this->isNpciFeedbackPopupAllowed($data['merchant_id']) ===true)))
         {
-            $this->trace->info(
+            app('trace')->info(
                 TraceCode::EMANDATE_NPCI_PAYMENT_FAILURE_CALLBACK,
                 [
                     'payment_id'            => $data['payment_id'],
@@ -613,7 +606,7 @@ class Handler extends ExceptionHandler
     protected function isDebug()
     {
         return ((config('app.debug') === true) or
-                ($this->ba->isDebugApp() === true));
+                (app('basicauth')->isDebugApp() === true));
     }
 
     protected function hideSensitiveInformationFromStack(array $stackArr)

@@ -1,9 +1,9 @@
 cp ./environment/.env.drone ./environment/.env.testing
-touch /etc/php81/conf.d/assertion.ini /etc/php81/conf.d/memory.ini
-echo "zend.assertions=1" >> /etc/php81/conf.d/assertion.ini
-echo "assert.exception=1" >> /etc/php81/conf.d/assertion.ini
-echo "memory_limit = 8192M" >> /etc/php81/conf.d/memory.ini
-echo "opcache.interned_strings_buffer=32" >> /etc/php81/conf.d/memory.ini
+touch /etc/php82/conf.d/assertion.ini /etc/php82/conf.d/memory.ini
+echo "zend.assertions=1" >> /etc/php82/conf.d/assertion.ini
+echo "assert.exception=1" >> /etc/php82/conf.d/assertion.ini
+echo "memory_limit = 8192M" >> /etc/php82/conf.d/memory.ini
+echo "opcache.interned_strings_buffer=32" >> /etc/php82/conf.d/memory.ini
 apk add --no-cache wkhtmltopdf
 php -m
 chmod 777 -R storage

@@ -1544,7 +1544,7 @@ class Core extends Base\Core
         /** @var BankingAccountStatement\Details\Entity $basDetail */
         $basDetails = $balanceEntity->bankingAccountStatementDetails;
 
-        $balanceLastFetchedAt = $basDetails->getBalanceLastFetchedAt();
+        $balanceLastFetchedAt = $basDetails->getBalanceLastFetchedAt() ?? 0;
 
         $nowTime = Carbon::now(Timezone::IST);
 

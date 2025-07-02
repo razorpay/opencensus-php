@@ -66,7 +66,7 @@ class EnachRbl extends Base
 
                 $this->generateZipFile($dirName);
             }
-            
+
             $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
 
             $this->trace->info(
@@ -81,7 +81,7 @@ class EnachRbl extends Base
         catch (\Throwable $e)
         {
             $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATION_ERROR);
-            
+
             throw new GatewayFileException(ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE, [
                 'id' => $this->gatewayFile->getId(),
             ], $e);
@@ -186,8 +186,8 @@ class EnachRbl extends Base
         ];
 
         $this->sendBeamRequest($data, $timelines, $mailInfo, true);
-        
+
         $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
-        
+
     }
 }

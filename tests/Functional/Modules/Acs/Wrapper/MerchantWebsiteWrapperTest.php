@@ -159,8 +159,27 @@ class MerchantWebsiteWrapperTest extends TestCase
         $merchantWebsiteWrapperMock->setMerchantWebsiteClient($merchantWebsiteClient);
 
         $merchantWebsiteWrapperMock->expects($this->exactly(0))->method('logDifferenceIfRequiredAndPushMetrics')->with($difference, '10000000000000');
-        $merchantWebsiteWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
-        withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantWebsiteWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
+//        withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantWebsiteWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return true;
+                }
+
+                return null;
+            });
 
         try {
             $merchantWebsiteWrapperMock->processGetWebsiteDetailsForMerchantId("10000000000000", $merchantWebsiteEntity);
@@ -198,8 +217,28 @@ class MerchantWebsiteWrapperTest extends TestCase
 
         $difference = ['additional_data->manthan', 'deliverable_type'];
         $merchantWebsiteWrapperMock->expects($this->exactly(1))->method('logDifferenceIfRequiredAndPushMetrics')->with($difference, '10000000000000');
-        $merchantWebsiteWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
-        withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantWebsiteWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
+//        withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantWebsiteWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return true;
+                }
+
+                return null;
+            });
+
         $gotMerchantWebsiteEntity = $merchantWebsiteWrapperMock->processGetWebsiteDetailsForMerchantId("10000000000000", $merchantWebsiteEntity);
 
         // reverse shadow should update this values.
@@ -348,8 +387,27 @@ class MerchantWebsiteWrapperTest extends TestCase
         $merchantWebsiteWrapperMock->setMerchantWebsiteClient($merchantWebsiteClient);
 
         $merchantWebsiteWrapperMock->expects($this->exactly(0))->method('logDifferenceIfRequiredAndPushMetrics')->with($difference, '10000000000111');
-        $merchantWebsiteWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
-        withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantWebsiteWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
+//        withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantWebsiteWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return true;
+                }
+
+                return null;
+            });
 
         try {
             $merchantWebsiteWrapperMock->processGetWebsiteDetailsForId("10000000000111", $merchantWebsiteEntity);
@@ -388,9 +446,30 @@ class MerchantWebsiteWrapperTest extends TestCase
 
         $difference = ['additional_data->manthan', 'deliverable_type'];
         $merchantWebsiteWrapperMock->expects($this->exactly(1))->method('logDifferenceIfRequiredAndPushMetrics')->with($difference, '10000000000111');
-        $merchantWebsiteWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
-            ->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])
-            ->willReturnOnConsecutiveCalls(false, true);
+//        $merchantWebsiteWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
+//            ->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])
+//            ->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantWebsiteWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return true;
+                }
+
+                return null;
+            });
+
+
         $gotMerchantWebsiteEntity = $merchantWebsiteWrapperMock->processGetWebsiteDetailsForId("10000000000111", $merchantWebsiteEntity);
 
         // reverse shadow should update this values.

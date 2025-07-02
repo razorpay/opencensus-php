@@ -357,7 +357,7 @@ class AutoKycTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->onlyMethods(['getTreatment', 'getCachedTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -366,7 +366,7 @@ class AutoKycTest extends TestCase
             ->willReturn('on');
 
         $merchantRiskMock = $this->getMockBuilder(MerchantRiskClient::class)
-            ->setMethods(['getMerchantImpersonatedDetails'])
+            ->onlyMethods(['getMerchantImpersonatedDetails'])
             ->getMock();
 
         $this->app->instance('merchantRiskClient', $merchantRiskMock);

@@ -12,7 +12,7 @@ class CustomerAppointmentDate
     /**
      * Estimated TAT for Docket Delivery Based on City
      * from the time of adding Customer Appointment Date by Sales
-     * 
+     *
      */
     const DOCKET_DELIVERY_TAT = [
 
@@ -69,8 +69,8 @@ class CustomerAppointmentDate
     ];
 
     /**
-     * Get Estimated Docket Delivery Date based on the city  
-     * Reference Date `$docketInitiatedDate` is optional and 
+     * Get Estimated Docket Delivery Date based on the city
+     * Reference Date `$docketInitiatedDate` is optional and
      * if not passed, it will assume today's date
      */
     public static function getEstimatedDocketDeliveryDate(string $city, $docketInitiatedDate = null)

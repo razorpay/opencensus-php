@@ -12,7 +12,7 @@ class Pivot extends Relations\Pivot
     const CREATED_AT  = 'created_at';
     const UPDATED_AT  = 'updated_at';
 
-    //
+    //use RZP\Models\Application;
     // Below functions are implemented for most
     // entities in EloquentEx or Base\PublicEntity
     // Pivot is not a child of these, but these funcs are

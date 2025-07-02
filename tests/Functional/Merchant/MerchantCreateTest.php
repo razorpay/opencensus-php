@@ -519,7 +519,7 @@ class MerchantCreateTest extends TestCase
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -605,7 +605,7 @@ class MerchantCreateTest extends TestCase
         $this->createSubMerchant($partner, $app, ['id' => $submerchantId2]);
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->onlyMethods(['pushIdentifyAndTrackEvent'])
                             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -638,7 +638,7 @@ class MerchantCreateTest extends TestCase
         $this->createSubMerchant($partner, $app, ['id' => $submerchantId]);
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->onlyMethods(['pushIdentifyAndTrackEvent'])
                             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -686,7 +686,7 @@ class MerchantCreateTest extends TestCase
         $this->mockSplitzTreatment($input, $output);
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-            ->setMethods(['pushIdentifyAndTrackEvent','buildRequestAndSend'])
+            ->onlyMethods(['pushIdentifyAndTrackEvent','buildRequestAndSend'])
             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -745,7 +745,7 @@ class MerchantCreateTest extends TestCase
         $this->mockSplitzTreatment($input, $output);
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-            ->setMethods(['pushIdentifyAndTrackEvent','buildRequestAndSend'])
+            ->onlyMethods(['pushIdentifyAndTrackEvent','buildRequestAndSend'])
             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -779,7 +779,7 @@ class MerchantCreateTest extends TestCase
         $this->fixtures->payment->createAuthorized(['merchant_id' => '101Submerchant', 'created_at' => '1660731670']);
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-            ->setMethods(['pushIdentifyAndTrackEvent','buildRequestAndSend'])
+            ->onlyMethods(['pushIdentifyAndTrackEvent','buildRequestAndSend'])
             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -808,7 +808,7 @@ class MerchantCreateTest extends TestCase
         $this->createSubMerchant($partner, $app, ['id' => $submerchantId]);
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->onlyMethods(['pushIdentifyAndTrackEvent'])
             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -1443,7 +1443,7 @@ class MerchantCreateTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);

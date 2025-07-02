@@ -3,18 +3,26 @@
 namespace RZP\Tests\Traits;
 
 use Razorpay\Metrics\Manager as MetricManager;
+use Razorpay\Metrics\Drivers\Mock as MockDriver;
 
 trait TestsMetrics
 {
     protected function createMetricsMock(array $methods = ['count', 'gauge', 'histogram', 'summary'])
     {
-        $mock = $this->getMockBuilder(MetricManager::class)
-                     ->setMethods($methods)
+        $mockDriver = $this->getMockBuilder(Mockdriver::class)
+                     ->setConstructorArgs(['api'])
+                     ->onlyMethods($methods)
                      ->getMock();
+        $mockManager = $this->getMockBuilder(MetricManager::class)
+                      ->setConstructorArgs([['default' => 'mock']])
+                      ->onlyMethods(['driver'])
+                      ->getMock();
+        $mockManager->method('driver')
+                    ->willReturn($mockDriver);
 
-        $this->app['trace']->setMetricsManager($mock);
+        $this->app['trace']->setMetricsManager($mockManager);
 
-        return $mock;
+        return $mockDriver;
     }
 
     public function mockAndCaptureCountMetric(string $metricNameToCapture, $metricsMock, bool &$metricCaptured, $expectedMetricData)
@@ -26,7 +34,7 @@ trait TestsMetrics
         };
 
         $metricsMock->method('count')
-                    ->will($this->returnCallback($closure));
+                    ->willReturnCallback($closure);
     }
 
     public function validateMetricData(string $metricName, array $expectedMetricData, array $actualMetricData, bool &$passed)

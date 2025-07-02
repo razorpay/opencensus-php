@@ -188,7 +188,7 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $mozartServiceMock = $this->getMockBuilder(\RZP\Services\Mock\Mozart::class)
                                   ->setConstructorArgs([$this->app])
-                                  ->setMethods(['sendMozartRequest'])
+                                  ->onlyMethods(['sendMozartRequest'])
                                   ->getMock();
 
         $mozartServiceMock->method('sendMozartRequest')

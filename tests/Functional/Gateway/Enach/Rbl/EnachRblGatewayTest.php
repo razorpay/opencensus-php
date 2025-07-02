@@ -1914,7 +1914,7 @@ class EnachRblGatewayTest extends TestCase
         };
 
         $metricsMock->method('count')
-            ->will($this->returnCallback($closure));
+            ->willReturnCallback($closure);
 
     }
 

@@ -174,7 +174,7 @@ class CoreTest extends BaseTest
 
         $this->expectException(BadRequestValidationFailureException::class);
 
-        $this->expectErrorMessage(PaymentLink\NocodeCustomUrl\Core::ENTITY_DUPLICATE_ERROR);
+        $this->expectExceptionMessage(PaymentLink\NocodeCustomUrl\Core::ENTITY_DUPLICATE_ERROR);
 
         $this->repo->transaction(function () use ($data, $merchant, $paymentlink2) {
             return $this->core->upsert($data, $merchant, $paymentlink2);
@@ -208,7 +208,7 @@ class CoreTest extends BaseTest
 
         $this->expectException(BadRequestValidationFailureException::class);
 
-        $this->expectErrorMessage(PaymentLink\NocodeCustomUrl\Core::ENTITY_DUPLICATE_ERROR);
+        $this->expectExceptionMessage(PaymentLink\NocodeCustomUrl\Core::ENTITY_DUPLICATE_ERROR);
 
         $this->repo->transaction(function () use ($data, $merchant, $paymentlink2) {
             return $this->core->upsert($data, $merchant, $paymentlink2);

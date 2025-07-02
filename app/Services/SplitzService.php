@@ -71,6 +71,9 @@ class SplitzService extends Base\Service
      */
     protected $ba;
 
+    public $evalRequestTimeout;
+
+    public $bulkEvalRequestTimeout;
     public function __construct()
     {
         $app                  = App::getFacadeRoot();

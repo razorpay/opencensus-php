@@ -105,7 +105,7 @@ class DisputeTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -4090,7 +4090,7 @@ class DisputeTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -4103,7 +4103,7 @@ class DisputeTest extends TestCase
     {
         $freshdeskClientMock = $this->getMockBuilder(FreshdeskTicketClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods($methods)
+            ->onlyMethods($methods)
             ->getMock();
 
         $this->app->instance('freshdesk_client', $freshdeskClientMock);
@@ -6606,7 +6606,7 @@ class DisputeTest extends TestCase
             ->shouldReceive('bulkCallsToSplitz')
             ->andReturn($output);
     }
-    
+
     protected function mockChargebackTplus5FilesRequest($input,$merchantId)
     {
         $docs = [

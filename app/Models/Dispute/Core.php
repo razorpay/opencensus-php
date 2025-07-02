@@ -1947,7 +1947,7 @@ class Core extends Base\Core
                     'bulk_mail_data' => $bulkMailData,
                     'merchant' => $merchant->toArrayPublic(),
                     'loggingTime' => $loggingTime
-                    
+
                 ]
             );
 

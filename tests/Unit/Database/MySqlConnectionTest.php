@@ -17,20 +17,20 @@ class MySqlConnectionTest extends TestCase
         //
         // Creates mock pdo and statement objects.
         //
-        $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
-        $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
+        $readPdo   = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
+        $writePdo  = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
+                          ->onlyMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                            ->getMock();
 
         //
         // Sets expectations on the mock objects
         //
         $writePdo->expects($this->never())->method('prepare');
-        $readPdo->expects($this->once())->method('prepare')->with('foo')->will($this->returnValue($statement));
+        $readPdo->expects($this->once())->method('prepare')->with('foo')->willReturn($statement);
         $statement->expects($this->once())->method('bindValue')->with('foo', 'bar', 2);
         $statement->expects($this->once())->method('execute');
-        $statement->expects($this->once())->method('fetchAll')->will($this->returnValue(['boom']));
+        $statement->expects($this->once())->method('fetchAll')->willReturn(['boom']);
 
         //
         // Creates mock connection object and executes the select query
@@ -40,17 +40,17 @@ class MySqlConnectionTest extends TestCase
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
                        ->with($this->equalTo(['foo' => 'bar']))
-                       ->will($this->returnValue(['foo' => 'bar']));
+                       ->willReturn(['foo' => 'bar']);
         $results = $mockConnection->select('foo', ['foo' => 'bar']);
         $this->assertEquals(['boom'], $results);
     }
 
     public function testWritePdoSelectedIfInsideTransaction()
     {
-        $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
-        $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
+        $readPdo   = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
+        $writePdo  = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
+                          ->onlyMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
 
         //
@@ -58,10 +58,10 @@ class MySqlConnectionTest extends TestCase
         // not get selected for the SELECT query and writePdo should
         // be selected.
         $readPdo->expects($this->never())->method('prepare');
-        $writePdo->expects($this->once())->method('prepare')->with('foo')->will($this->returnValue($statement));
+        $writePdo->expects($this->once())->method('prepare')->with('foo')->willReturn($statement);
         $statement->expects($this->once())->method('bindValue')->with('foo', 'bar', 2);
         $statement->expects($this->once())->method('execute');
-        $statement->expects($this->once())->method('fetchAll')->will($this->returnValue(['boom']));
+        $statement->expects($this->once())->method('fetchAll')->willReturn(['boom']);
 
         $mockConnection = $this->getMockConnection(['prepareBindings'], $writePdo);
         $mockConnection->setReadPdo($readPdo);
@@ -73,7 +73,7 @@ class MySqlConnectionTest extends TestCase
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
                        ->with($this->equalTo(['foo' => 'bar']))
-                       ->will($this->returnValue(['foo' => 'bar']));
+                       ->willReturn(['foo' => 'bar']);
 
         $results = $mockConnection->select('foo', ['foo' => 'bar']);
         $this->assertEquals(['boom'], $results);
@@ -81,20 +81,20 @@ class MySqlConnectionTest extends TestCase
 
     public function testRecheckReplicaLagWithNoReplicaLag()
     {
-        $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
-        $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
+        $readPdo   = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
+        $writePdo  = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
+                          ->onlyMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
 
         //
         // Sets expectations on the mock objects
         //
         $writePdo->expects($this->never())->method('prepare');
-        $readPdo->expects($this->once())->method('prepare')->with('foo')->will($this->returnValue($statement));
+        $readPdo->expects($this->once())->method('prepare')->with('foo')->willReturn($statement);
         $statement->expects($this->once())->method('bindValue')->with('foo', 'bar', 2);
         $statement->expects($this->once())->method('execute');
-        $statement->expects($this->once())->method('fetchAll')->will($this->returnValue(['boom']));
+        $statement->expects($this->once())->method('fetchAll')->willReturn(['boom']);
 
         //
         // Creates mock connection object and executes the select query
@@ -104,7 +104,7 @@ class MySqlConnectionTest extends TestCase
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
                        ->with($this->equalTo(['foo' => 'bar']))
-                       ->will($this->returnValue(['foo' => 'bar']));
+                       ->willReturn(['foo' => 'bar']);
 
         //
         // Sets these attributes on the connection object so that lag check
@@ -118,27 +118,27 @@ class MySqlConnectionTest extends TestCase
 
     public function testRecheckReplicaLagWithReplicationLag()
     {
-        $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
-        $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
+        $readPdo   = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
+        $writePdo  = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
+                          ->onlyMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
 
-        $lagChecker = $this->getMockBuilder(RedisLagChecker::class)->setMethods(['useReadPdoIfApplicable'])->getMock();
+        $lagChecker = $this->getMockBuilder(RedisLagChecker::class)->onlyMethods(['useReadPdoIfApplicable'])->getMock();
         $lagChecker->expects($this->once())
                    ->method('useReadPdoIfApplicable')
                    ->with($readPdo)
-                   ->will($this->returnValue(null));
+                   ->willReturn(null);
 
         //
         // The read pdo should never be used, as the replica lag
         // check gives null, indicating that the write connection should get used.
         //
         $readPdo->expects($this->never())->method('prepare');
-        $writePdo->expects($this->once())->method('prepare')->with('foo')->will($this->returnValue($statement));
+        $writePdo->expects($this->once())->method('prepare')->with('foo')->willReturn($statement);
         $statement->expects($this->once())->method('bindValue')->with('foo', 'bar', 2);
         $statement->expects($this->once())->method('execute');
-        $statement->expects($this->once())->method('fetchAll')->will($this->returnValue(['boom']));
+        $statement->expects($this->once())->method('fetchAll')->willReturn(['boom']);
 
         $mockConnection = $this->getMockConnection(['prepareBindings'], $writePdo);
         $mockConnection->setReadPdo($readPdo);
@@ -147,7 +147,7 @@ class MySqlConnectionTest extends TestCase
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
                        ->with($this->equalTo(['foo' => 'bar']))
-                       ->will($this->returnValue(['foo' => 'bar']));
+                       ->willReturn(['foo' => 'bar']);
 
         //
         // Sets these attributes on the connection object so that lag check
@@ -161,10 +161,10 @@ class MySqlConnectionTest extends TestCase
 
     public function testWritePdoSelectedWhenRecordsHaveBeenModified()
     {
-        $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
-        $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
+        $readPdo   = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
+        $writePdo  = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
+                          ->onlyMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
 
         //
@@ -173,10 +173,10 @@ class MySqlConnectionTest extends TestCase
         // for the SELECT query.
         //
         $readPdo->expects($this->never())->method('prepare');
-        $writePdo->expects($this->once())->method('prepare')->with('foo')->will($this->returnValue($statement));
+        $writePdo->expects($this->once())->method('prepare')->with('foo')->willReturn($statement);
         $statement->expects($this->once())->method('bindValue')->with('foo', 'bar', 2);
         $statement->expects($this->once())->method('execute');
-        $statement->expects($this->once())->method('fetchAll')->will($this->returnValue(['boom']));
+        $statement->expects($this->once())->method('fetchAll')->willReturn(['boom']);
 
         $mockConnection = $this->getMockConnection(['prepareBindings'], $writePdo);
         $mockConnection->setReadPdo($readPdo);
@@ -189,7 +189,7 @@ class MySqlConnectionTest extends TestCase
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
                        ->with($this->equalTo(['foo' => 'bar']))
-                       ->will($this->returnValue(['foo' => 'bar']));
+                       ->willReturn(['foo' => 'bar']);
 
         $results = $mockConnection->select('foo', ['foo' => 'bar']);
         $this->assertEquals(['boom'], $results);
@@ -197,10 +197,10 @@ class MySqlConnectionTest extends TestCase
 
     public function testReadPdoSelectedWhenForceReadPdoSet()
     {
-        $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
-        $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
+        $readPdo   = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
+        $writePdo  = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
+                          ->onlyMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
 
         //
@@ -208,10 +208,10 @@ class MySqlConnectionTest extends TestCase
         // since forceReadPdo is used, the readPdo still gets selected.
         //
         $writePdo->expects($this->never())->method('prepare');
-        $readPdo->expects($this->once())->method('prepare')->with('foo')->will($this->returnValue($statement));
+        $readPdo->expects($this->once())->method('prepare')->with('foo')->willReturn($statement);
         $statement->expects($this->once())->method('bindValue')->with('foo', 'bar', 2);
         $statement->expects($this->once())->method('execute');
-        $statement->expects($this->once())->method('fetchAll')->will($this->returnValue(['boom']));
+        $statement->expects($this->once())->method('fetchAll')->willReturn(['boom']);
 
         $mockConnection = $this->getMockConnection(['prepareBindings'], $writePdo);
         $mockConnection->setReadPdo($readPdo);
@@ -220,19 +220,19 @@ class MySqlConnectionTest extends TestCase
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
                        ->with($this->equalTo(['foo' => 'bar']))
-                       ->will($this->returnValue(['foo' => 'bar']));
+                       ->willReturn(['foo' => 'bar']);
         $results = $mockConnection->select('foo', ['foo' => 'bar']);
         $this->assertEquals(['boom'], $results);
     }
 
     public function testReadConnectionIsInitalisedAndUsedFirstTime()
     {
-        $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
-        $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
+        $readPdo   = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
+        $writePdo  = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
+                          ->onlyMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
-        $lagChecker = $this->getMockBuilder(RedisLagChecker::class)->setMethods(['useReadPdoIfApplicable'])->getMock();
+        $lagChecker = $this->getMockBuilder(RedisLagChecker::class)->onlyMethods(['useReadPdoIfApplicable'])->getMock();
 
         //
         // Initially before a query is executed, the pdo is a callback, which
@@ -240,7 +240,7 @@ class MySqlConnectionTest extends TestCase
         // criteria are satisfied. This is how laravel lazy loads the connection.
         //
         $writePdo->expects($this->never())->method('prepare');
-        $readPdo->expects($this->once())->method('prepare')->with('foo')->will($this->returnValue($statement));
+        $readPdo->expects($this->once())->method('prepare')->with('foo')->willReturn($statement);
         $callback = function () use ($readPdo)
         {
             return $readPdo;
@@ -249,10 +249,10 @@ class MySqlConnectionTest extends TestCase
         $lagChecker->expects($this->once())
                    ->method('useReadPdoIfApplicable')
                    ->with($callback)
-                   ->will($this->returnValue($readPdo));
+                   ->willReturn($readPdo);
         $statement->expects($this->once())->method('bindValue')->with('foo', 'bar', 2);
         $statement->expects($this->once())->method('execute');
-        $statement->expects($this->once())->method('fetchAll')->will($this->returnValue(['boom']));
+        $statement->expects($this->once())->method('fetchAll')->willReturn(['boom']);
 
         $mockConnection = $this->getMockConnection(['prepareBindings'], $writePdo);
         $mockConnection->setReadPdo($callback);
@@ -266,20 +266,20 @@ class MySqlConnectionTest extends TestCase
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
                        ->with($this->equalTo(['foo' => 'bar']))
-                       ->will($this->returnValue(['foo' => 'bar']));
+                       ->willReturn(['foo' => 'bar']);
         $results = $mockConnection->select('foo', ['foo' => 'bar']);
         $this->assertEquals(['boom'], $results);
     }
 
     public function testWritePdoSelectedOnException()
     {
-        $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
-        $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
+        $readPdo   = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
+        $writePdo  = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
+                          ->onlyMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
         $lagChecker = $this->getMockBuilder(RedisLagChecker::class)
-                           ->setMethods(['useReadPdoIfApplicable'])
+                           ->onlyMethods(['useReadPdoIfApplicable'])
                            ->getMock();
 
         //
@@ -287,7 +287,7 @@ class MySqlConnectionTest extends TestCase
         // connection, we always pick the write connection.
         //
         $readPdo->expects($this->never())->method('prepare');
-        $writePdo->expects($this->once())->method('prepare')->with('foo')->will($this->returnValue($statement));
+        $writePdo->expects($this->once())->method('prepare')->with('foo')->willReturn($statement);
         $callback = function () use ($readPdo)
         {
             return $readPdo;
@@ -295,10 +295,10 @@ class MySqlConnectionTest extends TestCase
         $lagChecker->expects($this->once())
                    ->method('useReadPdoIfApplicable')
                    ->with($callback)
-                   ->will($this->throwException(new \Exception('error')));
+                   ->willThrowException(new \Exception('error'));
         $statement->expects($this->once())->method('bindValue')->with('foo', 'bar', 2);
         $statement->expects($this->once())->method('execute');
-        $statement->expects($this->once())->method('fetchAll')->will($this->returnValue(['boom']));
+        $statement->expects($this->once())->method('fetchAll')->willReturn(['boom']);
 
         $mockConnection = $this->getMockConnection(['prepareBindings'], $writePdo);
         $mockConnection->setReadPdo($callback);
@@ -306,33 +306,33 @@ class MySqlConnectionTest extends TestCase
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
                        ->with($this->equalTo(['foo' => 'bar']))
-                       ->will($this->returnValue(['foo' => 'bar']));
+                       ->willReturn(['foo' => 'bar']);
         $results = $mockConnection->select('foo', ['foo' => 'bar']);
         $this->assertEquals(['boom'], $results);
     }
 
     public function testReadPdoSelectedInForceReadPdo()
     {
-        $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
-        $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
+        $readPdo   = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
+        $writePdo  = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
+                          ->onlyMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
 
-        $lagChecker = $this->getMockBuilder(RedisLagChecker::class)->setMethods(['useReadPdoIfApplicable'])->getMock();
+        $lagChecker = $this->getMockBuilder(RedisLagChecker::class)->onlyMethods(['useReadPdoIfApplicable'])->getMock();
         $lagChecker->expects($this->once())
                    ->method('useReadPdoIfApplicable')
                    ->with($readPdo)
-                   ->will($this->returnValue($readPdo));
+                   ->willReturn($readPdo);
 
          //
         // Sets expectations on the mock objects
         //
         $writePdo->expects($this->never())->method('prepare');
-        $readPdo->expects($this->once())->method('prepare')->with('foo')->will($this->returnValue($statement));
+        $readPdo->expects($this->once())->method('prepare')->with('foo')->willReturn($statement);
         $statement->expects($this->once())->method('bindValue')->with('foo', 'bar', 2);
         $statement->expects($this->once())->method('execute');
-        $statement->expects($this->once())->method('fetchAll')->will($this->returnValue(['boom']));
+        $statement->expects($this->once())->method('fetchAll')->willReturn(['boom']);
 
         $mockConnection = $this->getMockConnection(['prepareBindings'], $writePdo);
         $mockConnection->setReadPdo($readPdo);
@@ -341,7 +341,7 @@ class MySqlConnectionTest extends TestCase
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
                        ->with($this->equalTo(['foo' => 'bar']))
-                       ->will($this->returnValue(['foo' => 'bar']));
+                       ->willReturn(['foo' => 'bar']);
 
         //
         // Sets these attributes on the connection object so that lag check
@@ -357,26 +357,26 @@ class MySqlConnectionTest extends TestCase
 
     public function testReadPdoSelectedInForceSlaveRouteReadPdo()
     {
-        $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
-        $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
+        $readPdo   = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
+        $writePdo  = $this->getMockBuilder(MockPDO::class)->onlyMethods(['prepare'])->getMock();
         $statement = $this->getMockBuilder(PDOStatement::class)
-                          ->setMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
+                          ->onlyMethods(['execute', 'fetchAll', 'bindValue', 'setFetchMode'])
                           ->getMock();
 
-        $lagChecker = $this->getMockBuilder(RedisLagChecker::class)->setMethods(['useReadPdoIfApplicable'])->getMock();
+        $lagChecker = $this->getMockBuilder(RedisLagChecker::class)->onlyMethods(['useReadPdoIfApplicable'])->getMock();
         $lagChecker->expects($this->once())
                    ->method('useReadPdoIfApplicable')
                    ->with($readPdo)
-                   ->will($this->returnValue($readPdo));
+                   ->willReturn($readPdo);
 
          //
         // Sets expectations on the mock objects
         //
         $writePdo->expects($this->never())->method('prepare');
-        $readPdo->expects($this->once())->method('prepare')->with('foo')->will($this->returnValue($statement));
+        $readPdo->expects($this->once())->method('prepare')->with('foo')->willReturn($statement);
         $statement->expects($this->once())->method('bindValue')->with('foo', 'bar', 2);
         $statement->expects($this->once())->method('execute');
-        $statement->expects($this->once())->method('fetchAll')->will($this->returnValue(['boom']));
+        $statement->expects($this->once())->method('fetchAll')->willReturn(['boom']);
 
         $mockConnection = $this->getMockConnection(['prepareBindings'], $writePdo);
         $mockConnection->setReadPdo($readPdo);
@@ -385,7 +385,7 @@ class MySqlConnectionTest extends TestCase
         $mockConnection->expects($this->once())
                        ->method('prepareBindings')
                        ->with($this->equalTo(['foo' => 'bar']))
-                       ->will($this->returnValue(['foo' => 'bar']));
+                       ->willReturn(['foo' => 'bar']);
 
         //
         // Sets these attributes on the connection object so that lag check
@@ -422,7 +422,7 @@ class MySqlConnectionTest extends TestCase
         ];
 
         $connection = $this->getMockBuilder(MySqlConnection::class)
-                           ->setMethods($methods)
+                           ->onlyMethods($methods)
                            ->setConstructorArgs([$pdo, '', '', $config])
                            ->getMock();
 

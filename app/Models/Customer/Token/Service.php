@@ -2544,7 +2544,7 @@ class Service extends Base\Service
 
         $batchResult = (new Batch\Core)->create($params, (new Merchant\Core())->get('100000Razorpay'));
 
-        return $batchResult;
+        return $batchResult->toArray();
     }
 
     private function getValidTokenIds(array $tokensData): array

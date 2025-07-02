@@ -69,7 +69,7 @@ class RewardsTest extends TestCase
 
         $this->startTest();
     }
-    
+
     public function testUpdateRewardWithUniqueCoupons()
     {
         $this->ba->adminAuth();

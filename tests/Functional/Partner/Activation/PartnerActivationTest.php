@@ -56,7 +56,7 @@ class PartnerActivationTest extends OAuthTestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -496,7 +496,7 @@ class PartnerActivationTest extends OAuthTestCase
         $this->createAndFetchMocks();
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->onlyMethods(['pushIdentifyAndTrackEvent'])
             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -531,7 +531,7 @@ class PartnerActivationTest extends OAuthTestCase
         $this->createAndFetchMocks();
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->onlyMethods(['pushIdentifyAndTrackEvent'])
             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -558,7 +558,7 @@ class PartnerActivationTest extends OAuthTestCase
         $this->createAndFetchMocks();
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->onlyMethods(['pushIdentifyAndTrackEvent'])
             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -593,7 +593,7 @@ class PartnerActivationTest extends OAuthTestCase
         $this->createAndFetchMocks();
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->onlyMethods(['pushIdentifyAndTrackEvent'])
             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -785,7 +785,7 @@ class PartnerActivationTest extends OAuthTestCase
     protected function createAndFetchMocks()
     {
         $mockMC = $this->getMockBuilder(MerchantCore::class)
-            ->setMethods(['isRazorxExperimentEnable'])
+            ->onlyMethods(['isRazorxExperimentEnable'])
             ->getMock();
 
         $mockMC->expects($this->any())

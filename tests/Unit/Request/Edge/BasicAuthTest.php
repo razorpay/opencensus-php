@@ -40,7 +40,7 @@ class BasicAuthTest extends TestCase
     {
         $mock = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['canModifyPassport','isEzetapApiApp'])
+            ->onlyMethods(['canModifyPassport','isEzetapApiApp'])
             ->getMock();
         $this->app->instance('basicauth', $mock);
 
@@ -51,7 +51,7 @@ class BasicAuthTest extends TestCase
     {
         $mock = $this->getMockBuilder(Route::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['isInternalAuthWithPassportRoutes'])
+            ->onlyMethods(['isInternalAuthWithPassportRoutes'])
             ->getMock();
         $this->app->instance('api.route', $mock);
 
@@ -62,7 +62,7 @@ class BasicAuthTest extends TestCase
     {
         $traceMock = $this->getMockBuilder(Trace::class)
             ->disableOriginalConstructor()
-            ->setMethods(['info','warning'])
+            ->onlyMethods(['info','warning'])
             ->getMock();
         $this->app->instance('trace', $traceMock);
         return $traceMock;

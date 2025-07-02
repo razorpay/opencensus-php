@@ -21,7 +21,7 @@ trait MocksRedisTrait
         ], $override);
 
         $redisMock = $this->getMockBuilder(Redis::class)
-            ->setMethods(array_keys($options))
+            ->onlyMethods(array_keys($options))
             ->getMock();
 
         $redisMockery = \Mockery::mock(Redis::class);

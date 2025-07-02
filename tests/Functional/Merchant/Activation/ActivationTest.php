@@ -133,7 +133,7 @@ class ActivationTest extends OAuthTestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -149,7 +149,7 @@ class ActivationTest extends OAuthTestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -2015,7 +2015,7 @@ class ActivationTest extends OAuthTestCase
     {
         $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods([$methodName])
+                            ->onlyMethods([$methodName])
                             ->getMock();
 
         $this->app->instance('hubspot', $hubSpotMock);
@@ -2332,7 +2332,7 @@ class ActivationTest extends OAuthTestCase
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->onlyMethods(['pushIdentifyAndTrackEvent'])
                             ->getMock();
 
         $this->app['rzp.mode'] = Mode::LIVE;
@@ -2389,7 +2389,7 @@ class ActivationTest extends OAuthTestCase
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->onlyMethods(['pushIdentifyAndTrackEvent'])
                             ->getMock();
 
         $this->app['rzp.mode'] = Mode::LIVE;
@@ -4079,7 +4079,7 @@ class ActivationTest extends OAuthTestCase
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -5187,7 +5187,7 @@ class ActivationTest extends OAuthTestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -5541,7 +5541,7 @@ class ActivationTest extends OAuthTestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5588,7 +5588,7 @@ class ActivationTest extends OAuthTestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5632,7 +5632,7 @@ class ActivationTest extends OAuthTestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
                           ->setConstructorArgs([$this->app])
-                          ->setMethods(['generateOtp'])
+                          ->onlyMethods(['generateOtp'])
                           ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5687,7 +5687,7 @@ class ActivationTest extends OAuthTestCase
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5751,7 +5751,7 @@ class ActivationTest extends OAuthTestCase
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5974,7 +5974,7 @@ class ActivationTest extends OAuthTestCase
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->onlyMethods(['pushIdentifyAndTrackEvent'])
             ->getMock();
 
         $this->app['rzp.mode'] = Mode::LIVE;
@@ -7068,7 +7068,7 @@ class ActivationTest extends OAuthTestCase
     {
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->onlyMethods(['pushIdentifyAndTrackEvent'])
                             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);

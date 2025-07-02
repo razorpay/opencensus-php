@@ -1376,7 +1376,7 @@ class PaymentCreateTest extends TestCase
 
         $esMock = $this->getMockBuilder(EsClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['bulkUpdate'])
+            ->onlyMethods(['bulkUpdate'])
             ->getMock();
 
         $this->app->instance('es', $esMock);
@@ -1421,7 +1421,7 @@ class PaymentCreateTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -1554,7 +1554,7 @@ class PaymentCreateTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         // we are ramping up auth terminal selection hence to make sure all test cases passes
@@ -2799,7 +2799,7 @@ class PaymentCreateTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         // we are ramping up auth terminal selection hence to make sure all test cases passes
@@ -2869,7 +2869,7 @@ class PaymentCreateTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         // we are ramping up auth terminal selection hence to make sure all test cases passes
@@ -2925,7 +2925,7 @@ class PaymentCreateTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         // we are ramping up auth terminal selection hence to make sure all test cases passes
@@ -2980,7 +2980,7 @@ class PaymentCreateTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         // we are ramping up auth terminal selection hence to make sure all test cases passes
@@ -3035,7 +3035,7 @@ class PaymentCreateTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         // we are ramping up auth terminal selection hence to make sure all test cases passes
@@ -3090,7 +3090,7 @@ class PaymentCreateTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         // we are ramping up auth terminal selection hence to make sure all test cases passes
@@ -3189,7 +3189,7 @@ class PaymentCreateTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         // we are ramping up auth terminal selection hence to make sure all test cases passes
@@ -4261,7 +4261,7 @@ class PaymentCreateTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -9551,7 +9551,7 @@ class PaymentCreateTest extends TestCase
 
         $esMock = $this->getMockBuilder(EsClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['bulkUpdate'])
+            ->onlyMethods(['bulkUpdate'])
             ->getMock();
 
         $this->app->instance('es', $esMock);
@@ -9811,7 +9811,7 @@ class PaymentCreateTest extends TestCase
 
         $esMock = $this->getMockBuilder(EsClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['bulkUpdate'])
+            ->onlyMethods(['bulkUpdate'])
             ->getMock();
 
         $this->app->instance('es', $esMock);
@@ -10616,7 +10616,7 @@ class PaymentCreateTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
         $this->app->instance('razorx', $razorxMock);
         $this->app->razorx->method('getTreatment')
@@ -10669,7 +10669,7 @@ class PaymentCreateTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
         $this->app->instance('razorx', $razorxMock);
         $this->app->razorx->method('getTreatment')
@@ -11305,7 +11305,7 @@ class PaymentCreateTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         // we are ramping up auth terminal selection hence to make sure all test cases passes
@@ -11743,7 +11743,7 @@ class PaymentCreateTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
         $this->app->instance('razorx', $razorxMock);
         $this->app->razorx->method('getTreatment')

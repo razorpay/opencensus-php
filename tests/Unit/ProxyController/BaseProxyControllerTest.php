@@ -15,7 +15,9 @@ class BaseProxyControllerTest extends TestCase
 
     public function testHandleAdminProxyRequestsBadRequest()
     {
-        $stub = $this->getMockForAbstractClass(BaseProxyController::class, ['cmma']);
+        $stub = $this->getMockBuilder(BaseProxyController::class)
+            ->setConstructorArgs(['cmma'])
+            ->getMock();
 
         $this->expectExceptionCode(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
 
@@ -26,7 +28,13 @@ class BaseProxyControllerTest extends TestCase
 
     public function testHandleAdminProxyRequestsNoAccess()
     {
-        $stub = $this->getMockForAbstractClass(BaseProxyController::class, ['cmma'],'', true, true, true, ['getRequestInstance']);
+        $stub = $this->getMockBuilder(BaseProxyController::class)
+            ->setConstructorArgs(['cmma'])
+            ->enableOriginalConstructor()
+            ->enableOriginalClone()
+            ->onlyMethods(['getRequestInstance'])
+            ->getMock();
+
 
         $this->callMethod($stub, 'registerRoutesMap', [['GetUserList' => "/twirp\/rzp.example.user.v1.UserAPI\/List/"]]);
 
@@ -43,7 +51,7 @@ class BaseProxyControllerTest extends TestCase
 
         $stub->expects($this->exactly(1))
              ->method('getRequestInstance')
-             ->will($this->returnValue($request));
+             ->willReturn($request);
 
         $this->expectException('\RZP\Exception\BadRequestException');
 
@@ -54,7 +62,12 @@ class BaseProxyControllerTest extends TestCase
     {
         $this->ba->adminAuth();
 
-        $stub = $this->getMockForAbstractClass(BaseProxyController::class, ['cmma'], '', true, true, true, ['getRequestInstance','request']);
+        $stub = $this->getMockBuilder(BaseProxyController::class)
+            ->setConstructorArgs(['cmma'])
+            ->enableOriginalConstructor()
+            ->enableOriginalClone()
+            ->onlyMethods(['getRequestInstance', 'request'])
+            ->getMock();
 
         $this->callMethod($stub, 'registerRoutesMap', [['GetUserList' => "/twirp\/rzp.example.user.v1.UserAPI\/List/"]]);
 
@@ -72,7 +85,7 @@ class BaseProxyControllerTest extends TestCase
 
         $stub->expects($this->exactly(1))
              ->method('getRequestInstance')
-             ->will($this->returnValue($request));
+             ->willReturn($request);
 
         $stub->expects($this->exactly(1))
              ->method('request')
@@ -87,7 +100,7 @@ class BaseProxyControllerTest extends TestCase
                  'X-Client-ID'   => '',
                  'rzpctx-dev-serve-user' => null,
              ], '{}', "POST", ['timeout' => null])
-             ->will($this->returnValue(new \WpOrg\Requests\Response));
+             ->willReturn(new \WpOrg\Requests\Response);
 
         $stub->handleAdminProxyRequests('/twirp/rzp.example.user.v1.UserAPI/List');
     }

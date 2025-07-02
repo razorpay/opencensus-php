@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\M2MReferral\FriendBuy;
 
 use Request;
+use RZP\Models\Base\UniqueIdEntity as UniqueIdEntity;
 use Throwable;
 use Carbon\Carbon;
 use \WpOrg\Requests\Session as Requests_Session;
@@ -288,7 +289,7 @@ class FriendBuyClient
 
         $secret = $this->config[Constants::WEBHOOK][Constants::HASH_KEY];
 
-        $calculatedHash = utf8_encode(base64_encode(hash_hmac(Constants::SHA256, $request->getContent(), $secret, true)));
+        $calculatedHash = UniqueIdEntity::encodeData(base64_encode(hash_hmac(Constants::SHA256, $request->getContent(), $secret, true)), 'UTF-8', 'ISO-8859-1');
 
         $actualHash = $request->header(Constants::X_FRIENDBUY_HMAC_SHA256);
 

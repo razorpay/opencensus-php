@@ -41,7 +41,7 @@ class TrustSocietyNgoBusinessCertificateDocTest extends TestCase
         $merchantDetail = $this->getMerchantDetailFixture(BusinessType::getIndexFromKey(BusinessType::TRUST));
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);

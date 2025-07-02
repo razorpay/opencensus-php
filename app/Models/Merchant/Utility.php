@@ -7,8 +7,8 @@ use DOMXPath;
 use ZipArchive;
 use DOMDocument;
 use Response;
-use Carbon\Carbon;
 use RZP\Constants\Country;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 use RZP\Constants\InternationalStates;
 
@@ -63,9 +63,9 @@ class Utility
         return  Carbon::create(2023, 12, 8,0,0,0);
     }
 
-    public static function getRowMerchantCountry(): string 
+    public static function getRowMerchantCountry(): string
     {
-        
+
         $merchant = app('basicauth')->getMerchant();
 
         return strtolower($merchant?->getCountry() ?? 'IN');
@@ -73,19 +73,19 @@ class Utility
 
     public static function getRowStateClass(?string $merchantCountry = null)
     {
-        if (!$merchantCountry) 
+        if (!$merchantCountry)
         {
             $merchantCountry = self::getRowMerchantCountry();
         }
 
         $stateClasses = InternationalStates::$rowCountryStateMap;
-        
+
         return $stateClasses[$merchantCountry] ?? \RZP\Constants\IndianStates::class;
     }
 
     public static function addDummyIfsccode(): string
     {
-        if (self::getRowMerchantCountry() === Country::IN) 
+        if (self::getRowMerchantCountry() === Country::IN)
         {
             return '';
         }
@@ -93,10 +93,10 @@ class Utility
         return 'HDFC0000001';
     }
 
-    public static function isValidMalaysianBIC($bic): bool 
+    public static function isValidMalaysianBIC($bic): bool
     {
         $pattern = '/^[A-Z]{4}MY[A-Z0-9]{2}([A-Z0-9]{3})?$/';
-        
+
         return (preg_match($pattern, $bic) === 1) && (strlen($bic) === 8 || strlen($bic) === 11);
     }
 }

@@ -19,7 +19,7 @@ trait PaymentVerifyTrait {
     protected function setupRedisMockForBlockedGateway($paymentArray = [])
     {
         $redisMock = $this->getMockBuilder(Redis::class)
-            ->setMethods(['hGetAll', 'set', 'get', 'setex', 'client', 'exists', 'hDel', 'hSet', 'incr', 'expire', 'hGet'])
+            ->onlyMethods(['hGetAll', 'set', 'get', 'setex', 'client', 'exists', 'hDel', 'hSet', 'incr', 'expire', 'hGet'])
             ->getMock();
 
         Redis::shouldReceive('connection')
@@ -71,7 +71,7 @@ trait PaymentVerifyTrait {
     protected function setupRedisMockForBlockedPayments()
     {
         $redisMock = $this->getMockBuilder(Redis::class)
-            ->setMethods(['hGetAll', 'set', 'get', 'setex', 'client', 'exists', 'hDel', 'hSet', 'incr', 'expire', 'hGet'])
+            ->onlyMethods(['hGetAll', 'set', 'get', 'setex', 'client', 'exists', 'hDel', 'hSet', 'incr', 'expire', 'hGet'])
             ->getMock();
 
         Redis::shouldReceive('connection')

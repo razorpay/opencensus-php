@@ -288,7 +288,7 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->ba->directAuth();
 
         $razorxMock = $this->getMockBuilder(Merchant\Core::class)
-                           ->setMethods(['isRazorxExperimentEnable'])
+                           ->onlyMethods(['isRazorxExperimentEnable'])
                            ->getMock();
 
         $razorxMock->expects($this->any())
@@ -329,7 +329,7 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->ba->directAuth();
 
         $razorxMock = $this->getMockBuilder(Merchant\Core::class)
-                           ->setMethods(['isRazorxExperimentEnable'])
+                           ->onlyMethods(['isRazorxExperimentEnable'])
                            ->getMock();
 
         $razorxMock->expects($this->any())
@@ -2110,7 +2110,7 @@ class PartnerExperienceTest extends OAuthTestCase
         $this->ba->proxyAuth();
 
         $razorxMock = $this->getMockBuilder(Merchant\Core::class)
-                           ->setMethods(['isRazorxExperimentEnable'])
+                           ->onlyMethods(['isRazorxExperimentEnable'])
                            ->getMock();
 
         $razorxMock->expects($this->any())
@@ -2259,7 +2259,7 @@ class PartnerExperienceTest extends OAuthTestCase
         );
 
         $razorxMock = $this->getMockBuilder(Merchant\Core::class)
-                           ->setMethods(['isRazorxExperimentEnable'])
+                           ->onlyMethods(['isRazorxExperimentEnable'])
                            ->getMock();
 
         $razorxMock->expects($this->any())
@@ -3495,7 +3495,7 @@ class PartnerExperienceTest extends OAuthTestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);

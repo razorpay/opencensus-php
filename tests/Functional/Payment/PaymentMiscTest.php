@@ -119,17 +119,17 @@ class PaymentMiscTest extends TestCase
 
     protected function setupRedisMock($getValue)
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['set', 'get'])
+        $redisMock = $this->getMockBuilder(Redis::class)->onlyMethods(['set', 'get'])
                           ->getMock();
 
         Redis::shouldReceive('connection')
              ->andReturn($redisMock);
 
         $redisMock->method('set')
-                  ->will($this->returnValue(true));
+                  ->willReturn(true);
 
         $redisMock->method('get')
-                  ->will($this->returnValue($getValue));
+                  ->willReturn($getValue);
     }
 
     public function testVajraCpsDowntime()

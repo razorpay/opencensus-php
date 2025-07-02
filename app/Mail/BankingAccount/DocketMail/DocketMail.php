@@ -73,7 +73,7 @@ class DocketMail extends Base
     protected function addHtmlView()
     {
        $this->view('emails.banking_account.docket');
-    
+
        return $this;
     }
 

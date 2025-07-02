@@ -34,7 +34,7 @@ class FacadeTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
         ->setConstructorArgs([$this->app])
-        ->setMethods(['getTreatment'])
+        ->onlyMethods(['getTreatment'])
         ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -45,7 +45,7 @@ class FacadeTest extends TestCase
             {
                 return 'on';
             }) );
-        
+
         $merchantId = '1cXSLlUU8V9sXl';
         $orgId      = MerchantEntity::AXIS_ORG_ID; // axis orgId
 
@@ -78,7 +78,7 @@ class FacadeTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
         ->setConstructorArgs([$this->app])
-        ->setMethods(['getTreatment'])
+        ->onlyMethods(['getTreatment'])
         ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -89,7 +89,7 @@ class FacadeTest extends TestCase
             {
                 return 'on';
             }) );
-        
+
         $terminal = $this->fixtures->create('terminal', []);
 
         $dataToEncrypt = 'somerandomdata';

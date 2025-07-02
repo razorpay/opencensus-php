@@ -14,7 +14,7 @@ class ClientTest extends TestCase
         $helper = $this->getClientHelper();
 
         $response = $helper->getGatewayConfig($this->gateway, []);
-        
+
         $this->assertArraySubset([
          Entity::GATEWAY_CONFIG =>  [
              Fields::MCC            => "7298",

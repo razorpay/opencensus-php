@@ -73,7 +73,7 @@ class AsvSyncAccountDeviationClientTest extends TestCase
         $exptectError = new IntegrationException('Could not receive proper response from Account service');
 
         $mockSyncDeviationAsvClient = $this->createMock(SyncDeviationV1\SyncDeviationAPIClient::class);
-        $mockSyncDeviationAsvClient->method('SyncAccountDeviation')->will($this->throwException($mockError));
+        $mockSyncDeviationAsvClient->method('SyncAccountDeviation')->willThrowException($mockError);
 
         $syncDeviation = new SyncAccountDeviationAsvClient($mockSyncDeviationAsvClient);
 

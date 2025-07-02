@@ -263,7 +263,7 @@ class Repository extends Base\Repository
             {
                 return null;
             }
-            
+
             return $this->getSlaveConnection();
         }
         catch (\Throwable $e)

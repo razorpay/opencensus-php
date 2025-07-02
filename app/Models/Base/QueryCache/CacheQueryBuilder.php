@@ -135,7 +135,7 @@ class CacheQueryBuilder extends RememberableQueryBuilder
             // Firing a KeyForgotten event here, to increment the cache_flushes
             // counter. This is to detect, how many flushes happened due to entity update
             //
-            event(new KeyForgotten($this->cachePrefix, [$cacheTags]));
+            event(new KeyForgotten(null, $this->cachePrefix, [$cacheTags]));
         }
         catch (\Throwable $e)
         {

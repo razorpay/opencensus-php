@@ -599,7 +599,7 @@ class CMSTest extends TestCase
         $this->mockInstanceV2->expects($this->once())
             ->method('sendRequest')
             ->with("v2/internal/customers", 'post', $input)
-            ->will($this->throwException(new Exception\ServerErrorException("Request Failed to CMS", \RZP\Error\ErrorCode::SERVER_ERROR_INVALID_RESPONSE,[])));
+            ->willThrowException(new Exception\ServerErrorException("Request Failed to CMS", \RZP\Error\ErrorCode::SERVER_ERROR_INVALID_RESPONSE,[]));
 
         $this->expectException(Exception\ServerErrorException::class);
         $this->expectExceptionMessage('Request Failed to CMS');

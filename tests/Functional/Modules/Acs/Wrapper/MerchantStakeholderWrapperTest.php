@@ -114,7 +114,27 @@ class MerchantStakeholderWrapperTest extends TestCase
         $traceMock = $this->createTraceMock();
         $traceMock->expects($this->never())->method('traceException');
         $merchantStakeholderWrapperMock = $this->getMockedMerchantStakeholderWrapper(['isShadowOrReverseShadowOnForOperation']);
-        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, false);
+//        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, false);
+
+        $merchantStakeholderWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                return null;
+            });
+
         $gotAddress = $merchantStakeholderWrapperMock->processFetchPrimaryResidentialAddressForStakeholder($merchantStakeholderEntity, $apiAddressEntity);
         self::assertEquals($apiAddressEntity, $gotAddress);
         #T0 end
@@ -212,7 +232,26 @@ class MerchantStakeholderWrapperTest extends TestCase
         $merchantStakeholderWrapperMock->setStakeholderAsvClient($merchantStakeholderClient);
 
         $merchantStakeholderWrapperMock->expects($this->exactly(0))->method('logDifferenceIfNotNilAndPushMetrics');
-        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantStakeholderWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return true;
+                }
+
+                return null;
+            });
 
         try {
             $merchantStakeholderWrapperMock->processFetchPrimaryResidentialAddressForStakeholder($merchantStakeholderEntity, $apiAddressEntity);
@@ -243,7 +282,26 @@ class MerchantStakeholderWrapperTest extends TestCase
         $merchantStakeholderWrapperMock->setStakeholderAsvClient($merchantStakeholderClient);
 
         $merchantStakeholderWrapperMock->expects($this->exactly(1))->method('logDifferenceIfNotNilAndPushMetrics')->with('address', ['line1'], $id, '');
-        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantStakeholderWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return true;
+                }
+
+                return null;
+            });
 
         try {
             $gotAsvAddressEntity = $merchantStakeholderWrapperMock->processFetchPrimaryResidentialAddressForStakeholder($merchantStakeholderEntity, $apiAddressEntity);
@@ -265,7 +323,27 @@ class MerchantStakeholderWrapperTest extends TestCase
         $traceMock = $this->createTraceMock();
         $traceMock->expects($this->never())->method('traceException');
         $merchantStakeholderWrapperMock = $this->getMockedMerchantStakeholderWrapper(['isShadowOrReverseShadowOnForOperation']);
-        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, false);
+//        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, false);
+
+        $merchantStakeholderWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args) {
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                return null;
+            });
+
         $gotMerchantStakeholderEntity = $merchantStakeholderWrapperMock->processFetchStakeholderById($id, $merchantStakeholderEntity);
         self::assertEquals($merchantStakeholderEntity, $gotMerchantStakeholderEntity);
         #T0 end
@@ -374,7 +452,27 @@ class MerchantStakeholderWrapperTest extends TestCase
         $traceMock = $this->createTraceMock();
         $traceMock->expects($this->never())->method('traceException');
         $merchantStakeholderWrapperMock = $this->getMockedMerchantStakeholderWrapper(['isShadowOrReverseShadowOnForOperation']);
-        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, false);
+//        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, false);
+
+        $merchantStakeholderWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                return null;
+            });
+
         $gotMerchantStakeholderCollection = $merchantStakeholderWrapperMock->processFetchStakeholdersByMerchantId($merchant_id, $merchantStakeholderCollection);
         self::assertEquals($merchantStakeholderCollection, $gotMerchantStakeholderCollection);
         #T0 end
@@ -493,7 +591,26 @@ class MerchantStakeholderWrapperTest extends TestCase
         $merchantStakeholderWrapperMock->setStakeholderAsvClient($merchantStakeholderClient);
 
         $merchantStakeholderWrapperMock->expects($this->exactly(0))->method('logDifferenceIfNotNilAndPushMetrics');
-        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantStakeholderWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return true;
+                }
+
+                return null;
+            });
 
         try {
             $merchantStakeholderWrapperMock->processFetchStakeholdersByMerchantId($merchant_id, $merchantStakeholderEntity);
@@ -529,7 +646,26 @@ class MerchantStakeholderWrapperTest extends TestCase
             "123456" => ["notes->ok"]
         ];
         $merchantStakeholderWrapperMock->expects($this->exactly(1))->method('logDifferenceIfNotNilAndPushMetrics')->with('stakeholder', $difference, "", $merchant_id);
-        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantStakeholderWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return true;
+                }
+
+                return null;
+            });
 
         try {
             $gotStakeholderEntity = $merchantStakeholderWrapperMock->processFetchStakeholdersByMerchantId($merchant_id, $merchantStakeholderEntity);
@@ -556,8 +692,28 @@ class MerchantStakeholderWrapperTest extends TestCase
             "123456" => "Entity Present in only one of ASV/API",
         ];
         $merchantStakeholderWrapperMock->expects($this->exactly(1))->method('logDifferenceIfNotNilAndPushMetrics')->with('stakeholder', $difference, "",$merchant_id);
-        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
-            ->withConsecutive([$merchant_id, CONSTANT::SHADOW, CONSTANT::READ], [$merchant_id, CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
+//            ->withConsecutive([$merchant_id, CONSTANT::SHADOW, CONSTANT::READ], [$merchant_id, CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantStakeholderWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args) use($merchant_id){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame([$merchant_id, CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame([$merchant_id, CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return true;
+                }
+
+                return null;
+            });
+
         $gotMerchantStakeholderEntity = $merchantStakeholderWrapperMock->processFetchStakeholdersByMerchantId($merchant_id, $merchantStakeholderEntity);
         self::assertEquals(new PublicCollection([]), $gotMerchantStakeholderEntity);
         #T7 end
@@ -574,8 +730,28 @@ class MerchantStakeholderWrapperTest extends TestCase
         $merchantStakeholderWrapperMock->setStakeholderAsvClient($merchantStakeholderClient);
         $difference = [];
         $merchantStakeholderWrapperMock->expects($this->exactly(1))->method('logDifferenceIfNotNilAndPushMetrics')->with('stakeholder', $difference, "",$merchant_id);
-        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
-            ->withConsecutive([$merchant_id, CONSTANT::SHADOW, CONSTANT::READ], [$merchant_id, CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
+//            ->withConsecutive([$merchant_id, CONSTANT::SHADOW, CONSTANT::READ], [$merchant_id, CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantStakeholderWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args) use($merchant_id){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame([$merchant_id, CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame([$merchant_id, CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return true;
+                }
+
+                return null;
+            });
+
         $gotMerchantStakeholderEntity = $merchantStakeholderWrapperMock->processFetchStakeholdersByMerchantId($merchant_id, new PublicCollection([]));
         self::assertEquals(new PublicCollection([]), $gotMerchantStakeholderEntity);
         #T8 end
@@ -599,7 +775,26 @@ class MerchantStakeholderWrapperTest extends TestCase
         $merchantStakeholderWrapperMock->setStakeholderAsvClient($merchantStakeholderClient);
 
         $merchantStakeholderWrapperMock->expects($this->exactly(0))->method('logDifferenceIfNotNilAndPushMetrics');
-        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantStakeholderWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return true;
+                }
+
+                return null;
+            });
 
         try {
             $merchantStakeholderWrapperMock->processFetchStakeholderById($id, $merchantStakeholderEntity);
@@ -638,7 +833,26 @@ class MerchantStakeholderWrapperTest extends TestCase
 
         $difference = ["notes->ok", "name"];
         $merchantStakeholderWrapperMock->expects($this->exactly(1))->method('logDifferenceIfNotNilAndPushMetrics')->with('stakeholder', $difference, $id, "");
-        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantStakeholderWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->withConsecutive(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], ['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantStakeholderWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return true;
+                }
+
+                return null;
+            });
 
         try {
             $gotStakeholderEntity = $merchantStakeholderWrapperMock->processFetchStakeholderById($id, $merchantStakeholderEntity);

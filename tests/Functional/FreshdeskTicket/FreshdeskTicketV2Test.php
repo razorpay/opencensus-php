@@ -102,7 +102,7 @@ class FreshdeskTicketV2Test extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -3421,7 +3421,7 @@ class FreshdeskTicketV2Test extends TestCase
     {
         $druidService = $this->getMockBuilder(MockDruidService::class)
                              ->setConstructorArgs([$this->app])
-                             ->setMethods([ 'getDataFromDruid'])
+                             ->onlyMethods([ 'getDataFromDruid'])
                              ->getMock();
 
         $this->app->instance('druid.service', $druidService);
@@ -3436,7 +3436,7 @@ class FreshdeskTicketV2Test extends TestCase
     {
         $harvesterService = $this->getMockBuilder(HarvesterClient::class)
                                  ->setConstructorArgs([$this->app])
-                                 ->setMethods([ 'getDataFromPinot'])
+                                 ->onlyMethods([ 'getDataFromPinot'])
                                  ->getMock();
 
         $this->app->instance('eventManager', $harvesterService);

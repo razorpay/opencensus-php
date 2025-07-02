@@ -126,7 +126,7 @@ class RefundCreationDataTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['fetchRefundCreateData'])
+                            ->onlyMethods(['fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -188,7 +188,7 @@ class RefundCreationDataTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['fetchRefundCreateData'])
+                            ->onlyMethods(['fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -244,7 +244,7 @@ class RefundCreationDataTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['fetchRefundCreateData'])
+                            ->onlyMethods(['fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -304,7 +304,7 @@ class RefundCreationDataTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['fetchRefundCreateData'])
+                            ->onlyMethods(['fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);

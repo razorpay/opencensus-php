@@ -46,7 +46,7 @@ class CoreTest extends TestCase
     {
         $mozartServiceMock = $this->getMockBuilder(\RZP\Services\Mock\Mozart::class)
                                   ->setConstructorArgs([$this->app])
-                                  ->setMethods(['sendMozartRequest'])
+                                  ->onlyMethods(['sendMozartRequest'])
                                   ->getMock();
 
         $mozartServiceMock->method('sendMozartRequest')
@@ -313,7 +313,7 @@ class CoreTest extends TestCase
     {
         $mock = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getOAuthApplicationId'])
+            ->onlyMethods(['getOAuthApplicationId'])
             ->getMock();
         $this->app->instance('basicauth', $mock);
 

@@ -83,7 +83,7 @@ class SettlementOndemandTest extends TestCase
 
         $razorpayXClientMock = $this->getMockBuilder(RazorpayXClient::class)
                         ->setConstructorArgs([$this->app])
-                        ->setMethods(['createContact', 'createFundAccount'])
+                        ->onlyMethods(['createContact', 'createFundAccount'])
                         ->getMock();
 
         $razorpayXClientMock->method('createContact')

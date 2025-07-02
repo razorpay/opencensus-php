@@ -113,7 +113,7 @@ class InternalStatus
             return;
         }
 
-        $message = "${internalStatus} is not a valid value for 'internal_status'";
+        $message = "{$internalStatus} is not a valid value for 'internal_status'";
 
         throw new BadRequestValidationFailureException($message);
     }
@@ -137,7 +137,7 @@ class InternalStatus
             return;
         }
 
-        $message = "'internal_status' of dispute cannot move from '${currentInternalStatus}' to '${nextInternalStatus}'";
+        $message = "'internal_status' of dispute cannot move from '{$currentInternalStatus}' to '{$nextInternalStatus}'";
 
         throw new BadRequestValidationFailureException($message);
     }

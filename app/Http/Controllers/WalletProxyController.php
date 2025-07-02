@@ -35,7 +35,7 @@ class WalletProxyController extends EdgeProxyController
         $method      = $request->method();
         $path        = $this->getPath($request->path(), $prefixTrim, $prefixAdd);
         $body        = $request->getContent();
-        $contentType = $request->getContentType();
+        $contentType = $request->header('Content-Type');
         $auth        = $hostCfg['auth'];
         $devServeHeader = $request->header(RequestHeader::DEV_SERVE_USER);
 

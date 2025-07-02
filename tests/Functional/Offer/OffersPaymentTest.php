@@ -15,12 +15,14 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Services\OffersEngine as OffersEngine;
 use RZP\Models\Payment\Entity as PaymentEntity;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class OffersPaymentTest extends TestCase
 {
     use PaymentTrait;
+    use RefreshDatabase;
 
     protected function setUp(): void
     {

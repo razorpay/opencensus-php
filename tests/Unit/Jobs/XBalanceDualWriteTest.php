@@ -18,7 +18,7 @@ class XBalanceDualWriteTest extends TestCase
         // Mock the trace service with minimal expectations
         $this->trace = $this->getMockBuilder('Razorpay\Trace\Logger')
             ->disableOriginalConstructor()
-            ->setMethods(['info', 'error', 'traceException', 'count'])
+            ->onlyMethods(['info', 'error', 'traceException', 'count'])
             ->getMock();
 
         // Allow any number of calls to trace methods
@@ -114,4 +114,4 @@ class XBalanceDualWriteTest extends TestCase
         $property->setAccessible(true);
         $property->setValue($object, $value);
     }
-} 
+}

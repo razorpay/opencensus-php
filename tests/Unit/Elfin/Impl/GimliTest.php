@@ -18,7 +18,7 @@ class GimliTest extends TestCase
 
         $this->gimli = $this->getMockBuilder(Elfin\Impl\Gimli::class)
                             ->setConstructorArgs([$gimliConfig])
-                            ->setMethods(['makeRequestAndValidateHeader'])
+                            ->onlyMethods(['makeRequestAndValidateHeader'])
                             ->getMock();
     }
 

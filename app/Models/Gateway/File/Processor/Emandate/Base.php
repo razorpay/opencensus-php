@@ -108,7 +108,7 @@ abstract class Base extends Processor\Base
             $this->gatewayFile->setFileSentAt(time());
 
             $this->gatewayFile->setStatus(Status::FILE_SENT);
-            
+
             $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
         }
         catch (\Throwable $e)

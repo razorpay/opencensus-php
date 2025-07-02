@@ -1,5 +1,7 @@
 <?php
 
+use RZP\Models\Base\UniqueIdEntity as UniqueIdEntity;
+
 if (! function_exists('getTextBetweenStrings'))
 {
     function getTextBetweenStrings($string, $start, $end)
@@ -35,7 +37,7 @@ if (! function_exists('utf8_json_decode'))
 {
     function utf8_json_decode(string $string, bool $assoc = false, int $depth = 512)
     {
-        $utf8Data = utf8_encode($string);
+        $utf8Data = UniqueIdEntity::encodeData($string, 'UTF-8', 'ISO-8859-1');
 
         $jsonOptions = JSON_UNESCAPED_UNICODE;
 
@@ -73,7 +75,7 @@ if (! function_exists('utf8_json_encode'))
             // Encode the key
             if (is_string($key) and mb_detect_encoding($key) !== 'UTF-8')
             {
-                $key = utf8_encode($key);
+                $key = UniqueIdEntity::encodeData($key, 'UTF-8', 'ISO-8859-1');
             }
 
             // Encode the value
@@ -83,7 +85,7 @@ if (! function_exists('utf8_json_encode'))
             }
             else if (is_string($value) and mb_detect_encoding($value) !== 'UTF-8')
             {
-                $utf8Data[$key] = utf8_encode($value);
+                $utf8Data[$key] = UniqueIdEntity::encodeData($value, 'UTF-8', 'ISO-8859-1');
             }
             else
             {

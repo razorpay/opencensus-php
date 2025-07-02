@@ -46,7 +46,7 @@ class BaseV2 extends Mailable
         // "bangalore.clearing@citi.com", "cgsl.iwdw.ecsdr@citi.com", "payment-apps-subscriptions@razorpay.com"
 
         $this->to($this->emails);
-        
+
         return $this;
     }
 

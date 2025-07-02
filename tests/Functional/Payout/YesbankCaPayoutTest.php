@@ -232,7 +232,7 @@ class YesbankCaPayoutTest extends TestCase
     {
         $mozartServiceMock = $this->getMockBuilder(Mozart::class)
                                   ->setConstructorArgs([$this->app])
-                                  ->setMethods(['sendMozartRequest'])
+                                  ->onlyMethods(['sendMozartRequest'])
                                   ->getMock();
 
         $mozartServiceMock->method('sendMozartRequest')
@@ -1784,7 +1784,7 @@ class YesbankCaPayoutTest extends TestCase
     {
         $basMock = $this->getMockBuilder(BankingAccountService::class)
                         ->setConstructorArgs([$this->app])
-                        ->setMethods(['fetchBankingCredentials'])
+                        ->onlyMethods(['fetchBankingCredentials'])
                         ->getMock();
 
         $basMock->method('fetchBankingCredentials')

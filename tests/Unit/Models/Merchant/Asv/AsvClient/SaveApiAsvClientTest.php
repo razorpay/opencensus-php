@@ -93,7 +93,7 @@ class SaveApiAsvClientTest extends TestCase
         $mockError = new accountV1\TwirpError('internal', "account can't be saved due to some unexpected error");
         $expectedError = new IntegrationException("account can't be saved due to some unexpected error");
         $mockSaveAsvAPIClient = $this->createMock(accountv1\SaveApiClient::class);
-        $mockSaveAsvAPIClient->method('Save')->will($this->throwException($mockError));
+        $mockSaveAsvAPIClient->method('Save')->willThrowException($mockError);
 
         $saveApiAsvClient = new SaveApiAsvClient($mockSaveAsvAPIClient);
 

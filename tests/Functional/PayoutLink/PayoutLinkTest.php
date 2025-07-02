@@ -2292,7 +2292,7 @@ class PayoutLinkTest extends TestCase
         // use razorx feature
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -2359,7 +2359,7 @@ class PayoutLinkTest extends TestCase
         // redirection request
         $this->assertEquals(302, $response->getStatusCode());
 
-        $this->assertContentTypeForResponse('text/html; charset=UTF-8', $response);
+        $this->assertContentTypeForResponse('text/html; charset=utf-8', $response);
     }
 
     public function testIntegrateApp()
@@ -2448,7 +2448,7 @@ class PayoutLinkTest extends TestCase
         $plMock = $this->getMockBuilder("RZP\Services\PayoutLinks")
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array("makeRequest"))
+            ->onlyMethods(array("makeRequest"))
             ->getMock();
 
         $plMock->method('makeRequest')->willReturn($response);
@@ -3508,7 +3508,7 @@ class PayoutLinkTest extends TestCase
         $plMock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest'))
+            ->onlyMethods(array('makeRequest'))
             ->getMock();
 
         $plMock->method('makeRequest')->willThrowException(new BadRequestException(
@@ -3525,7 +3525,7 @@ class PayoutLinkTest extends TestCase
         return $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest'))
+            ->onlyMethods(array('makeRequest'))
             ->getMock();
     }
 
@@ -3534,7 +3534,7 @@ class PayoutLinkTest extends TestCase
         $plMock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest'))
+            ->onlyMethods(array('makeRequest'))
             ->getMock();
 
         $plMock->method('makeRequest')->willReturn($successData);
@@ -3547,7 +3547,7 @@ class PayoutLinkTest extends TestCase
         return $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
-            ->setMethods(array('makeRequest'))
+            ->onlyMethods(array('makeRequest'))
             ->getMock();
     }
 
@@ -4154,7 +4154,7 @@ class PayoutLinkTest extends TestCase
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -4227,7 +4227,7 @@ class PayoutLinkTest extends TestCase
     protected function createMetricsMock(array $methods = ['count', 'gauge', 'histogram', 'summary'])
     {
         $mock = $this->getMockBuilder(MetricManager::class)
-            ->setMethods($methods)
+            ->onlyMethods($methods)
             ->getMock();
 
         $this->app['trace']->setMetricsManager($mock);

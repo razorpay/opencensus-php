@@ -27,7 +27,7 @@ class ArtReconProcessTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['initiateRefundRecon'])
+            ->onlyMethods(['initiateRefundRecon'])
             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);

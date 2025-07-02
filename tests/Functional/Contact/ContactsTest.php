@@ -53,7 +53,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getVendorByContactId'])
+            ->onlyMethods(['getVendorByContactId'])
             ->getMock();
 
         $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
@@ -73,7 +73,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getVendorByContactId'])
+            ->onlyMethods(['getVendorByContactId'])
             ->getMock();
 
         $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
@@ -102,7 +102,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getVendorByContactId'])
+            ->onlyMethods(['getVendorByContactId'])
             ->getMock();
 
         $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
@@ -156,7 +156,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getVendorBulk'])
+            ->onlyMethods(['getVendorBulk'])
             ->getMock();
 
         $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
@@ -185,7 +185,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getVendorBulk'])
+            ->onlyMethods(['getVendorBulk'])
             ->getMock();
 
         $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
@@ -223,7 +223,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getVendorBulk'])
+            ->onlyMethods(['getVendorBulk'])
             ->getMock();
 
         $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
@@ -439,7 +439,7 @@ class ContactsTest extends TestCase
     protected function createAndFetchMocks()
     {
         $mockMC = $this->getMockBuilder(MerchantCore::class)
-            ->setMethods(['isRazorxExperimentEnable'])
+            ->onlyMethods(['isRazorxExperimentEnable'])
             ->getMock();
 
         $mockMC->expects($this->any())
@@ -573,7 +573,7 @@ class ContactsTest extends TestCase
     {
         $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createVendor'])
+            ->onlyMethods(['createVendor'])
             ->getMock();
 
         $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
@@ -591,7 +591,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createVendor'])
+            ->onlyMethods(['createVendor'])
             ->getMock();
 
         $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
@@ -618,7 +618,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createVendor'])
+            ->onlyMethods(['createVendor'])
             ->getMock();
 
         $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
@@ -653,7 +653,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createVendor'])
+            ->onlyMethods(['createVendor'])
             ->getMock();
 
         $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
@@ -673,7 +673,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createVendor'])
+            ->onlyMethods(['createVendor'])
             ->getMock();
 
         $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
@@ -691,7 +691,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createVendor'])
+            ->onlyMethods(['createVendor'])
             ->getMock();
 
         $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
@@ -709,7 +709,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createVendor'])
+            ->onlyMethods(['createVendor'])
             ->getMock();
 
         $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
@@ -727,7 +727,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createVendor'])
+            ->onlyMethods(['createVendor'])
             ->getMock();
 
         $this->app->instance('vendor-payment', $vendorPaymentServiceMock);

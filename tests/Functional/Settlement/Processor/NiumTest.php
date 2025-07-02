@@ -90,7 +90,7 @@ class NiumTest extends OAuthTestCase
         $dispute2 = $this->fixtures->create('dispute', [
             'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
             'deduct_at_onset'       => 1,
-            'amount'                => 100, 
+            'amount'                => 100,
             'test'                  => 'nium',
             'amount_deducted'       => 100,
             'deduction_source_type' => 'adjustment',

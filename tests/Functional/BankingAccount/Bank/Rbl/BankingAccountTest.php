@@ -185,7 +185,7 @@ class BankingAccountTest extends TestCase
     {
         $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods([$methodName])
+                            ->onlyMethods([$methodName])
                             ->getMock();
 
         $this->app->instance('hubspot', $hubSpotMock);
@@ -197,7 +197,7 @@ class BankingAccountTest extends TestCase
     {
         $capitalCardsMock = $this->getMockBuilder(CapitalCardsClient::class)
                                  ->setConstructorArgs([$this->app])
-                                 ->setMethods(['getCorpCardAccountDetails'])
+                                 ->onlyMethods(['getCorpCardAccountDetails'])
                                  ->getMock();
 
         $capitalCardsMock->method('getCorpCardAccountDetails')
@@ -1484,7 +1484,7 @@ class BankingAccountTest extends TestCase
         $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-                            ->setMethods(['pushTrackEvent'])
+                            ->onlyMethods(['pushTrackEvent'])
                             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -1565,7 +1565,7 @@ class BankingAccountTest extends TestCase
         $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-                            ->setMethods(['pushTrackEvent'])
+                            ->onlyMethods(['pushTrackEvent'])
                             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -4485,7 +4485,7 @@ class BankingAccountTest extends TestCase
     protected function createAndFetchMocks()
     {
         $mockMC = $this->getMockBuilder(MerchantCore::class)
-            ->setMethods(['isRazorxExperimentEnable'])
+            ->onlyMethods(['isRazorxExperimentEnable'])
             ->getMock();
 
         $mockMC->expects($this->any())
@@ -4502,7 +4502,7 @@ class BankingAccountTest extends TestCase
         $this->createAndFetchMocks();
 
         $segmentMock = $this->getMockBuilder(XSegmentClient::class)
-            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->onlyMethods(['pushIdentifyAndTrackEvent'])
             ->getMock();
 
         $this->app->instance('x-segment', $segmentMock);
@@ -4585,7 +4585,7 @@ class BankingAccountTest extends TestCase
         $this->createAndFetchMocks();
 
         $xsegmentMock = $this->getMockBuilder(XSegmentClient::class)
-            ->setMethods(['pushIdentifyandTrackEvent'])
+            ->onlyMethods(['pushIdentifyandTrackEvent'])
             ->getMock();
 
         $this->app->instance('x-segment', $xsegmentMock);
@@ -9613,7 +9613,7 @@ class BankingAccountTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -9690,7 +9690,7 @@ class BankingAccountTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -12554,7 +12554,7 @@ class BankingAccountTest extends TestCase
     {
         $mozartServiceMock = $this->getMockBuilder(Mozart::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sendMozartRequest'])
+            ->onlyMethods(['sendMozartRequest'])
             ->getMock();
 
         $mozartServiceMock->method('sendMozartRequest')
@@ -13371,7 +13371,7 @@ class BankingAccountTest extends TestCase
     private function getXSegmentMock()
     {
         $xsegmentMock = $this->getMockBuilder(XSegmentClient::class)
-            ->setMethods(['pushIdentifyandTrackEvent'])
+            ->onlyMethods(['pushIdentifyandTrackEvent'])
             ->getMock();
         $this->app->instance('x-segment', $xsegmentMock);
 

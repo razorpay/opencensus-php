@@ -59,7 +59,7 @@ class InvitationTest extends TestCase
             'contact_mobile' => self::DEFAULT_USER_MERCHANT_CONTACT_MOBILE,
         ]);
 
-        $this->merchantTestUtil = new MerchantTest();
+        $this->merchantTestUtil = new MerchantTest('MerchantTest');
 
         $this->mockStorkService();
 
@@ -1153,7 +1153,7 @@ class InvitationTest extends TestCase
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -1289,7 +1289,7 @@ class InvitationTest extends TestCase
 
         $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createInvite'])
+            ->onlyMethods(['createInvite'])
             ->getMock();
 
         $vendorPortalServiceMock->expects($this->once())
@@ -1324,7 +1324,7 @@ class InvitationTest extends TestCase
 
         $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createInvite'])
+            ->onlyMethods(['createInvite'])
             ->getMock();
 
         $vendorPortalServiceMock->expects($this->once())
@@ -1391,7 +1391,7 @@ class InvitationTest extends TestCase
 
         $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createInvite'])
+            ->onlyMethods(['createInvite'])
             ->getMock();
 
         $vendorPortalServiceMock->expects($this->once())
@@ -1434,7 +1434,7 @@ class InvitationTest extends TestCase
 
         $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createInvite'])
+            ->onlyMethods(['createInvite'])
             ->getMock();
 
         $vendorPortalServiceMock->expects($this->once())
@@ -1474,7 +1474,7 @@ class InvitationTest extends TestCase
 
         $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createInvite'])
+            ->onlyMethods(['createInvite'])
             ->getMock();
 
         $vendorPortalServiceMock->expects($this->once())
@@ -1523,7 +1523,7 @@ class InvitationTest extends TestCase
 
         $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createInvite'])
+            ->onlyMethods(['createInvite'])
             ->getMock();
 
         $vendorPortalServiceMock->expects($this->once())
@@ -1562,7 +1562,7 @@ class InvitationTest extends TestCase
 
         $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['acceptInvite'])
+            ->onlyMethods(['acceptInvite'])
             ->getMock();
 
         $vendorPortalServiceMock->expects($this->once())
@@ -1630,7 +1630,7 @@ class InvitationTest extends TestCase
 
         $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['acceptInvite'])
+            ->onlyMethods(['acceptInvite'])
             ->getMock();
 
         $vendorPortalServiceMock->expects($this->once())
@@ -1668,7 +1668,7 @@ class InvitationTest extends TestCase
 
         $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createInvite'])
+            ->onlyMethods(['createInvite'])
             ->getMock();
 
         $vendorPortalServiceMock->expects($this->once())
@@ -1692,7 +1692,7 @@ class InvitationTest extends TestCase
 
         $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createInvite'])
+            ->onlyMethods(['createInvite'])
             ->getMock();
 
         $vendorPortalServiceMock->expects($this->once())
@@ -1716,7 +1716,7 @@ class InvitationTest extends TestCase
 
         $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getInviteToken'])
+            ->onlyMethods(['getInviteToken'])
             ->getMock();
 
         $vendorPortalServiceMock->expects($this->once())

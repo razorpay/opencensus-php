@@ -138,8 +138,6 @@ use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Pricing\Repository as PricingRepo;
 use RZP\Models\BulkWorkflowAction\Constants as BulkActionConstants;
-use function foo\func;
-
 class MerchantTest extends TestCase
 {
     use PaymentTrait;
@@ -223,7 +221,7 @@ class MerchantTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -254,7 +252,7 @@ class MerchantTest extends TestCase
     {
         $capitalCardsMock = $this->getMockBuilder(CapitalCardsClient::class)
                                  ->setConstructorArgs([$this->app])
-                                 ->setMethods(['getCorpCardAccountDetails'])
+                                 ->onlyMethods(['getCorpCardAccountDetails'])
                                  ->getMock();
 
         $capitalCardsMock->method('getCorpCardAccountDetails')
@@ -417,7 +415,7 @@ class MerchantTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
         ->setConstructorArgs([$this->app])
-        ->setMethods(['getTreatment'])
+        ->onlyMethods(['getTreatment'])
         ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -3553,7 +3551,7 @@ class MerchantTest extends TestCase
 
         $harvesterService = $this->getMockBuilder(Mock\HarvesterClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods([ 'getDataFromPinot'])
+            ->onlyMethods([ 'getDataFromPinot'])
             ->getMock();
 
         $this->app->instance('eventManager', $harvesterService);
@@ -13219,7 +13217,7 @@ Team Razorpay',
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatmentBulk'])
+            ->onlyMethods(['getTreatmentBulk'])
             ->getMock();
 
         $response = [
@@ -13230,7 +13228,7 @@ Team Razorpay',
         ];
 
         $razorxMock->method('getTreatmentBulk')
-            ->will($this->onConsecutiveCalls($response));
+            ->willReturn($response);
 
         $this->app->instance('razorx', $razorxMock);
     }
@@ -13252,7 +13250,7 @@ Team Razorpay',
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -13288,7 +13286,7 @@ Team Razorpay',
     {
         $mock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $mock->method('getTreatment')
@@ -14680,7 +14678,7 @@ Team Razorpay',
         $this->startTest();
     }
 
-    public function testEditMerchantCategoryShouldResetMethods()
+    public function testEditMerchantCategoryShouldReonlyMethods()
     {
         $this->createMerchant();
 
@@ -14723,7 +14721,7 @@ Team Razorpay',
         $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
     }
 
-    public function testEditMerchantCategoryShouldResetMethodsWithRuleBasedFeatureFlag()
+    public function testEditMerchantCategoryShouldReonlyMethodsWithRuleBasedFeatureFlag()
     {
         $merchant = $this->createMerchant();
 
@@ -14742,7 +14740,7 @@ Team Razorpay',
         $this->startTest();
     }
 
-    public function testEditMerchantCategoryShouldNotResetMethodsIfResetMethodsInInputIsFalse()
+    public function testEditMerchantCategoryShouldNotReonlyMethodsIfReonlyMethodsInInputIsFalse()
     {
         $this->createMerchant();
 
@@ -14778,7 +14776,7 @@ Team Razorpay',
         $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
     }
 
-    public function testEditMerchantCategoryShouldResetMethodsValidationFailure2()
+    public function testEditMerchantCategoryShouldReonlyMethodsValidationFailure2()
     {
         $this->createMerchant();
 
@@ -15459,7 +15457,7 @@ Team Razorpay',
 
         $ufhServiceMock = $this->getMockBuilder(Mock\UfhService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods([ 'getSignedUrl'])
+            ->onlyMethods([ 'getSignedUrl'])
             ->getMock();
 
         $this->app->instance('ufh.service', $ufhServiceMock);
@@ -17478,7 +17476,7 @@ Team Razorpay',
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -18181,7 +18179,7 @@ The same has been enabled for the account.
 
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-            ->setMethods(['pushIdentifyAndTrackEvent','buildRequestAndSend'])
+            ->onlyMethods(['pushIdentifyAndTrackEvent','buildRequestAndSend'])
             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -18475,7 +18473,7 @@ The same has been enabled for the account.
         {
             $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
                                 ->setConstructorArgs([$this->app])
-                                ->setMethods(['pushIdentifyAndTrackEvent'])
+                                ->onlyMethods(['pushIdentifyAndTrackEvent'])
                                 ->getMock();
 
             $this->app->instance('segment-analytics', $segmentMock);
@@ -18686,25 +18684,25 @@ The same has been enabled for the account.
         app('basicauth')->setMerchant($merchant);
 
         $validatorMock = $this->getMockBuilder(\RZP\Models\Merchant\Service::class)
-            ->setMethods(['isAllowedForBusinessBanking', 'addProductSwitchRole',
+            ->onlyMethods(['isAllowedForBusinessBanking', 'addProductSwitchRole',
                 'captureEventOfInterestOfPrimaryMerchantInBanking', 'addNewBankingErrorFeature',
                 'activateBusinessBankingAndApplyPromotion', 'postProductSwitchActions'])
             ->getMock();
 
         $validatorMock->method('isAllowedForBusinessBanking')
-            ->will($this->returnValue(true));
+            ->willReturn(true);
 
         $validatorMock->method('addProductSwitchRole')
-            ->will($this->onConsecutiveCalls(...array_get($args, "addProductSwitchRole", [])));
+            ->willReturn(...array_get($args, "addProductSwitchRole", []));
 
         $validatorMock->method('captureEventOfInterestOfPrimaryMerchantInBanking')
-            ->will($this->returnValue(null));
+            ->willReturn(null);
 
         $validatorMock->method('addNewBankingErrorFeature')
-            ->will($this->returnValue(null));
+            ->willReturn(null);
 
         $validatorMock->method('activateBusinessBankingAndApplyPromotion')
-            ->will($this->returnValue(null));
+            ->willReturn(null);
 
         if (! empty(array_get($args, "postProductSwitchActions")))
         {
@@ -18714,7 +18712,7 @@ The same has been enabled for the account.
         else
         {
             $validatorMock->method('postProductSwitchActions')
-                ->will($this->returnValue(null));
+                ->willReturn(null);
         }
 
         $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
@@ -19553,7 +19551,7 @@ The same has been enabled for the account.
 
         $mozartServiceMock = $this->getMockBuilder(Mozart::class)
                                   ->setConstructorArgs([$this->app])
-                                  ->setMethods(['sendMozartRequest'])
+                                  ->onlyMethods(['sendMozartRequest'])
                                   ->getMock();
 
         $mozartServiceMock->method('sendMozartRequest')
@@ -19609,7 +19607,7 @@ The same has been enabled for the account.
 
         $mozartServiceMock = $this->getMockBuilder(Mozart::class)
                                   ->setConstructorArgs([$this->app])
-                                  ->setMethods(['sendMozartRequest'])
+                                  ->onlyMethods(['sendMozartRequest'])
                                   ->getMock();
 
         $mozartServiceMock->method('sendMozartRequest')
@@ -19686,7 +19684,7 @@ The same has been enabled for the account.
 
         $mozartServiceMock = $this->getMockBuilder(Mozart::class)
                                   ->setConstructorArgs([$this->app])
-                                  ->setMethods(['sendMozartRequest'])
+                                  ->onlyMethods(['sendMozartRequest'])
                                   ->getMock();
 
         $mozartServiceMock->method('sendMozartRequest')
@@ -19745,7 +19743,7 @@ The same has been enabled for the account.
 
         $mozartServiceMock = $this->getMockBuilder(Mozart::class)
                                   ->setConstructorArgs([$this->app])
-                                  ->setMethods(['sendMozartRequest'])
+                                  ->onlyMethods(['sendMozartRequest'])
                                   ->getMock();
 
         $exception = new GatewayErrorException("GATEWAY_ERROR_UNKNOWN_ERROR",
@@ -19845,7 +19843,7 @@ The same has been enabled for the account.
 
         $mozartServiceMock = $this->getMockBuilder(Mozart::class)
                                   ->setConstructorArgs([$this->app])
-                                  ->setMethods(['sendMozartRequest'])
+                                  ->onlyMethods(['sendMozartRequest'])
                                   ->getMock();
 
         $mozartServiceMock->method('sendMozartRequest')

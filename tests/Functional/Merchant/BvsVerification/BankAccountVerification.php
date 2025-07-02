@@ -69,7 +69,7 @@ class MerchantDetailTest extends TestCase
     protected function createAndFetchMocks()
     {
         $mockMC = $this->getMockBuilder(MerchantCore::class)
-                       ->setMethods(['isRazorxExperimentEnable'])
+                       ->onlyMethods(['isRazorxExperimentEnable'])
                        ->getMock();
 
         $mockMC->expects($this->any())
@@ -85,7 +85,7 @@ class MerchantDetailTest extends TestCase
     {
         $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods([$methodName])
+                            ->onlyMethods([$methodName])
                             ->getMock();
 
         $this->app->instance('hubspot', $hubSpotMock);
@@ -98,7 +98,7 @@ class MerchantDetailTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -119,7 +119,7 @@ class MerchantDetailTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);

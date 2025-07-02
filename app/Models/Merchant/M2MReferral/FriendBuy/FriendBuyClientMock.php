@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\M2MReferral\FriendBuy;
 
 use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
+use RZP\Models\Base\UniqueIdEntity as UniqueIdEntity;
 
 class FriendBuyClientMock
 {
@@ -145,7 +146,7 @@ class FriendBuyClientMock
 
         $secret = $this->config[Constants::WEBHOOK][Constants::HASH_KEY];
 
-        $calculatedHash = utf8_encode(base64_encode(hash_hmac(Constants::SHA256, $request->getContent(), $secret, true)));
+        $calculatedHash = UniqueIdEntity::encodeData(base64_encode(hash_hmac(Constants::SHA256, $request->getContent(), $secret, true)), 'UTF-8', 'ISO-8859-1');
 
         $actualHash = $request->header(Constants::X_FRIENDBUY_HMAC_SHA256);
 

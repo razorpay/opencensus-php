@@ -225,7 +225,7 @@ class ExceptionTest extends TestCase
 
         $handler = $this->getMockBuilder($class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['isTesting'])
+            ->onlyMethods(['isTesting'])
             ->getMock();
 
         $this->app->instance('exception.handler', $handler);

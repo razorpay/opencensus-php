@@ -3825,7 +3825,7 @@ trait PaymentTrait
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['getFileBasedRefunds', 'bulkUpdateRefundReference1'])
+                            ->onlyMethods(['getFileBasedRefunds', 'bulkUpdateRefundReference1'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -3875,7 +3875,7 @@ trait PaymentTrait
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment', 'getCachedTreatment'])
+                           ->onlyMethods(['getTreatment', 'getCachedTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -4005,7 +4005,7 @@ trait PaymentTrait
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment', 'getCachedTreatment'])
+                           ->onlyMethods(['getTreatment', 'getCachedTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -4026,7 +4026,7 @@ trait PaymentTrait
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->onlyMethods(['getTreatment', 'getCachedTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -4271,7 +4271,7 @@ trait PaymentTrait
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         // we are ramping up auth terminal selection hence to make sure all test cases passes

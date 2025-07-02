@@ -1049,7 +1049,7 @@ class PricingTest extends TestCase
     public function testFetchPricingPlan()
     {
         $id = $this->createPricingPlan2()['id'];
-        $testData = $this->testData[$this->getName()];
+        $testData = $this->testData[__FUNCTION__];
         $testData['request']['url'] = $testData['request']['url'] . $id;
 
         $this->ba->pricingAppAuth('test');
@@ -1059,7 +1059,7 @@ class PricingTest extends TestCase
     }
     public function testFetchPricingPlanWithAdditionalFlags() {
         $id = $this->createPricingPlan2()['id'];
-        $testData = $this->testData[$this->getName()];
+        $testData = $this->testData[__FUNCTION__];
         $testData['request']['url'] = $testData['request']['url'] . $id;
         $this->ba->pricingAppAuth('test');
         $postSetupData = [];

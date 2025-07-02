@@ -54,7 +54,6 @@ class ErrorMappingService
             if ($isFileExists === false)
             {
                 $this->readMappingFromFiles();
-
                 break;
             }
         }

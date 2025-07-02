@@ -142,7 +142,7 @@ class ElfinWrapperTest extends BaseTest
     {
         $gimli = $this->getMockBuilder(Elfin\Impl\Gimli::class)
             ->setConstructorArgs([$this->app['config']->get('applications.elfin.gimli')])
-            ->setMethods($mockMethods)
+            ->onlyMethods($mockMethods)
             ->getMock();
 
         $hash = array_get($inputs, 'hash', self::CUSTOM_SLUG_VALUE);
@@ -160,7 +160,7 @@ class ElfinWrapperTest extends BaseTest
 
         $elfin = $this->getMockBuilder(Elfin\Mock\Service::class)
             ->setConstructorArgs([$this->app['config'], $this->app['trace']])
-            ->setMethods(['driver'])
+            ->onlyMethods(['driver'])
             ->getMock();
 
         $elfin->expects($this->any())

@@ -33,7 +33,7 @@ class CombinedNachCiti extends Base
     const ZIP_FILE  = 'RAZORP_CANCELLATION_{$utilityCode}_{$date}-{$countZipFile}';
     const STEP      = 'cancel';
 
-    
+
     protected $fileStore = [];
     protected $mailData  = [];
 
@@ -66,7 +66,7 @@ class CombinedNachCiti extends Base
 
                 $this->generateZipFile($dirName);
             }
-            
+
             $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATED);
 
             $this->trace->info(
@@ -81,7 +81,7 @@ class CombinedNachCiti extends Base
         catch (\Throwable $e)
         {
             $this->generateMetricForEmandate(Metric::EMANDATE_FILE_GENERATION_ERROR);
-            
+
             throw new GatewayFileException(ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE, [
                 'id' => $this->gatewayFile->getId(),
             ], $e);
@@ -122,7 +122,7 @@ class CombinedNachCiti extends Base
         ];
 
         $this->sendBeamRequest($data, [], $mailInfo, true);
-        
+
         $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
     }
 }

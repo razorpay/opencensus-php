@@ -87,7 +87,7 @@ class ShopifyTest extends TestCase {
 
         $magicCheckoutServiceClientMock = $this->getMockBuilder(Client::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sendRequest'])
+            ->onlyMethods(['sendRequest'])
             ->getMock();
 
         $this->app->instance('magic_checkout_service_client', $magicCheckoutServiceClientMock);
@@ -116,7 +116,7 @@ class ShopifyTest extends TestCase {
 
         $magicCheckoutServiceClientMock = $this->getMockBuilder(Client::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sendRequest'])
+            ->onlyMethods(['sendRequest'])
             ->getMock();
 
         $this->app->instance('magic_checkout_service_client', $magicCheckoutServiceClientMock);
@@ -138,7 +138,7 @@ class ShopifyTest extends TestCase {
 
         $magicCheckoutServiceClientMock = $this->getMockBuilder(Client::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sendRequest'])
+            ->onlyMethods(['sendRequest'])
             ->getMock();
 
         $this->app->instance('magic_checkout_service_client', $magicCheckoutServiceClientMock);
@@ -173,7 +173,7 @@ class ShopifyTest extends TestCase {
 
         $magicCheckoutServiceClientMock = $this->getMockBuilder(Client::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sendRequest'])
+            ->onlyMethods(['sendRequest'])
             ->getMock();
 
         $this->app->instance('magic_checkout_service_client', $magicCheckoutServiceClientMock);
@@ -195,7 +195,7 @@ class ShopifyTest extends TestCase {
 
         $magicCheckoutServiceClientMock = $this->getMockBuilder(Client::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sendRequest'])
+            ->onlyMethods(['sendRequest'])
             ->getMock();
 
         $this->app->instance('magic_checkout_service_client', $magicCheckoutServiceClientMock);

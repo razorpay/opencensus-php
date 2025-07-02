@@ -108,6 +108,10 @@ class UserTest extends TestCase
 
     protected $coreMock;
 
+    private $callIndex;
+
+    private $callbacks = [];
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/UserTestData.php';
@@ -118,7 +122,29 @@ class UserTest extends TestCase
 
         $this->app['config']->set('applications.authzXPlatformAdmin.mock', true);
 
+        $this->callIndex = 0;
+
+        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
+
+        $this->authServiceMock
+            ->method('sendRequest')
+            ->willReturnCallback(function ($url, $method, $data) {
+                foreach ($this->callbacks as $callback) {
+                    $response = $callback($url, $method, $data, $this->callIndex);
+                    if ($response !== null) {
+                        $this->callIndex++;
+                        return $response;
+                    }
+                }
+                return null;
+            });
+
         $this->createAndFetchMocks();
+    }
+
+    private function addMockCallback(callable $callback)
+    {
+        $this->callbacks[] = $callback;
     }
 
     public function testCreate()
@@ -940,7 +966,7 @@ class UserTest extends TestCase
     {
         $salesforceClientMock = $this->getMockBuilder(SalesForceClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['captureInterestOfPrimaryMerchantInBanking', 'sendProductSwitchDetails'])
+            ->onlyMethods(['captureInterestOfPrimaryMerchantInBanking', 'sendProductSwitchDetails'])
             ->getMock();
 
         $this->app->instance('salesforce', $salesforceClientMock);
@@ -1671,7 +1697,7 @@ class UserTest extends TestCase
     {
         $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods([$methodName])
+            ->onlyMethods([$methodName])
             ->getMock();
 
         $this->app->instance('hubspot', $hubSpotMock);
@@ -2484,7 +2510,7 @@ class UserTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -3254,7 +3280,7 @@ class UserTest extends TestCase
     protected function createAndFetchMocks()
     {
         $mockMC = $this->getMockBuilder(MerchantCore::class)
-            ->setMethods(['isRazorxExperimentEnable'])
+            ->onlyMethods(['isRazorxExperimentEnable'])
             ->getMock();
 
         $mockMC->expects($this->any())
@@ -3271,126 +3297,146 @@ class UserTest extends TestCase
 
     public function setAuthServiceMockForGetApplicationForMobileApp($merchantId)
     {
-        $this->authServiceMock
-            ->expects($this->at(0))
-            ->method('sendRequest')
-            ->with('applications', 'GET',[
-                'type'        => 'mobile_app',
-                'merchant_id' => $merchantId
-            ])
-            ->willReturn([
-                'items' => [
-                ]
-            ]);
+        $payload = [
+            'type' => 'mobile_app',
+            'merchant_id' => $merchantId
+        ];
+
+        $this->addMockCallback(function ($url, $method, $data, $callIndex) use ($payload) {
+            if ($callIndex === 0 && $url === 'applications' && $method === 'GET' && $data === $payload) {
+                return [
+                    'items' => [
+                    ]
+                ];
+            }
+            return null;
+        });
     }
 
     public function setAuthServiceMockForGetApplicationForMobileAppForSwitchMerchant()
     {
-        $this->authServiceMock
-            ->expects($this->at(0))
-            ->method('sendRequest')
-            ->with('applications', 'GET',[
-                'type'        => 'mobile_app',
-                'merchant_id' => '10000000000000'
-            ])
-            ->willReturn([
-                'items' => [
-                    [
-                        'id'                => 'appidfigorithi',
-                        'type'              => 'mobile_app',
-                        'client_details'    =>  [
-                            'prod'   =>  [
-                                'id'     =>  'client_id',
-                                'secret' =>  'client_secret',
-                            ]
-                        ]
-                    ]
-                ]
-            ]);
+        $payload1 = [
+            'type'        => 'mobile_app',
+            'merchant_id' => '10000000000000'
+        ];
 
-        $this->authServiceMock
-            ->expects($this->at(2))
-            ->method('sendRequest')
-            ->with('applications', 'GET',[
-                'type'        => 'mobile_app',
-                'merchant_id' => '20000000000000'
-            ])
-            ->willReturn([
-                'items' => [
-                    [
-                        'id'                => 'appidfigorithi',
-                        'type'              => 'mobile_app',
-                        'client_details'    =>  [
-                            'prod'   =>  [
-                                'id'     =>  'client_id',
-                                'secret' =>  'client_secret',
+        $this->addMockCallback(function ($url, $method, $data, $callIndex) use ($payload1) {
+            if ($callIndex === 0 && $url === 'applications' && $method === 'GET' && $data === $payload1) {
+                return [
+                    'items' => [
+                        [
+                            'id'                => 'appidfigorithi',
+                            'type'              => 'mobile_app',
+                            'client_details'    =>  [
+                                'prod'   =>  [
+                                    'id'     =>  'client_id',
+                                    'secret' =>  'client_secret',
+                                ]
                             ]
                         ]
                     ]
-                ]
-            ]);
+                ];
+            }
+            return null;
+        });
+
+        $payload2 = [
+            'type'        => 'mobile_app',
+            'merchant_id' => '20000000000000'
+        ];
+
+        $this->addMockCallback(function ($url, $method, $data, $callIndex) use ($payload2) {
+            if($callIndex === 2 && $url === 'applications' && $method === 'GET' && $data === $payload2) {
+                return [
+                    'items' => [
+                        [
+                            'id'                => 'appidfigorithi',
+                            'type'              => 'mobile_app',
+                            'client_details'    =>  [
+                                'prod'   =>  [
+                                    'id'     =>  'client_id',
+                                    'secret' =>  'client_secret',
+                                ]
+                            ]
+                        ]
+                    ]
+                ];
+            }
+            return null;
+        });
     }
 
     public function setAuthServiceMockForPostApplicationForMobileApp($merchantId)
     {
-        $this->authServiceMock
-            ->expects($this->at(1))
-            ->method('sendRequest')
-            ->with('applications', 'POST',[
-                'name'        => 'RX Mobile',
-                'website'     => 'https://www.razorpay.com/x',
-                'type'        => 'mobile_app',
-                'merchant_id' => $merchantId
-            ])
-            ->willReturn([
-                'id'                => 'appidfigorithi',
-                'type'              => 'mobile_app',
-                'client_details'    =>  [
-                    'prod'   =>  [
-                        'id'     =>  'client_id',
-                        'secret' =>  'client_secret',
+        $payload = [
+            'name'        => 'RX Mobile',
+            'website'     => 'https://www.razorpay.com/x',
+            'type'        => 'mobile_app',
+            'merchant_id' => $merchantId
+        ];
+
+        $this->addMockCallback(function ($url, $method, $data, $callIndex) use ($payload) {
+            if ($callIndex === 1 && $url === 'applications' && $method === 'POST' && $data === $payload) {
+                return [
+                    'id'             => 'appidfigorithi',
+                    'type'           => 'mobile_app',
+                    'client_details' => [
+                        'prod' => [
+                            'id' => 'client_id',
+                            'secret' => 'client_secret'
+                        ]
                     ]
-                ]
-            ]);
+                ];
+            }
+            return null;
+        });
+
     }
 
     public function setAuthServiceMockForPostTokenForMobileApp($userId, $index = 2)
     {
-        $this->authServiceMock
-            ->expects($this->at($index))
-            ->method('sendRequest')
-            ->with('token','POST',[
-                'client_id'             => 'client_id',
-                'client_secret'         => 'client_secret',
-                'grant_type'            => 'mobile_app_client_credentials',
-                'scope'                 => 'x_mobile_app',
-                'mode'                  => 'live',
-                'user_id'               => $userId
-            ])
-            ->willReturn([
-                'public_token'       => 'rzp_test_oauth_10000000000000',
-                'token_type'         => 'Bearer',
-                'expires_in'         => 7862400,
-                'access_token'       => 'access_token',
-                'refresh_token'      => 'refresh_token',
-                'client_id'          => 'client_id',
-            ]);
+        $payload = [
+            'client_id'     => 'client_id',
+            'client_secret' => 'client_secret',
+            'grant_type'    => 'mobile_app_client_credentials',
+            'scope'         => 'x_mobile_app',
+            'mode'          => 'live',
+            'user_id'       => $userId
+        ];
+
+        $this->addMockCallback(function ($url, $method, $data, $callIndex) use ($payload, $index) {
+            if ($callIndex === $index && $url === 'token' && $method === 'POST' && $data === $payload) {
+                return [
+                    'public_token'  => 'rzp_test_oauth_10000000000000',
+                    'token_type'    => 'Bearer',
+                    'expires_in'    => 7862400,
+                    'access_token'  => 'access_token',
+                    'refresh_token' => 'refresh_token',
+                    'client_id'     => 'client_id',
+                ];
+            }
+            return null;
+        });
     }
 
     public function setAuthServiceMockForRevokeToken($index = 1)
     {
-        $this->authServiceMock
-            ->expects($this->at($index))
-            ->method('sendRequest')
-            ->with('revoke','POST',[
-                'client_id'          => 'client_id',
-                'client_secret'      => 'client_secret',
-                'token_type_hint'    => 'access_token',
-                'token'              => 'token',
-            ])
-            ->willReturn([
-                'message' => 'Token Revoked'
-            ]);
+        $payload = [
+            'client_id'          => 'client_id',
+            'client_secret'      => 'client_secret',
+            'token_type_hint'    => 'access_token',
+            'token'              => 'token',
+        ];
+
+        $this->addMockCallback(function ($url, $method, $data, $callIndex) use ($payload, $index) {
+            if($callIndex === $index && $url === 'revoke' && $method === 'POST' && $data === $payload) {
+                return [
+                    'message' => 'Token Revoked'
+                ];
+            }
+            return null;
+        });
+
     }
 
     public function testLoginForMobileOauth()
@@ -3422,8 +3468,6 @@ class UserTest extends TestCase
 
         $this->ba->dashboardGuestAppAuth();
 
-        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
-
         $this->setAuthServiceMockForGetApplicationForMobileApp($merchantId);
 
         $this->setAuthServiceMockForPostApplicationForMobileApp($merchantId);
@@ -3431,6 +3475,7 @@ class UserTest extends TestCase
         $this->setAuthServiceMockForPostTokenForMobileApp($user->getId());
 
         $this->startTest();
+
     }
 
     public function testLoginForMobileOauthWithError()
@@ -3462,8 +3507,6 @@ class UserTest extends TestCase
 
         $this->ba->dashboardGuestAppAuth();
 
-        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
-
         $this->setAuthServiceMockForGetApplicationForMobileApp($merchantId);
 
         $this->setAuthServiceMockForPostApplicationForMobileApp($merchantId);
@@ -3473,8 +3516,6 @@ class UserTest extends TestCase
 
     public function testOauthLogout()
     {
-        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
-
         $this->setAuthServiceMockForGetApplicationForMobileApp('10000000000000');
 
         $this->setAuthServiceMockForPostApplicationForMobileApp('10000000000000');
@@ -3498,8 +3539,6 @@ class UserTest extends TestCase
         ];
 
         $this->fixtures->create('user:user_merchant_mapping', $mappingData);
-
-        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
 
         $this->setAuthServiceMockForGetApplicationForMobileAppForSwitchMerchant();
 
@@ -3541,44 +3580,50 @@ class UserTest extends TestCase
 
         $this->ba->dashboardGuestAppAuth();
 
-        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
+        $payload1 = [
+            'type'        => 'mobile_app',
+            'merchant_id' => $merchantId
+        ];
 
-        $this->authServiceMock
-            ->expects($this->at(0))
-            ->method('sendRequest')
-            ->with('applications', 'GET',[
-                'type'        => 'mobile_app',
-                'merchant_id' => $merchantId
-            ])
-            ->willReturn([
-                'items' => [
-                    [
-                        'type'              => 'mobile_app',
-                        'client_details'    =>  [
-                            'prod'   =>  [
-                                'id'     =>  'test_client_id',
-                                'secret' =>  'test_client_secret',
+        $this->addMockCallback(function ($url, $method, $data, $callIndex) use (&$payload1) {
+            if($callIndex === 0 && $url === 'applications' && $method === 'GET' && $data == $payload1 ) {
+                return [
+                    'items' => [
+                        [
+                            'type'              => 'mobile_app',
+                            'client_details'    =>  [
+                                'prod'   =>  [
+                                    'id'     =>  'test_client_id',
+                                    'secret' =>  'test_client_secret',
+                                ]
                             ]
                         ]
                     ]
-                ]
-            ]);
+                ];
+            }
 
-        $this->authServiceMock
-            ->expects($this->at(1))
-            ->method('sendRequest')
-            ->with('token','POST',[
-                'client_id'             => 'test_client_id',
-                'client_secret'         => 'test_client_secret',
-                'grant_type'            => 'mobile_app_refresh_token',
-                'refresh_token'         => 'test_refresh_token',
-            ])
-            ->willReturn([
-                'token_type'         => 'Bearer',
-                'expires_in'         => 7862400,
-                'access_token'       => 'new_access_token',
-                'refresh_token'      => 'updated_refresh_token',
-            ]);
+            return null;
+        });
+
+        $payload2 = [
+            'client_id'             => 'test_client_id',
+            'client_secret'         => 'test_client_secret',
+            'grant_type'            => 'mobile_app_refresh_token',
+            'refresh_token'         => 'test_refresh_token',
+        ];
+
+        $this->addMockCallback(function ($url, $method, $data, $callIndex) use (&$payload2) {
+            if($callIndex === 1 && $url === 'token' && $method === 'POST' && $data == $payload2) {
+                return [
+                    'token_type'         => 'Bearer',
+                    'expires_in'         => 7862400,
+                    'access_token'       => 'new_access_token',
+                    'refresh_token'      => 'updated_refresh_token',
+                ];
+            }
+
+            return null;
+        });
 
         $this->startTest();
     }
@@ -3690,7 +3735,7 @@ class UserTest extends TestCase
     public function testSegmentEventLogin(){
 
         $xsegmentMock = $this->getMockBuilder(XSegmentClient::class)
-            ->setMethods(['pushIdentifyandTrackEvent'])
+            ->onlyMethods(['pushIdentifyandTrackEvent'])
             ->getMock();
 
         $dcsMock = $this->getMockBuilder(DCSService::class)
@@ -3887,7 +3932,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -3922,7 +3967,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -3990,7 +4035,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -4354,7 +4399,7 @@ class UserTest extends TestCase
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -4376,7 +4421,7 @@ class UserTest extends TestCase
         $this->enableRazorXTreatmentForRazorX();
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -4402,7 +4447,7 @@ class UserTest extends TestCase
         $this->enableRazorXTreatmentForRazorX();
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -4514,7 +4559,7 @@ class UserTest extends TestCase
         $this->enableRazorXTreatmentForRazorX();
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -4625,7 +4670,7 @@ class UserTest extends TestCase
         $this->enableRazorXTreatmentForRazorX();
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -4717,7 +4762,7 @@ class UserTest extends TestCase
         $this->enableRazorXTreatmentForRazorX();
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -4817,7 +4862,7 @@ class UserTest extends TestCase
         $this->enableRazorXTreatmentForRazorX();
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -4895,7 +4940,7 @@ class UserTest extends TestCase
         $this->enableRazorXTreatmentForRazorX();
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -4978,7 +5023,7 @@ class UserTest extends TestCase
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5005,8 +5050,6 @@ class UserTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $testData = &$this->testData[__FUNCTION__];
-
-        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
 
         $this->setAuthServiceMockForGetApplicationForMobileApp($merchantId);
 
@@ -5077,7 +5120,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5127,7 +5170,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5169,7 +5212,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5211,7 +5254,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5259,7 +5302,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5304,7 +5347,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5352,7 +5395,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5388,7 +5431,7 @@ class UserTest extends TestCase
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5406,7 +5449,7 @@ class UserTest extends TestCase
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5482,7 +5525,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5569,7 +5612,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5605,7 +5648,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5644,7 +5687,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5781,7 +5824,7 @@ class UserTest extends TestCase
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5839,7 +5882,7 @@ class UserTest extends TestCase
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5867,7 +5910,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -5903,7 +5946,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -6336,8 +6379,6 @@ class UserTest extends TestCase
         $testData['request']['content'] = $content;
 
         $this->ba->dashboardGuestAppAuth();
-
-        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
 
         $this->setAuthServiceMockForGetApplicationForMobileApp($merchantId);
 
@@ -6871,7 +6912,7 @@ class UserTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setCOnstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -6911,7 +6952,7 @@ class UserTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setCOnstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -7265,31 +7306,33 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
-
         $this->setAuthServiceMockForGetApplicationForMobileApp($merchantId);
 
         $this->setAuthServiceMockForPostApplicationForMobileApp($merchantId);
 
-        $this->authServiceMock
-            ->expects($this->at(2))
-            ->method('sendRequest')
-            ->with('token','POST',[
-                'client_id'             => 'client_id',
-                'client_secret'         => 'client_secret',
-                'grant_type'            => 'mobile_app_client_credentials',
-                'scope'                 => 'x_mobile_app_2fa_token',
-                'mode'                  => 'live',
-                'user_id'               => $user->getId()
-            ])
-            ->willReturn([
-                'public_token'       => 'rzp_test_oauth_10000000000000',
-                'token_type'         => 'Bearer',
-                'expires_in'         => 7862400,
-                'access_token'       => 'access_token',
-                'refresh_token'      => 'refresh_token',
-                'client_id'          => 'client_id',
-            ]);
+        $payload1 = [
+            'client_id'             => 'client_id',
+            'client_secret'         => 'client_secret',
+            'grant_type'            => 'mobile_app_client_credentials',
+            'scope'                 => 'x_mobile_app_2fa_token',
+            'mode'                  => 'live',
+            'user_id'               => $user->getId()
+        ];
+
+        $this->addMockCallback(function ($url, $method, $data, $callIndex) use($payload1){
+            if($callIndex === 2 && $method === 'POST' && $url === 'token' && $data === $payload1){
+                return [
+                    'public_token'       => 'rzp_test_oauth_10000000000000',
+                    'token_type'         => 'Bearer',
+                    'expires_in'         => 7862400,
+                    'access_token'       => 'access_token',
+                    'refresh_token'      => 'refresh_token',
+                    'client_id'          => 'client_id',
+                ];
+            }
+
+            return null;
+        });
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -7332,31 +7375,32 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
-
         $this->setAuthServiceMockForGetApplicationForMobileApp($merchantId);
 
         $this->setAuthServiceMockForPostApplicationForMobileApp($merchantId);
 
-        $this->authServiceMock
-            ->expects($this->at(2))
-            ->method('sendRequest')
-            ->with('token','POST',[
-                'client_id'             => 'client_id',
-                'client_secret'         => 'client_secret',
-                'grant_type'            => 'mobile_app_client_credentials',
-                'scope'                 => 'x_mobile_app_2fa_token',
-                'mode'                  => 'live',
-                'user_id'               => $user->getId()
-            ])
-            ->willReturn([
-                'public_token'       => 'rzp_test_oauth_10000000000000',
-                'token_type'         => 'Bearer',
-                'expires_in'         => 7862400,
-                'access_token'       => 'access_token',
-                'refresh_token'      => 'refresh_token',
-                'client_id'          => 'client_id',
-            ]);
+        $payload1 = [
+            'client_id'             => 'client_id',
+            'client_secret'         => 'client_secret',
+            'grant_type'            => 'mobile_app_client_credentials',
+            'scope'                 => 'x_mobile_app_2fa_token',
+            'mode'                  => 'live',
+            'user_id'               => $user->getId()
+        ];
+
+        $this->addMockCallback(function ($url, $method, $data, $callIndex) use($payload1){
+            if($callIndex === 2 && $method === 'POST' && $url === 'token' && $data === $payload1){
+                return [
+                    'public_token'       => 'rzp_test_oauth_10000000000000',
+                    'token_type'         => 'Bearer',
+                    'expires_in'         => 7862400,
+                    'access_token'       => 'access_token',
+                    'refresh_token'      => 'refresh_token',
+                    'client_id'          => 'client_id',
+                ];
+            }
+            return null;
+        });
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -7399,31 +7443,33 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
-
         $this->setAuthServiceMockForGetApplicationForMobileApp($merchantId);
 
         $this->setAuthServiceMockForPostApplicationForMobileApp($merchantId);
 
-        $this->authServiceMock
-            ->expects($this->at(2))
-            ->method('sendRequest')
-            ->with('token','POST',[
-                'client_id'             => 'client_id',
-                'client_secret'         => 'client_secret',
-                'grant_type'            => 'mobile_app_client_credentials',
-                'scope'                 => 'x_mobile_app_2fa_token',
-                'mode'                  => 'live',
-                'user_id'               => $user->getId()
-            ])
-            ->willReturn([
-                'public_token'       => 'rzp_test_oauth_10000000000000',
-                'token_type'         => 'Bearer',
-                'expires_in'         => 7862400,
-                'access_token'       => 'access_token',
-                'refresh_token'      => 'refresh_token',
-                'client_id'          => 'client_id',
-            ]);
+        $payload = [
+            'client_id'             => 'client_id',
+            'client_secret'         => 'client_secret',
+            'grant_type'            => 'mobile_app_client_credentials',
+            'scope'                 => 'x_mobile_app_2fa_token',
+            'mode'                  => 'live',
+            'user_id'               => $user->getId()
+        ];
+
+        $this->addMockCallback(function ($url, $method, $data , $callIndex) use($payload){
+            if($callIndex === 2 && $method === 'POST' && $url === 'token' && $data === $payload){
+                return [
+                    'public_token'       => 'rzp_test_oauth_10000000000000',
+                    'token_type'         => 'Bearer',
+                    'expires_in'         => 7862400,
+                    'access_token'       => 'access_token',
+                    'refresh_token'      => 'refresh_token',
+                    'client_id'          => 'client_id',
+                ];
+            }
+
+            return null;
+        });
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -7466,31 +7512,33 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
-
         $this->setAuthServiceMockForGetApplicationForMobileApp($merchantId);
 
         $this->setAuthServiceMockForPostApplicationForMobileApp($merchantId);
 
-        $this->authServiceMock
-            ->expects($this->at(2))
-            ->method('sendRequest')
-            ->with('token','POST',[
-                'client_id'             => 'client_id',
-                'client_secret'         => 'client_secret',
-                'grant_type'            => 'mobile_app_client_credentials',
-                'scope'                 => 'x_mobile_app_2fa_token',
-                'mode'                  => 'live',
-                'user_id'               => $user->getId()
-            ])
-            ->willReturn([
-                'public_token'       => 'rzp_test_oauth_10000000000000',
-                'token_type'         => 'Bearer',
-                'expires_in'         => 7862400,
-                'access_token'       => 'access_token',
-                'refresh_token'      => 'refresh_token',
-                'client_id'          => 'client_id',
-            ]);
+        $payload = [
+            'client_id'             => 'client_id',
+            'client_secret'         => 'client_secret',
+            'grant_type'            => 'mobile_app_client_credentials',
+            'scope'                 => 'x_mobile_app_2fa_token',
+            'mode'                  => 'live',
+            'user_id'               => $user->getId()
+        ];
+
+        $this->addMockCallback(function ($url, $method, $data, $callIndex) use($payload){
+            if($callIndex === 2 && $method === 'POST' && $url === 'token' && $data === $payload){
+                return [
+                    'public_token'       => 'rzp_test_oauth_10000000000000',
+                    'token_type'         => 'Bearer',
+                    'expires_in'         => 7862400,
+                    'access_token'       => 'access_token',
+                    'refresh_token'      => 'refresh_token',
+                    'client_id'          => 'client_id',
+                ];
+            }
+
+            return null;
+        });
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -7533,31 +7581,32 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
-
         $this->setAuthServiceMockForGetApplicationForMobileApp($merchantId);
 
         $this->setAuthServiceMockForPostApplicationForMobileApp($merchantId);
 
-        $this->authServiceMock
-            ->expects($this->at(2))
-            ->method('sendRequest')
-            ->with('token','POST',[
-                'client_id'             => 'client_id',
-                'client_secret'         => 'client_secret',
-                'grant_type'            => 'mobile_app_client_credentials',
-                'scope'                 => 'x_mobile_app_2fa_token',
-                'mode'                  => 'live',
-                'user_id'               => $user->getId()
-            ])
-            ->willReturn([
-                'public_token'       => 'rzp_test_oauth_10000000000000',
-                'token_type'         => 'Bearer',
-                'expires_in'         => 7862400,
-                'access_token'       => 'access_token',
-                'refresh_token'      => 'refresh_token',
-                'client_id'          => 'client_id',
-            ]);
+        $payload = [
+            'client_id'             => 'client_id',
+            'client_secret'         => 'client_secret',
+            'grant_type'            => 'mobile_app_client_credentials',
+            'scope'                 => 'x_mobile_app_2fa_token',
+            'mode'                  => 'live',
+            'user_id'               => $user->getId()
+        ];
+
+        $this->addMockCallback(function ($url, $method, $data, $callIndex) use($payload){
+            if($callIndex === 2 && $method === 'POST' && $url === 'token' && $data === $payload){
+                return [
+                    'public_token'       => 'rzp_test_oauth_10000000000000',
+                    'token_type'         => 'Bearer',
+                    'expires_in'         => 7862400,
+                    'access_token'       => 'access_token',
+                    'refresh_token'      => 'refresh_token',
+                    'client_id'          => 'client_id',
+                ];
+            }
+            return null;
+        });
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -7605,6 +7654,9 @@ class UserTest extends TestCase
         $this->app['raven']->method('sendSms')->willThrowException(
             new BadRequestException(ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED)
         );
+
+        $this->app['raven']->method('generateOtp')
+            ->willReturn(['otp' => '10000000000sms', 'expires_at' => 10000]);
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -9514,7 +9566,7 @@ class UserTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -11347,7 +11399,7 @@ class UserTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -11360,7 +11412,7 @@ class UserTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -11382,7 +11434,7 @@ class UserTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -11403,7 +11455,7 @@ class UserTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -13837,7 +13889,7 @@ class UserTest extends TestCase
             'business_type' => 2
         ]);
 
-        (new PartnerTest())->markBankingSubmerchantAsCapitalSubmerchant($merchant->getId(), '10000000000000');
+        (new PartnerTest('PartnerTest'))->markBankingSubmerchantAsCapitalSubmerchant($merchant->getId(), '10000000000000');
 
         $this->mockCapitalPartnershipSplitzExperiment();
 
@@ -13948,7 +14000,7 @@ class UserTest extends TestCase
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -13973,7 +14025,7 @@ class UserTest extends TestCase
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -14006,31 +14058,32 @@ class UserTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
-
         $this->setAuthServiceMockForGetApplicationForMobileApp($merchantId);
 
         $this->setAuthServiceMockForPostApplicationForMobileApp($merchantId);
 
-        $this->authServiceMock
-            ->expects($this->at(2))
-            ->method('sendRequest')
-            ->with('token','POST',[
-                'client_id'             => 'client_id',
-                'client_secret'         => 'client_secret',
-                'grant_type'            => 'mobile_app_client_credentials',
-                'scope'                 => 'x_mobile_app_2fa_token',
-                'mode'                  => 'live',
-                'user_id'               => $user->getId()
-            ])
-            ->willReturn([
-                'public_token'       => 'rzp_test_oauth_10000000000000',
-                'token_type'         => 'Bearer',
-                'expires_in'         => 7862400,
-                'access_token'       => 'access_token',
-                'refresh_token'      => 'refresh_token',
-                'client_id'          => 'client_id',
-            ]);
+        $payload = [
+            'client_id'             => 'client_id',
+            'client_secret'         => 'client_secret',
+            'grant_type'            => 'mobile_app_client_credentials',
+            'scope'                 => 'x_mobile_app_2fa_token',
+            'mode'                  => 'live',
+            'user_id'               => $user->getId()
+        ];
+
+        $this->addMockCallback(function ($url, $method, $data, $callIndex) use($payload){
+            if($callIndex === 2 && $url === 'token' && $method === 'POST' && $data === $payload){
+                return [
+                    'public_token'       => 'rzp_test_oauth_10000000000000',
+                    'token_type'         => 'Bearer',
+                    'expires_in'         => 7862400,
+                    'access_token'       => 'access_token',
+                    'refresh_token'      => 'refresh_token',
+                    'client_id'          => 'client_id',
+                ];
+            }
+            return null;
+        });
 
         $this->ba->dashboardGuestAppAuth();
 
@@ -14041,7 +14094,7 @@ class UserTest extends TestCase
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -14118,8 +14171,6 @@ class UserTest extends TestCase
 
         $this->ba->dashboardGuestAppAuth();
 
-        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
-
         $this->setAuthServiceMockForGetApplicationForMobileApp($merchant->getId());
 
         $this->setAuthServiceMockForPostApplicationForMobileApp($merchant->getId());
@@ -14191,8 +14242,6 @@ class UserTest extends TestCase
         $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
 
         $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
-
-        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
 
         $this->setAuthServiceMockForGetApplicationForMobileApp($merchant->getId());
 
@@ -14832,7 +14881,7 @@ class UserTest extends TestCase
 
         $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['acceptInvite'])
+            ->onlyMethods(['acceptInvite'])
             ->getMock();
 
         $vendorPortalServiceMock->expects($this->once())
@@ -16551,7 +16600,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -16600,7 +16649,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -16710,7 +16759,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -16803,7 +16852,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -16851,7 +16900,7 @@ class UserTest extends TestCase
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -16902,7 +16951,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -16950,7 +16999,7 @@ class UserTest extends TestCase
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -16999,7 +17048,7 @@ class UserTest extends TestCase
 
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['generateOtp'])
+            ->onlyMethods(['generateOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);
@@ -17049,7 +17098,7 @@ class UserTest extends TestCase
     {
         $ravenMock = $this->getMockBuilder(Raven::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['verifyOtp'])
+            ->onlyMethods(['verifyOtp'])
             ->getMock();
 
         $this->app->instance('raven', $ravenMock);

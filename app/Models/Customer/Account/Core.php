@@ -49,6 +49,10 @@ class Core extends Base\Core
 
     protected RequestContextV2 $reqCtx;
 
+    public $baseUrl;
+
+    public $testModeBaseUrl;
+
     /**
      * @inheritDoc
      */

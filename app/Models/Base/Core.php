@@ -66,6 +66,8 @@ class Core
 
     protected $cache;
 
+    public $device;
+
 
     public function __construct()
     {

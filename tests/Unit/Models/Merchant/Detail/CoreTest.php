@@ -116,7 +116,7 @@ class CoreTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -128,7 +128,7 @@ class CoreTest extends TestCase
     protected function createAndFetchMocks()
     {
         $mockMC = $this->getMockBuilder(MerchantCore::class)
-            ->setMethods(['isRazorxExperimentEnable'])
+            ->onlyMethods(['isRazorxExperimentEnable'])
             ->getMock();
 
         $mockMC->expects($this->any())
@@ -1458,7 +1458,7 @@ class CoreTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->onlyMethods(['getTreatment', 'getCachedTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -1471,7 +1471,7 @@ class CoreTest extends TestCase
     {
         $pinotService = $this->getMockBuilder(HarvesterClient::class)
                              ->setConstructorArgs([$this->app])
-                             ->setMethods(['getDataFromPinot'])
+                             ->onlyMethods(['getDataFromPinot'])
                              ->getMock();
 
         $this->app->instance('eventManager', $pinotService);
@@ -3196,7 +3196,7 @@ class CoreTest extends TestCase
     public function testApplicableActivationStatusForRiskyMerchant()
     {
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -3228,7 +3228,7 @@ class CoreTest extends TestCase
     public function testGetApplicableActivationStatusForUnRegisteredMerchantInNeedsClarification()
     {
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isAutoKycDone'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -3265,7 +3265,7 @@ class CoreTest extends TestCase
     public function testUpdateActivationStatusForRejectedToUnderReviewMerchants()
     {
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isAutoKycDone'])
                                ->getMock();
 
         $merchantDetails      = $this->fixtures->create('merchant_detail', [
@@ -3791,7 +3791,7 @@ class CoreTest extends TestCase
     public function testUpdateActivationStatusToUnderReviewMerchantsActivationFormLocked()
     {
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isAutoKycDone'])
                                ->getMock();
 
         $merchantDetails      = $this->fixtures->create('merchant_detail', [
@@ -3827,7 +3827,7 @@ class CoreTest extends TestCase
     public function testUpdateActivationStatusToUnderReviewMerchantsActivationFormLockedThroughMDS()
     {
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone','shouldApplyMutexOnMerchantEntitiesUpdate'])
+                               ->onlyMethods(['isAutoKycDone','shouldApplyMutexOnMerchantEntitiesUpdate'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -3840,7 +3840,7 @@ class CoreTest extends TestCase
 
         $mockBA = $this->getMockBuilder(BasicAuth::class)
                        ->setConstructorArgs([$this->app])
-                       ->setMethods(['getAdmin'])
+                       ->onlyMethods(['getAdmin'])
                        ->getMock();
 
         $detailService = new MDS();
@@ -3897,7 +3897,7 @@ class CoreTest extends TestCase
     public function testUpdateActivationStatusToUnderReviewMerchantsActivationFormLockedThroughMDSWithMutex()
     {
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone','shouldApplyMutexOnMerchantEntitiesUpdate'])
+                               ->onlyMethods(['isAutoKycDone','shouldApplyMutexOnMerchantEntitiesUpdate'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -3910,7 +3910,7 @@ class CoreTest extends TestCase
 
         $mockBA = $this->getMockBuilder(BasicAuth::class)
                        ->setConstructorArgs([$this->app])
-                       ->setMethods(['getAdmin'])
+                       ->onlyMethods(['getAdmin'])
                        ->getMock();
 
         $detailService = new MDS();
@@ -3967,7 +3967,7 @@ class CoreTest extends TestCase
     public function testUpdateActivationStatusToUnderReviewMerchantsActivationFormLockedUsingInternalMerchantActivationStatus()
     {
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone','shouldApplyMutexOnMerchantEntitiesUpdate'])
+                               ->onlyMethods(['isAutoKycDone','shouldApplyMutexOnMerchantEntitiesUpdate'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4031,7 +4031,7 @@ class CoreTest extends TestCase
     public function testUpdateActivationStatusToUnderReviewMerchantsActivationFormLockedUsingInternalMerchantActivationStatusWithMutex()
     {
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone','shouldApplyMutexOnMerchantEntitiesUpdate'])
+                               ->onlyMethods(['isAutoKycDone','shouldApplyMutexOnMerchantEntitiesUpdate'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4095,7 +4095,7 @@ class CoreTest extends TestCase
     public function testEditMerchantDetailsWithoutMutex()
     {
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['shouldApplyMutexOnMerchantEntitiesUpdate'])
+                               ->onlyMethods(['shouldApplyMutexOnMerchantEntitiesUpdate'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4146,7 +4146,7 @@ class CoreTest extends TestCase
     public function testEditMerchantDetailsWithMutex()
     {
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['shouldApplyMutexOnMerchantEntitiesUpdate'])
+                               ->onlyMethods(['shouldApplyMutexOnMerchantEntitiesUpdate'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4217,7 +4217,7 @@ class CoreTest extends TestCase
 
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['shouldApplyMutexOnMerchantEntitiesUpdate','updatePosActivationStatusOfMerchant'])
+            ->onlyMethods(['shouldApplyMutexOnMerchantEntitiesUpdate','updatePosActivationStatusOfMerchant'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4238,7 +4238,7 @@ class CoreTest extends TestCase
 
         $mockBA = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getAdmin'])
+            ->onlyMethods(['getAdmin'])
             ->getMock();
 
         $mockBA->expects($this->any())
@@ -4280,7 +4280,7 @@ class CoreTest extends TestCase
 
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['shouldApplyMutexOnMerchantEntitiesUpdate','updatePosActivationStatusOfMerchant'])
+            ->onlyMethods(['shouldApplyMutexOnMerchantEntitiesUpdate','updatePosActivationStatusOfMerchant'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4301,7 +4301,7 @@ class CoreTest extends TestCase
 
         $mockBA = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getAdmin'])
+            ->onlyMethods(['getAdmin'])
             ->getMock();
 
         $mockBA->expects($this->any())
@@ -4337,8 +4337,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchantDetails->merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4389,8 +4389,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchantDetails->merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->onlyMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4444,8 +4444,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchantDetails->merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4491,8 +4491,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchantDetails->merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4537,8 +4537,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4572,8 +4572,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchantDetails->merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4594,7 +4594,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isAutoKycDone'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4664,8 +4664,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchantDetails->merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4709,7 +4709,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4763,8 +4763,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4808,8 +4808,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchantDetails->merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4868,8 +4868,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4912,7 +4912,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -4956,7 +4956,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isAutoKycDone'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -5000,7 +5000,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isAutoKycDone'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -5060,8 +5060,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -5156,8 +5156,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -5268,8 +5268,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -5379,8 +5379,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -5489,8 +5489,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -5583,8 +5583,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->onlyMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -5659,7 +5659,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
+            ->onlyMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -5794,7 +5794,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus', 'isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus', 'isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -5937,8 +5937,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -6020,8 +6020,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -6117,8 +6117,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->onlyMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -6214,8 +6214,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -6264,8 +6264,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -6759,8 +6759,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -6829,7 +6829,7 @@ class CoreTest extends TestCase
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->onlyMethods(['pushIdentifyAndTrackEvent'])
                             ->getMock();
 
         $this->app['rzp.mode'] = Mode::LIVE;
@@ -6906,7 +6906,7 @@ class CoreTest extends TestCase
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->onlyMethods(['pushIdentifyAndTrackEvent'])
                             ->getMock();
 
         $this->app['rzp.mode'] = Mode::LIVE;
@@ -6961,7 +6961,7 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isAutoKycDone'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -7030,7 +7030,7 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isAutoKycDone'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -8346,8 +8346,8 @@ class CoreTest extends TestCase
         $this->mockRazorxTreatment();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -8435,8 +8435,8 @@ class CoreTest extends TestCase
         $this->mockRazorxTreatment();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -8512,8 +8512,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -8654,7 +8654,7 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -8725,7 +8725,7 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -8760,8 +8760,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -8830,7 +8830,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -8901,7 +8901,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isAutoKycDone'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -9013,7 +9013,7 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -9089,7 +9089,7 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -9132,7 +9132,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $this->fixtures->create('merchant', ['business_banking' => 1]);
@@ -9197,7 +9197,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $this->fixtures->create('merchant', ['business_banking' => 1]);
@@ -9264,7 +9264,7 @@ class CoreTest extends TestCase
         Queue::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $this->fixtures->create('merchant', ['business_banking' => 1]);
@@ -9339,7 +9339,7 @@ class CoreTest extends TestCase
         Queue::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $this->fixtures->create('merchant', ['business_banking' => 1]);
@@ -9414,7 +9414,7 @@ class CoreTest extends TestCase
         Queue::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $this->fixtures->create('merchant', ['business_banking' => 1]);
@@ -9487,7 +9487,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isAutoKycDone'])
                                ->getMock();
 
         $this->fixtures->create('merchant', ['business_banking' => 1]);
@@ -9564,7 +9564,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isAutoKycDone'])
                                ->getMock();
 
         $this->fixtures->create('merchant', ['business_banking' => 1]);
@@ -10005,7 +10005,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -10044,8 +10044,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -10090,8 +10090,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -10146,8 +10146,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->onlyMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -10202,8 +10202,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -10258,8 +10258,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->onlyMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -10314,8 +10314,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -10368,8 +10368,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -10429,7 +10429,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -10473,7 +10473,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -10517,7 +10517,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -10558,8 +10558,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -10651,8 +10651,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->onlyMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -10827,7 +10827,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isAutoKycDone'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -10956,8 +10956,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->onlyMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -11049,7 +11049,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
+            ->onlyMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -11184,7 +11184,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus', 'isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus', 'isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -11329,8 +11329,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -13244,7 +13244,7 @@ class CoreTest extends TestCase
         ]);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['blockMerchantActivations', 'canSubmit'])
+                               ->onlyMethods(['blockMerchantActivations', 'canSubmit'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -13310,7 +13310,7 @@ class CoreTest extends TestCase
         ];
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-                            ->setMethods(['pushTrackEvent'])
+                            ->onlyMethods(['pushTrackEvent'])
                             ->getMock();
 
         $defaultVerificationDetailAttributes = [
@@ -13654,7 +13654,7 @@ class CoreTest extends TestCase
         ]);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['blockMerchantActivations', 'canSubmit'])
+                               ->onlyMethods(['blockMerchantActivations', 'canSubmit'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -13687,7 +13687,7 @@ class CoreTest extends TestCase
 
         $this->mockRazorxTreatment();
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['fetchMerchantGatingDetails'])
+                               ->onlyMethods(['fetchMerchantGatingDetails'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -14054,8 +14054,8 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -14489,7 +14489,7 @@ class CoreTest extends TestCase
         $this->app['rzp.mode'] = 'live';
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['blockMerchantActivations', 'canSubmit'])
+                               ->onlyMethods(['blockMerchantActivations', 'canSubmit'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -14557,7 +14557,7 @@ class CoreTest extends TestCase
         $this->app['rzp.mode'] = 'live';
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['blockMerchantActivations', 'canSubmit'])
+                               ->onlyMethods(['blockMerchantActivations', 'canSubmit'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -14625,7 +14625,7 @@ class CoreTest extends TestCase
         $this->app['rzp.mode'] = 'live';
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['blockMerchantActivations', 'canSubmit'])
+                               ->onlyMethods(['blockMerchantActivations', 'canSubmit'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -14694,8 +14694,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -14788,8 +14788,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -14881,8 +14881,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->onlyMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -14975,8 +14975,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -15068,8 +15068,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->onlyMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -15162,8 +15162,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
-            ->setMethods(['isEligibleForAutomationActivation'])
+            ->onlyMethods(['isAutoKycDone'])
+            ->onlyMethods(['isEligibleForAutomationActivation'])
             ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -15255,8 +15255,8 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->onlyMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -15350,7 +15350,7 @@ class CoreTest extends TestCase
         Config::set('pgos.proxy.request.mock', true);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
+                               ->onlyMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -15451,7 +15451,7 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setModeAndDbConnection(Mode::TEST);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone', 'canSubmit'])
+                               ->onlyMethods(['isAutoKycDone', 'canSubmit'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -15506,7 +15506,7 @@ class CoreTest extends TestCase
         Config::set('pgos.proxy.request.mock', true);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
+                               ->onlyMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -15604,7 +15604,7 @@ class CoreTest extends TestCase
         ];
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone', 'canSubmit', 'fetchMerchantGatingDetails'])
+                               ->onlyMethods(['isAutoKycDone', 'canSubmit', 'fetchMerchantGatingDetails'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -15702,7 +15702,7 @@ class CoreTest extends TestCase
         Config::set('pgos.proxy.request.mock', true);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
+                               ->onlyMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -15781,7 +15781,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
+                               ->onlyMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -15850,7 +15850,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
+                               ->onlyMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -15920,7 +15920,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
+                               ->onlyMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -16034,7 +16034,7 @@ class CoreTest extends TestCase
         ]);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods([ 'canSubmit', 'updateActivationStatus'])
+                               ->onlyMethods([ 'canSubmit', 'updateActivationStatus'])
                                ->getMock();
 
         $detailCoreMock->expects($this->never())
@@ -16257,7 +16257,7 @@ class CoreTest extends TestCase
         ];
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['fetchMerchantGatingDetails'])
+                               ->onlyMethods(['fetchMerchantGatingDetails'])
                                ->getMock();
 
         $detailCoreMock->expects($this->once())
@@ -16347,7 +16347,7 @@ class CoreTest extends TestCase
         ];
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['fetchMerchantGatingDetails'])
+                               ->onlyMethods(['fetchMerchantGatingDetails'])
                                ->getMock();
 
         $detailCoreMock->expects($this->once())
@@ -16473,8 +16473,8 @@ class CoreTest extends TestCase
         $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'percentage_ownership' => 90, 'merchant_id' => $mid]);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->onlyMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -16573,9 +16573,9 @@ class CoreTest extends TestCase
         $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'percentage_ownership' => 90, 'merchant_id' => $mid]);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->setMethods(['isEligibleForAutomationActivation'])
-                               ->setMethods(['checkLicenseExpiryValidationForMerchantDocuments'])
+                               ->onlyMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isEligibleForAutomationActivation'])
+                               ->onlyMethods(['checkLicenseExpiryValidationForMerchantDocuments'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -16841,8 +16841,8 @@ class CoreTest extends TestCase
         $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'percentage_ownership' => 90, 'merchant_id' => $mid]);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->onlyMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -16945,8 +16945,8 @@ class CoreTest extends TestCase
         $this->fixtures->create('stakeholder', ['name' => 'stakeholder name', 'percentage_ownership' => 90, 'merchant_id' => $mid]);
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->setMethods(['isEligibleForAutomationActivation'])
+                               ->onlyMethods(['isAutoKycDone'])
+                               ->onlyMethods(['isEligibleForAutomationActivation'])
                                ->getMock();
 
         $detailCoreMock->expects($this->any())
@@ -18842,7 +18842,7 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-            ->setMethods(['isAutoKycDone'])
+            ->onlyMethods(['isAutoKycDone'])
             ->getMock();
 
         $input = [
@@ -19729,7 +19729,7 @@ class CoreTest extends TestCase
     public function testcreateDeviceDetailsForOmniMerchantsIfNotExist_CreateDeviceDetailsSuccessfully()
     {
         $merchantId = 'OlyFnGyZQeEKrF';
-        
+
         $merchant = $this->fixtures->create('merchant', ['id' => $merchantId]);
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
 

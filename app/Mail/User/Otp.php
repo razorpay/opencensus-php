@@ -226,11 +226,11 @@ class Otp extends Mailable
         switch ($this->input['action'])
         {
             case 'verify_email':
-                $data = 
+                $data =
                 [
                     'otp'        => $this->otp,
                 ];
-                $storkParams = 
+                $storkParams =
                 [
                     'template_name' => 'banking_mail_otp_email_verify',
                     'template_namespace' => 'payments_banking',

@@ -9791,7 +9791,7 @@ return [
         ],
     ],
 
-    'testEditMerchantCategoryShouldResetMethodsWithRuleBasedFeatureFlag' => [
+    'testEditMerchantCategoryShouldReonlyMethodsWithRuleBasedFeatureFlag' => [
     'request'  => [
         'raw'    => json_encode([
             'category'      => '6211',
@@ -9823,7 +9823,7 @@ return [
         ],
 ],
 
-    'testEditMerchantCategoryShouldResetMethods' => [
+    'testEditMerchantCategoryShouldReonlyMethods' => [
         'request'  => [
             'raw'    => json_encode([
                                         'category'      => '6211',
@@ -9849,7 +9849,7 @@ return [
         ]
     ],
 
-    'testEditMerchantCategoryShouldNotResetMethodsIfResetMethodsInInputIsFalse' => [
+    'testEditMerchantCategoryShouldNotReonlyMethodsIfReonlyMethodsInInputIsFalse' => [
         'request'  => [
             'raw'    => json_encode([
                                         'category'      => '6211',
@@ -9875,7 +9875,7 @@ return [
         ]
     ],
 
-    'testEditMerchantCategoryShouldResetMethodsValidationFailure2' => [
+    'testEditMerchantCategoryShouldReonlyMethodsValidationFailure2' => [
         'request'  => [
             'raw'    => json_encode([
                                         'category'      => '6211',

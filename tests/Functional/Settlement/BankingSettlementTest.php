@@ -2592,7 +2592,7 @@ class BankingSettlementTest extends TestCase
     {
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getRefunds'])
+            ->onlyMethods(['getRefunds'])
             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -2728,7 +2728,7 @@ class BankingSettlementTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);

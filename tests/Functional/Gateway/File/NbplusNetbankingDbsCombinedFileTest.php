@@ -221,7 +221,7 @@ class NbplusNetbankingDbsCombinedFileTest extends NbPlusPaymentServiceNetbanking
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getRefunds', 'bulkUpdateRefundReference1'])
+            ->onlyMethods(['getRefunds', 'bulkUpdateRefundReference1'])
             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);

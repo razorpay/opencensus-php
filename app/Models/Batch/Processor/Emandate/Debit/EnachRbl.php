@@ -14,9 +14,9 @@ use RZP\Gateway\Enach\Rbl\DebitFileHeadings as Headings;
 class EnachRbl extends Base
 {
     protected $gateway   = Gateway::ENACH_RBL;
-    
+
     protected $acquirer  = Gateway::ACQUIRER_RATN;
-    
+
     const UMRN = 'umrn';
 
     protected function getDataFromRow(array & $row): array
@@ -93,19 +93,19 @@ class EnachRbl extends Base
     {
         return true;
     }
-    
+
     protected function shouldBlockOrResetToken()
     {
         return true;
     }
-    
+
     // emandate rearch changes: for enach rbl changes
     public function fetchGatewayDetails(& $content)
     {
         $content['type'] = 'emandate';
-        
+
         $content['sub_type'] = 'debit';
-        
+
         $content['gateway'] = 'enach_rbl';
     }
 }

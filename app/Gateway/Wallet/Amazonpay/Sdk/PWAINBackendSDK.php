@@ -8,6 +8,7 @@ use RZP\Exception\RuntimeException;
 use RZP\Gateway\Wallet\Amazonpay\Url;
 use RZP\Gateway\Wallet\Amazonpay\Config;
 use RZP\Gateway\Wallet\Amazonpay\RequestFields;
+use RZP\Models\Base\UniqueIdEntity as UniqueIdEntity;
 
 /**
  * This class was taken from Amazon Pay's SDK and modified to suit our requirements.
@@ -481,7 +482,7 @@ final class PWAINBackendSDK
 
     private function urlEncode($value, $path)
     {
-        $encodedString = stripslashes(rawurlencode(utf8_encode($value)));
+        $encodedString = stripslashes(rawurlencode(UniqueIdEntity::encodeData($value, 'UTF-8', 'ISO-8859-1')));
 
         if ($path)
         {

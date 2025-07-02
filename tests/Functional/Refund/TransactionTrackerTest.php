@@ -1531,7 +1531,7 @@ class TransactionTrackerTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['fetchRefundCreateData', 'getRefund'])
+                            ->onlyMethods(['fetchRefundCreateData', 'getRefund'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -1586,7 +1586,7 @@ class TransactionTrackerTest extends TestCase
     {
         $mock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $mock->method('getTreatment')

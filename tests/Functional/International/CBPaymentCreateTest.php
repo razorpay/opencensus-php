@@ -911,7 +911,7 @@ class CBPaymentCreateTest extends TestCase
         // mock the experiments for s2s payment
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
         $this->app->instance('razorx', $razorxMock);
         $this->app->razorx->method('getTreatment')

@@ -28,6 +28,16 @@ class AuthzServiceTest extends TestCase
     }
 
     /*
+        added basic assertion
+        because phpunit 10 throws a non-zero exit code
+        if there are no tests in it
+    */
+    public function testBasicAssert()
+    {
+        $this->assertTrue(true);
+    }
+
+    /*
     public function testFetchActionList()
     {
         $this->ba->adminAuth();

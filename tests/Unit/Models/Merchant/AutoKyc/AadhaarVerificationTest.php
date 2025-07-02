@@ -56,7 +56,7 @@ class AadhaarVerificationTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -69,7 +69,7 @@ class AadhaarVerificationTest extends TestCase
     protected function createAndFetchMocks()
     {
         $mockMC = $this->getMockBuilder(MerchantCore::class)
-                       ->setMethods(['isRazorxExperimentEnable'])
+                       ->onlyMethods(['isRazorxExperimentEnable'])
                        ->getMock();
 
         $mockMC->expects($this->any())

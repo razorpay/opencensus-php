@@ -879,7 +879,7 @@ class RefundTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                    ->setConstructorArgs([$this->app])
-                   ->setMethods(['getTreatment'])
+                   ->onlyMethods(['getTreatment'])
                    ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -3135,7 +3135,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['bulkUpdateRefundStatus','fetchRefundCreateData'])
+                            ->onlyMethods(['bulkUpdateRefundStatus','fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -3552,7 +3552,7 @@ class RefundTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -4041,7 +4041,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['fetchRefundCreateData'])
+                            ->onlyMethods(['fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -5532,7 +5532,7 @@ class RefundTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -5960,7 +5960,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['initiateRefund', 'fetchRefundCreateData'])
+                            ->onlyMethods(['initiateRefund', 'fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -5982,7 +5982,7 @@ class RefundTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -6039,7 +6039,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['initiateRefund', 'fetchRefundCreateData'])
+                            ->onlyMethods(['initiateRefund', 'fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -6061,7 +6061,7 @@ class RefundTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -6111,7 +6111,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['initiateRefund', 'initiateRefundRetry', 'fetchRefundCreateData'])
+                            ->onlyMethods(['initiateRefund', 'initiateRefundRetry', 'fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -6140,7 +6140,7 @@ class RefundTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -6208,7 +6208,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['initiateRefund', 'fetchRefundCreateData'])
+            ->onlyMethods(['initiateRefund', 'fetchRefundCreateData'])
             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -6230,7 +6230,7 @@ class RefundTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -6286,7 +6286,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['initiateRefund', 'fetchRefundCreateData'])
+            ->onlyMethods(['initiateRefund', 'fetchRefundCreateData'])
             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -6308,7 +6308,7 @@ class RefundTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -6358,7 +6358,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['initiateRefund', 'initiateRefundRetry', 'fetchRefundCreateData'])
+            ->onlyMethods(['initiateRefund', 'initiateRefundRetry', 'fetchRefundCreateData'])
             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -6387,7 +6387,7 @@ class RefundTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -6477,7 +6477,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['fetchRefundCreateData'])
+            ->onlyMethods(['fetchRefundCreateData'])
             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -6541,7 +6541,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['fetchRefundCreateData'])
+                            ->onlyMethods(['fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -6604,7 +6604,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['fetchRefundCreateData'])
+                            ->onlyMethods(['fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -6695,7 +6695,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['fetchRefundCreateData'])
+                            ->onlyMethods(['fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -6831,7 +6831,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['fetchRefundCreateData'])
+                            ->onlyMethods(['fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -6901,7 +6901,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['fetchRefundCreateData'])
+                            ->onlyMethods(['fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -6961,7 +6961,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['fetchRefundCreateData'])
+                            ->onlyMethods(['fetchRefundCreateData'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -7578,7 +7578,7 @@ class RefundTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                    ->setConstructorArgs([$this->app])
-                   ->setMethods(['getTreatment'])
+                   ->onlyMethods(['getTreatment'])
                    ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -7614,7 +7614,7 @@ class RefundTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                    ->setConstructorArgs([$this->app])
-                   ->setMethods(['getTreatment'])
+                   ->onlyMethods(['getTreatment'])
                    ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -7725,7 +7725,7 @@ class RefundTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['fetchRefundCreateData'])
+            ->onlyMethods(['fetchRefundCreateData'])
             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -7735,7 +7735,7 @@ class RefundTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);

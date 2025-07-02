@@ -55,7 +55,7 @@ class TrustAutoKycTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -427,25 +427,25 @@ class TrustAutoKycTest extends TestCase
         $this->assertFalse($isAutoKycDone);
 
     }
-    
+
     public function testAutoKycForTrustIfCompanyPanDocIsNotVerified()
     {
         $this->mockRazorxTreatment();
-        
+
         $fixtures = $this->createAndFetchFixtures([
                                                       Detail\Entity::POA_VERIFICATION_STATUS => 'verified',
                                                       Detail\Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS => 'failed'
                                                   ], [],[]);
-        
+
         $core = new Detail\Core();
-        
+
         $merchantDetail = $fixtures['merchant_detail'];
-        
+
         $input = [
             "experiment_id" => "NrGpRcz62UlBKl",
             "id"            => $merchantDetail->getId(),
         ];
-        
+
         $output = [
             "response" => [
                 "variant" => [
@@ -453,9 +453,9 @@ class TrustAutoKycTest extends TestCase
                 ]
             ]
         ];
-        
+
         $this->mockSplitzTreatment($input, $output);
-        
+
         $output = [
             "response" => [
                 "variant" => [
@@ -463,9 +463,9 @@ class TrustAutoKycTest extends TestCase
                 ]
             ]
         ];
-        
+
         $this->mockAllSplitzTreatment($output);
-        
+
         $this->fixtures->create(
             'merchant_verification_detail', [
                                               'merchant_id'         => $merchantDetail->getId(),
@@ -474,31 +474,31 @@ class TrustAutoKycTest extends TestCase
                                               'status'              => 'failed'
                                           ]
         );
-        
+
         $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
         $this->assertFalse($isAutoKycDone);
-        
+
     }
     public function testAutoKycForAllBusinessTypesWhichApplicableForAutoKycIfPanDocIsVerified()
     {
-        
+
         $this->mockRazorxTreatment();
-        
+
         $fixtures = $this->createAndFetchFixtures([
                                                       Detail\Entity::POA_VERIFICATION_STATUS => 'verified',
                                                       "cin_verification_status" => "verified",
                                                       "shop_establishment_verification_status" => "verified"
                                                   ], [],[]);
-        
+
         $core = new Detail\Core();
-        
+
         $merchantDetail = $fixtures['merchant_detail'];
-        
+
         $input = [
             "experiment_id" => "NrGpRcz62UlBKl",
             "id"            => $merchantDetail->getId(),
         ];
-        
+
         $output = [
             "response" => [
                 "variant" => [
@@ -506,9 +506,9 @@ class TrustAutoKycTest extends TestCase
                 ]
             ]
         ];
-        
+
         $this->mockSplitzTreatment($input, $output);
-        
+
         $output = [
             "response" => [
                 "variant" => [
@@ -516,10 +516,10 @@ class TrustAutoKycTest extends TestCase
                 ]
             ]
         ];
-        
+
         $this->mockAllSplitzTreatment($output);
-        
-        
+
+
         $this->fixtures->create(
             'merchant_verification_detail', [
                                               'merchant_id'         => $merchantDetail->getId(),
@@ -539,31 +539,31 @@ class TrustAutoKycTest extends TestCase
         foreach ([5,4,6,11,13,2,10,9,1,3] as $businessType)
         {
             $merchantDetail = $this->fixtures->edit('merchant_detail', $merchantDetail->getId(), ["business_type"=>$businessType]);
-            
+
             $isAutoKycDone = $core->isAutoKycDone($merchantDetail);
             $this->assertTrue($isAutoKycDone);
         }
-        
+
     }
     public function testAutoKycForTrustIfPanDocIsNotVerifiedAndExpOff()
     {
-        
+
         $this->mockRazorxTreatment();
-        
+
         $fixtures = $this->createAndFetchFixtures([
                                                       Detail\Entity::POA_VERIFICATION_STATUS => 'verified',
                                                       Detail\Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS => 'failed'
                                                   ], [],[]);
-        
+
         $core = new Detail\Core();
-        
+
         $merchantDetail = $fixtures['merchant_detail'];
-        
+
         $input = [
             "experiment_id" => "NrGpRcz62UlBKl",
             "id"            => $merchantDetail->getId(),
         ];
-        
+
         $output = [
             "response" => [
                 "variant" => [
@@ -571,9 +571,9 @@ class TrustAutoKycTest extends TestCase
                 ]
             ]
         ];
-        
+
         $this->mockSplitzTreatment($input, $output);
-        
+
         $output = [
             "response" => [
                 "variant" => [
@@ -581,10 +581,10 @@ class TrustAutoKycTest extends TestCase
                 ]
             ]
         ];
-        
+
         $this->mockAllSplitzTreatment($output);
-        
-        
+
+
         $this->fixtures->create(
             'merchant_verification_detail', [
                                               'merchant_id'         => $merchantDetail->getId(),
@@ -593,9 +593,9 @@ class TrustAutoKycTest extends TestCase
                                               'status'              => 'verified'
                                           ]
         );
-        
+
         $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
         $this->assertTrue($isAutoKycDone);
-        
+
     }
 }

@@ -620,7 +620,7 @@ class PayoutServiceTest extends TestCase
     {
         $payoutServiceStatusMock = $this->getMockBuilder(PayoutServiceStatus::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sendRequest'])
+            ->onlyMethods(['sendRequest'])
             ->getMock();
 
         $this->app->instance(PayoutServiceStatus::PAYOUT_SERVICE_STATUS, $payoutServiceStatusMock);
@@ -680,7 +680,7 @@ class PayoutServiceTest extends TestCase
     {
         $payoutRetryStatusMock = $this->getMockBuilder(PayoutServiceRetry::class)
                                         ->setConstructorArgs([$this->app])
-                                        ->setMethods(['sendRequest'])
+                                        ->onlyMethods(['sendRequest'])
                                         ->getMock();
 
         $this->app->instance(PayoutServiceRetry::PAYOUT_SERVICE_RETRY, $payoutRetryStatusMock);
@@ -722,7 +722,7 @@ class PayoutServiceTest extends TestCase
     {
         $payoutServiceDetailsMock = $this->getMockBuilder(PayoutServiceDetails::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sendRequest'])
+            ->onlyMethods(['sendRequest'])
             ->getMock();
 
         $this->app->instance(PayoutServiceDetails::PAYOUT_SERVICE_DETAIL, $payoutServiceDetailsMock);
@@ -776,7 +776,7 @@ class PayoutServiceTest extends TestCase
     {
         $payoutServiceCancelMock = $this->getMockBuilder(PayoutServiceCancel::class)
                                          ->setConstructorArgs([$this->app])
-                                         ->setMethods(['sendRequest'])
+                                         ->onlyMethods(['sendRequest'])
                                          ->getMock();
 
         $this->app->instance(PayoutServiceCancel::PAYOUT_SERVICE_CANCEL, $payoutServiceCancelMock);
@@ -7240,7 +7240,7 @@ class PayoutServiceTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -10699,7 +10699,7 @@ class PayoutServiceTest extends TestCase
     {
         $payoutServiceDashboardTimeSlotsMock = $this->getMockBuilder(PayoutServiceDashboardScheduleTimeSlots::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sendRequest'])
+            ->onlyMethods(['sendRequest'])
             ->getMock();
 
         $this->app->instance(PayoutServiceDashboardScheduleTimeSlots::PAYOUT_SERVICE_DASHBOARD_TIME_SLOTS, $payoutServiceDashboardTimeSlotsMock );
@@ -11083,7 +11083,7 @@ class PayoutServiceTest extends TestCase
     {
         $diagMock = $this->getMockBuilder(DiagClient::class)
                          ->setConstructorArgs([$this->app])
-                         ->setMethods(['trackEvent'])
+                         ->onlyMethods(['trackEvent'])
                          ->getMock();
 
         $this->app->instance('diag', $diagMock);

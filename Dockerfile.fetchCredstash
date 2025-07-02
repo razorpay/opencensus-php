@@ -1,5 +1,5 @@
-ARG API_BASE_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-web-v2
-ARG CURL_CLI_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:curl-7.82
+ARG API_BASE_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.2-api-web-v4
+ARG CURL_CLI_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-curl-v4
 
 FROM ${CURL_CLI_IMAGE} as curl-cli
 FROM ${API_BASE_IMAGE}

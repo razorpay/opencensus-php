@@ -22,7 +22,7 @@ class RazorXTest extends TestCase
 
         $this->razorX = $this->getMockBuilder(RazorXClient::class)
                              ->setConstructorArgs([$this->app])
-                             ->setMethods(['sendRequest'])
+                             ->onlyMethods(['sendRequest'])
                              ->getMock();
     }
 
@@ -74,7 +74,7 @@ class RazorXTest extends TestCase
                      ->willReturn('control');
 
         $variant = $this->razorX->getTreatment('10000000000000', 'reportsV3', 'test');
-        
+
         $this->assertEquals('control', $variant);
     }
 

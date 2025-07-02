@@ -182,9 +182,9 @@ class EnachNpciNetbanking extends Base
                 ]
             );
         }
-        
+
         $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
-        
+
     }
 
     /**
@@ -330,9 +330,9 @@ class EnachNpciNetbanking extends Base
         }
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
-        
+
         $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
-        
+
         $this->trace->info(
             TraceCode::EMANDATE_DEBIT_REQUEST,
             [

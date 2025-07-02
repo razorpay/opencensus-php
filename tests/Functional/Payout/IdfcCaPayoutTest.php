@@ -241,7 +241,7 @@ class IdfcCaPayoutTest extends TestCase
     {
         $mozartServiceMock = $this->getMockBuilder(Mozart::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sendMozartRequest'])
+            ->onlyMethods(['sendMozartRequest'])
             ->getMock();
 
         $mozartServiceMock->method('sendMozartRequest')

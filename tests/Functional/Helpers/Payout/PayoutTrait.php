@@ -124,7 +124,7 @@ trait PayoutTrait
 
         $mozartServiceMock = $this->getMockBuilder(Mozart::class)
                                   ->setConstructorArgs([$this->app])
-                                  ->setMethods(['sendMozartRequest'])
+                                  ->onlyMethods(['sendMozartRequest'])
                                   ->getMock();
 
         $mozartServiceMock->method('sendMozartRequest')
@@ -173,7 +173,7 @@ trait PayoutTrait
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -451,7 +451,7 @@ trait PayoutTrait
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);

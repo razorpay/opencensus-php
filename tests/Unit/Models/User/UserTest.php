@@ -77,14 +77,14 @@ class UserTest extends TestCase
 
     public function mockRedis()
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['get'])
+        $redisMock = $this->getMockBuilder(Redis::class)->onlyMethods(['get'])
                           ->getMock();
 
         Redis::shouldReceive('connection')
              ->andReturn($redisMock);
 
         $redisMock->method('get')
-                  ->will($this->returnValue(0));
+                  ->willReturn(0);
     }
 
 
@@ -2814,11 +2814,11 @@ class UserTest extends TestCase
         $this->expectException(\WpOrg\Requests\Exception::class);
 
         $validatorMock = $this->getMockBuilder(Validator::class)
-            ->setMethods(['makeRequestAndGetCaptchaVerificationResponse'])
+            ->onlyMethods(['makeRequestAndGetCaptchaVerificationResponse'])
             ->getMock();
 
         $validatorMock->method('makeRequestAndGetCaptchaVerificationResponse')
-            ->will($this->onConsecutiveCalls($this->throwException(new \WpOrg\Requests\Exception('Error while verifying captcha', 'operation timed out')),
+            ->willReturn($this->throwException(new \WpOrg\Requests\Exception('Error while verifying captcha', 'operation timed out'),
                                              $this->throwException(new \WpOrg\Requests\Exception('Error while verifying captcha', 'operation timed out')),
                                              $this->throwException(new \WpOrg\Requests\Exception('Error while verifying captcha', 'operation timed out'))));
 
@@ -2836,11 +2836,11 @@ class UserTest extends TestCase
         $successResponse = ["success => true"];
 
         $validatorMock = $this->getMockBuilder(Validator::class)
-            ->setMethods(['makeRequestAndGetCaptchaVerificationResponse'])
+            ->onlyMethods(['makeRequestAndGetCaptchaVerificationResponse'])
             ->getMock();
 
         $validatorMock->method('makeRequestAndGetCaptchaVerificationResponse')
-            ->will($this->onConsecutiveCalls($this->throwException(new \WpOrg\Requests\Exception('Error while verifying captcha', 'operation timed out')),
+            ->willReturn($this->throwException(new \WpOrg\Requests\Exception('Error while verifying captcha', 'operation timed out'),
                                              $this->throwException(new \WpOrg\Requests\Exception('Error while verifying captcha', 'operation timed out')),
                                              $successResponse));
 
@@ -2860,11 +2860,11 @@ class UserTest extends TestCase
         $successResponse = ["success => true"];
 
         $validatorMock = $this->getMockBuilder(Validator::class)
-            ->setMethods(['makeRequestAndGetCaptchaVerificationResponse'])
+            ->onlyMethods(['makeRequestAndGetCaptchaVerificationResponse'])
             ->getMock();
 
         $validatorMock->method('makeRequestAndGetCaptchaVerificationResponse')
-            ->will($this->onConsecutiveCalls($this->throwException(new \WpOrg\Requests\Exception('Error while verifying captcha', 'operation timed out')),
+            ->willReturn($this->throwException(new \WpOrg\Requests\Exception('Error while verifying captcha', 'operation timed out'),
                                              $successResponse));
 
         $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
@@ -2884,11 +2884,11 @@ class UserTest extends TestCase
 
         $validatorMock = $this->getMockBuilder(RavenService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getRavenRequestResponse'])
+            ->onlyMethods(['getRavenRequestResponse'])
             ->getMock();
 
         $validatorMock->method('getRavenRequestResponse')
-            ->will($this->onConsecutiveCalls($this->throwException(new \WpOrg\Requests\Exception('Error while sending request to raven', 'operation timed out')),
+            ->willReturn($this->throwException(new \WpOrg\Requests\Exception('Error while sending request to raven', 'operation timed out'),
                 $this->throwException(new \WpOrg\Requests\Exception('Error while sending request to raven', 'operation timed out'))));
 
         $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
@@ -2906,11 +2906,11 @@ class UserTest extends TestCase
 
         $validatorMock = $this->getMockBuilder(RavenService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getRavenRequestResponse'])
+            ->onlyMethods(['getRavenRequestResponse'])
             ->getMock();
 
         $validatorMock->method('getRavenRequestResponse')
-            ->will($this->onConsecutiveCalls($this->throwException(new \WpOrg\Requests\Exception('Error while sending request to raven', 'operation timed out')),
+            ->willReturn($this->throwException(new \WpOrg\Requests\Exception('Error while sending request to raven', 'operation timed out'),
                 $successResponse));
 
         $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
@@ -2930,11 +2930,11 @@ class UserTest extends TestCase
 
         $validatorMock = $this->getMockBuilder(RavenService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sendRequest'])
+            ->onlyMethods(['sendRequest'])
             ->getMock();
 
         $validatorMock->method('sendRequest')
-            ->will($this->onConsecutiveCalls($successResponse));
+            ->willReturn($successResponse);
 
         $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
 
@@ -2958,11 +2958,11 @@ class UserTest extends TestCase
 
         $validatorMock = $this->getMockBuilder(RavenService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sendRequest'])
+            ->onlyMethods(['sendRequest'])
             ->getMock();
 
         $validatorMock->method('sendRequest')
-            ->will($this->onConsecutiveCalls($successResponse));
+            ->willReturn($successResponse);
 
         $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
 
@@ -3802,7 +3802,7 @@ class UserTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -3849,7 +3849,7 @@ class UserTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);

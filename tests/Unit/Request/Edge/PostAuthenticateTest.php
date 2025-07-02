@@ -139,7 +139,7 @@ class PostAuthenticateTest extends TestCase
     {
         $mock = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getMode', 'getMerchantId', 'getAuthType', 'isProxyAuth', 'getAccountId',
+            ->onlyMethods(['getMode', 'getMerchantId', 'getAuthType', 'isProxyAuth', 'getAccountId',
                 'getPartnerMerchantId', 'getOAuthClientId', 'getOAuthApplicationId',
                 'getPublicKey', 'getPassport', 'setPassportDomain', 'getRequestMetricDimensions', 'getPassportImpersonationClaims',
                 'isKeylessPublicAuth', 'isPublicAuth', 'isOAuth','getPassportConsumerClaims', 'isAdminAuth', 'getInternalApp', 'isDashboardApp'])

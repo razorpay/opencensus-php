@@ -1,4 +1,4 @@
-ARG API_BASE_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-worker-v3
+ARG API_BASE_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.2-api-worker-v4
 
 FROM ${API_BASE_IMAGE}
 
@@ -18,7 +18,7 @@ RUN --mount=type=secret,id=git_token,required=true set -eu && \
     composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
     rm -rf /root/.composer && \
     composer clear-cache && \
-    pear81 config-set php_ini /etc/php81/php.ini && \
+    pear82 config-set php_ini /etc/php82/php.ini && \
     mkdir -p public && echo "${GIT_COMMIT_HASH}" > public/commit.txt
 
 COPY . /app/

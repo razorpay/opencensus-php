@@ -1225,7 +1225,7 @@ class CoreTest extends TestCase
         $this->app['basicauth']->setOrgId('100000razorpay');
 
         $escalationCoreMock = $this->getMockBuilder(Escalations\Core::class)
-            ->setMethods(['canTriggerIAWebhookEscalation'])
+            ->onlyMethods(['canTriggerIAWebhookEscalation'])
             ->getMock();
 
         $escalationCoreMock->expects($this->any())
@@ -1273,7 +1273,7 @@ class CoreTest extends TestCase
         $merchantId = $merchantDetail->getId();
 
         $escalationCoreMock = $this->getMockBuilder(Escalations\Core::class)
-            ->setMethods(['canTriggerIAWebhookEscalation'])
+            ->onlyMethods(['canTriggerIAWebhookEscalation'])
             ->getMock();
 
         $escalationCoreMock->expects($this->any())
@@ -1316,7 +1316,7 @@ class CoreTest extends TestCase
         $merchantId = $merchantDetail->getId();
 
         $escalationCoreMock = $this->getMockBuilder(Escalations\Core::class)
-            ->setMethods(['canTriggerIAWebhookEscalation'])
+            ->onlyMethods(['canTriggerIAWebhookEscalation'])
             ->getMock();
 
         $escalationCoreMock->expects($this->any())
@@ -1354,7 +1354,7 @@ class CoreTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -1445,7 +1445,7 @@ class CoreTest extends TestCase
     {
         $pinotService = $this->getMockBuilder(HarvesterClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getDataFromPinot'])
+            ->onlyMethods(['getDataFromPinot'])
             ->getMock();
 
         $this->app->instance('eventManager', $pinotService);
@@ -1477,7 +1477,7 @@ class CoreTest extends TestCase
     {
         $prestoService = $this->getMockBuilder(DataLakePresto::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getDataFromDataLake'])
+            ->onlyMethods(['getDataFromDataLake'])
             ->getMock();
 
         $this->app->instance('datalake.presto', $prestoService);

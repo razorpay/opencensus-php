@@ -3835,7 +3835,7 @@ class BasicAuth
         foreach ($this->getPassport() as $key => $value)
         {
             if (! is_null($value)) {
-                $builder->withClaim($key, $value);
+                $builder = $builder->withClaim($key, $value);
             }
         }
 

@@ -166,17 +166,17 @@ class CommissionOnHoldClear extends Job
             $summary['success_count'] = count($transactions);
             $summary['success_ids'] = $transactions;
             $this->trace->info(TraceCode::COMMISSION_TRANSACTION_ON_HOLD_CLEAR_SUMMARY, $summary);
-            
+
             // Track successful clearances
             $this->trace->histogram(PartnerMetric::COMMISSION_ON_HOLD_CLEAR_OLD_INVOICE_PROCESS_TIME_MS, $timeTakenMilliSeconds);
             return;
         }
 
         $this->trace->error(TraceCode::COMMISSION_TRANSACTION_ON_HOLD_CLEAR_FAILED, $res);
-        
+
         // Track failed clearances
         $this->trace->count(PartnerMetric::COMMISSION_TRANSACTION_ON_HOLD_CLEAR_OLD_INVOICE_FAILED_TOTAL);
-        
+
         // Track process time for failures too
         $this->trace->histogram(PartnerMetric::COMMISSION_ON_HOLD_CLEAR_OLD_INVOICE_PROCESS_TIME_MS, $timeTakenMilliSeconds);
     }

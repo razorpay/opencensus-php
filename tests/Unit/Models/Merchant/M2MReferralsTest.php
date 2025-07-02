@@ -32,7 +32,7 @@ class M2MReferralsTest extends TestCase
         Mail::fake();
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -83,7 +83,7 @@ class M2MReferralsTest extends TestCase
 
         $druidService = $this->getMockBuilder(MockDruidService::class)
                              ->setConstructorArgs([$this->app])
-                             ->setMethods(['getDataFromDruid'])
+                             ->onlyMethods(['getDataFromDruid'])
                              ->getMock();
 
         $this->app->instance('druid.service', $druidService);
@@ -110,7 +110,7 @@ class M2MReferralsTest extends TestCase
     {
         $harvesterService = $this->getMockBuilder(HarvesterClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getDataFromPinot'])
+            ->onlyMethods(['getDataFromPinot'])
             ->getMock();
 
         $this->app->instance('eventManager', $harvesterService);

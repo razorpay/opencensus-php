@@ -32,7 +32,7 @@ class NetbankingDcbCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
     public function testNetbankingDcbCombinedFile()
     {
         $this->markTestSkipped('the test would be fixed asap, skipping for now as its affecting developers');
-        
+
         Mail::fake();
 
         $this->doAuthAndCapturePayment($this->payment);

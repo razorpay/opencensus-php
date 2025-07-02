@@ -19,23 +19,23 @@ trait UpiUnexpectedPaymentRefundHandler
 
     public function handleUnExpectedPaymentRefundInCallback($payment, $isCallback)
     {
-        if ((empty($payment) === true) or 
-            ($payment->isUpi() === false) or 
+        if ((empty($payment) === true) or
+            ($payment->isUpi() === false) or
              ($payment->isUpiOtm() === true) or
-            (in_array($payment->getMerchantId(), self::$demoAccounts, false) === false) or 
-            ($isCallback === false) or 
+            (in_array($payment->getMerchantId(), self::$demoAccounts, false) === false) or
+            ($isCallback === false) or
             (empty($payment->getRefundAt()) === true))
         {
             return false;
         }
 
-     
+
         /*
-         * In case of unexpected payments created in callback we forcefuly set refundAt value to nil. This will be overridden in    
-         * reconciliate 
+         * In case of unexpected payments created in callback we forcefuly set refundAt value to nil. This will be overridden in
+         * reconciliate
          */
         $result = $this->shouldDelayUnexpectedPaymentRefund();
-      
+
         if ($result === false)
         {
             return false;
@@ -66,18 +66,18 @@ trait UpiUnexpectedPaymentRefundHandler
             return;
         }
 
-        /* if the refund at is set for an unexpected payment we are delaying to 5 days since recon is happening via art and api systems there could be a 
+        /* if the refund at is set for an unexpected payment we are delaying to 5 days since recon is happening via art and api systems there could be a
          * collision that might lead to double refunds, hence this temporary step. In case of regular payments, status would be refunded before recon.
          */
 
-        if (($this->shouldDelayUnexpectedPaymentRefund() === true) and 
+        if (($this->shouldDelayUnexpectedPaymentRefund() === true) and
             ($payment->isAuthorized() === true))
         {
-            $this->delayUnexpectedPaymentRefund($payment);    
+            $this->delayUnexpectedPaymentRefund($payment);
         }
     }
 
-    // if the unexpected payment is created in callback refund at will be null, when the payment is reconcilied 
+    // if the unexpected payment is created in callback refund at will be null, when the payment is reconcilied
     // we can safely refund the payment immediately.
     protected function setRefundAtToNow($payment)
     {

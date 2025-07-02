@@ -149,7 +149,7 @@ class Service extends Base\Service
         catch (\Throwable $ex)
         {
             $this->trace->traceException($ex, Logger::ERROR, TraceCode::NACH_BATCH_ERROR_SQS_PUSH_FAILED);
-            
+
             /*
              Remove payment entry from redis which was added to ignore duplicate payments with same status received
              in partial and final files of banks. This will give chance to process the payment again if received in

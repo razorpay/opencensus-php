@@ -1,17 +1,19 @@
-FROM harbor.razorpay.com/razorpay/onggi-multi-arch:curl-7.82 as curl-cli
-FROM harbor.razorpay.com/razorpay/onggi-multi-arch:php-8.1-opencensus as opencensus-ext
+FROM harbor.razorpay.com/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-curl-v4 as curl-cli
+FROM harbor.razorpay.com/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.2-opencensus as opencensus-ext
 
-FROM harbor.razorpay.com/razorpay/onggi-multi-arch:php-8.1-api-web-v2
+FROM harbor.razorpay.com/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.2-api-web-v4
 
-COPY --from=curl-cli /usr/bin/curl /usr/bin/
+# RUN apk add --no-cache php82-pear php82-dev
 
-RUN pear81 config-set php_ini /etc/php81/php.ini
-RUN pecl81 install opencensus-alpha
+# COPY --from=curl-cli /usr/bin/curl /usr/bin/
+
+# RUN pear82 config-set php_ini /etc/php82/php.ini
+RUN pecl82 install opencensus-alpha
 
 RUN apk add font-noto font-noto-thai font-noto-tibetan font-ipa font-sony-misc font-jis-misc && \
     fc-cache -f
 
-COPY --from=opencensus-ext /usr/lib/php81/modules/opencensus.so /usr/lib/php81/modules
+COPY --from=opencensus-ext /usr/lib/php82/modules/opencensus.so /usr/lib/php82/modules
 
 VOLUME ['/app']
 

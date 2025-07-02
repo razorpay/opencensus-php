@@ -156,7 +156,7 @@ class EnachRbl extends Base
             'subject'   => 'Enach RBL Debit File Beam Send failure',
             'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SUBSCRIPTIONS_APPS]
         ];
-        
+
         $this->sendBeamRequest($data, $timelines, $mailInfo, true);
 
         $mailData = $this->formatDataForMail($files);
@@ -166,7 +166,7 @@ class EnachRbl extends Base
         $mailable = new EMandateMail($mailData, $type, $this->gatewayFile->getRecipients());
 
         Mail::queue($mailable);
-        
+
         $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
     }
 
@@ -224,13 +224,13 @@ class EnachRbl extends Base
             Enach\Base\Entity::UMRN     => $token['gateway_token'],
         ];
     }
-    
+
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('8192M'); // 8GB
-        
+
         RuntimeManager::setTimeLimit(7200);
-        
+
         RuntimeManager::setMaxExecTime(7200);
     }
 }

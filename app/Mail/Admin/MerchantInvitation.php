@@ -123,7 +123,7 @@ class MerchantInvitation extends Base\Mailable
 
     public function getParamsForStork(): array
     {
-        $storkParams = 
+        $storkParams =
         [
             'template_name' => 'banking_mail_invite_merchant',
             'template_namespace' => 'payments_banking',
@@ -132,7 +132,7 @@ class MerchantInvitation extends Base\Mailable
         ];
 
         $storkParams['params']['org'] = $this->org;
-    
+
         $storkParams['params']['sign_up_url'] = 'https://' . $this->org['host_name'] .'/#/access/signup?merchant_invitation=' . $this->invitation['token'];
         if($this->org['custom_code'] === 'rzp')
         {

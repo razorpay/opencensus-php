@@ -28,11 +28,12 @@ class EntityReportTest extends TestCase
     use DbEntityFetchTrait;
     use CustomBrandingTrait;
 
-    public function __construct()
+    protected function setUp() :void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/EntityReportTestData.php';
 
-        parent::__construct();
+//        parent::__construct("EntityReportTest");
+//        parent::__construct("testEntityReports");
     }
 
     public function testEntityReports()

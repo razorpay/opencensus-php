@@ -55,15 +55,30 @@ class FileGenerator extends Generator
     protected function getDecryptedFile($file)
     {
         $aes = new AES(AES::MODE_CBC);
-
         $aes->setKey(Config::get('nodal.axis.secret'));
 
-        $aes->setIV(Config::get('nodal.axis.iv'));
+        // Base64 decode the IV before using it
+        $iv = base64_decode(Config::get('nodal.axis.iv'));
+        if ($iv === false) {
+            throw new \RuntimeException('Failed to base64 decode IV');
+        }
+        $aes->setIV($iv);
 
-        $content = base64_decode(file_get_contents($file));
+        // Read and decode the file
+        $content = file_get_contents($file);
+        if ($content === false) {
+            throw new \RuntimeException('Failed to read input file');
+        }
 
-        $decryptedData = $aes->decrypt($content);
+        $base64Decoded = base64_decode($content);
+        if ($base64Decoded === false) {
+            throw new \RuntimeException('Failed to base64 decode content');
+        }
 
+        $decryptedData = $aes->decrypt($base64Decoded);
+        if ($decryptedData === false) {
+            throw new \RuntimeException('Failed to decrypt content');
+        }
         $dirPath = pathinfo($file, PATHINFO_DIRNAME);
 
         $decryptedFilePath = $dirPath . '/Decrypted.xlsx';

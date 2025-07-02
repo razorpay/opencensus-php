@@ -147,7 +147,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->onlyMethods(['getTreatment', 'getCachedTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -519,7 +519,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $salesforceClientMock = $this->getMockBuilder(SalesForceClient::class)
                                      ->setConstructorArgs([$this->app])
-                                     ->setMethods(["sendPreSignupDetails"])
+                                     ->onlyMethods(["sendPreSignupDetails"])
                                      ->getMock();
 
         $this->app->instance('salesforce', $salesforceClientMock);
@@ -3703,7 +3703,7 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertEquals($merchant->reload()->getCategory(), '4722');
     }
 
-    public function testMerchantDetailsPatchShouldNotUpdateMethodsBasedOnCategoryIfResetMethodsIsFalse()
+    public function testMerchantDetailsPatchShouldNotUpdateMethodsBasedOnCategoryIfReonlyMethodsIsFalse()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant       = $merchantDetail->merchant;
@@ -4763,7 +4763,7 @@ We look forward to transacting with you!
     {
         $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods([$methodName])
+                            ->onlyMethods([$methodName])
                             ->getMock();
 
         $this->app->instance('hubspot', $hubSpotMock);
@@ -5074,7 +5074,7 @@ We look forward to transacting with you!
     {
         $salesforceClientMock = $this->getMockBuilder(SalesForceClient::class)
                                      ->setConstructorArgs([$this->app])
-                                     ->setMethods([$methodName])
+                                     ->onlyMethods([$methodName])
                                      ->getMock();
 
         $this->app->instance('salesforce', $salesforceClientMock);
@@ -5668,7 +5668,7 @@ We look forward to transacting with you!
         $merchantUser = $this->fixtures->user->createBankingUserForMerchant($merchantDetail[MerchantDetails::MERCHANT_ID], [], 'owner', 'live');
 
         $razorxMock = $this->getMockBuilder(Core::class)
-            ->setMethods(['isRazorxExperimentEnable'])
+            ->onlyMethods(['isRazorxExperimentEnable'])
             ->getMock();
 
         $razorxMock->expects($this->any())
@@ -8293,7 +8293,7 @@ Team Razorpay', '+911234567890');
         $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId, $merchantUser['id']);
 
         $razorxMock = $this->getMockBuilder(Core::class)
-            ->setMethods(['isRazorxExperimentEnable'])
+            ->onlyMethods(['isRazorxExperimentEnable'])
             ->getMock();
 
         $razorxMock->expects($this->any())
@@ -9262,7 +9262,7 @@ Team Razorpay', '+911234567890');
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->onlyMethods(['pushIdentifyAndTrackEvent'])
                             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -10022,7 +10022,7 @@ Team Razorpay',
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->onlyMethods(['pushIdentifyAndTrackEvent'])
                             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -10249,7 +10249,7 @@ Team Razorpay',
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -10471,7 +10471,7 @@ Team Razorpay',
     {
         $diagMock = $this->getMockBuilder(DiagClient::class)
                          ->setConstructorArgs([$this->app])
-                         ->setMethods(['trackEvent'])
+                         ->onlyMethods(['trackEvent'])
                          ->getMock();
 
         $this->app->instance('diag', $diagMock);
@@ -10512,7 +10512,7 @@ Team Razorpay',
     {
         $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods([$methodName])
+                            ->onlyMethods([$methodName])
                             ->getMock();
 
         $this->app->instance('hubspot', $hubSpotMock);
@@ -11390,7 +11390,7 @@ You can now start accepting payments from https://www.example.com.
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->onlyMethods(['pushIdentifyAndTrackEvent'])
             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -13045,7 +13045,7 @@ We look forward to transacting with you!
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -13751,7 +13751,7 @@ We look forward to transacting with you!
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->onlyMethods(['pushIdentifyAndTrackEvent'])
                             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);

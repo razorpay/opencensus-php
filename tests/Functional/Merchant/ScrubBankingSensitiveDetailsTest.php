@@ -26,7 +26,7 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
     {
         $routerMock = $this->getMockBuilder(Router::class)
             ->setConstructorArgs([$this->app['events'], $this->app])
-            ->setMethods(['currentRouteName'])
+            ->onlyMethods(['currentRouteName'])
             ->getMock();
 
         $routerMock->method('currentRouteName')

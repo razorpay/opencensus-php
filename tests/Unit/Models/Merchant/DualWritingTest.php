@@ -33,6 +33,7 @@ use RZP\Models\Merchant\Cron\Constants as CronConstants;
 use function PHPUnit\Framework\assertNotNull;
 use RZP\Jobs\Kafka as KafkaJobs;
 use Mockery as m;
+use Illuminate\Contracts\Cache\Repository as Cache;
 
 
 class DualWritingTest extends TestCase
@@ -1735,8 +1736,7 @@ class DualWritingTest extends TestCase
 
         $dualWriting = (new KafkaJobs\PgosCdcEventsJob($data, null));
 
-        $cacheMock = $this->getMockBuilder(Cache::class)->setMethods(['put', 'get'])
-            ->getMock();
+        $cacheMock = Mockery::mock(Cache::class);
 
         $cacheMockery = \Mockery::mock(Cache::class);
 
@@ -1753,11 +1753,13 @@ class DualWritingTest extends TestCase
         $expectedCacheKey = $attribute . $redisKey;
         $attemptCount = 2;
 
-        $cacheMock->method('put')
-            ->will($this->returnValue(true));
+        $cacheMock->shouldReceive('put')
+            ->withAnyArgs()
+            ->andReturn(true);
 
-        $cacheMock->method('get')
-            ->will($this->returnValue($attemptCount));
+        $cacheMock->shouldReceive('get')
+            ->withAnyArgs()
+            ->andReturn($attemptCount);
 
         // Call the method
         $result = $dualWriting->incrementKafkaMessageProcessingAttempt($redisKey, $attribute);

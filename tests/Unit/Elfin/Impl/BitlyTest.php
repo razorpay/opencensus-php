@@ -20,7 +20,7 @@ class BitlyTest extends TestCase
 
         $this->bitly = $this->getMockBuilder(Elfin\Impl\Bitly::class)
                             ->setConstructorArgs([$bitlyConfig])
-                            ->setMethods(['makeRequestAndValidateHeader'])
+                            ->onlyMethods(['makeRequestAndValidateHeader'])
                             ->getMock();
     }
 

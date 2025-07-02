@@ -2564,7 +2564,7 @@ return [
         ],
     ],
 
-    'testMerchantDetailsPatchShouldNotUpdateMethodsBasedOnCategoryIfResetMethodsIsFalse' => [
+    'testMerchantDetailsPatchShouldNotUpdateMethodsBasedOnCategoryIfReonlyMethodsIsFalse' => [
         'request' => [
             'raw' => json_encode([
                 'business_category'      => 'tours_and_travel',

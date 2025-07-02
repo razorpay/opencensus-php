@@ -109,9 +109,9 @@ class Yesb extends Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
         }
-        
+
         $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
-        
+
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         foreach ($tokens as $key => $token)
@@ -726,7 +726,7 @@ class Yesb extends Base
     protected function getDate(): string
     {
         $offset = (int) $this->gatewayFile->getSubType();
-        
+
         return Carbon::now(Timezone::IST)->addDays($offset)->format('dmY');
     }
 
@@ -737,7 +737,7 @@ class Yesb extends Base
      */
     public function sendFile($data)
     {
-        
+
         if($this->fileStore === null)
         {
             $this->fileStore = $this->fetchFilestoreIds($this->gatewayFile);
@@ -749,7 +749,7 @@ class Yesb extends Base
             ->get();
 
         $this->sendFilesInBatches($files, 1);
-        
+
         $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT);
     }
 
@@ -791,9 +791,9 @@ class Yesb extends Base
             if($this->gatewayFile->getAttempts() >= 4)
             {
                 $this->generateMetricForEmandate(Metric::EMANDATE_FILE_SENT_ERROR);
-                
+
                 $this->generateMetricForEmandate(Metric::EMANDATE_BEAM_ERROR);
-                
+
                 $this->trace->info(
                     TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
                     [
@@ -801,7 +801,7 @@ class Yesb extends Base
                         'type' => $this->gatewayFile->getType()
                     ]);
             }
-            
+
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
                 null,
@@ -822,13 +822,13 @@ class Yesb extends Base
     protected function sendEachFileBatch($pendingFiles): array
     {
         $sentFiles = $failedFiles = $timeoutFiles = [];
-        
+
         $configKey = $this->gatewayFile->getType() . "_" . Payment\Gateway::ACQUIRER_YESB;
-        
+
         $retry = Constants::EMANDATE_RETRY_CONFIG_MAP[$configKey] ?? false;
-        
+
         $filterStatusList = $retry ? [Constants::FILE_SENT] : [Constants::FILE_SENT, Constants::FILE_TIMEOUT];
-        
+
         $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_PENDING,
             [
                 "pendingFiles"      => $this->getFileNames($pendingFiles),
@@ -838,7 +838,7 @@ class Yesb extends Base
             ]);
 
         $this->filterFiles($pendingFiles, $sentFiles, $filterStatusList);
-        
+
         $this->trace->info(TraceCode::GATEWAY_FILE_BEAM_FILES_FILTERED,
             [
                 "pendingFiles" => $this->getFileNames($pendingFiles),
@@ -876,7 +876,7 @@ class Yesb extends Base
                     else
                     {
                         $this->generateMetricForEmandate(Metric::EMANDATE_BEAM_ERROR);
-                        
+
                         $this->setFilesBeamStatus([$pendingFile], Constants::FILE_FAILED);
 
                         $failedFiles[] = $pendingFileName;
@@ -886,15 +886,15 @@ class Yesb extends Base
             else
             {
                 $timeoutFiles = array_merge($timeoutFiles, $beamFiles);
-                
+
                 if($beamResponse === null)
                 {
-                    
+
                     $this->setFilesBeamStatus($pendingFiles, Constants::FILE_TIMEOUT);
                 }
                 else
                 {
-                    
+
                     $this->setFilesBeamStatus($pendingFiles, Constants::FILE_UNKNOWN);
                 }
             }
@@ -944,9 +944,9 @@ class Yesb extends Base
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('16384M'); // 16 GB
-    
+
         RuntimeManager::setTimeLimit(7200);
-    
+
         RuntimeManager::setMaxExecTime(7200);
     }
 

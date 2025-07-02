@@ -213,7 +213,7 @@ class Jkb extends Base
         $bucketConfig = $config[$bucketType];
 
         $bucketConfig['name'] = Config::get('applications.chota_beam.bucket_name');
-        
+
         return $bucketConfig;
     }
 }

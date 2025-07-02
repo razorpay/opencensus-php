@@ -889,7 +889,7 @@ class Entity extends Base\PublicEntity
 
             $nextStep = min($time2, $step->addDay()->startOfDay());
 
-            $diffInMinutes += $step->diffInMinutes($nextStep);
+            $diffInMinutes += $step->diffInMinutes($nextStep, true);
             $step = $nextStep;
         }
 

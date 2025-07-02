@@ -220,7 +220,7 @@ class UserMerchantTest extends TestCase
     protected function createAndFetchMocks()
     {
         $mockMC = $this->getMockBuilder(MerchantCore::class)
-            ->setMethods(['isRazorxExperimentEnable'])
+            ->onlyMethods(['isRazorxExperimentEnable'])
             ->getMock();
 
         $mockMC->expects($this->any())
@@ -232,7 +232,7 @@ class UserMerchantTest extends TestCase
 
         $roleServiceMock = $this->getMockBuilder(\RZP\Models\Roles\Service::class)
         ->setConstructorArgs([$this->app])
-        ->setMethods(['getRoleNamesUsingExperiment'])
+        ->onlyMethods(['getRoleNamesUsingExperiment'])
         ->getMock();
 
         $roleServiceMock->expects($this->any())->method('getRoleNamesUsingExperiment')->willReturn([]);

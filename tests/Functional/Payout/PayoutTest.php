@@ -185,7 +185,7 @@ class PayoutTest extends OAuthTestCase
 
     protected function setUp(): void
     {
-        $this->unitTestCase = new \Tests\Unit\TestCase();
+        $this->unitTestCase = new \Tests\Unit\TestCase('PayoutTest');
 
         $this->testDataFilePath = __DIR__ . '/helpers/PayoutTestData.php';
         parent::setUp();
@@ -720,6 +720,7 @@ class PayoutTest extends OAuthTestCase
             'fees' => 10,
             'tax' => 33,
             'status' => "initiated",
+            'initiated_at' => 1743964200,
             'fts_transfer_id' => 60,
             'channel' => "rbl",
             'utr' => "933815383814",
@@ -866,6 +867,7 @@ class PayoutTest extends OAuthTestCase
             'narration' => "Batman",
             'purpose_type' => "refund",
             'amount' => 2000000,
+            'initiated_at' => 1743964200,
             'currency' => "INR",
             'notes' => "{}",
             'fees' => 10,
@@ -12333,7 +12335,7 @@ class PayoutTest extends OAuthTestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -12354,7 +12356,7 @@ class PayoutTest extends OAuthTestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -17060,13 +17062,13 @@ class PayoutTest extends OAuthTestCase
 
     protected function setupRedisMock()
     {
-        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['get'])
+        $redisMock = $this->getMockBuilder(Redis::class)->onlyMethods(['get'])
                           ->getMock();
 
         Redis::shouldReceive('connection')
              ->andReturn($redisMock);
 
-        $redisMock->method('get')->will($this->returnValue('true'));
+        $redisMock->method('get')->willReturn('true');
     }
 
     public function testDashboardSummaryForNonWorkflowRoles()
@@ -25270,7 +25272,7 @@ class PayoutTest extends OAuthTestCase
 
         $wfsMock = $this->getMockBuilder(WorkflowService::class)
                         ->setConstructorArgs([$this->app])
-                        ->setMethods(['request'])
+                        ->onlyMethods(['request'])
                         ->getMock();
 
         $this->app->instance('workflow_service', $wfsMock);
@@ -33798,7 +33800,7 @@ class PayoutTest extends OAuthTestCase
     {
         $diagMock = $this->getMockBuilder(DiagClient::class)
                          ->setConstructorArgs([$this->app])
-                         ->setMethods(['trackEvent'])
+                         ->onlyMethods(['trackEvent'])
                          ->getMock();
 
         $this->app->instance('diag', $diagMock);
@@ -41649,7 +41651,7 @@ class PayoutTest extends OAuthTestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -44952,14 +44954,14 @@ class PayoutTest extends OAuthTestCase
 
             $authMock = $this->getMockBuilder(\RZP\Http\BasicAuth\BasicAuth::class)
                              ->setConstructorArgs([$this->app])
-                             ->setMethods(['getMerchant'])
+                             ->onlyMethods(['getMerchant'])
                              ->getMock();
             $authMock->method('getMerchant')->willReturn($merchant);
             $this->app->instance('basicauth', $authMock);
 
             $routeMock = $this->getMockBuilder(\RZP\Http\Route::class)
                               ->setConstructorArgs([$this->app])
-                              ->setMethods(['getCurrentRouteName'])
+                              ->onlyMethods(['getCurrentRouteName'])
                               ->getMock();
             $routeMock->method('getCurrentRouteName')->willReturn($scenario['route']);
             $this->app->instance('api.route', $routeMock);
@@ -44986,7 +44988,7 @@ class PayoutTest extends OAuthTestCase
 
             $authMock = $this->getMockBuilder(\RZP\Http\BasicAuth\BasicAuth::class)
                 ->setConstructorArgs([$this->app])
-                ->setMethods(['isInternalApp','getInternalApp','getMerchant'])
+                ->onlyMethods(['isInternalApp','getInternalApp','getMerchant'])
                 ->getMock();
 
             $authMock->method('getMerchant')->willReturn($merchant);
@@ -44998,7 +45000,7 @@ class PayoutTest extends OAuthTestCase
 
             $routeMock = $this->getMockBuilder(\RZP\Http\Route::class)
                 ->setConstructorArgs([$this->app])
-                ->setMethods(['getCurrentRouteName'])
+                ->onlyMethods(['getCurrentRouteName'])
                 ->getMock();
             $routeMock->method('getCurrentRouteName')->willReturn($scenario['route']);
             $this->app->instance('api.route', $routeMock);

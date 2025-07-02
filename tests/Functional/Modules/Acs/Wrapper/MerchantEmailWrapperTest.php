@@ -75,8 +75,27 @@ class MerchantEmailWrapperTest extends TestCase
 
         $merchantEmailWrapperMock = $this->getMockedMerchantEmailWrapper(['isShadowOrReverseShadowOnForOperation']);
         $merchantEmailWrapperMock->accountAsvClient = $accountAsvClientMock;
-        $merchantEmailWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
-            ->withConsecutive(['10000000000000', 'shadow', 'write'], ['10000000000000', 'reverse_shadow', 'write'])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantEmailWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
+//            ->withConsecutive(['10000000000000', 'shadow', 'write'], ['10000000000000', 'reverse_shadow', 'write'])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantEmailWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', 'shadow', 'write'], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', 'reverse_shadow', 'write'], $args);
+                    return true;
+                }
+
+                return null;
+            });
 
         $merchantEmailWrapperMock->Delete($emailEntity);
         #T3 Ends
@@ -90,8 +109,27 @@ class MerchantEmailWrapperTest extends TestCase
 
         $merchantEmailWrapperMock = $this->getMockedMerchantEmailWrapper(['isShadowOrReverseShadowOnForOperation']);
         $merchantEmailWrapperMock->accountAsvClient = $accountAsvClientMock;
-        $merchantEmailWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
-            ->withConsecutive(['10000000000000', 'shadow', 'write'], ['10000000000000', 'reverse_shadow', 'write'])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantEmailWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')
+//            ->withConsecutive(['10000000000000', 'shadow', 'write'], ['10000000000000', 'reverse_shadow', 'write'])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantEmailWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', 'shadow', 'write'], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame(['10000000000000', 'reverse_shadow', 'write'], $args);
+                    return true;
+                }
+
+                return null;
+            });
 
         try {
             $merchantEmailWrapperMock->Delete($emailEntity);
@@ -133,23 +171,58 @@ class MerchantEmailWrapperTest extends TestCase
         //ReverseShadow overrides common fields with values from asv and logs difference
         $traceMock = $this->createTraceMock();
         $traceMock->expects($this->never())->method('traceException');
-        $traceMock->expects($this->exactly(1))->method('info')->withConsecutive([TraceCode::ASV_COMPARE_MISMATCH, ["entity_name" => "merchant_email", "merchant_id" => $merchantId, 'email_id' => '', "difference" => [$id => ["type"]]]]);
-        $traceMock->expects($this->exactly(1))->method('count')->withConsecutive([Metric::ASV_COMPARE_MISMATCH, ["merchant_email"]]);
+        $traceMock->expects($this->exactly(1))->method('info')->with(
+            TraceCode::ASV_COMPARE_MISMATCH,
+            [
+                "entity_name" => "merchant_email", "merchant_id" => $merchantId, 'email_id' => '', "difference" => [$id => ["type"]]
+            ]
+        );
+        $traceMock->expects($this->exactly(1))->method('count')->with(
+            Metric::ASV_COMPARE_MISMATCH, ["merchant_email"]
+        );
 
         $accountAsvClientMock = $this->createAccountAsvClientMock();
         $accountAsvClientMock->expects($this->exactly(1))->method('FetchMerchant')->willReturn($fetchMerchantResponseMismatch);
 
         $merchantEmailWrapperMock = $this->getMockedMerchantEmailWrapper(['isShadowOrReverseShadowOnForOperation']);
         $merchantEmailWrapperMock->accountAsvClient = $accountAsvClientMock;
-        $merchantEmailWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
-        withConsecutive([$merchantId, Constant::SHADOW, Constant::READ], [$merchantId, Constant::REVERSE_SHADOW, Constant::READ])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantEmailWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
+//        withConsecutive([$merchantId, Constant::SHADOW, Constant::READ], [$merchantId, Constant::REVERSE_SHADOW, Constant::READ])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantEmailWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args) use($merchantId){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame([$merchantId, CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame([$merchantId, CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return true;
+                }
+
+                return null;
+            });
+
+
         $returnedEntity = $merchantEmailWrapperMock->FetchMerchantEmailsFromMerchantId($merchantId, $merchantEmailCollectionForApi);
         self::assertEquals($merchantEmailCollectionOverWritten, $returnedEntity);
 
         //Exception in ReadShadow From FetchMerchant
         $traceMock = $this->createTraceMock();
         $exception = new IntegrationException('error in FetchMerchant');
-        $traceMock->expects($this->exactly(1))->method('traceException')->withConsecutive([$exception, Trace::ERROR, TraceCode::ASV_READ_SHADOW_EXCEPTION, ["merchant_id" => $merchantId, "entity" => "merchant_email"]]);
+        $traceMock->expects($this->exactly(1))->method('traceException')->with(
+            $exception,
+            Trace::ERROR,
+            TraceCode::ASV_READ_SHADOW_EXCEPTION,
+            [
+                "merchant_id" => $merchantId, "entity" => "merchant_email"
+            ]
+        );
 
         $accountAsvClientMock = $this->createAccountAsvClientMock();
         $accountAsvClientMock->expects($this->exactly(1))->method('FetchMerchant')->willThrowException($exception);
@@ -166,14 +239,37 @@ class MerchantEmailWrapperTest extends TestCase
 
         //Exception in Reverse Shadow From FetchMerchant
         $traceMock = $this->createTraceMock();
-        $traceMock->expects($this->exactly(1))->method('traceException')->withConsecutive([$exception, Trace::CRITICAL, TraceCode::ASV_REVERSE_SHADOW_EXCEPTION, ["merchant_id" => $merchantId, "entity" => "merchant_email"]]);
+        $traceMock->expects($this->exactly(1))->method('traceException')->with(
+            $exception, Trace::CRITICAL, TraceCode::ASV_REVERSE_SHADOW_EXCEPTION, ["merchant_id" => $merchantId, "entity" => "merchant_email"]
+        );
 
         $accountAsvClientMock = $this->createAccountAsvClientMock();
         $accountAsvClientMock->expects($this->exactly(1))->method('FetchMerchant')->willThrowException($exception);
         $merchantWrapperMock = $this->getMockedMerchantEmailWrapper(['isShadowOrReverseShadowOnForOperation']);
         $merchantWrapperMock->accountAsvClient = $accountAsvClientMock;
-        $merchantWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
-        withConsecutive([$merchantId, Constant::SHADOW, CONSTANT::READ], [$merchantId, CONSTANT::REVERSE_SHADOW, Constant::READ])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
+//        withConsecutive([$merchantId, Constant::SHADOW, CONSTANT::READ], [$merchantId, CONSTANT::REVERSE_SHADOW, Constant::READ])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args) use($merchantId){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame([$merchantId, CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame([$merchantId, CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return true;
+                }
+
+                return null;
+            });
+
+
         try {
             $merchantWrapperMock->FetchMerchantEmailsFromMerchantId($merchantId, $merchantEmailCollectionForApi);
             assertTrue(false);
@@ -185,8 +281,8 @@ class MerchantEmailWrapperTest extends TestCase
 
         //Empty Response from ASV in Shadow logged and returns api entities
         $traceMock = $this->createTraceMock();
-        $traceMock->expects($this->exactly(1))->method('info')->withConsecutive([TraceCode::ASV_COMPARE_MISMATCH, ["entity_name" => "merchant_email", "email_id" => "", "difference" =>[$id =>"Entity Present in only one of ASV/API"], 'merchant_id' => $merchantId]]);
-        $traceMock->expects($this->exactly(1))->method('count')->withConsecutive([Metric::ASV_COMPARE_MISMATCH, ["merchant_email"]]);
+        $traceMock->expects($this->exactly(1))->method('info')->with(TraceCode::ASV_COMPARE_MISMATCH, ["entity_name" => "merchant_email", "email_id" => "", "difference" =>[$id =>"Entity Present in only one of ASV/API"], 'merchant_id' => $merchantId]);
+        $traceMock->expects($this->exactly(1))->method('count')->with(Metric::ASV_COMPARE_MISMATCH, ["merchant_email"]);
         $fetchMerchantEmailsEmptyResponse = new FetchMerchantResponse();
         $accountAsvClientMock = $this->createAccountAsvClientMock();
         $accountAsvClientMock->expects($this->exactly(1))->method('FetchMerchant')->willReturn($fetchMerchantEmailsEmptyResponse);
@@ -198,15 +294,36 @@ class MerchantEmailWrapperTest extends TestCase
 
         //Empty Response from ASV in ReverseShadow logged and returns empty collection
         $traceMock = $this->createTraceMock();
-        $traceMock->expects($this->exactly(1))->method('info')->withConsecutive([TraceCode::ASV_COMPARE_MISMATCH, ["entity_name" => "merchant_email", "email_id" => "", "difference" =>[$id=>"Entity Present in only one of ASV/API"], 'merchant_id' => $merchantId]]);
-        $traceMock->expects($this->exactly(1))->method('count')->withConsecutive([Metric::ASV_COMPARE_MISMATCH, ["merchant_email"]]);
+        $traceMock->expects($this->exactly(1))->method('info')->with(TraceCode::ASV_COMPARE_MISMATCH, ["entity_name" => "merchant_email", "email_id" => "", "difference" =>[$id=>"Entity Present in only one of ASV/API"], 'merchant_id' => $merchantId]);
+        $traceMock->expects($this->exactly(1))->method('count')->with(Metric::ASV_COMPARE_MISMATCH, ["merchant_email"]);
         $fetchMerchantEmailsEmptyResponse = new FetchMerchantResponse();
         $accountAsvClientMock = $this->createAccountAsvClientMock();
         $accountAsvClientMock->expects($this->exactly(1))->method('FetchMerchant')->willReturn($fetchMerchantEmailsEmptyResponse);
         $merchantEmailWrapperMock = $this->getMockedMerchantEmailWrapper(['isShadowOrReverseShadowOnForOperation']);
         $merchantEmailWrapperMock->accountAsvClient = $accountAsvClientMock;
-        $merchantEmailWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
-        withConsecutive([$merchantId, CONSTANT::SHADOW, CONSTANT::READ], [$merchantId, CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantEmailWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
+//        withConsecutive([$merchantId, CONSTANT::SHADOW, CONSTANT::READ], [$merchantId, CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantEmailWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args) use($merchantId){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame([$merchantId, CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame([$merchantId, CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return true;
+                }
+
+                return null;
+            });
+
+
         $returnedCollection = $merchantEmailWrapperMock->FetchMerchantEmailsFromMerchantId($merchantId, $merchantEmailCollectionForApi);
         self::assertEquals(new PublicCollection([]), $returnedCollection);
 
@@ -219,8 +336,29 @@ class MerchantEmailWrapperTest extends TestCase
         $accountAsvClientMock->expects($this->exactly(1))->method('FetchMerchant')->willReturn($fetchMerchantEmailsEmptyResponse);
         $merchantEmailWrapperMock = $this->getMockedMerchantEmailWrapper(['isShadowOrReverseShadowOnForOperation']);
         $merchantEmailWrapperMock->accountAsvClient = $accountAsvClientMock;
-        $merchantEmailWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
-        withConsecutive([$merchantId, CONSTANT::SHADOW, CONSTANT::READ], [$merchantId, CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+//        $merchantEmailWrapperMock->expects($this->exactly(2))->method('isShadowOrReverseShadowOnForOperation')->
+//        withConsecutive([$merchantId, CONSTANT::SHADOW, CONSTANT::READ], [$merchantId, CONSTANT::REVERSE_SHADOW, CONSTANT::READ])->willReturnOnConsecutiveCalls(false, true);
+
+        $merchantEmailWrapperMock->expects($this->exactly(2))
+            ->method('isShadowOrReverseShadowOnForOperation')
+            ->willReturnCallback(function (...$args) use($merchantId){
+                static $call = 0;
+                $call++;
+
+                if($call === 1) {
+                    \PHPUnit\Framework\Assert::assertSame([$merchantId, CONSTANT::SHADOW, CONSTANT::READ], $args);
+                    return false;
+                }
+
+                if ($call === 2) {
+                    \PHPUnit\Framework\Assert::assertSame([$merchantId, CONSTANT::REVERSE_SHADOW, CONSTANT::READ], $args);
+                    return true;
+                }
+
+                return null;
+            });
+
+
         $returnedCollection = $merchantEmailWrapperMock->FetchMerchantEmailsFromMerchantId($merchantId, new PublicCollection([]));
         self::assertEquals(new PublicCollection([]), $returnedCollection);
     }

@@ -87,7 +87,7 @@ class Axis extends Base
 
         return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $time;
     }
-    
+
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('4096M');

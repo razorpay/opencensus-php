@@ -202,7 +202,7 @@ trait OAuthTrait
     {
         $authServiceMock = $this->getMockBuilder(AuthService::class)
                                 ->setConstructorArgs([$this->app])
-                                ->setMethods($withMethods)
+                                ->onlyMethods($withMethods)
                                 ->getMock();
 
         $this->app->instance('authservice', $authServiceMock);
@@ -213,7 +213,7 @@ trait OAuthTrait
     protected function createPRTSServiceMock(array $withMethods = [])
     {
         $prtsMock = $this->getMockBuilder(PartnershipsService::class)
-                                ->setMethods($withMethods)
+                                ->onlyMethods($withMethods)
                                 ->getMock();
 
         $this->app->instance('partnerships', $prtsMock);

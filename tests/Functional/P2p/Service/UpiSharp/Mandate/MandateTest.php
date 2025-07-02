@@ -388,7 +388,7 @@ class MandateTest extends TestCase
 
         $response = $helper->authorizeMandate($request['callback'], []);
 
-        $lastMandate = $this->fixtures->getDbLastMandate(); 
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
         $request = $helper->initiateRevoke($mandateId, []);
 

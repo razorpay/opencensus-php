@@ -424,7 +424,7 @@ class ProcessorTest extends TestCase
         // prepare basicAuth mock
         $authMock = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['isProductBanking','isProxyAuth'])
+            ->onlyMethods(['isProductBanking','isProxyAuth'])
             ->getMock();
 
         $authMock->method('isProductBanking')
@@ -463,7 +463,7 @@ class ProcessorTest extends TestCase
         // prepare basicAuth mock
         $authMock = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['isProductBanking','isProxyAuth'])
+            ->onlyMethods(['isProductBanking','isProxyAuth'])
             ->getMock();
 
         $authMock->method('isProductBanking')

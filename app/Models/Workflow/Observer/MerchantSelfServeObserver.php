@@ -345,7 +345,7 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
     protected function sendNotificationForInternationalPACBEnablement($merchant, $rejectionReason)
     {
         $rejectionReason = $rejectionReason[Constants::MESSAGE_BODY];
-        
+
         $event = self::IE_PRODUCTS_PA_CB_REJECTION_REASON_VS_EVENT[$rejectionReason];
 
         $args = [

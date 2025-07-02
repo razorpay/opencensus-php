@@ -922,7 +922,7 @@ class UpiPaymentServiceTest extends TestCase
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -1072,7 +1072,7 @@ class UpiPaymentServiceTest extends TestCase
 
         $this->app->razorx
             ->method('getTreatment')
-            ->will($this->returnCallback($closure));
+            ->willReturnCallback($closure);
     }
 
     protected function setMockSplitzTreatment(array $Experiments = [])

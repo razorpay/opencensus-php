@@ -59,7 +59,7 @@ class AccountAsvClientTest extends TestCase
         $mockError = new accountV1\TwirpError('invalid_argument', "account doesn't exists hence contact can't be deleted");
         $expectedError = new IntegrationException('Could not receive proper response from Account service');
         $mockAccountAsvAPIClient = $this->createMock(accountv1\AccountAPIClient::class);
-        $mockAccountAsvAPIClient->method('DeleteAccountContact')->will($this->throwException($mockError));
+        $mockAccountAsvAPIClient->method('DeleteAccountContact')->willThrowException($mockError);
 
         $accountAsvClient = new AccountAsvClient($mockAccountAsvAPIClient);
 

@@ -1106,7 +1106,7 @@ class BasicAuthTest extends TestCase
     {
         $diagMock = $this->getMockBuilder(DiagClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['trackEvent'])
+            ->onlyMethods(['trackEvent'])
             ->getMock();
 
         $this->app->instance('diag', $diagMock);

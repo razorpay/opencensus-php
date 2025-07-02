@@ -1252,7 +1252,7 @@ class CaptureWithNegativeBalanceTest extends TestCase
     {
         $reminderMock = $this->getMockBuilder(Reminders::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods($withMethods)
+            ->onlyMethods($withMethods)
             ->getMock();
 
         $this->app->instance('reminders', $reminderMock);

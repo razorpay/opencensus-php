@@ -1563,7 +1563,7 @@ class SubscriptionPaymentTest extends TestCase
     {
         $subscriptionMock = $this->getMockBuilder(Mock\External::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sendRequest'])
+            ->onlyMethods(['sendRequest'])
             ->getMock();
 
         $subscriptionMock->method('sendRequest')
@@ -1575,7 +1575,7 @@ class SubscriptionPaymentTest extends TestCase
 
         $moduleManagerMock = $this->getMockBuilder(Modules\Manager::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createSubscriptionDriver'])
+            ->onlyMethods(['createSubscriptionDriver'])
             ->getMock();
 
         $moduleManagerMock->method('createSubscriptionDriver')
@@ -1609,7 +1609,7 @@ class SubscriptionPaymentTest extends TestCase
     {
         $subscriptionMock = $this->getMockBuilder(Mock\External::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['fetchSubscriptionInfo', 'paymentProcess', 'fetchSubscriptionInfoUpiAutoPay'])
+            ->onlyMethods(['fetchSubscriptionInfo', 'paymentProcess', 'fetchSubscriptionInfoUpiAutoPay'])
             ->getMock();
 
         $subscriptionMock->method('fetchSubscriptionInfo')
@@ -1637,7 +1637,7 @@ class SubscriptionPaymentTest extends TestCase
 
         $moduleManagerMock = $this->getMockBuilder(Modules\Manager::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createSubscriptionDriver'])
+            ->onlyMethods(['createSubscriptionDriver'])
             ->getMock();
 
         $moduleManagerMock->method('createSubscriptionDriver')
@@ -1656,7 +1656,7 @@ class SubscriptionPaymentTest extends TestCase
     {
         $subscriptionMock = $this->getMockBuilder(Mock\External::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['fetchSubscriptionInfo', 'paymentProcess'])
+            ->onlyMethods(['fetchSubscriptionInfo', 'paymentProcess'])
             ->getMock();
 
         $subscriptionMock->method('fetchSubscriptionInfo')
@@ -1675,7 +1675,7 @@ class SubscriptionPaymentTest extends TestCase
 
         $moduleManagerMock = $this->getMockBuilder(Modules\Manager::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['createSubscriptionDriver'])
+            ->onlyMethods(['createSubscriptionDriver'])
             ->getMock();
 
         $moduleManagerMock->method('createSubscriptionDriver')
@@ -1903,6 +1903,6 @@ class SubscriptionPaymentTest extends TestCase
 
         $this->app->razorx
             ->method('getTreatment')
-            ->will($this->returnCallback($closure));
+            ->willReturnCallback($closure);
     }
 }

@@ -38,7 +38,7 @@ class Rbl extends NetbankingBase
             self::BANK_CODE,
             $statuses
         );
-        
+
         return $claims;
     }
 

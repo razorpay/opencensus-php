@@ -43,7 +43,7 @@ class PartnershipDeedDocTest extends TestCase
         $merchantDetail = $this->getMerchantDetailFixture(BusinessType::getIndexFromKey(BusinessType::PARTNERSHIP));
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);

@@ -1,6 +1,6 @@
-ARG API_BASE_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.1-api-web-v3
-ARG OPENCENSUS_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.1-opencensus-v3
-ARG CURL_CLI_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-curl-v3
+ARG API_BASE_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.2-api-web-v4
+ARG OPENCENSUS_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-php-8.2-opencensus
+ARG CURL_CLI_IMAGE=c.rzp.io/razorpay/rzp-docker-image-inventory-multi-arch:rzp-legacy-image-api-curl-v4
 
 FROM ${OPENCENSUS_IMAGE} as opencensus-ext
 FROM ${CURL_CLI_IMAGE} as curl-cli
@@ -26,13 +26,13 @@ RUN --mount=type=secret,id=git_token,required=true set -eu && \
     composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
     rm -rf /root/.composer && \
     composer clear-cache && \
-    pear81 config-set php_ini /etc/php81/php.ini && \
-    pecl81 install opencensus-alpha && \
+    pear82 config-set php_ini /etc/php82/php.ini && \
+    pecl82 install opencensus-alpha && \
     mkdir -p public && echo "${GIT_COMMIT_HASH}" > public/commit.txt
 
 ENV PHP_MEMORY_LIMIT=4096M
 
-COPY --from=opencensus-ext /usr/lib/php81/modules/opencensus.so /usr/lib/php81/modules
+COPY --from=opencensus-ext /usr/lib/php82/modules/opencensus.so /usr/lib/php82/modules
 
 COPY --chown=apache:www-data . /app/
 

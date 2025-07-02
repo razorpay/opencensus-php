@@ -56,7 +56,7 @@ class GetAgentCreatedTicket extends Base
                 $fdInstances [$fdInstance] = Constants::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
 
                 $tickets = $fdService->getTicketsFromTypeOrFdInstances($filterInput, null, $fdInstances);
-                
+
                 foreach ($tickets as $ticket)
                 {
                     if (empty($ticket[Constants::CUSTOM_FIELDS][Constants::CF_MERCHANT_ID]) === false)

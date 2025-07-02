@@ -53,7 +53,7 @@ class RoutesTest extends TestCase
 
         $routeMock = $this->getMockBuilder(Route::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['addRoute'])
+                            ->onlyMethods(['addRoute'])
                             ->getMock();
 
         //Set the array of routes to v2 prefix to contain TWO public routes
@@ -81,7 +81,7 @@ class RoutesTest extends TestCase
 
         $routeMock = $this->getMockBuilder(Route::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['addRoute'])
+                            ->onlyMethods(['addRoute'])
                             ->getMock();
 
         //set empty array to the group of v2 prefix routes
@@ -103,7 +103,7 @@ class RoutesTest extends TestCase
     {
         $routeMock = $this->getMockBuilder(Route::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['addRoute'])
+                            ->onlyMethods(['addRoute'])
                             ->getMock();
 
         //Set the array of routes to v2 prefix to contain TWO public routes
@@ -126,7 +126,7 @@ class RoutesTest extends TestCase
     {
         $routeMock = $this->getMockBuilder(Route::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['addRoute'])
+                            ->onlyMethods(['addRoute'])
                             ->getMock();
 
         //set empty array to the group of v2 prefix routes

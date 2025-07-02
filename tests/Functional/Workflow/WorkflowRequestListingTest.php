@@ -131,7 +131,7 @@ class WorkflowRequestListingTest extends TestCase
 
         $esMock = $this->getMockBuilder(EsClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['indexHeimdall'])
+            ->onlyMethods(['indexHeimdall'])
             ->getMock();
 
         $esMock->method('indexHeimdall')

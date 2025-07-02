@@ -33,10 +33,12 @@ class TestProcessor extends TestCase
             ->disableOriginalConstructor()
             ->onlyMethods(['saveOrFail']) // Add other methods if needed
             ->getMock();
+
         // Mocking the diag service
-        $this->diagMock = $this->getMockBuilder(stdClass::class) // Using stdClass for the diag mock
-        ->setMethods(['trackPaymentEventV2'])
+        $this->diagMock = $this->getMockBuilder(PaymentEventStub::class)
+            ->onlyMethods(['trackPaymentEventV2'])
             ->getMock();
+
 
         // Set up the expected behavior of the diag mock
         $this->diagMock->expects($this->once())
@@ -78,6 +80,10 @@ class TestProcessor extends TestCase
         $traceProperty->setValue($this->processor, $this->traceMock);
 
         $this->payment = $this->createMock(Entity::class);
+
+        $this->payment->method('getCreatedAt')
+            ->willReturn(Carbon::now());
+
     }
 
     public function testShouldAutoCapturePaymentConfig_AutomaticWithinTimeout()
@@ -146,3 +152,6 @@ class TestProcessor extends TestCase
 
 }
 
+class PaymentEventStub {
+    use \RZP\Diag\Traits\PaymentEvent;
+}

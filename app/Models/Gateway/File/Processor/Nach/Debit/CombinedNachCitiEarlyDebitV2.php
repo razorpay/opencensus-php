@@ -70,9 +70,9 @@ class CombinedNachCitiEarlyDebitV2 extends PaperNachCitiV2
                     'id' => $this->gatewayFile->getId(),
                 ]);
         }
-        
+
         $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
-        
+
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         foreach ($tokens as $key => $token)

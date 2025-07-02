@@ -438,4 +438,8 @@ class UniqueIdEntity extends Entity
         return $dec;
     }
 
+    public static function encodeData($val, $to, $from)
+    {
+        return mb_convert_encoding($val, $to, $from);
+    }
 }

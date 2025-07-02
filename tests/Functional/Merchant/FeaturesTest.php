@@ -1394,7 +1394,7 @@ class FeaturesTest extends OAuthTestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -3273,11 +3273,11 @@ Regards,
     public function invokeAddFeaturesWrapper(\Throwable $exception)
     {
         $merchantActivateMock = $this->getMockBuilder(\RZP\Models\Merchant\Activate::class)
-            ->setMethods(['addFeatures'])
+            ->onlyMethods(['addFeatures'])
             ->getMock();
 
         $merchantActivateMock->method('addFeatures')
-            ->will($this->throwException($exception));
+            ->willThrowException($exception);
 
         $merchantActivateMockReflectionObj = new \ReflectionObject($merchantActivateMock);
 

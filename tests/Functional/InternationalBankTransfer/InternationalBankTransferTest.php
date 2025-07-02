@@ -692,7 +692,7 @@ class InternationalBankTransferTest extends TestCase
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->onlyMethods(['pushIdentifyAndTrackEvent'])
             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -1235,7 +1235,7 @@ class InternationalBankTransferTest extends TestCase
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->onlyMethods(['pushIdentifyAndTrackEvent'])
             ->getMock();
 
         $this->app->instance('segment-analytics', $segmentMock);
@@ -1930,7 +1930,7 @@ class InternationalBankTransferTest extends TestCase
     {
         $mozartServiceMock = $this->getMockBuilder(\RZP\Services\Mock\Mozart::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sendMozartRequest'])
+            ->onlyMethods(['sendMozartRequest'])
             ->getMock();
 
         $defaultAmount = 300;
@@ -2179,7 +2179,7 @@ class InternationalBankTransferTest extends TestCase
     {
         $mozartServiceMock = $this->getMockBuilder(\RZP\Services\Mock\Mozart::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sendMozartRequest'])
+            ->onlyMethods(['sendMozartRequest'])
             ->getMock();
 
         $mozartServiceMock->method('sendMozartRequest')

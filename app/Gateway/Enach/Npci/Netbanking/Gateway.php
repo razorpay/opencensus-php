@@ -1041,7 +1041,7 @@ class Gateway extends Base\Gateway
                                                 ),
                                    25,
                                    '');
-    
+
         $merchantName = CategoryCode::getCorporateName($utilityCode) ?? $merchantName;
 
         $displayDetails = [

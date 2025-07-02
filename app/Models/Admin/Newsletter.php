@@ -117,7 +117,7 @@ class Newsletter
             // This also sets the count internally
             $this->email = $this->createMailingListAndGetEmails($this->lists, $action);
         }
-    
+
         return $this->sendEmail();
     }
 

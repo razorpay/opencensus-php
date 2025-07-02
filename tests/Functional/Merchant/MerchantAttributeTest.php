@@ -123,21 +123,21 @@ class MerchantAttributeTest extends TestCase
 
         $lumberjackMock = $this->getMockBuilder(DiagClient::class)
                                ->setConstructorArgs([$this->app])
-                               ->setMethods([$methodName])
+                               ->onlyMethods([$methodName])
                                ->getMock();
 
         $this->app->instance('diag', $lumberjackMock);
 
         $lumberjackMock->expects($this->atLeastOnce())
                        ->method($methodName)
-                       ->will($this->returnCallback($calledWithCorrectEventCode));
+                       ->willReturnCallback($calledWithCorrectEventCode);
     }
 
     public function mockSalesforceEventTracked(string $methodName)
     {
         $salesforceClientMock = $this->getMockBuilder(SalesForceClient::class)
                                      ->setConstructorArgs([$this->app])
-                                     ->setMethods([$methodName])
+                                     ->onlyMethods([$methodName])
                                      ->getMock();
 
         $this->app->instance('salesforce', $salesforceClientMock);
@@ -521,7 +521,7 @@ class MerchantAttributeTest extends TestCase
     {
         $mozartServiceMock = $this->getMockBuilder(\RZP\Services\Mock\Mozart::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['sendMozartRequest'])
+            ->onlyMethods(['sendMozartRequest'])
             ->getMock();
 
         $mozartServiceMock->method('sendMozartRequest')

@@ -3,8 +3,8 @@
 namespace RZP\Models\Device;
 
 use RZP\Models\Base;
-use Carbon\Carbon;
 use RZP\Models\Customer\Account\CmsGetAttribute;
+use Carbon\Carbon;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Constants\Entity as ConstantsEntity;
 

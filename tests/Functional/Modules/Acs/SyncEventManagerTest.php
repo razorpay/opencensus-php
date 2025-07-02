@@ -409,7 +409,7 @@ class SyncEventManagerTest extends TestCase
         #T2 Starts - SyncDeviation Failed
         $mockError = new syncDeviationV1\TwirpError('internal', 'unexpected error encountered');
         $syncDeviationAsvClientMock = $this->createSyncDeviationAsvClientMock();
-        $syncDeviationAsvClientMock->expects($this->any())->method('syncAccountDeviation')->will($this->throwException($mockError));
+        $syncDeviationAsvClientMock->expects($this->any())->method('syncAccountDeviation')->willThrowException($mockError);
 
         $jobPayload = [
             'account_id' => 'K0HiKkEpCud6Dv',

@@ -23,12 +23,14 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Admin\Service as AdminService;
 use Illuminate\Support\Facades\Config;
 use RZP\Services\DbRequestsBeforeMigrationMetric;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
 use Razorpay\Trace\Facades\Trace;
 class OffersTest extends TestCase
 {
     use RazorxTrait;
     use MocksSplitz;
+    use RefreshDatabase;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 

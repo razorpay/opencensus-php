@@ -193,7 +193,7 @@ class ReconciliationFileTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['getRefundsFromPaymentIdAndGatewayId'])
+                            ->onlyMethods(['getRefundsFromPaymentIdAndGatewayId'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -217,7 +217,7 @@ class ReconciliationFileTest extends TestCase
 
         $cpsMock = $this->getMockBuilder(CardPaymentService::class)
                         ->setConstructorArgs([$this->app])
-                        ->setMethods(['fetchPaymentIdFromCapsPIDs'])
+                        ->onlyMethods(['fetchPaymentIdFromCapsPIDs'])
                         ->getMock();
 
         $this->app->instance('card.payments', $cpsMock);
@@ -297,7 +297,7 @@ class ReconciliationFileTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['getRefundsFromPaymentIdAndGatewayId'])
+                            ->onlyMethods(['getRefundsFromPaymentIdAndGatewayId'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -602,7 +602,7 @@ class ReconciliationFileTest extends TestCase
 // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -1960,7 +1960,7 @@ class ReconciliationFileTest extends TestCase
 
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
                             ->setConstructorArgs([$this->app])
-                            ->setMethods(['getRefundsFromPaymentIdAndGatewayId'])
+                            ->onlyMethods(['getRefundsFromPaymentIdAndGatewayId'])
                             ->getMock();
 
         $this->app->instance('scrooge', $scroogeMock);
@@ -2891,7 +2891,7 @@ class ReconciliationFileTest extends TestCase
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
+                           ->onlyMethods(['getTreatment'])
                            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -2941,7 +2941,7 @@ class ReconciliationFileTest extends TestCase
 
         $cpsMock = $this->getMockBuilder(CardPaymentService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['fetchPaymentIdFromCapsPIDs'])
+            ->onlyMethods(['fetchPaymentIdFromCapsPIDs'])
             ->getMock();
 
         $this->app->instance('card.payments', $cpsMock);
@@ -3002,7 +3002,7 @@ class ReconciliationFileTest extends TestCase
 
         $cpsMock = $this->getMockBuilder(CardPaymentService::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['fetchPaymentIdFromCapsPIDs'])
+            ->onlyMethods(['fetchPaymentIdFromCapsPIDs'])
             ->getMock();
 
         $this->app->instance('card.payments', $cpsMock);
@@ -4317,7 +4317,7 @@ class ReconciliationFileTest extends TestCase
         ];
         $scroogeMock = $this->getMockBuilder(Scrooge::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getRefundsFromPaymentIdAndGatewayId'])
+            ->onlyMethods(['getRefundsFromPaymentIdAndGatewayId'])
             ->getMock();
         $this->app->instance('scrooge', $scroogeMock);
         $this->app->scrooge->method('getRefundsFromPaymentIdAndGatewayId')->willReturn($scroogeResponse);

@@ -15,7 +15,7 @@ class CoreTest extends TestCase
     protected function createAndFetchMocks($experimentEnabled)
     {
         $mockMC = $this->getMockBuilder(MerchantCore::class)
-            ->setMethods(['isRazorxExperimentEnable'])
+            ->onlyMethods(['isRazorxExperimentEnable'])
             ->getMock();
 
         $mockMC->expects($this->any())

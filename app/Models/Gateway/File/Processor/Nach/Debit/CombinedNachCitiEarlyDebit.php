@@ -70,9 +70,9 @@ class CombinedNachCitiEarlyDebit extends PaperNachCiti
                     'id' => $this->gatewayFile->getId(),
                 ]);
         }
-        
+
         $this->generateMetricForEmandate(Metric::EMANDATE_DB_QUERY_COMPLETE);
-        
+
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
         foreach ($tokens as $key => $token)
@@ -93,7 +93,7 @@ class CombinedNachCitiEarlyDebit extends PaperNachCiti
                 'end'             => $end,
                 'entity_count'    => count($paymentIds),
             ]);
-        
+
         return $tokens;
     }
 

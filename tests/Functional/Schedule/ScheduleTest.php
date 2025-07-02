@@ -56,7 +56,7 @@ class ScheduleTest extends TestCase
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
+            ->onlyMethods(['getTreatment'])
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
@@ -626,7 +626,7 @@ class ScheduleTest extends TestCase
     public function testExpireCreditsAfterActivation()
     {
         $this->ba->adminAuth();
-        
+
         $merchantSignupRequest = [
             'content' => [
                 'id'          => '1X4hRFHFx4UiXt',
@@ -637,42 +637,42 @@ class ScheduleTest extends TestCase
             'url'     => '/merchants',
             'method'  => 'POST',
         ];
-        
+
         $response = $this->makeRequestAndGetContent($merchantSignupRequest);
-        
+
         $promotionAttributes = [
             'credit_amount' => '1000',
         ];
-        
+
         $promotion = $this->fixtures->create('promotion:recurring', $promotionAttributes);
-        
+
         $couponAttributes = [
             'entity_id'   => $promotion['id'],
             'entity_type' => 'promotion',
             'merchant_id' => '100000Razorpay',
         ];
-        
+
         $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
-        
+
         $merchantId = '1X4hRFHFx4UiXt';
-        
+
         $this->applyCouponOnMerchant($coupon['code'], $merchantId);
-        
+
         $time = Carbon::now(Timezone::IST);
-        
+
         $time->addDay(32);
-        
+
         Carbon::setTestNow($time);
-        
+
         $merchantAttributes = [
             'website'                  => 'abc.com',
             'category'                 => 1100,
             'billing_label'            => 'labore',
             'transaction_report_email' => 'test@razorpay.com',
         ];
-        
+
         $this->fixtures->edit('merchant', $merchantId, $merchantAttributes);
-        
+
         $this->fixtures->on('live')->edit('merchant_detail', $merchantId, [
             'submitted'            => true,
             'bank_branch_ifsc'     => 'CBIN0281697',
@@ -684,7 +684,7 @@ class ScheduleTest extends TestCase
             'promoter_pan_name'    => 'Test123',
             'promoter_pan'         => 'AAAPA1234J',
         ]);
-        
+
         $this->fixtures->on('test')->edit('merchant_detail', $merchantId, [
             'submitted'            => true,
             'bank_branch_ifsc'     => 'CBIN0281697',
@@ -696,7 +696,7 @@ class ScheduleTest extends TestCase
             'promoter_pan_name'    => 'Test123',
             'promoter_pan'         => 'AAAPA1234J',
         ]);
-        
+
         $activationRequest = [
             'url'     => '/merchant/activation/' . $merchantId . '/activation_status',
             'method'  => 'patch',
@@ -704,35 +704,35 @@ class ScheduleTest extends TestCase
                 'activation_status' => 'activated',
             ],
         ];
-        
+
         $this->fixtures->create('merchant_website', [
             'merchant_id' => $merchantId,
         ]);
-        
+
         $this->ba->adminAuth();
-        
+
         $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $merchantId);
-        
+
         $response = $this->makeRequestAndGetContent($activationRequest);
-        
+
         $credits = $this->getLastEntity('credits', true);
-        
+
         $this->assertEquals($credits['value'], 1000);
-        
+
         $this->ba->cronAuth();
-        
+
         $request = $this->testData['testExpireCredits'];
-        
+
         $time->addDay(32);
-        
+
         Carbon::setTestNow($time);
-        
+
         $response = $this->makeRequestAndGetContent($request);
-        
+
         $credits = $this->getLastEntity('credits', true);
-        
+
         $this->assertEquals($credits['value'], -1000);
-        
+
         Carbon::setTestNow();
     }
 
