@@ -15470,6 +15470,26 @@ return [
         ]
     ],
 
+    'testEditMerchantEmailMultiAccountCase' => [
+        'request' => [
+            'content' => [
+                'email' => 'newEmail@test.com',
+            ],
+            'url' => '/merchants/1X4hRFHFx4UiXt/email',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'email' => 'newEmail@test.com'
+            ]
+        ]
+    ],
+
     'testMerchantDetailsFetchSuccess' => [
         'request' => [
             'url' => '/merchant_list/org/orgid1/category/education',

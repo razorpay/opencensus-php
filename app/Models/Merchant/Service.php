@@ -1805,7 +1805,41 @@ class Service extends Base\Service
         }
     }
 
-    private function checkMerchantWithSameEmail(array $input, string $originalEmail)
+    public function checkIfMultiAccountCase(array $merchantIdsWithSameEmail, string $merchantID): bool
+    {
+        $userIDs = $this->repo->merchant_user->fetchPrimaryUserIdForMerchantIdAndRole($merchantID);
+
+        if(empty($userIDs) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                "Primary owner user not found for merchant");
+        }
+
+        $userMerchantIds = $this->repo->merchant_user->fetchMerchantIdForUserIdAndRole($userIDs[0]);
+
+        if ( count(array_diff($merchantIdsWithSameEmail, $userMerchantIds)) > 0 ||
+            count(array_diff($userMerchantIds, $merchantIdsWithSameEmail)) > 0 )
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function isMultiAccountWfEmailUpdateExpEnabled($id)
+    {
+        $properties = [
+            'id' => $id,
+            'experiment_id' => $this->app['config']->get('app.multi_account_email_update_workflow_experiment')
+        ];
+
+        return $this->core()->isSplitzExperimentVariableEnabled($properties, 'result', 'enable');
+
+    }
+
+    private function checkMerchantWithSameEmail(array $input, string $originalEmail, string $merchantID)
     {
         if ($originalEmail === "")
         {
@@ -1818,6 +1852,14 @@ class Service extends Base\Service
 
         $merchantIdsWithSameEmail = $this->repo->merchant->fetchMerchantIdsWithSameEmail($originalEmail);
 
+        // don't throw exception if it's a multi account case
+        if (count($merchantIdsWithSameEmail) > 1 and
+            $this->isMultiAccountWfEmailUpdateExpEnabled($merchantID) and
+            $this->checkIfMultiAccountCase($merchantIdsWithSameEmail, $merchantID))
+        {
+            return ;
+        }
+
         if (count($merchantIdsWithSameEmail) > 1)
         {
             $this->trace->info(TraceCode::MERCHANT_EMAIL_EDIT_FAILED, [
@@ -1829,7 +1871,7 @@ class Service extends Base\Service
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
                 null,
                 null,
-                "Same email exist with other merchant");
+                "Old email exist with other merchants");
         }
     }
 
@@ -1844,7 +1886,7 @@ class Service extends Base\Service
 
         if ($originalEmail !== null)
         {
-            $this->checkMerchantWithSameEmail($input, $originalEmail);
+            $this->checkMerchantWithSameEmail($input, $originalEmail, $id);
         }
 
         $newEmail = $input[Merchant\Entity::EMAIL];
@@ -1855,7 +1897,36 @@ class Service extends Base\Service
         // handle user management on X
         $this->core()->changeMerchantUsersEmail($merchant, $originalEmail, $newEmail, Product::BANKING);
 
-        $merchant = $this->core()->editEmail($merchant, $input);
+        $merchantIdsWithSameEmail = $this->repo->merchant->fetchMerchantIdsWithSameEmail($originalEmail);
+
+        if($this->isMultiAccountWfEmailUpdateExpEnabled($id) and
+            $this->checkIfMultiAccountCase($merchantIdsWithSameEmail, $id))
+        {
+            $userIDs = $this->repo->merchant_user->fetchPrimaryUserIdForMerchantIdAndRole($id);
+
+            $userMerchantIds = $this->repo->merchant_user->fetchMerchantIdForUserIdAndRole($userIDs[0]);
+
+            $this->trace->info(
+                TraceCode::MERCHANT_EDIT_EMAIL_REQUEST,
+                [
+                    'multi_account_merchant_ids'   => $userMerchantIds,
+                    'user_id' => $userIDs[0]
+                ]
+            );
+
+            $userMerchants = (new \RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant())->fetchMerchantsByIds($userMerchantIds);
+
+            foreach ($userMerchants as $userMerchant)
+            {
+                $userMerchant = $this->core()->editEmail($userMerchant, $input, 'editEmailNonUnique');
+            }
+
+            $merchant = $this->repo->merchant->findOrFailPublic($id);
+        }
+        else
+        {
+            $merchant = $this->core()->editEmail($merchant, $input);
+        }
 
         return $merchant->toArrayPublic();
     }

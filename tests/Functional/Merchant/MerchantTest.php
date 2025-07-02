@@ -21851,6 +21851,52 @@ The same has been enabled for the account.
 
     }
 
+    public function testEditMerchantEmailMultiAccountCase()
+    {
+        $splitzResponse = [
+            'response' => [
+                'variant' => [
+                    'variables' => [
+                        [
+                            'value' => 'enable',
+                            'key' => 'result'
+                        ]
+                    ],
+                    'name' => 'variant',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzResponse);
+
+        $merchant1 = $this->fixtures->create('merchant', [
+            'email' => 'myEmail@gmail.com'
+        ]);
+
+        $merchant2 = $this->fixtures->create('merchant', [
+            'email' => 'myEmail@gmail.com'
+        ]);
+
+        $user = $this->fixtures->create('user',[
+            'email' => 'myEmail@gmail.com'
+        ]);
+
+        $this->createMerchantUserMapping($user->getId(), $merchant1->getId(), 'owner');
+
+        $this->createMerchantUserMapping($user->getId(), $merchant2->getId(), 'owner');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant1 = $this->getEntityById('merchant', $merchant1->getId());
+        $merchant2 = $this->getEntityById('merchant', $merchant2->getId());
+
+        $this->assertEquals($merchant1->getEmail(), 'newEmail@gmail.com');
+        $this->assertEquals($merchant2->getEmail(), 'newEmail@gmail.com');
+
+    }
+
     public function testMerchantEmailUpdateCreateNewOwnerForMerchant()
     {
         Mail::fake();

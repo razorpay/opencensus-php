@@ -1551,4 +1551,6 @@ return array(
     'emandate_fetch_token_from_tidb' => env('EMANDATE_FETCH_TOKEN_FROM_TIDB'),
 
     'invitation_orphan_users' => env('INVITATION_ORPHAN_USERS'),
+
+    'multi_account_email_update_workflow_experiment' => env('MULTI_ACCOUNT_EMAIL_UPDATE_WORKFLOW_EXPERIMENT'),
 );
