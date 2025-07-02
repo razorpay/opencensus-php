@@ -977,6 +977,10 @@ return array(
 
     'hdfc_dcemi_whitelisted_mid_experiment_id'  => env('HDFC_DCEMI_WHITELISTED_MERCHANTS_SPLITZ_EXP_ID'),
 
+    'emi_rearch_provider_merchant_whitelisted_exp_id'  => env('EMI_REARCH_PROVIDER_MERCHANT_WHITELISTED_EXP_ID'),
+
+    'emi_rearch_rampup_provider_exp_id'  => env('EMI_REARCH_RAMPUP_PROVIDER_EXP_ID'),
+
     'icici_dcemi_whitelisted_mid_experiment_id'  => env('ICICI_DCEMI_WHITELISTED_MERCHANTS_SPLITZ_EXP_ID'),
 
     'skip_last4_for_amex_emi_payments' => env('SKIP_LAST4_FOR_AMEX_EMI_EXP_ID'),

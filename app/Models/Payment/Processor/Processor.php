@@ -142,6 +142,7 @@ use RZP\Models\Event;
 use RZP\Models\Base;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Product;
+use RZP\Models\Card\CobrandingPartner;
 
 class Processor
 {
@@ -2107,6 +2108,19 @@ class Processor
                 return $this->canRouteThroughRearchFlowForMY($input);
             }
 
+            // check if emi instruments are supported on re-arch
+            if ((empty($input[Payment\Entity::METHOD]) === false) and
+                ($input[Payment\Entity::METHOD] == Payment\METHOD::EMI) and
+                $this->canRouteThroughEmiRearchFlow($input) === false)
+            {
+                $this->trace->info(TraceCode::EMI_REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'input' => $input,
+                    'merchant_id' => $merchant->getId(),
+                    'method' => 'emi'
+                ]);
+                return false;
+            }
+
             if ($merchant->getCountry() === 'IN' &&  isset($input[Payment\Entity::TOKEN]) === true && (empty($input[Payment\Entity::METHOD]) === false) && ($input[Payment\Entity::METHOD] === Payment\METHOD::CARD)&& (empty($input[Payment\Entity::RECURRING]) === true)) {
                 $tokenId = $input[Payment\Entity::TOKEN];
                 $token = (new Token\Core)->getByTokenId($tokenId);
@@ -2224,6 +2238,7 @@ class Processor
                 return false;
             }
 
+
             if ((empty($input[Payment\Entity::OFFER_ID]) === false))
             {
                 $this->trace->info(TraceCode::ROUTING_CARD_PAYMENT_WITH_OFFER_TO_REARCH, [
@@ -2231,7 +2246,7 @@ class Processor
                 ]);
 
                 if ((empty($input[Payment\Entity::METHOD]) === true) or
-                    ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD)) {
+                    ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD and $input[Payment\Entity::METHOD] !== Payment\METHOD::EMI)) {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         'reason' => "empty_method_or_non_card_payment_with_offer",
                         'merchant_id' => $merchant->getId(),
@@ -2260,15 +2275,6 @@ class Processor
             {
 
                 $this->setChargeAccountMerchantFeatures($input);
-            }
-
-            if ($input[Payment\Entity::METHOD] == Payment\METHOD::EMI)
-            {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::ENABLE_REARCH_EMI_PAYMENTS_FLOW, $this->mode);
-                if ($result !== 'on')
-                {
-                    return false;
-                }
             }
 
             $routeMotoToRearch = false;
@@ -2428,7 +2434,7 @@ class Processor
                 }
             }
 
-            if (($input[Payment\Entity::METHOD] == Payment\METHOD::CARD) and
+            if (($input[Payment\Entity::METHOD] == Payment\METHOD::CARD || $input[Payment\Entity::METHOD] == Payment\METHOD::EMI) and
                 ($merchant->isFeatureEnabled('skip_cvv') === true))
             {
                 $skipCvvRearch = $this->shouldRouteSkipCvvViaCPS($merchant->getOrgId());
@@ -2758,10 +2764,6 @@ class Processor
             //Check for saved card token payments
             if(empty($input[Payment\Entity::TOKEN]) === false)
             {
-                if ($input[Payment\Entity::METHOD] == Payment\METHOD::EMI)
-                {
-                    return false;
-                }
 
                 $this->trace->info(TraceCode::ROUTING_CARD_PAYMENT_WITH_TOKEN_TO_REARCH, [
                     'merchant_id' => $merchant->getId(),
@@ -3072,18 +3074,6 @@ class Processor
                 else{
                     $result = 'on';
                 }
-            }
-
-            // check if emi instruments are supported on re-arch
-            if (($input[Payment\Entity::METHOD] == Payment\METHOD::EMI) and
-                $this->canRouteEmiThroughRearch($iin) === false)
-            {
-                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                    'reason' => "check_for_emi_instrument_reach_onboard",
-                    "type" => $iin->getType(),
-                    "issuer" => $iin->getIssuer(),
-                ]);
-                return false;
             }
 
             if ($merchant->isFeeBearerCustomerOrDynamic() === true )
@@ -3425,20 +3415,6 @@ class Processor
         }
 
         $input["charge_account_merchant_features"] = $merchant->getEnabledFeatures();
-    }
-
-    protected function canRouteEmiThroughRearch($iin): bool
-    {
-        $supportedIssuers = [
-            IFSC::ICIC
-        ];
-
-        if (($iin->getType() === Card\Type::DEBIT) and in_array($iin->getIssuer(), $supportedIssuers, true) === true)
-        {
-            return true;
-        }
-
-        return false;
     }
 
     protected function getCardInputWithoutCryptogramForRearch($card, $input, $token, $tokenRearchResult)
@@ -16807,4 +16783,219 @@ public function isLibrarySupportedForNbplusRearch($library): bool
 
         return false;
     }
+
+    public function canRouteThroughEmiRearchFlow(array $input)
+    {
+
+        /*
+         * Rearch criteria
+         * 1. Method should be emi
+         * 2. Non-offer transaction
+         * 3. Issuer/Provider + Merchant should be whitelisted in either on of the experiment
+         */
+        try
+        {
+            if ($input[Payment\Entity::METHOD] !== Payment\METHOD::EMI)
+            {
+                return false;
+            }
+
+            // test mode payments are not supported
+            if ($this->mode === Mode::TEST)
+            {
+                return false;
+            }
+
+            if (app()->isEnvironmentQA() === true)
+            {
+                return false;
+            }
+
+            if (app()->runningUnitTests() === true)
+            {
+                return false;
+            }
+
+            $merchant = $this->app['basicauth']->getMerchant();
+
+
+            if ((empty($input[Payment\Entity::OFFER_ID]) === false))
+            {
+
+                $this->trace->info(TraceCode::EMI_REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "offer_id present in request",
+                    'merchant_id' => $merchant->getId(),
+                ]);
+                return false;
+
+            }
+
+
+            if (empty($input[Payment\Entity::ORDER_ID]) === false)
+            {
+                $order = $this->fetchOrderFromInput($input);
+
+                if ((empty($order) === false) and ($order->isDiscountApplicable() === true)) {
+                    $this->trace->info(TraceCode::EMI_REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "discounts",
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+                    return false;
+                }
+
+
+                if (empty($order) === false and $order->hasOffers() === true) {
+                    $this->trace->info(TraceCode::EMI_REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "order has offers",
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+                    return false;
+                }
+            }
+            if (empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false and $input[Payment\Entity::CARD][Card\Entity::TOKENISED] === true)
+            {
+                $this->trace->info(TraceCode::EMI_REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "tokenised field is true for emi payment",
+                    'merchant_id' => $merchant->getId(),
+                ]);
+                return false;
+            }
+            else if (empty($input[Payment\Entity::TOKEN]) === true)
+            {
+                $card_number = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
+                $iinId = substr($card_number, 0, 8);
+                $iin = $this->repo->iin->find($iinId);
+                if ($iin->getCountry() !== 'IN')
+                {
+                    $this->trace->info(TraceCode::EMI_REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "international_card_initial",
+                        'merchant_id' => $merchant->getId(),
+                        'flow' => 'card_recurring',
+                    ]);
+                    return false;
+                }
+
+            } else {
+
+                $tokenId = $input[Payment\Entity::TOKEN];
+                $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
+                $card = $this->repo->card->fetchForToken($token);
+                $iin = $card->getIinRelationAttribute();
+
+            }
+
+            $isRearch = $this->IsIssuerAndMerchantWhitelistedforEmiRearch($iin,$merchant->getId());
+
+            return $isRearch;
+
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::EMI_REARCH_ROUTING_CRITERIA_FAILED_REASON,
+                []);
+
+            return false;
+        }
+
+        return false;
+
+
+    }
+    /**
+     * Get the experiment key for EMI rearch flow based on IIN entity and merchant ID
+     *
+     * @param \RZP\Models\Card\IIN\Entity $iin The IIN entity
+     * @param string $merchantId The merchant ID
+     * @return string The experiment key
+     */
+    public function IsIssuerAndMerchantWhitelistedforEmiRearch($iin, $merchantId)
+    {
+
+        if($iin == null)
+        {
+            return false;
+        }
+        // Get card type (credit/debit)
+        $type = strtolower($iin->getType());
+
+        // Initialize the experiment key
+        $providerMerchantKey = '';
+        $providerKey = '';
+
+        // First check for cobranding partner
+        $cobrandingPartner = $iin->getCobrandingPartner();
+        // Then check for special networks that act as issuers
+        $networkCode = $iin->getNetworkCode();
+
+        // Finally, use the issuer (bank)
+        $issuer = $iin->getIssuer();
+
+        if ($cobrandingPartner !== null && CobrandingPartner::isValid($cobrandingPartner)) {
+            $providerMerchantKey = strtolower($cobrandingPartner) . '_' . $type . '_' . $merchantId;
+            $providerKey = strtolower($cobrandingPartner) . '_' . $type ;
+        }
+        else if (($networkCode === Network::AMEX) or ($networkCode === Network::BAJAJ)) {
+            $providerMerchantKey = strtolower($networkCode) . '_' . $type . '_' . $merchantId;
+            $providerKey = strtolower($networkCode) . '_' . $type ;
+
+        }
+        else if (!empty($issuer)) {
+            $providerMerchantKey = strtolower($issuer) . '_' . $type . '_' . $merchantId;
+            $providerKey = strtolower($issuer) . '_' . $type ;
+
+        }
+
+        try {
+            // we will keep % base rampup
+            $experimentId = $this->app['config']->get('app.emi_rearch_rampup_provider_exp_id');
+            $experimentsData[] = [
+                "experiment_id" => $experimentId,
+                'id' => UniqueIdEntity::generateUniqueId(),
+                'request_data'  => json_encode(
+                    [
+                        'provider' => $providerKey
+                    ]),
+            ];
+
+            $experimentId2 = $this->app['config']->get('app.emi_rearch_provider_merchant_whitelisted_exp_id');
+            $experimentsData[] = [
+                "experiment_id" => $experimentId2,
+                'request_data'  => json_encode(
+                    [
+                        'provider_merchant' => $providerMerchantKey,
+                        'provider' => $providerKey
+                    ]),
+            ];
+
+            $experimentResponses = $this->app['splitzService']->bulkCallsToSplitz($experimentsData);
+
+            foreach ($experimentResponses as $response)
+            {
+                $variables = $response['variant']['variables'];
+
+                foreach ($variables as $variable)
+                {
+                    if ($variable['key'] == "result" && $variable['value'] == "on") {
+                        return true;
+                    }
+                }
+            }
+
+        } catch (\Exception $e) {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::EMI_REARCH_ROUTING_SPLITZ_ERROR
+            );
+
+            return false;
+        }
+
+        return false;
+    }
+
+
 }
