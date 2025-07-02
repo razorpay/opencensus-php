@@ -388,7 +388,7 @@ class Constants
             self::AXIS     => ['axiscards.emi@razorpay.com', 'affordability-business@razorpay.com'],
             self::HSBC     => ['hsbc-cards.emi@razorpay.com', 'affordability-business@razorpay.com'],
             self::INDUSIND => ['indusind.emi@razorpay.com', 'affordability-business@razorpay.com'],
-            self::KOTAK    => ['kotakcards.emi@razorpay.com', 'affordability-business@razorpay.com', 'suraj.bhagate1@kotak.com'],
+            self::KOTAK    => ['kotakcards.emi@razorpay.com', 'affordability-business@razorpay.com', 'suraj.bhagate1@kotak.com','manali.nakde@kotak.com','ganesh.patil5@kotak.com'],
             self::RBL      => ['Rblcards.emi@razorpay.com', 'affordability-business@razorpay.com'],
             self::SCBL     => ['scbl.emi@razorpay.com', 'affordability-business@razorpay.com'],
             self::SBI      => ['emi.ops@sbicard.com', 'deepak.semwal@sbicard.com', 'settlements@razorpay.com', 'Divya.Verma@sbicard.com', 'albin.george@razorpay.com', 'affordability-business@razorpay.com'],
