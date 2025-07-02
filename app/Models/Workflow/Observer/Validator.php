@@ -33,6 +33,17 @@ class Validator extends Base\Validator
         Constants::REJECTION_REASON . '.' . Constants::MESSAGE_BODY        => 'sometimes|string',
     ];
 
+    protected static $cmsFohCaseUpdateRules = [
+        Constants::COMMENT      => 'sometimes|string',
+        Constants::CASE_ID      => 'sometimes|string',
+        Constants::PRIORITY     => 'sometimes|string',
+        Constants::FROM_CMS     => 'sometimes|boolean',
+        Constants::CASE_STATUS  => 'sometimes|string',
+        Constants::MARKED_AS    => 'sometimes|string',
+        Constants::ASSIGNEE     => 'sometimes|string',
+        Constants::ASSIGNEE_ID  => 'sometimes|string',
+    ];
+
     protected $routeValidatorMapping = [
         Constants::MERCHANT_SAVE_BUSINESS_WEBSITE           => 'rejection_reason_data',
         Constants::MERCHANT_ACTIVATION_UPDATE_WEBSITE       => 'rejection_reason_data',
@@ -46,6 +57,8 @@ class Validator extends Base\Validator
         Constants::MERCHANT_INTERNATIONAL_ENABLEMENT_SUBMIT => 'rejection_reason_data',
         Constants::PARTNER_ACTIVATION_SAVE                  => 'rejection_reason_data',
         Constants::MERCHANT_ACTIVATION_CLARIFICATIONS_SAVE  => 'rejection_reason_data',
+        Constants::MERCHANT_RISK_ALERTS_FOH_WORKFLOW_TRIGGER => 'cms_foh_case_update',
+        Constants::CREATE_RISK_ACTION                       => 'cms_foh_case_update',
     ];
 
     public function validateWorkflowObserverData($differEntity, array $input)

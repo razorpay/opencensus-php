@@ -17,6 +17,10 @@ class Constants
     const INTERNAL_MERCHANT_POS_ACTIVATION_STATUS   = 'internal_merchant_pos_activation_status';
     const MERCHANT_DETAILS_PATCH_SELF_SERVE_REKYC =  'merchant_details_patch_self_serve_rekyc';
 
+    const MERCHANT_RISK_ALERTS_FOH_WORKFLOW_TRIGGER = 'merchant_risk_alerts_foh_workflow_trigger';
+
+    const CREATE_RISK_ACTION                    = 'create_risk_action';
+
     const INTERNAL_CREATE_RISK_ACTION           = 'internal_create_risk_action';
 
     const MERCHANT_SAVE_BUSINESS_WEBSITE        = 'merchant_save_business_website';
@@ -92,6 +96,10 @@ class Constants
         self::MERCHANT_INTERNATIONAL_ENABLEMENT_SUBMIT  => MerchantSelfServeObserver::class,
 
         self::MERCHANT_DETAILS_PATCH_SELF_SERVE_REKYC   => MerchantReKYCStatusObserver::class,
+
+        self::MERCHANT_RISK_ALERTS_FOH_WORKFLOW_TRIGGER => MerchantFohCmsObserver::class,
+
+        self::CREATE_RISK_ACTION                        => MerchantFohCmsObserver::class,
     ];
 
     const ROUTE_VS_RAZORX_EXPERIMENT = [
@@ -162,6 +170,20 @@ class Constants
     const CMMA_REKYC_CASE_TYPE = 'activationReKYC';
 
     const CMMA_EVENT_WORKFLOW_STATUS_CHANGE = 'workflow_status_change';
+
+    const COMMENT               = 'comment';
+    const CASE_ID               = 'case_id';
+    const PRIORITY              = 'priority';
+    const FROM_CMS              = 'from_cms';
+    const CASE_STATUS           = 'case_status';
+    const MARKED_AS             = 'marked_as';
+    const ACTION                = 'action';
+    const AGENT                 = 'agent';
+    const AGENT_ID              = 'agent_id';
+    const RESOLVE               = 'resolve';
+    const REJECTED_BY_CHECKER   = 'rejected_by_checker';
+    const ASSIGNEE              = 'assignee';
+    const ASSIGNEE_ID           = 'assignee_id';
 
     const MERCHANT_ACTION_METRO_BODY = [
         self::WORKFLOW_ACTION_ID => "",

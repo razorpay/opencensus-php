@@ -3,6 +3,8 @@
 namespace RZP\Models\MerchantRiskAlert;
 
 use RZP\Jobs\MerchantHoldFundsSync;
+use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
+use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Services\MerchantRiskAlertClient;
 use View;
 use RZP\Exception;
@@ -1180,6 +1182,34 @@ class Service extends Base\Service
         $this->addCommentToWorkflowForTriggerNeedsClarification($action, $clarificationType, $clarificationSubType, $ticketId);
 
         $this->markNeedsClarificationAsTriggeredForAction($action);
+
+        $observerData = (new WorkflowService())->getWorkflowObserverData(Action\Entity::getSignedId($workflowActionId));
+
+        if (isset($observerData[Constants::FROM_CMS]) === true)
+        {
+            //cms call to update case status to Pending on merchant
+            $cmsInput = [
+                Constants::ACTION       => Constants::PENDING_ON_MERCHANT,
+                Constants::MARKED_AS    => Constants::NEEDS_CLARIFICATION,
+                Constants::AGENT        => $this->app['basicauth']->getAdmin()->getName() ?? '',
+                Constants::AGENT_ID     => $this->app['basicauth']->getAdmin()->getEmail() ?? '',
+                Constants::ASSIGNEE     => $observerData[Constants::ASSIGNEE],
+                Constants::ASSIGNEE_ID  => $observerData[Constants::ASSIGNEE_ID],
+                Constants::STATUS       => $observerData[Constants::CASE_STATUS],
+                Constants::PRIORITY     => $observerData[Constants::PRIORITY],
+                Constants::COMMENT      => $observerData[Constants::COMMENT],
+            ];
+
+            $this->app['case-management-service']->requestAndGetParseBody("PUT",
+                "v1/risk_cms/cases/" . $observerData[Constants::CASE_ID],
+                $cmsInput
+            );
+
+            (new WorkflowService())->updateWorkflowObserverData('w_action_' . $workflowActionId, [
+                Constants::CASE_STATUS  => Constants::PENDING_ON_MERCHANT,
+                Constants::MARKED_AS    => Constants::NEEDS_CLARIFICATION,
+            ]);
+        }
 
         return ['success' => true];
     }

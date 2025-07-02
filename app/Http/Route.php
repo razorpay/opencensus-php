@@ -4519,6 +4519,11 @@ class Route
             'merchant_risk_alerts/merchant/foh/workflow',
             'MerchantRiskAlertController@createFOHWorkflow'
         ],
+        'merchant_risk_alerts_foh_workflow_trigger' => [
+            'post',
+            'merchant_risk_alerts/merchant/foh/workflow/trigger',
+            'MerchantRiskAlertController@createFOHWorkflow'
+        ],
         'merchant_risk_alerts_create_rule' => [
             'post',
             'merchant_risk_alerts/rules/create',
@@ -8552,6 +8557,7 @@ class Route
         'admin_va_expiry_setting_upsert',
         'admin_va_setting_get',
         'merchant_risk_alerts_foh_workflow_trigger_nc',
+        'merchant_risk_alerts_foh_workflow_trigger',
         'user_verify_contact_batch',
         'rbl_current_account_serviceability_get_admin',
         'merchant_business_detail_fetch',
@@ -11463,6 +11469,7 @@ class Route
 
         // Merchant Risk Alerts
         'merchant_risk_alerts_foh_workflow_trigger_nc'    => Permission::MERCHANT_RISK_ALERT_FOH,
+        'merchant_risk_alerts_foh_workflow_trigger'       => Permission::MERCHANT_RISK_ALERT_FOH,
         'merchant_risk_alerts_create_rule'                => Permission::MERCHANT_RISK_ALERT_UPSERT_RULE,
         'merchant_risk_alerts_update_rule'                => Permission::MERCHANT_RISK_ALERT_UPSERT_RULE,
         'merchant_risk_alerts_delete_rule'                => Permission::MERCHANT_RISK_ALERT_DELETE_RULE,
@@ -12597,6 +12604,11 @@ class Route
             'payout_create_internal',
             'payment_fetch_by_id',
             'api_entity_fetch'
+        ],
+
+        'case-management-service' => [
+            'internal_merchant_details_fetch',
+            'role_list_admins_internal',
         ],
 
         'payments_bank_transfer_service' => [
@@ -15453,6 +15465,7 @@ class Route
             'merchant_edit_free_credits',
             'merchant_edit_pre_signup_details',
             'merchant_risk_alerts_foh_workflow_trigger_nc',
+            'merchant_risk_alerts_foh_workflow_trigger',
             'merchant_risk_alerts_create_rule',
             'merchant_risk_alerts_update_rule',
             'merchant_risk_alerts_delete_rule',

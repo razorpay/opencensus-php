@@ -967,6 +967,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerCMSService();
 
+        $this->registerCaseManagementService();
+
         $this->app->singleton('pos.deviceservice', function($app)
         {
 
@@ -3041,6 +3043,19 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('cms', function($app)
         {
             return new CMS\Service($app);
+        });
+    }
+
+    protected function registerCaseManagementService()
+    {
+        $this->app->singleton('case-management-service', function($app)
+        {
+            if ($app['config']->get('services.case-management-service.mock') === true)
+            {
+                return new Mock\CaseManagementServiceClient();
+            }
+
+            return new CaseManagementServiceClient();
         });
     }
 }

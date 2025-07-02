@@ -248,5 +248,21 @@ Razorpay';
 
     const FD_NEW_RISK_CATEGORY                      =   'Razorpay';
 
+    const COMMENT               = 'comment';
+    const CASE_ID               = 'case_id';
+    const PRIORITY              = 'priority';
+    const FROM_CMS              = 'from_cms';
+    const CASE_STATUS           = 'case_status';
+    const MARKED_AS             = 'marked_as';
+    const ACTION                = 'action';
+    const AGENT                 = 'agent';
+    const AGENT_ID              = 'agent_id';
+    const RESOLVE               = 'resolve';
+    const PENDING_ON_MERCHANT   = 'pending_on_merchant';
+    const NEEDS_CLARIFICATION   = 'needs_clarification';
+    const ASSIGNEE              = 'assignee';
+    const ASSIGNEE_ID           = 'assignee_id';
+    const STATUS                = 'status';
+
 }
 

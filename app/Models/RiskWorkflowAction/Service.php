@@ -182,7 +182,9 @@ class Service extends Base\Service
 
         (new Core())->validateRiskAttributes($input);
 
-        return (new Core())->createRiskWorkflowAction($input);
+        $routeName = app('request.ctx')->getRoute();
+
+        return (new Core())->createRiskWorkflowAction($input, null, $routeName);
     }
 
     public function createRiskWorkflowActionRas($input)

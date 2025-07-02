@@ -822,6 +822,27 @@ return [
             ]
         ]
     ],
+    env('APP_V2_ID_CASE_MANAGEMENT_SERVICE')             => [
+        "name"        => "case-management-service",
+        "credentials" => [
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_CASE_MANAGEMENT_SERVICE'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_CASE_MANAGEMENT_SERVICE'),
+                "mode"     => "live",
+                "roles"    => [
+                    "app.case-management-service"
+                ]
+            ],
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_TEST_CASE_MANAGEMENT_SERVICE'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_CASE_MANAGEMENT_SERVICE'),
+                "mode"     => "test",
+                "roles"    => [
+                    "app.case-management-service"
+                ]
+            ]
+        ]
+    ],
     env('APP_V2_ID_AUTH_SERVICE')               => [
         "name"        => "auth_service",
         "credentials" => [

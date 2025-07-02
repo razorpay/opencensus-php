@@ -1734,6 +1734,17 @@ return [
         'secret'       => env('CMMA_SERVICE_API_SECRET'),
     ],
 
+    'case-management-service' => [
+        'auth' => [
+            'username' => 'api',
+            'secret'   => env('CASE_MANAGEMENT_SERVICE_API_SECRET'),
+        ],
+        // secret key need to be added here to run the UTs
+        'secret'   => env('CASE_MANAGEMENT_SERVICE_API_SECRET'),
+        'mock'     => false,
+        'base_url' => env('CASE_MANAGEMENT_SERVICE_BASE_URL')
+    ],
+
     'admin-experience-service' => [
         'secret'       => env('ADMIN_EXPERIENCE_SERVICE_SECRET'),
     ],
