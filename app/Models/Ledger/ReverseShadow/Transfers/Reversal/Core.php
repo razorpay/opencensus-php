@@ -77,6 +77,46 @@ class Core extends Base\Core
         return $transactionMessage;
     }
 
+    public function createTransactionMessageForReversalDebitDS(RefundEntity $refund): array
+    {
+        $moneyParams = self::generateMoneyParamsForReversalDebitDS($refund);
+
+        $transactionMessage = $this->generateBaseForJournalEntry($refund, $refund->getCreatedAt());
+
+        $transactionMessage[LedgerConstants::MONEY_PARAMS] = $moneyParams;
+
+        $additionalParams = [
+            LedgerConstants::ENTRY_TYPE                    => LedgerConstants::ENTRY_TYPE_DEBIT,
+            LedgerConstants::DIRECT_SETTLEMENT_ACCOUNTING => LedgerConstants::DIRECT_SETTLEMENT,
+        ];
+
+        if($this->isRefundCredits($refund->merchant))
+        {
+            $additionalParams[LedgerConstants::CREDIT_ACCOUNTING] = LedgerConstants::REFUND_CREDITS;
+        }
+
+        $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = $additionalParams;
+
+        return $transactionMessage;
+    }
+
+    public function createTransactionMessageForReversalCreditDS(ReversalEntity $reversal): array
+    {
+        $moneyParams = self::generateMoneyParamsForReversalCreditDS($reversal);
+
+        $transactionMessage = $this->generateBaseForJournalEntry($reversal);
+
+        $transactionMessage[LedgerConstants::MONEY_PARAMS] = $moneyParams;
+
+        $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = [
+            LedgerConstants::ENTRY_TYPE                    => LedgerConstants::ENTRY_TYPE_CREDIT,
+            LedgerConstants::DIRECT_SETTLEMENT_ACCOUNTING  => LedgerConstants::DIRECT_SETTLEMENT,
+        ];
+
+        return $transactionMessage;
+    }
+
+
     public function generateMoneyParamsForReversalCredit(ReversalEntity $reversal): array
     {
         $moneyParams = [];
@@ -130,6 +170,56 @@ class Core extends Base\Core
         return $moneyParams;
     }
 
+    public function generateMoneyParamsForReversalCreditDS(ReversalEntity $reversal): array
+    {
+        $moneyParams = [];
+
+        $moneyParams[LedgerConstants::AMOUNT]                     = strval(0);
+        $moneyParams[LedgerConstants::BASE_AMOUNT]                = strval(0);
+        $moneyParams[LedgerConstants::MERCHANT_PAYABLE_AMOUNT]    = strval(0);
+        $moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT]    = strval(0);
+
+        return $moneyParams;
+    }
+
+    public function generateMoneyParamsForReversalDebitDS(RefundEntity $refund): array
+    {
+        $moneyParams = [];
+
+        $moneyParams[LedgerConstants::AMOUNT]                     = strval(0);
+        $moneyParams[LedgerConstants::BASE_AMOUNT]                = strval(0);
+        $moneyParams[LedgerConstants::MERCHANT_PAYABLE_AMOUNT]    = strval(0);
+
+        if($this->isRefundCredits($refund->merchant))
+        {
+            $moneyParams[LedgerConstants::REFUND_CREDITS]         = strval(0);
+        }
+        else
+        {
+            $moneyParams[LedgerConstants::MERCHANT_BALANCE_AMOUNT]    = strval(0);
+        }
+
+        $txnType = Transaction\Type::REFUND;
+
+        $balance = (new Balance\Repository())->getMerchantBalanceByTypeTiDBOrFail($refund->merchant->getId(), RefundConstants::PRIMARY);
+
+        $balanceConfigCore = new Balance\BalanceConfig\Core();
+
+        $negativeAllowedFlows = $balanceConfigCore->getNegativeFlowsForBalance($balance->getId());
+
+        $negativeLimit = (new Balance\BalanceConfig\Core)->getMaxNegativeAmountManualForBalanceId($balance->getId());
+
+        if (in_array($txnType, $negativeAllowedFlows) === false)
+        {
+            $negativeLimit = 0;
+        }
+
+        $moneyParams[LedgerConstants::MERCHANT_BALANCE_LIMIT] = strval($negativeLimit);
+
+        return $moneyParams;
+    }
+
+
     public function createBulkTransactionMessageForTransferReversal($reversal, $refund, $sourceRefund, $sourcePayment, $isCustomerRefundApplicable, $isRearchRefund = false)
     {
         // Called from parent/LA reversal flow
@@ -160,9 +250,27 @@ class Core extends Base\Core
 
     public function createBulkTransactionMessageForReversalAndRefundEntity(ReversalEntity $reversal, RefundEntity $refund)
     {
-        $reversalCreditJournal = $this->createTransactionMessageForReversalCredit($reversal);
+        $isDirectSettlement = $this->isDirectSettlementTransferRefund($refund);
 
-        $reversalDebitJournal = $this->createTransactionMessageForReversalDebit($refund);
+        $this->trace->info(TraceCode::TRANSFER_REVERSAL_DS_TRACE, [
+            'refund_id' => $refund->getId(),
+            'reversal_id' => $reversal->getId(),
+            'refund_settled_by' => $refund->getSettledBy(),
+            'is_direct_settlement' => $isDirectSettlement,
+        ]);
+
+        if ($isDirectSettlement)
+        {
+            $reversalCreditJournal = $this->createTransactionMessageForReversalCreditDS($reversal);
+
+            $reversalDebitJournal = $this->createTransactionMessageForReversalDebitDS($refund);
+        }
+        else
+        {
+            $reversalCreditJournal = $this->createTransactionMessageForReversalCredit($reversal);
+
+            $reversalDebitJournal = $this->createTransactionMessageForReversalDebit($refund);
+        }
 
         $transactionMessage = [
             LedgerConstants::TRANSACTOR_EVENT             => LedgerConstants::TRANSFER_REVERSAL_PROCESSED,
@@ -173,6 +281,11 @@ class Core extends Base\Core
                 LedgerConstants::REFUND_ID  => $refund->getId(),
             ]
         ];
+
+        if ($isDirectSettlement === true)
+        {
+            $transactionMessage[LedgerConstants::NOTES][LedgerConstants::TRANSACTOR_AMOUNT] = $reversal->getAmount();
+        }
 
         $reversalJournalPayload = array_merge($transactionMessage, $reversalCreditJournal);
 
@@ -512,5 +625,17 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($reversal);
         }
+    }
+
+    private function isDirectSettlementTransferRefund($refund)
+    {
+        $settledBy = $refund->getSettledBy();
+
+        if (empty($settledBy) === false && $settledBy !== 'Razorpay')
+        {
+            return true;
+        }
+
+        return false;
     }
 }

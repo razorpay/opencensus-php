@@ -328,6 +328,12 @@ class Core extends Base\Core
             return $this->fetchDSWithoutRefundTerminalInstantSpeedMerchantBalance($refund, $fee, $tax);
         }
 
+        if (($refund->isDirectSettlementRefund() === true) and
+            ($refund->isRefundSpeedInstant() === false))
+        {
+            return$this->fetchDSWithRefundTerminalNormalSpeedMerchantBalance($refund);
+        }
+
         if (($refund->isDirectSettlementWithoutRefund() === true) and
             ($refund->isRefundSpeedInstant() === false) and
             ($this->isRefundCredits($merchant) === true))
@@ -393,6 +399,21 @@ class Core extends Base\Core
         return [$rule, $moneyParams];
 
     }
+
+    private function fetchDSWithRefundTerminalNormalSpeedMerchantBalance(RefundEntity $refund)
+    {
+        $amount = abs($refund->getBaseAmount());
+
+        $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_NORMAL_REFUND;
+        $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITH_REFUND;
+
+        $moneyParams[Constants::BASE_AMOUNT]                = strval(0);
+        $moneyParams[Constants::REFUND_AMOUNT]              = strval(0);
+        $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval(0);
+
+        return [$rule, $moneyParams];
+    }
+
     private function fetchDSWithoutRefundTerminalInstantSpeedRefundCredits(RefundEntity $refund, $fee, $tax)
     {
         $amount = abs($refund->getBaseAmount());

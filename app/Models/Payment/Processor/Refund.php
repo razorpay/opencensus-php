@@ -842,6 +842,7 @@ trait Refund
         $refundInput[RefundEntity::SPEED_DECISIONED]= $input[RefundEntity::SPEED_DECISIONED] ?? null;
         $refundInput[RefundEntity::FEE]             = $input[RefundEntity::FEE] ?? null;
         $refundInput[RefundEntity::TAX]             = $input[RefundEntity::TAX] ?? null;
+        $refundInput[RefundEntity::SETTLED_BY]      = $input[RefundEntity::SETTLED_BY] ?? null;
 
         // set isScrooge
         $refundInput[RefundEntity::IS_SCROOGE]      = true;
@@ -4688,7 +4689,7 @@ trait Refund
      * @throws Exception\BadRequestException
      */
     public function isRefundRequestV1_1(string $merchantId, Payment\Entity $payment): bool
-    {   
+    {
         if ($this->app['env'] === Environment::PRODUCTION){
             return true;
         }
