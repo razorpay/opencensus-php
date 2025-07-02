@@ -129,7 +129,7 @@ class IrctcRefund extends Base
     protected function getRefundParams(array $entry)
     {
         $input = [
-            Refund\Entity::RECEIPT => $entry[Batch\Header::CANCELLATION_ID] . '_' . $entry[Batch\Header::MERCHANT_REFERENCE],
+            Refund\Entity::RECEIPT => $entry[Batch\Header::CANCELLATION_ID],
             Refund\Entity::NOTES   => [
                 'reservation_id'    => $entry[Batch\Header::MERCHANT_REFERENCE],
                 'cancellation_id'   => $entry[Batch\Header::CANCELLATION_ID],
