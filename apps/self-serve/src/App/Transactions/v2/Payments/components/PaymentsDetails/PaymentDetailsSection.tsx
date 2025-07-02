@@ -137,7 +137,7 @@ function PaymentDetailsSection({
     isPosTransaction(source_channel) &&
     (user.isOmniEnabledMerchant || (!!user?.pos_activation_status && user?.isOmniChannelMerchant));
 
-  const posOrderId = notes?.external_ref_id1 || null;
+  const posOrderId = notes?.external_ref_id1 || notes?.externalRefNumber || null;
 
   const onDownloadClick = async (e) => {
     e.stopPropagation();

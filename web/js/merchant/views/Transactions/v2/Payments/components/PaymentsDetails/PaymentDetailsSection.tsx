@@ -222,7 +222,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
 
   const bankReferenceNumber = bankTransfer?.details?.bank_reference;
 
-  const posOrderId = notes?.external_ref_id1 || null;
+  const posOrderId = notes?.external_ref_id1 || notes?.externalRefNumber || null;
 
   const isBounceMemoDownloadEnabled = isBounceMemoSingleTransactionEnabled(splitz);
 
@@ -279,10 +279,10 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
   const isFailedDownloadMemoAllowed = Boolean(
     // isOpen is responsible for open and close of Details dropdown
     isOpen &&
-      isBounceMemoDownloadEnabled &&
-      error_reason &&
-      ERROR_CODE_FOR_BOUNCE_MEMO.includes(error_reason) &&
-      METHODS_FOR_BOUNCE_MEMO.includes(method),
+    isBounceMemoDownloadEnabled &&
+    error_reason &&
+    ERROR_CODE_FOR_BOUNCE_MEMO.includes(error_reason) &&
+    METHODS_FOR_BOUNCE_MEMO.includes(method),
   );
 
   const fetchBounceMemoParams = {
@@ -381,7 +381,7 @@ const PaymentDetailsSection: React.FC<IPaymentDetailsSectionProps> = ({
                       <>
                         <Divider dividerStyle="solid" thickness="thick" variant="muted" />
                         {error_reason === 'unregistered_website' &&
-                        shouldShowUnregisteredWebsiteError ? (
+                          shouldShowUnregisteredWebsiteError ? (
                           <UnregisteredWebsiteError paymentId={id} label="Error Reason" />
                         ) : (
                           <DetailRow label="Error Reason" value={error_reason} />

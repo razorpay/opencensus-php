@@ -380,7 +380,7 @@ export const posOrderId = {
     </Text>
   ),
   value: (item: Item): JSX.Element => {
-    const external_ref_id1 = item.notes?.external_ref_id1;
+    const external_ref_id1 = item.notes?.external_ref_id1 || item.notes?.externalRefNumber;
     return (
       <Box display="flex" testID="external-ref-id1" columnGap="spacing.2">
         <Text>{external_ref_id1 || '--'}</Text>
@@ -431,11 +431,11 @@ export const getDesktopColumns = ({
   isJnKOmniEnabled,
   isPosOrderIDEnabled,
 }: DesktopColumns) => {
-  const {isConfigTagEnabled} = useI18Service();
-  
+  const { isConfigTagEnabled } = useI18Service();
+
   const isFailedPaymentView = window.location.pathname.includes(FAILED_PAYMENTS);
   let updatedDesktopColumns = isFailedPaymentView ? failedPaymentDesktopColumns : desktopColumns;
-  
+
   // isConfigTag returning true indicates that the section has to be hidden.
   // therefore not using a negation like in other places.
   if (isConfigTagEnabled('transactions.bank_rrn')) {

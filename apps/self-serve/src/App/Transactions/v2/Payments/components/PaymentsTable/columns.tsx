@@ -232,7 +232,7 @@ export const posOrderId = {
     </Text>
   ),
   value: (item: Item): JSX.Element => {
-    const external_ref_id1 = item.notes?.external_ref_id1;
+    const external_ref_id1 = item.notes?.external_ref_id1 || item.notes?.externalRefNumber;
     return (
       <Box display="flex" testID="external-ref-id1" columnGap="spacing.2">
         <Text>{external_ref_id1 || '--'}</Text>
