@@ -30,6 +30,7 @@ export const isEligibleForFtuxTransactionTimeline = ({
   const isEnabled = Boolean(
     user.isOrgRZP &&
       user.isCountryIndia &&
+      user?.user?.signup_campaign === 'easy_onboarding' &&
       !user.isSubMerchant &&
       !user?.isPartner?.() &&
       !isPOSMerchant &&
