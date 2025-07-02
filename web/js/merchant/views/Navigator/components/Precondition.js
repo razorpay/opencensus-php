@@ -73,6 +73,7 @@ export default class Precondition extends React.Component {
           }
         }}
         expression={expression}
+        getCurrency={this.props.getCurrency}
       />
     );
   };

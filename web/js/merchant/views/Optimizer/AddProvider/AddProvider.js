@@ -118,6 +118,12 @@ class AddProvider extends React.Component {
         if (res?.success) {
           const categorizedProviders = categorizeGateways(res?.data, abExperiments);
           this.setState({ providers: res?.data, categorizedProviders });
+          const { isEdit, provider } = this.state;
+          if (isEdit && res?.data?.[provider?.Gateway]?.['Currency']?.data_value?.length > 0) {
+            if (provider?.['Currency']?.length > 0) {
+              provider.Gateway_details['Currency'] = provider?.['Currency'];
+            }
+          }
         }
       })
       .finally(() => {
@@ -561,6 +567,10 @@ class AddProvider extends React.Component {
       ) {
         if (provider?.Gateway_details?.[key]) {
           paytmAutoDebitEnabled = true;
+        }
+      } else if (key === 'Currency') {
+        if (isCardEnabled && (!value || value?.length <= 0)) {
+          return false;
         }
         // Paytm wallet auto debit not enabled then no need to check for the fields which are only required for wallet auto debit
         // Phonepe card not enabled then no need to check for the fields which are only required for card payment method

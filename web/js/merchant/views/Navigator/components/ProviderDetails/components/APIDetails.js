@@ -14,6 +14,7 @@ const IGNORE_FIELDS = [
   PROVIDER_KEYS.RECURRING,
   PROVIDER_KEYS.GATEWAY_ACQUIRER,
   PROVIDER_KEYS.ROUTE,
+  'image_url',
 ];
 
 function APIDetails({ providerDetails, isPaytmAutoDebitEnabled, walletAutoDebit }) {

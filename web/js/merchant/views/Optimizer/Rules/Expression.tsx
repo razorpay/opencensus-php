@@ -13,6 +13,7 @@ interface ExpressionProps {
   parameters: Parameter[];
   readonly: boolean;
   onClose: () => void;
+  getCurrency: () => string;
 }
 
 export const Expression = ({
@@ -21,6 +22,7 @@ export const Expression = ({
   parameters,
   readonly,
   onClose,
+  getCurrency,
 }: ExpressionProps): JSX.Element => {
   const [shouldShowBinNumberErorr, setshouldShowBinNumberErorr] = useState(false);
 
@@ -28,13 +30,15 @@ export const Expression = ({
     return parameters.find((parameter) => parameter.value === value);
   };
 
+  // For multiple currencies, we don't need to show the currency symbol in Amount component
   const renderAmount = (value: string): JSX.Element | null => {
+    const currency = getCurrency();
     if (value) {
       return (
         <>
           {value.split(',').map((item, key, arr) => (
             <>
-              <Amount key={`${item}_${key}`} value={Number(item) / 100} />
+              <Amount key={`${item}_${key}`} value={Number(item)} currency={currency.split(',')?.length > 1 ? '' : currency as any} />
               {key !== arr.length - 1 && <span>, </span>}
             </>
           ))}
@@ -59,28 +63,34 @@ export const Expression = ({
     });
   };
 
-  const getAmountComp = (val, handleChange, valueType) => (
-    <div className="input-group">
-      <AmountTooltip
-        currency={window.rzp_user?.merchant?.currency || 'INR'}
-        parentQuerySelector=".ReactModal__Overlay .ReactModal__Content"
-        customClass="input-group-addon"
-      />
-      <input
-        type="number"
-        placeholder="Enter Amount"
-        name="amountInINR"
-        className="form-control"
-        value={val ? val / 100 : val}
-        onChange={(e) => handleAmountChange(e, handleChange, valueType)}
-        min="0"
-      />
-    </div>
-  );
+  // For multiple currencies, we don't need to show the amount tooltip
+  const getAmountComp = (val, handleChange, valueType) => {
+    const currency = getCurrency();
+    return (
+      <div className="input-group">
+        {currency?.split(',')?.length > 1 ? null : (
+          <AmountTooltip
+            currency={currency}
+            parentQuerySelector=".ReactModal__Overlay .ReactModal__Content"
+            customClass="input-group-addon"
+          />
+        )}
+        <input
+          type="number"
+          placeholder="Enter Amount"
+          name="amountInINR"
+          className="form-control"
+          value={val}
+          onChange={(e) => handleAmountChange(e, handleChange, valueType)}
+          min="0"
+        />
+      </div>
+    );
+  }
 
   const handleAmountBetweenChange = (index) => (e) => {
     const value = expression?.operands?.[1].value.split(',');
-    value[index] = e.target.value && e.target.value >= 0 ? String(e.target.value * 100) : '';
+    value[index] = e.target.value && e.target.value >= 0 ? String(e.target.value) : '';
     const valueString = value.join(',');
     return valueString;
   };
@@ -320,7 +330,7 @@ export const Expression = ({
                 jsx = getAmountComp(
                   expression?.operands?.[1].value,
                   (e) =>
-                    e.target.value && e.target.value >= 0 ? String(e.target.value * 100) : '',
+                    e.target.value && e.target.value >= 0 ? String(e.target.value) : '',
                   valueType,
                 );
               }

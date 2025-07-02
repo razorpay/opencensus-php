@@ -1047,7 +1047,7 @@ export const PARAMETERS: Parameter[] = [
   {
     name: 'Amount',
     value: '$payment.navigator_amount',
-    description: 'In Rupees',
+    description: '',
     id: 9,
     values: [
       {

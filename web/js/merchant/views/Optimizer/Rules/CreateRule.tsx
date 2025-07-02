@@ -27,6 +27,7 @@ import ReorderRules from './ReorderRule';
 import { PreconditionModel } from 'merchant/views/Optimizer/Rules/models/PreconditionModel';
 import { FullPageCover } from './FullPageCover';
 import { FullPageCoverHeader } from './FullPageCoverHeader';
+import { amountConversionToMinorUnit, amountConversionToMajorUnit, getCurrency } from 'merchant/views/Optimizer/Rules/utils';
 
 import {
   PARAMETERS,
@@ -258,7 +259,8 @@ const CreateRule = (props, context): JSX.Element => {
     if (ruleId && ruleId !== 'create-rule') {
       fetchRule(ruleId)
         .then((rule) => {
-          dispatch({ type: 'set_rule_details', payload: rule });
+          const convertedRule = amountConversionToMajorUnit(rule);
+          dispatch({ type: 'set_rule_details', payload: convertedRule });
           dispatch({ type: 'set_update', payload: true });
           const newSteps = {
             1: {
@@ -465,7 +467,8 @@ const CreateRule = (props, context): JSX.Element => {
   };
 
   const createRule = (data) => {
-    return createRuleAction(data);
+    const convertedData = amountConversionToMinorUnit(data);
+    return createRuleAction(convertedData);
   };
 
   const goNext = (index: number) => {
@@ -606,6 +609,10 @@ const CreateRule = (props, context): JSX.Element => {
     const value: Rule[] = mapRulesObjectToArray(newRule);
 
     dispatch({ type: 'set_rule_details_fields', payload: { name: 'rules', value } });
+  };
+
+  const getCurrencyFromRuleDetails = () => {
+    return getCurrency(ruleDetails);
   };
 
   const rules: RuleGroup[] = deepClone(rulesList);
@@ -1189,6 +1196,7 @@ const CreateRule = (props, context): JSX.Element => {
                                 });
                               }}
                               parent="create-rule"
+                              getCurrency={getCurrencyFromRuleDetails}
                             />
                           </div>
                         </CSSTransition>

@@ -19,6 +19,7 @@ import {
 } from 'merchant/reducers/navigator/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { amountConversionToMajorUnit, getCurrency } from 'merchant/views/Optimizer/Rules/utils';
 
 import DeactivateRule from './DeactivateRule';
 import Precondition from './Precondition';
@@ -89,6 +90,10 @@ class RuleDetail extends Component {
       .catch(() => {});
   };
 
+  getCurrencyFromRule = () => {
+    return getCurrency(this.props.rule);
+  };
+
   render() {
     if (this.state.redirect) {
       return <Navigate to={this.state.redirect} replace />; // nosemgrep : https://semgrep.dev/s/razorpay:rzp-react-router-redirect
@@ -103,6 +108,7 @@ class RuleDetail extends Component {
       }
     });
     const status = getRuleStatus(this.props.rule);
+    const amountConvertedRule = amountConversionToMajorUnit(this.props.rule);
     return (
       <div className="content-wrapper content-sm txn-details navigator-rule-detail">
         {this.props.rule_detail_loading ? (
@@ -354,7 +360,8 @@ class RuleDetail extends Component {
                         <Precondition
                           parameters={parameters}
                           readonly={true}
-                          precondition={this.props.rule.precondition}
+                          precondition={amountConvertedRule.precondition}
+                          getCurrency={this.getCurrencyFromRule}
                         />
                       ) : (
                         <div style={{ padding: '5px' }}>

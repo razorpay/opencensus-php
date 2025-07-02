@@ -20,6 +20,7 @@ interface PreconditionProps {
   parameters: Parameter[];
   readonly: boolean;
   parent: string;
+  getCurrency: () => string;
 }
 
 export const Precondition = ({
@@ -28,6 +29,7 @@ export const Precondition = ({
   parameters,
   readonly,
   parent,
+  getCurrency,
 }: PreconditionProps): JSX.Element => {
   const addCondition = () => {
     let newPrecondition = deepClone(precondition);
@@ -92,6 +94,7 @@ export const Precondition = ({
         onClose={onClose}
         update={onUpdate}
         expression={expression}
+        getCurrency={getCurrency}
       />
     );
   };

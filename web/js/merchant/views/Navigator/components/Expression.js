@@ -1,6 +1,7 @@
 import React from 'react';
 
-import Amount, { AmountTooltip } from 'common/ui/Amount';
+import { Amount } from '@razorpay/blade/components';
+import { AmountTooltip } from 'common/ui/Amount';
 import InputField from 'common/ui/Forms/InputField';
 import Field from 'razorx/components/ui/Field';
 
@@ -16,10 +17,11 @@ export default class Expression extends React.Component {
   };
 
   renderAmount = (value) => {
+    const currency = this.props.getCurrency();
     if (value) {
       return value.split(',').map((item, key, arr) => (
         <>
-          <Amount key={`${item}_${key}`} value={item} />
+          <Amount key={`${item}_${key}`} value={item} currency={currency.split(',')?.length > 1 ? '' : currency} />
           {key !== arr.length - 1 && <span>, </span>}
         </>
       ));
