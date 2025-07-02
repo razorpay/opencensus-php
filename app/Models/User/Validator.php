@@ -61,6 +61,7 @@ class Validator extends Base\Validator
         Entity::PASSWORD_CONFIRMATION           => 'required_with:email|between:8,50',
         Entity::CONTACT_MOBILE                  => 'sometimes|nullable|max:15|contact_syntax',
         Entity::CONTACT_MOBILE_VERIFIED         => 'sometimes|in:0,1', //this will get reflected in db only for internal auth
+        Entity::CREATE_MULTIPLE_USER            => 'sometimes|boolean', //this will skip validation for multiple user for internal auth route sepecifically hdfc mintoak qr sync app onboarding from PGOS
         Constants::PARTNER_REFERRAL_CODE        => 'sometimes|string',
         Entity::REMEMBER_TOKEN                  => 'sometimes',
         Entity::CONFIRM_TOKEN                   => 'sometimes',
@@ -937,6 +938,14 @@ class Validator extends Base\Validator
         else if (isset($input[Entity::CONTACT_MOBILE]) === true)
         {
             $validMobileNumberFormats = (new PhoneBook($input[Entity::CONTACT_MOBILE]))->getMobileNumberFormats();
+
+            $app = App::getFacadeRoot();
+            if ($app['basicauth']->getInternalApp() === 'pgos' && isset($input['create_multiple_user']) &&
+                $input['create_multiple_user'] == true)
+            {
+                unset($input['create_multiple_user']);
+                return;
+            }
             foreach ($validMobileNumberFormats as $mobileNumber)
             {
                 $this->validateInput('createMobileUnique', [Entity::CONTACT_MOBILE => $mobileNumber]);

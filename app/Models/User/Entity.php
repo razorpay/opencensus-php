@@ -109,6 +109,10 @@ class Entity extends Base\PublicEntity
 
     // Boolean attribute is true if contact mobile is verified via OTP
     const CONTACT_MOBILE_VERIFIED       = 'contact_mobile_verified';
+
+    // Flag to create multiple user for hdfc mintoak qr sync app flow where already multiple
+    // user exists
+    const CREATE_MULTIPLE_USER       = 'create_multiple_user';
     // Boolean attribute is true if email is verified; this is equivalent to `confirmed` attribute
     // which should be deprecated for sake of brevity
     const EMAIL_VERIFIED       = 'email_verified';

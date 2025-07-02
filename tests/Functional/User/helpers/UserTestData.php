@@ -1152,6 +1152,103 @@ return [
         ]
     ],
 
+    'testCreateUserInternalFailIfMobileTaken' => [
+        'request' => [
+            'url'       => '/internal/users',
+            'method'    => 'POST',
+            'content'   => [
+                'contact_mobile_verified'  =>  1,
+                'signup_via_email' => '0',
+                'captcha_disable' => 'true',
+                'name' => 'AP',
+                'contact_mobile' => '7598249212',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+                "error" => [
+                    "code"=> "BAD_REQUEST_ERROR",
+                    "description" => "The contact mobile has already been taken.",
+                    "source" => "internal",
+                    "step" => "payment_initiation",
+                    "reason" => "input_validation_failed",
+                    "metadata" => [],
+                    "field" => "contact_mobile",
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateUserInternalDontFailIfMobileTaken' => [
+        'request' => [
+            'url'       => '/internal/users',
+            'method'    => 'POST',
+            'content'   => [
+                'contact_mobile_verified'  =>  1,
+                'signup_via_email' => '0',
+                'captcha_disable' => 'true',
+                'name' => 'AP',
+                'contact_mobile' => '7598249212',
+                'create_multiple_user' => true,
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testFetchUserByContact' => [
+        'request' => [
+            'url'       => '/internal/users/fetch_by_contact',
+            'method'    => 'POST',
+            'content'   => [
+                'contact_mobile' => '7598249212',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testFetchUserByContactViaDifferentFormatWhereUserExist' => [
+        'request' => [
+            'url'       => '/internal/users/fetch_by_contact',
+            'method'    => 'POST',
+            'content'   => [
+                'contact_mobile' => '+917598249212',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testFetchUserByContactViaDifferentFormatWhereUserDoesnotExist' => [
+        'request' => [
+            'url'       => '/internal/users/fetch_by_contact',
+            'method'    => 'POST',
+            'content'   => [
+                'contact_mobile' => '+91 7598249212',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
+        ],
+    ],
+
     'testCreateMerchantInternalWithoutUserID' => [
         'request' => [
             'url'       => '/users/merchants/internal',

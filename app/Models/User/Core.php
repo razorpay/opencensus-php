@@ -7213,6 +7213,65 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function getUsersByContact(array $input) {
+        $response['users'] = [];
+
+        if (isset($input[Entity::CONTACT_MOBILE])) {
+            $mobile = $input[Entity::CONTACT_MOBILE];
+
+            $users = $this->repo->user->findByMobile($mobile);
+            if ($users->count() === 0)
+            {
+                $this->trace->count(Metric::NO_ACCOUNTS_ASSOCIATED);
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
+                    null,
+                    [
+                        'internal_error_code' => ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
+                    ]
+                );
+            }
+            else
+            {
+                foreach ($users as $user)
+                {
+                    try
+                    {
+                        if ((new AsvRouter())->shouldRouteFilterToAsv(__FUNCTION__))
+                        {
+                            $merchantEntities = $user->getNonSuspendedMerchants(1000);
+                        }
+                        else
+                        {
+                            $merchantEntities = $user->merchants()->where(
+                                Merchant\Entity::SUSPENDED_AT, null
+                            )->take(1000)->get();
+                        }
+
+                        $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
+                        $merchantDetails = $this->getUnifiedMerchants($merchants);
+
+                        $userWithMerchants = $user->toArrayPublic();
+                        $userWithMerchants['merchants'] = $merchantDetails;
+                        $response['users'][] = $userWithMerchants;
+                    }
+                    catch (\Throwable $exception)
+                    {
+                        $this->trace->traceException($exception, Trace::ERROR, TraceCode::CHECK_USER_MOBILE_VERIFICATION_FAILED, [
+                            'user_id' => $user->getId(),
+                            'error_message' => $exception->getMessage(),
+                            'error_code' => $exception->getCode(),
+                        ]);
+
+                        throw $exception;
+                    }
+                }
+            }
+        }
+
+        return $response;
+    }
+
     /**
      * @param Entity $user
      * @return bool

@@ -433,6 +433,21 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * This function simply returns all the users whose contact_mobile
+     * matches with the contact_mobile sent as payload, it doesn't check
+     * whether contact mobile is verified or not
+     * @return mixed
+     */
+    public function getUsersByContact()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getUsersByContact($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postUpgradeUserToMerchant()
     {
         $input = Request::all();

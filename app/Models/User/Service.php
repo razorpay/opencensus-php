@@ -4504,6 +4504,11 @@ class Service extends Base\Service
 
         return $user;
     }
+    public function getUsersByContact(array $input) {
+        $users = $this->core()->getUsersByContact($input);
+
+        return $users;
+    }
 
     public function getMerchantUserMappingForProduct(string $product = null,
                                                      string $merchantId = null,

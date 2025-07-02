@@ -714,6 +714,58 @@ class UserTest extends TestCase
         $this->assertEquals("0", $response['signup_via_email']);
     }
 
+
+    public function testCreateUserInternalFailIfMobileTaken() {
+        DB::table('users')->where('contact_mobile', '=', '7598249212')->delete();
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '7598249212', 'email'  => null]);
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+    }
+
+    public function testCreateUserInternalDontFailIfMobileTaken() {
+        DB::table('users')->where('contact_mobile', '=', '7598249212')->delete();
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '7598249212', 'email'  => null]);
+        $testData = & $this->testData[__FUNCTION__];
+        $this->ba->pgosAppAuth();
+
+        $response = $this->startTest();
+
+        $user = DB::table('users')->where('contact_mobile', '=', $testData['request']['content']['contact_mobile']);
+        $this->assertEquals($user->count(), 2);
+    }
+
+    public function testFetchUserByContact() {
+        DB::table('users')->where('contact_mobile', '=', '7598249212')->delete();
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '7598249212', 'email'  => null]);
+        $user2 = $this->fixtures->create('user', ['contact_mobile' => '7598249212', 'email'  => null]);
+        $this->ba->pgosAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(sizeof($response['users']), 2);
+    }
+
+    public function testFetchUserByContactViaDifferentFormatWhereUserExist() {
+        DB::table('users')->where('contact_mobile', '=', '7598249212')->delete();
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '7598249212', 'email'  => null]);
+        $user2 = $this->fixtures->create('user', ['contact_mobile' => '+917598249212', 'email'  => null]);
+        $this->ba->pgosAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(sizeof($response['users']), 1);
+    }
+
+    public function testFetchUserByContactViaDifferentFormatWhereUserDoesnotExist() {
+        DB::table('users')->where('contact_mobile', '=', '7598249212')->delete();
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '7598249212', 'email'  => null]);
+        $user2 = $this->fixtures->create('user', ['contact_mobile' => '+917598249212', 'email'  => null]);
+        $this->ba->pgosAppAuth();
+
+        $response = $this->startTest();
+    }
+
     public function testSignupSourceShowingUpInMerchantAfterRegistration()
     {
         //Given
