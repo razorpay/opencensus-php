@@ -936,7 +936,8 @@ class Entity extends Base\PublicEntity
 
         foreach ($merchants as $merchant)
         {
-            if ($merchant->getOrgID() === $orgId or in_array($merchant->getId(), $merchantIdsWithCrossOrgFeature, true) === true)
+            if (($merchant->getOrgID() === $orgId or in_array($merchant->getId(), $merchantIdsWithCrossOrgFeature, true) === true) or (new UserCore())->isMerchantWithCrossOrgFeatureExpEnable($merchant->getId()) === true )
+
             {
                 $filteredMerchants->add($merchant);
             }

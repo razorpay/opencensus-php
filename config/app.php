@@ -840,6 +840,8 @@ return array(
 
     'upi_autopay_promotional_qr' => env('UPI_AUTOPAY_PROMOTIONAL_QR'),
 
+    'merchant_with_cross_org_feature_enabled'=> env('MERCHANT_WITH_CROSS_ORG_FEATURE_ENABLED'),
+
     'upi_autopay_promotional_intent' => env('UPI_AUTOPAY_PROMOTIONAL_INTENT'),
 
     'upi_autopay_pricing_blacklist' => env('UPI_AUTOPAY_PRICING_BLACKLIST'),

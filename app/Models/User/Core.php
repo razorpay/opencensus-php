@@ -4408,7 +4408,7 @@ class Core extends Base\Core
         {
             foreach ($merchantEntities as $merchant)
             {
-                if ($merchant->getOrgID() === $orgId or in_array($merchant->getId(), $merchantIdsWithCrossOrgFeature, true) === true)
+                if($merchant->getOrgID() === $orgId or in_array($merchant->getId(), $merchantIdsWithCrossOrgFeature, true) === true or $this->isMerchantWithCrossOrgFeatureExpEnable($merchant->getId()) === true)
                 {
                     $filteredMerchants->add($merchant);
 
@@ -7772,6 +7772,25 @@ class Core extends Base\Core
         $user = $this->repo->user->getUserFromID($userID);
 
         return $user->getAllSettings();
+    }
+
+    public function isMerchantWithCrossOrgFeatureExpEnable(String $merchantId) : bool
+    {
+        $properties = [
+            'merchant_id'   => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.merchant_with_cross_org_feature_enabled'),
+            'request_data'  => json_encode(['merchantId' => $merchantId]),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        $this->trace->info(TraceCode::CROSS_ORG_DASHBOARD_ACCESS_MERCHANT, [
+            'merchant_id'   => $merchantId,
+            'splitz_output' => $variant,
+            'response'      => $response,
+        ]);
+        return $variant === 'variables';
     }
 
 }
