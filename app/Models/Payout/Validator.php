@@ -180,7 +180,7 @@ class Validator extends Base\Validator
         'reject_workflow_payouts',
         'process_bank_transfer',
         'redis_get',
-        'redis_set',
+//        'redis_set',
         'generate_merchant_invoice',
         'manual_smart_collect_entity_creation'
     ];
@@ -2431,12 +2431,12 @@ class Validator extends Base\Validator
                 }
                 break;
 
-            case 'redis_set':
-
-                foreach ($bulkInput as $input) {
-                    $this->setStrictFalse()->validateInput(self::REDIS_SET,$input);
-                }
-                break;
+//            case 'redis_set':
+//
+//                foreach ($bulkInput as $input) {
+//                    $this->setStrictFalse()->validateInput(self::REDIS_SET,$input);
+//                }
+//                break;
 
             case 'generate_merchant_invoice':
 

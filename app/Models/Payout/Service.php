@@ -6912,13 +6912,13 @@ class Service extends Base\Service
                     }, $bulk_input);
                     break;
 
-                case 'redis_set':
-                    $processFunction(function($input) use (&$successResponse) {
-                        $res = (new Admin\Service)->setConfigKeys([$input['key'] => $input['value']]);
-                        if($res)
-                            array_push($successResponse, $res);
-                    }, $bulk_input);
-                    break;
+//                case 'redis_set':
+//                    $processFunction(function($input) use (&$successResponse) {
+//                        $res = (new Admin\Service)->setConfigKeys([$input['key'] => $input['value']]);
+//                        if($res)
+//                            array_push($successResponse, $res);
+//                    }, $bulk_input);
+//                    break;
 
                 case 'manual_smart_collect_entity_creation':
                     $processFunction(function($input) use (&$successResponse) {
