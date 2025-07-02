@@ -228,6 +228,7 @@ use Razorpay\Trace\Logger as Trace;
  * @property Models\Address\AddressConsent1ccAudits\Repository               $address_consent_1cc_audits
  * @property Models\Address\AddressConsent1cc\Repository                     $address_consent_1cc
  * @property Models\Pincode\ZipcodeDirectory\Repository                      $zipcode_directory
+ * @property Models\WalletAccount\Repository                                 $wallet_account
  *
  * @property Models\Transaction\Statement\DirectAccount\Statement\Repository $direct_account_statement
  * @property Models\Roles\Repository                                         $roles

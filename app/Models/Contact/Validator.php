@@ -98,4 +98,27 @@ class Validator extends Base\Validator
             }
         }
     }
+
+    protected static $rxDualWriteInputRules = [
+        Entity::ID                      => 'required',
+        Entity::NAME                    => 'required|string|max:50|nullable|custom',
+        Entity::CONTACT                 => 'sometimes|nullable|contact_syntax',
+        Entity::EMAIL                   => 'sometimes|nullable|email',
+        Entity::TYPE                    => 'sometimes|nullable|max:40|alpha_dash_space',
+        Entity::REFERENCE_ID            => 'sometimes|nullable|string|max:40',
+        Entity::NOTES                   => 'sometimes|string',
+        Entity::IDEMPOTENCY_KEY         => 'sometimes|nullable|string',
+        Entity::PAYMENT_TERMS           => 'sometimes|numeric|integer|min:0',
+        Entity::TDS_CATEGORY            => 'sometimes|numeric|integer|min:0',
+        Entity::POC_EMAILS              => 'sometimes|array|custom',
+        Entity::PAN                     => 'sometimes|string|min:0|max:40',
+        Entity::EXPENSE_ID              => 'sometimes|string|max:40',
+        Entity::GST_IN                  => 'sometimes|string|max:40|custom',
+        Entity::BATCH_ID                => 'sometimes|string',
+        Entity::IS_COMPOSITE            => 'sometimes|boolean',
+        Entity::CREATED_AT              => 'required|epoch',
+        Entity::UPDATED_AT              => 'required|epoch',
+        Entity::ACTIVE                  => 'required|boolean',
+        Entity::MERCHANT_ID             => 'required|string|size:14',
+    ];
 }

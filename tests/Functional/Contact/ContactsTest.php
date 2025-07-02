@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use PHPUnit\Framework\Assert;
+use RZP\Jobs\RxContactDualWrite;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Core;
 use RZP\Models\Feature;
@@ -1694,5 +1695,44 @@ class ContactsTest extends TestCase
         $this->fixtures->create('feature', ['name' => 'vendor_onboarding_enabled', 'entity_id' => '10000000000000', 'entity_type' => 'merchant']);
 
         $this->startTest();
+    }
+
+    public function testRxContactDualWriteHandle()
+    {
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        (new RxContactDualWrite([
+            'id'           => 'randomid111111',
+            'active'       => '1',
+            'name'         => 'Test / Contact',
+            'type'         => 'self',
+            'reference_id' => '#123abc',
+            'email'        => 'asd@abc.com',
+            'contact'      => '9123456789',
+            'notes'        => json_encode([
+                'test' => 'One',
+            ]),
+            'created_at'   => $timestamp,
+            'updated_at'   => $timestamp,
+            'merchant_id'  => '10000000000000',
+        ]))->handle();
+
+        /** @var Entity $contact */
+        $contact = $this->getDbEntityById('contact', 'randomid111111', 'live');
+        $this->assertNotNull($contact);
+
+        $notes = $contact->getNotes();
+
+        $this->assertEquals($timestamp, $contact->getCreatedAt());
+        $this->assertEquals($timestamp, $contact->getUpdatedAt());
+        $this->assertEquals(1, $contact->getActive());
+        $this->assertEquals("Test / Contact", $contact->getName());
+        $this->assertEquals("self", $contact->getType());
+        $this->assertEquals("#123abc", $contact->getReferenceId());
+        $this->assertEquals("asd@abc.com", $contact->getEmail());
+        $this->assertEquals("9123456789", $contact->getContact());
+        $this->assertNotNull($notes['test']);
+        $this->assertEquals('One', $notes['test']);
+        $this->assertEquals('10000000000000', $contact->getMerchantId());
     }
 }

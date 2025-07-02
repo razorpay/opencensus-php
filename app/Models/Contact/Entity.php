@@ -415,4 +415,8 @@ class Entity extends Base\PublicEntity
         return (new ImplicitJoinHelper\ImplicitJoinHelper())->getMerchantAttributeByMerchantId($this, $this->entity);
     }
 
+    public function setIgnoreRelationsForRxDualWrite()
+    {
+        $this->ignoredRelations = [];
+    }
 }

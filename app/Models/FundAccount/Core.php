@@ -1961,4 +1961,25 @@ class Core extends Base\Core
         }
     }
 
+    public function processRxDualWrite(array $input)
+    {
+        (new Validator)->validateInput('rx_dual_write_input', $input);
+
+        $fundAccountInput = $input;
+
+        $fundAccountId = $fundAccountInput[Entity::ID];
+
+        /* @var Entity $apiFundAccount */
+        $apiFundAccount = $this->repo->fund_account->find($fundAccountId);
+
+        if ($apiFundAccount != null && $apiFundAccount->getUpdatedAt() > $fundAccountInput['updated_at']) {
+            $this->trace->info(
+                TraceCode::RX_CONTACT_DUAL_WRITE_NO_ACTION,
+                $fundAccountInput
+            );
+            return;
+        }
+
+        (new DualWrite\Processor)->dualWriteRxFundAccount($fundAccountInput);
+    }
 }

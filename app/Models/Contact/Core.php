@@ -1108,4 +1108,26 @@ class Core extends Base\Core
             return (isset($input[Entity::NAME]) === true) ? strtolower(implode('_', explode(' ', $input[Entity::NAME]))) : '';
         }
     }
+
+    public function processRxDualWrite(array $input)
+    {
+        (new Validator)->validateInput('rx_dual_write_input', $input);
+
+        $contactInput = $input;
+
+        $contactId = $contactInput[Entity::ID];
+
+        /* @var Entity $apiContact */
+        $apiContact = $this->repo->contact->find($contactId);
+
+        if ($apiContact != null && $apiContact->getUpdatedAt() > $contactInput['updated_at']) {
+            $this->trace->info(
+                TraceCode::RX_CONTACT_DUAL_WRITE_NO_ACTION,
+                $contactInput
+            );
+            return;
+        }
+
+        (new DualWrite\Processor)->dualWriteRxContact($contactInput);
+    }
 }

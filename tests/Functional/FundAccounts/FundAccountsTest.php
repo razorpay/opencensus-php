@@ -6,9 +6,11 @@ use App;
 use Queue;
 use Mockery;
 
+use Carbon\Carbon;
 use Razorpay\IFSC\IFSC;
 
 use RZP\Error\Error;
+use RZP\Constants\Timezone;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Feature;
 use RZP\Models\Card\Entity;
@@ -22,6 +24,7 @@ use RZP\Jobs\FTS\CreateAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
+use RZP\Jobs\RxFundAccountDualWrite;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Jobs\FundAccountDetailsPropagatorJob;
@@ -4339,5 +4342,219 @@ class FundAccountsTest extends TestCase
         $uniqueHash = $fundAccount->getUniqueHash();
 
         $this->assertEquals($expectedHash, $uniqueHash);
+    }
+
+    public function testRxFundAccountDualWriteForBankAccountHandle()
+    {
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        (new RxFundAccountDualWrite([
+            'id'           => '100fundAccount',
+            'account_id'   => '100bankAccount',
+            'account_type' => 'bank_account',
+            'source_type'  => 'contact',
+            'source_id'    => '1000000contact',
+            'bank_account'      => [
+                'id'                  => '100bankAccount',
+                'merchant_id'         => '10000000000000',
+                'ifsc_code'           => 'SBIN0007105',
+                'entity_id'           => 'contact1111111',
+                'type'                => 'contact',
+                'beneficiary_name'    => 'Amit M',
+                'account_number'      => '111000111',
+                'beneficiary_country' => 'IN',
+                'bank_identifier'     => 'SBIN0007105',
+                'identifier_type'     => 'ifsc',
+                'created_at'          => $timestamp,
+                'updated_at'          => $timestamp,
+            ],
+            'created_at'   => $timestamp,
+            'updated_at'   => $timestamp,
+            'merchant_id'  => '10000000000000',
+            'active'       => true,
+            'unique_hash'  => '0c9f524dafdc6258c085d0f1dcdbd2d1',
+        ]))->handle();
+
+        /** @var FundAccount\Entity $fundAccount */
+        $fundAccount = $this->getDbEntityById('fund_account', '100fundAccount', 'live');
+        $this->assertNotNull($fundAccount);
+        $this->assertEquals($timestamp, $fundAccount->getCreatedAt());
+        $this->assertEquals($timestamp, $fundAccount->getUpdatedAt());
+        $this->assertEquals('1000000contact', $fundAccount->getSourceId());
+        $this->assertEquals('contact', $fundAccount->getSourceType());
+        $this->assertEquals('10000000000000', $fundAccount->getMerchantId());
+
+        /** @var BankAccount\Entity $bankAccount */
+        $bankAccount = $this->getDbEntityById('bank_account', '100bankAccount', 'live');
+        $this->assertNotNull($bankAccount);
+        $this->assertEquals($timestamp, $bankAccount->getCreatedAt());
+        $this->assertEquals($timestamp, $bankAccount->getUpdatedAt());
+        $this->assertEquals("SBIN0007105", $bankAccount->getIfscCode());
+        $this->assertEquals("Amit M", $bankAccount->getName());
+        $this->assertEquals("111000111", $bankAccount->getAccountNumber());
+        $this->assertEquals('10000000000000', $bankAccount->getMerchantId());
+        $this->assertEquals('contact', $bankAccount->getType());
+        $this->assertEquals('contact1111111', $bankAccount->getEntityId());
+    }
+
+    public function testRxFundAccountDualWriteForVpaHandle()
+    {
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        (new RxFundAccountDualWrite([
+                                        'id'           => '100fundAccount',
+                                        'account_id'   => '1000VpaAccount',
+                                        'account_type' => 'vpa',
+                                        'source_type'  => 'contact',
+                                        'source_id'    => '1000000contact',
+                                        'vpa' => [
+                                            'id'          => '1000VpaAccount',
+                                            'merchant_id' => '10000000000000',
+                                            'entity_id'   => 'contact1111111',
+                                            'entity_type' => 'contact',
+                                            'username'    => '9090909090',
+                                            'handle'      => 'ybl',
+                                            'created_at'  => $timestamp,
+                                            'updated_at'  => $timestamp,
+                                        ],
+                                        'created_at'   => $timestamp,
+                                        'updated_at'   => $timestamp,
+                                        'merchant_id'  => '10000000000000',
+                                        'active'       => true,
+                                        'unique_hash'  => '0c9f524dafdc6258c085d0f1dcdbd2d1',
+                                    ]))->handle();
+
+        /** @var FundAccount\Entity $fundAccount */
+        $fundAccount = $this->getDbEntityById('fund_account', '100fundAccount', 'live');
+        $this->assertNotNull($fundAccount);
+        $this->assertEquals($timestamp, $fundAccount->getCreatedAt());
+        $this->assertEquals($timestamp, $fundAccount->getUpdatedAt());
+        $this->assertEquals('1000000contact', $fundAccount->getSourceId());
+        $this->assertEquals('contact', $fundAccount->getSourceType());
+        $this->assertEquals('10000000000000', $fundAccount->getMerchantId());
+
+        /** @var \RZP\Models\Vpa\Entity $vpa */
+        $vpa = $this->getDbEntityById('vpa', '1000VpaAccount', 'live');
+        $this->assertNotNull($vpa);
+        $this->assertEquals($timestamp, $vpa->getCreatedAt());
+        $this->assertEquals($timestamp, $vpa->getUpdatedAt());
+        $this->assertEquals("1000VpaAccount", $vpa->getId());
+        $this->assertEquals("10000000000000", $vpa->getMerchantId());
+        $this->assertEquals("9090909090", $vpa->getUsername());
+        $this->assertEquals('ybl', $vpa->getHandle());
+        $this->assertEquals('contact', $vpa->getEntityType());
+        $this->assertEquals('contact1111111', $vpa->getEntityId());
+    }
+
+    public function testRxFundAccountDualWriteForWalletAccountHandle()
+    {
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        (new RxFundAccountDualWrite([
+                                        'id'             => '100fundAccount',
+                                        'account_id'     => '1WalletAccount',
+                                        'account_type'   => 'vpa',
+                                        'source_type'    => 'contact',
+                                        'source_id'      => '1000000contact',
+                                        'wallet_account' => [
+                                            'id'          => '1WalletAccount',
+                                            'merchant_id' => '10000000000000',
+                                            'entity_id'   => 'contact1111111',
+                                            'entity_type' => 'contact',
+                                            'email'       => 'test@rzp.com',
+                                            'phone'       => '9090909090',
+                                            'name'        => 'Test',
+                                            'provider'    => 'amazonpay',
+                                            'created_at'  => $timestamp,
+                                            'updated_at'  => $timestamp,
+                                        ],
+                                        'created_at'     => $timestamp,
+                                        'updated_at'     => $timestamp,
+                                        'merchant_id'    => '10000000000000',
+                                        'active'         => true,
+                                        'unique_hash'    => '0c9f524dafdc6258c085d0f1dcdbd2d1',
+                                    ]))->handle();
+
+        /** @var FundAccount\Entity $fundAccount */
+        $fundAccount = $this->getDbEntityById('fund_account', '100fundAccount', 'live');
+        $this->assertNotNull($fundAccount);
+        $this->assertEquals($timestamp, $fundAccount->getCreatedAt());
+        $this->assertEquals($timestamp, $fundAccount->getUpdatedAt());
+        $this->assertEquals('1000000contact', $fundAccount->getSourceId());
+        $this->assertEquals('contact', $fundAccount->getSourceType());
+        $this->assertEquals('10000000000000', $fundAccount->getMerchantId());
+
+        /** @var \RZP\Models\WalletAccount\Entity $walletAccount */
+        $walletAccount = $this->getDbEntityById('wallet_account', '1WalletAccount', 'live');
+        $this->assertNotNull($walletAccount);
+        $this->assertEquals($timestamp, $walletAccount->getCreatedAt());
+        $this->assertEquals($timestamp, $walletAccount->getUpdatedAt());
+        $this->assertEquals("1WalletAccount", $walletAccount->getId());
+        $this->assertEquals("10000000000000", $walletAccount->getMerchantId());
+        $this->assertEquals("9090909090", $walletAccount->getPhone());
+        $this->assertEquals('test@rzp.com', $walletAccount->getEmail());
+        $this->assertEquals("Test", $walletAccount->getName());
+        $this->assertEquals('amazonpay', $walletAccount->getProvider());
+        $this->assertEquals('contact', $walletAccount->getEntityType());
+        $this->assertEquals('contact1111111', $walletAccount->getEntityId());
+    }
+
+    public function testRxFundAccountDualWriteForCardHandle()
+    {
+        $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        (new RxFundAccountDualWrite([
+                                        'id'             => '100fundAccount',
+                                        'account_id'     => '100CardAccount',
+                                        'account_type'   => 'card',
+                                        'source_type'    => 'contact',
+                                        'source_id'      => '1000000contact',
+                                        'card' => [
+                                            'id'          => '100CardAccount',
+                                            'merchant_id' => '10000000000000',
+                                            "last4"       => "1234",
+                                            "length"      => "14",
+                                            "network"     => "Visa",
+                                            "type"        => "credit",
+                                            "sub_type"    => "consumer",
+                                            "issuer"      => "ICIC",
+                                            "vault"       => "rzpvault",
+                                            "vault_token" => "123456789",
+                                            "country"     => "IN",
+                                            'created_at'  => $timestamp,
+                                            'updated_at'  => $timestamp,
+                                        ],
+                                        'created_at'     => $timestamp,
+                                        'updated_at'     => $timestamp,
+                                        'merchant_id'    => '10000000000000',
+                                        'active'         => true,
+                                        'unique_hash'    => '0c9f524dafdc6258c085d0f1dcdbd2d1',
+                                    ]))->handle();
+
+        /** @var FundAccount\Entity $fundAccount */
+        $fundAccount = $this->getDbEntityById('fund_account', '100fundAccount', 'live');
+        $this->assertNotNull($fundAccount);
+        $this->assertEquals($timestamp, $fundAccount->getCreatedAt());
+        $this->assertEquals($timestamp, $fundAccount->getUpdatedAt());
+        $this->assertEquals('1000000contact', $fundAccount->getSourceId());
+        $this->assertEquals('contact', $fundAccount->getSourceType());
+        $this->assertEquals('10000000000000', $fundAccount->getMerchantId());
+
+        /** @var Entity $cardAccount */
+        $cardAccount = $this->getDbEntityById('card', '100CardAccount', 'live');
+        $this->assertNotNull($cardAccount);
+        $this->assertEquals($timestamp, $cardAccount->getCreatedAt());
+        $this->assertEquals($timestamp, $cardAccount->getUpdatedAt());
+        $this->assertEquals("100CardAccount", $cardAccount->getId());
+        $this->assertEquals("10000000000000", $cardAccount->getMerchantId());
+        $this->assertEquals("1234", $cardAccount->getLast4());
+        $this->assertEquals('14', $cardAccount->getLength());
+        $this->assertEquals("Visa", $cardAccount->getNetwork());
+        $this->assertEquals('credit', $cardAccount->getType());
+        $this->assertEquals('consumer', $cardAccount->getSubType());
+        $this->assertEquals('ICIC', $cardAccount->getIssuer());
+        $this->assertEquals('rzpvault', $cardAccount->getVault());
+        $this->assertEquals('123456789', $cardAccount->getVaultToken());
+        $this->assertEquals('IN', $cardAccount->getCountry());
     }
 }

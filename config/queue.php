@@ -858,6 +858,14 @@ return [
         'live'       => env('AWS_OPENWALLET_CUSTOMER_TRANSFER_LIVE_QUEUE'),
     ],
 
+    'rx_contact_dual_write' => [
+        'live'       => env('AWS_RX_CONTACT_DUAL_WRITE_LIVE_QUEUE'),
+    ],
+
+    'rx_fund_account_dual_write' => [
+        'live'       => env('AWS_RX_FUND_ACCOUNT_DUAL_WRITE_LIVE_QUEUE'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Raw SQS Mappings
@@ -892,6 +900,9 @@ return [
         env('AWS_PAYOUT_SERVICE_DUAL_WRITE_DIRECT_PUSH_LIVE_QUEUE') => 'RZP\\Jobs\\PayoutServiceDualWriteDirectPush',
 
         env('AWS_X_BALANCE_DUAL_WRITE_LIVE_QUEUE') => 'RZP\\Jobs\\XBalanceDualWrite',
+
+        env('AWS_RX_CONTACT_DUAL_WRITE_LIVE_QUEUE') => 'RZP\\Jobs\\RxContactDualWrite',
+        env('AWS_RX_FUND_ACCOUNT_DUAL_WRITE_LIVE_QUEUE') => 'RZP\\Jobs\\RxFundAccountDualWrite',
     ],
 
     'fifo_sqs_mappings'=>[

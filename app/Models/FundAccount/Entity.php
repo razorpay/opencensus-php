@@ -757,4 +757,13 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::NOTES, $notes);
     }
+
+    public function setIgnoreRelationsForRxDualWrite()
+    {
+        $this->ignoredRelations = [
+            self::CUSTOMER,
+            self::CONTACT,
+            self::SOURCE,
+        ];
+    }
 }

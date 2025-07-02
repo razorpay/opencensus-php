@@ -59,6 +59,10 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
 
     const FA_VPA_VALIDATION                           = 'fa_vpa_validation';
 
+    const RX_CONTACT_DUAL_WRITE                       = 'rx_contact_dual_write';
+
+    const RX_FUND_ACCOUNT_DUAL_WRITE                  = 'rx_fund_account_dual_write';
+
     protected $shouldThrowErrorOnFailure = [
         self::PAYOUT_POST_CREATE_PROCESS,
         self::PAYOUT_POST_CREATE_PROCESS_LOW_PRIORITY,
@@ -80,6 +84,8 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
         self::QR_STATUS_CHECK,
         self::FAV_QUEUE_FOR_FTS,
         self::FA_VPA_VALIDATION,
+        self::RX_CONTACT_DUAL_WRITE,
+        self::RX_FUND_ACCOUNT_DUAL_WRITE,
     ];
 
     /**
