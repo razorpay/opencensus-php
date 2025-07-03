@@ -17,12 +17,17 @@ jobs:
 
     runs-on: [k8s-runner, linux-amd64]
 
+    env:
+      BASE_REF: ${{ github.base_ref }}
+      HEAD_REF: ${{ github.head_ref }}
+      RELEASE_BRANCH: ${{ matrix.release_branch }}
+
     steps:
       - name: Check base branch and source branch
         id: check_branches
         run: |
-          if [[ "${{ github.base_ref }}" == "main" || "${{ github.base_ref }}" == "master" ]] && [[ "${{ github.head_ref }}" == "${{ matrix.release_branch }}" ]]; then
-            echo "Merging from '${{ matrix.release_branch }}' branch to 'main/master' is NOT allowed."
+          if [[ "$BASE_REF" == "main" || "$BASE_REF" == "master" ]] && [[ "$HEAD_REF" == "$RELEASE_BRANCH" ]]; then
+            echo "Merging from '$RELEASE_BRANCH' branch to 'main/master' is NOT allowed."
             echo "is_restricted=true" >> $GITHUB_OUTPUT
           else
             echo "is_restricted=false" >> $GITHUB_OUTPUT
@@ -31,10 +36,10 @@ jobs:
       - name: Fail if merge is restricted
         if: steps.check_branches.outputs.is_restricted == 'true'
         run: |
-          echo "Error: Merging from '${{ matrix.release_branch }}' to 'main/master' is not allowed."
+          echo "Error: Merging from '$RELEASE_BRANCH' to 'main/master' is not allowed."
           exit 1
 
       - name: Allow merge if not restricted
         if: steps.check_branches.outputs.is_restricted == 'false'
         run: |
-          echo "Merge from '${{ github.head_ref }}' to '${{ github.base_ref }}' is allowed."
+          echo "Merge from '$HEAD_REF' to '$BASE_REF' is allowed."

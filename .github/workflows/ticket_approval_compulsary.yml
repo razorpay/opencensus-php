@@ -21,10 +21,12 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
       - name: List Changed Files
+        env:
+          PR_URL: ${{ github.event.pull_request.url }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
-          PR_URL="${{ github.event.pull_request.url }}"
           echo "Extracting files changed in PR $PR_URL"
-          FILES_CHANGED=$(curl -s -H "Authorization: Bearer ${{ github.token }}" -H "Accept: application/vnd.github.v3.raw" "$PR_URL/files" | jq -r '[.[] | .filename]')
+          FILES_CHANGED=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3.raw" "$PR_URL/files" | jq -r '[.[] | .filename]')
           FILES_CHANGED_JSON=$(echo $FILES_CHANGED | jq -c .)
           echo "changes_in_cases_folder=false" >> $GITHUB_ENV
           echo "List of files changed:"
@@ -68,7 +70,6 @@ jobs:
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          PR_TITLE="$PR_TITLE"
           regex='CDT-[0-9]+'
           devrevRegex='TKT-[0-9]+'
           extracted_id=$(echo "$PR_TITLE" | grep -ioE "$regex" | head -n 1)
