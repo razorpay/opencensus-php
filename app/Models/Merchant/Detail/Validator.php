@@ -962,9 +962,9 @@ class Validator extends Base\Validator
             return;
         }
 
-        $merchantCountry = strtolower($this->entity->merchant != null ? $this->entity->merchant->getCountry() : Country::IN);  
+        $merchantCountry = strtolower($this->entity->merchant != null ? $this->entity->merchant->getCountry() : Country::IN);
 
-        if ($this->entity === null || $this->entity->merchant === null){    
+        if ($this->entity === null || $this->entity->merchant === null){
             $merchantCountry = Utility::getRowMerchantCountry();
         }
 
@@ -1205,7 +1205,7 @@ class Validator extends Base\Validator
 
     public function validateBankBranchIfsc($attribute, $value)
     {
-        $merchantCountry = strtolower($this->entity->merchant != null ? $this->entity->merchant->getCountry() : Country::IN);  
+        $merchantCountry = strtolower($this->entity->merchant != null ? $this->entity->merchant->getCountry() : Country::IN);
 
         if ($this->entity === null || $this->entity->merchant === null){
             $merchantCountry = Utility::getRowMerchantCountry();
@@ -1222,8 +1222,8 @@ class Validator extends Base\Validator
     }
 
     public function validateBankBranchCode($input)
-    {   
-        $merchantCountry = strtolower($this->entity->merchant != null ? $this->entity->merchant->getCountry() : Country::IN);  
+    {
+        $merchantCountry = strtolower($this->entity->merchant != null ? $this->entity->merchant->getCountry() : Country::IN);
 
         if ($this->entity === null || $this->entity->merchant === null){
             $merchantCountry = Utility::getRowMerchantCountry();
@@ -1241,7 +1241,7 @@ class Validator extends Base\Validator
         }
 
         else if ($merchantCountry === Country::MY){
-            
+
             if(isset( $input[Entity::BANK_BRANCH_CODE] ) === true){
 
                 if (Utility::isValidMalaysianBIC($input[Entity::BANK_BRANCH_CODE]) === false)
@@ -2305,7 +2305,8 @@ class Validator extends Base\Validator
         }
 
         if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED
-                or $input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_MCC_PENDING)
+                or $input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_MCC_PENDING
+                or $input[Entity::ACTIVATION_STATUS] === Status::EDD_PENDING)
             and (new Core())->hasRiskTags($merchant) === true
             and $merchant->isLinkedAccount() === false
         )

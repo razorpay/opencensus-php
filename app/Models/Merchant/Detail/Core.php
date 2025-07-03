@@ -10,6 +10,7 @@ use Lib\PhoneBook;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Country;
+use RZP\Error\PublicErrorDescription;
 use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\SplitzConstant;
@@ -4462,6 +4463,10 @@ class Core extends Base\Core
             }
         }
 
+        if ($input[Entity::ACTIVATION_STATUS] === Status::EDD_PENDING) {
+            $this->runAllMerchantPreActivationValidations($merchant, $input);
+        }
+
         if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED or
             $input[Entity::ACTIVATION_STATUS] === Status::KYC_QUALIFIED_UNACTIVATED or
             $input[Entity::ACTIVATION_STATUS] === Status::EDD_PENDING)
@@ -5030,6 +5035,66 @@ class Core extends Base\Core
         $this->pushCrossBorderSegmentEventIfApplicable($merchant, $properties);
 
         return $merchantDetails;
+    }
+
+    /**
+     * Validation function that performs all critical pre-activation validations.
+     * This should be called before setting merchant status to EDD_PENDING to ensure
+     * the merchant will be ready for activation once EDD is cleared.
+     *
+     * @param Merchant\Entity $merchant
+     * @param array $input - Optional input data for validation context
+     *
+     * @throws BadRequestValidationFailureException
+     * @throws BadRequestException
+     * @throws Exception
+     */
+
+    public function runAllMerchantPreActivationValidations(
+        Merchant\Entity $merchant, array $input = []
+    ): void {
+        $merchantDetails = $merchant->merchantDetail;
+        $this->trace->info(TraceCode::MERCHANT_PRE_ACTIVATION_VALIDATION_START, [
+            'merchant_id'       => $merchant->getId(),
+            'activation_status' => $merchantDetails->getActivationStatus(),
+        ]);
+
+        try {
+            if ((new Detail\Core)->isMalaysianMerchant($merchant) === false)
+            {
+                (new Validator())->validateRiskTags($input, $merchant);
+                $merchant->getValidator()->validateBeforeActivate();
+            }
+
+            $this->validatePaymentMethodsAndPricing($merchant);
+
+            if ($merchantDetails->hasBankAccountDetails() === false) {
+                throw new BadRequestValidationFailureException(
+                    PublicErrorDescription::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
+                    'bank_account',
+                    ['merchant_id' => $merchant->getId()]
+                );
+            }
+
+            $this->trace->info(TraceCode::MERCHANT_PRE_ACTIVATION_VALIDATION_SUCCESS, [
+                'merchant_id' => $merchant->getId()
+            ]);
+        } catch (\Exception $e) {
+            $this->trace->error(TraceCode::MERCHANT_PRE_ACTIVATION_VALIDATION_FAILED, [
+                'merchant_id' => $merchant->getId(),
+                'error' => $e->getMessage(),
+                'error_code' => $e->getCode()
+            ]);
+            throw $e;
+        }
+    }
+
+    protected function validatePaymentMethodsAndPricing(Merchant\Entity $merchant): void
+    {
+            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+            $methodCore = new Merchant\Methods\Core;
+            $methodCore->checkCategorySubcategoryAndEnableEmi($merchant, $methods);
+            $methodCore->checkPricing($merchant, $methods, true);
     }
 
     private function pushCrossBorderSegmentEventIfApplicable(MerchantEntity $merchant, $properties)
