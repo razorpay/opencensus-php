@@ -3478,7 +3478,8 @@ class Gateway
         self::BILLDESK_OPTIMIZER,
         self::CCAVENUE,
         self::OPTIMIZER_RAZORPAY,
-        self::EASEBUZZ_OPTIMIZER
+        self::EASEBUZZ_OPTIMIZER,
+        self::WALLET_AMAZONPAY
     ];
 
     public static $immediateVerifyGateways = [
