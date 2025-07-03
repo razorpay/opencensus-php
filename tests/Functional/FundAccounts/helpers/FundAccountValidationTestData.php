@@ -785,7 +785,7 @@ return [
         ],
     ],
 
-    'testCreateFaOfTypeBankAndSendRequestToFavService' => [
+    'testCreateFaOfTypeBankAndSendRequestToFavService_Composite' => [
         'request' => [
             'url'     => '/fund_accounts/validations',
             'method'  => 'post',
@@ -806,7 +806,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'=> 'fav_00000000000001',
+                'id'    => 'fav_00000000000001',
                 'entity'=> 'fund_account.validation',
                 'status'=> 'created',
                 'validation_results'=> [
@@ -816,7 +816,7 @@ return [
                     'name_match_score'=> null
                 ],
                 'status_details'=> [
-                    'description'=> 'Validation request is created',
+                    'description'=> 'validation request is created',
                     'source'=> 'internal',
                     'reason'=> 'validation_request_created'
                 ],
@@ -826,17 +826,15 @@ return [
                     'random_key_2'=> 'Tea. Earl Grey. Hot.'
                 ],
                 'fund_account'=> [
-                    'id'=> 'fa_00000000000001',
                     'entity'=> 'fund_account',
                     'account_type'=> 'bank_account',
                     'bank_account'=> [
                         'name'=> 'Gaurav Kumar',
-                        'bank_name'=> 'HDFC',
+                        'bank_name'=> 'HDFC Bank',
                         'ifsc'=> 'HDFC0000053',
                         'account_number'=> '765432123456789'
                     ],
                     'active'=> true,
-                    'created_at'=> 1567064019
                 ]
             ],
         ],
@@ -864,15 +862,11 @@ return [
             'url'     => '/fund_accounts/validations_internal/pennydrop',
             'method'  => 'POST',
             'content' => [
-                'fav_id' => '1234567890',
-                'amount' => 1000.00,
+                'id' => '12345678901234',
+                'amount' => 100.00,
                 'merchant_id' => '10000000000000',
-                'bank_account' => [
-                    'id' => '987654321',
-                    'ifsc_code' => 'HDFC0000053',
-                    'account_type' => 'savings',
-                    'account_number' => '765432123456789',
-                    'beneficiary_name' => 'Gaurav'
+                'fund_account' => [
+                    'id' => '',
                 ]
             ],
         ],
@@ -954,7 +948,7 @@ return [
                     'name_match_score'=> null
                 ],
                 'status_details'=> [
-                    'description'=> 'Validation request is created',
+                    'description'=> 'validation request is created',
                     'source'=> 'internal',
                     'reason'=> 'validation_request_created'
                 ],
@@ -977,7 +971,7 @@ return [
         ],
     ],
 
-    'testCreateFaAndContactOfTypeBankAndSendRequestToFavService' => [
+    'testCreateFavInNewService_WithContact_CreatedState_Composite' => [
         'request' => [
             'url'     => '/fund_accounts/validations',
             'method'  => 'post',
@@ -1000,7 +994,6 @@ return [
                             'notes_key_2'=>'Tea, Earl Grey... decaf.'
                         ]
                     ]
-
                 ],
                 Validation::SOURCE_ACCOUNT_NUMBER => "2224440041626905",
                 Validation::VALIDATION_TYPE => "optimized",
@@ -1020,7 +1013,7 @@ return [
                     'name_match_score'=> null
                 ],
                 'status_details'=> [
-                    'description'=> 'Validation request is created',
+                    'description'=> 'validation request is created',
                     'source'=> 'internal',
                     'reason'=> 'validation_request_created'
                 ],
@@ -1030,19 +1023,16 @@ return [
                     'random_key_2'=> 'Tea. Earl Grey. Hot.'
                 ],
                 'fund_account'=> [
-                    'id'=> 'fa_00000000000001',
                     'entity'=> 'fund_account',
                     'account_type'=> 'bank_account',
                     'bank_account'=> [
                         'name'=> 'Gaurav Kumar',
-                        'bank_name'=> 'HDFC',
+                        'bank_name'=> 'HDFC Bank',
                         'ifsc'=> 'HDFC0000053',
                         'account_number'=> '765432123456789'
                     ],
                     'active'=> true,
-                    'created_at'=> 1567064019,
                     'contact'=> [
-                        'id'=> 'cont_00000000000001',
                         'entity'=> 'contact',
                         'name'=> 'Gaurav Kumar',
                         'email'=> 'gaurav.kumar@example.com',
@@ -1050,13 +1040,169 @@ return [
                         'type'=> 'employee',
                         'reference_id'=> 'Acme Contact ID 12345',
                         'active'=> true,
-                        'created_at'=> 1567064019,
                         'notes'=> [
                             'notes_key_1'=> 'Tea, Earl Grey, Hot',
                             'notes_key_2'=> 'Tea, Earl Grey... decaf.'
                         ]
                     ]
                 ]
+            ],
+        ],
+    ],
+
+    'testCreateFavInNewService_WithoutContact_CreatedState_Composite' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::BANK_ACCOUNT => [
+                        BankAccount::NAME => 'Gaurav Kumar',
+                        BankAccount::IFSC => 'HDFC0000053',
+                        BankAccount::ACCOUNT_NUMBER => '765432123456789'
+                    ]
+                ],
+                Validation::SOURCE_ACCOUNT_NUMBER => "2224440041626905",
+                Validation::VALIDATION_TYPE => "optimized",
+                Validation::REFERENCE_ID => "112233",
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'=> 'fav_00000000000001',
+                'entity'=> 'fund_account.validation',
+                'status'=> 'created',
+                'validation_results'=> [
+                    'account_status'=> null,
+                    'registered_name'=> null,
+                    'details'=> null,
+                    'name_match_score'=> null
+                ],
+                'status_details'=> [
+                    'description'=> 'validation request is created',
+                    'source'=> 'internal',
+                    'reason'=> 'validation_request_created'
+                ],
+                'reference_id'=> '112233',
+                'notes'=> [
+                    'random_key_1'=> 'Make it so.',
+                    'random_key_2'=> 'Tea. Earl Grey. Hot.'
+                ],
+                'fund_account'=> [
+                    'entity'=> 'fund_account',
+                    'account_type'=> 'bank_account',
+                    'bank_account'=> [
+                        'name'=> 'Gaurav Kumar',
+                        'bank_name'=> 'HDFC Bank',
+                        'ifsc'=> 'HDFC0000053',
+                        'account_number'=> '765432123456789'
+                    ],
+                    'active'=> true,
+                ]
+            ],
+        ],
+    ],
+
+    'testCreateFavInNewService_WithContact_CreatedState_NonComposite' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::AMOUNT       => 100,
+                Validation::CURRENCY     => 'INR',
+                Validation::NOTES        => [
+                    'random_key_1'=> 'Make it so.',
+                    'random_key_2'=> 'Tea. Earl Grey. Hot.'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'           => 'fav_00000000000001',
+                'entity'       => 'fund_account.validation',
+                'created_at'   => 1567064019,
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'bank_account',
+                    'active'       => true,
+                    'details'      => [
+                        'ifsc'           => 'SBIN0007105',
+                        'bank_name'      => 'State Bank of India',
+                        'name'           => 'Amit M',
+                        'account_number' => '111000111',
+                    ],
+                    'bank_account' => [
+                        'ifsc'           => 'SBIN0007105',
+                        'bank_name'      => 'State Bank of India',
+                        'name'           => 'Amit M',
+                        'account_number' => '111000111',
+                    ],
+                ],
+                'status'       => 'created',
+                'amount'       => 100,
+                'currency'     => 'INR',
+                'notes'        => [
+                    'random_key_1'=> 'Make it so.',
+                    'random_key_2'=> 'Tea. Earl Grey. Hot.'
+                ],
+                'results'      => [
+                    'account_status'  => null,
+                    'registered_name' => null,
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateFavInNewService_WithoutContact_CreatedState_NonComposite' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::AMOUNT       => 100,
+                Validation::CURRENCY     => 'INR',
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account.validation',
+                'created_at'=> 1567064019,
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'bank_account',
+                    'active'       => true,
+                    'details'      => [
+                        'ifsc'           => 'SBIN0007105',
+                        'bank_name'      => 'State Bank of India',
+                        'name'           => 'Amit M',
+                        'account_number' => '111000111',
+                    ],
+                    'bank_account' => [
+                        'ifsc'           => 'SBIN0007105',
+                        'bank_name'      => 'State Bank of India',
+                        'name'           => 'Amit M',
+                        'account_number' => '111000111',
+                    ],
+                ],
+                'status'       => 'created',
+                'amount'       => 100,
+                'currency'     => 'INR',
+                'notes'        => [],
+                'utr'          => null,
+                'results'      => [
+                    'account_status'  => null,
+                    'registered_name' => null,
+                ],
             ],
         ],
     ],
@@ -1102,7 +1248,7 @@ return [
                     'name_match_score'=> null
                 ],
                 'status_details'=> [
-                    'description'=> 'Validation request is created',
+                    'description'=> 'validation request is created',
                     'source'=> 'internal',
                     'reason'=> 'validation_request_created'
                 ],
@@ -2252,16 +2398,107 @@ return [
         ],
     ],
 
-
-    'testGetFavByIdFromMicroservice' => [
+    'testGetFavByIdFromMicroservice_Composite' => [
         'request'  => [
             'url'    => '/fund_accounts/validations/%s',
             'method' => 'GET'
         ],
         'response' => [
             'content' => [
+                'id'     => 'fav_00000000000001',
+                'reference_id' => '112233',
+                'entity' => 'fund_account.validation',
+                'fund_account' => [
+                    'entity' => 'fund_account',
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'ifsc' => 'SBIN0007105',
+                        'bank_name' => 'State Bank of India',
+                        'name' => 'Amit M',
+                        'notes' => [],
+                        'account_number' => '111000111'
+                    ],
+                    'batch_id' => null,
+                    'active' => true,
+                ],
+                'notes' => [
+                    'random_key_1'=> 'Make it so.',
+                    'random_key_2'=> 'Tea. Earl Grey. Hot.'
+                ],
+                'status' => 'completed',
+                'validation_results' => [
+                    'account_status' => 'active',
+                    'registered_name' => 'Test User',
+                    'name_match_score' => '95.5',
+                    'details' => 'The beneficiary account is valid'
+                ],
+                'status_details' => [
+                    'description' => 'validation request is completed',
+                    'source' => 'beneficiary_bank',
+                    'reason' => 'validation_completed'
+                ]
+            ]
+        ],
+    ],
 
+    'testGetFavByIdFromMicroservice_NonComposite' => [
+        'request'  => [
+            'url'    => '/fund_accounts/validations/%s',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account.validation',
+                'created_at'=> 1567064019,
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'bank_account',
+                    'active'       => true,
+                    'details'      => [
+                        'ifsc'           => 'SBIN0007105',
+                        'bank_name'      => 'State Bank of India',
+                        'name'           => 'Amit M',
+                        'account_number' => '111000111',
+                    ],
+                    'bank_account' => [
+                        'ifsc'           => 'SBIN0007105',
+                        'bank_name'      => 'State Bank of India',
+                        'name'           => 'Amit M',
+                        'account_number' => '111000111',
+                    ],
+                ],
+                'status'       => 'completed',
+                'amount'       => 200,
+                'currency'     => 'INR',
+                'notes'        => [
+                    'random_key_1'=> 'Make it so.',
+                    'random_key_2'=> 'Tea. Earl Grey. Hot.'
+                ],
+                'utr'          => null,
+                'results'      => [
+                    'account_status'  => 'active',
+                    'registered_name' => 'Test User',
+                ],
             ],
+        ],
+    ],
+
+    'testGetFavByIdFromMicroservice_NotFoundError' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations/%s',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
 
@@ -2657,4 +2894,218 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
         ],
     ],
+
+    'testSendWebhookToMerchantFromFavService_Composite_CompletedState' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations_internal/webhook',
+            'method'  => 'post',
+            'content' => [
+                'id' => 'fav_00000000000001',
+                'type' => 'composite',
+                'merchant_id' => '10000000000000',
+                'status' => 'completed',
+                'amount' => 100,
+                'currency' => 'INR',
+                'error_code' => null,
+                'notes' => [
+                    'random_key_1'=> 'Make it so.',
+                    'random_key_2'=> 'Tea. Earl Grey. Hot.'
+                ],
+                'account_status' => 'active',
+                'registered_name' => 'Test User',
+                'validation_method' => 'citi_penniless',
+                'name_match_score' => 80.23,
+                'reference_id' => 'ref_123456',
+                'utr' => null,
+                'created_at' => 1234567890,
+                'fund_account' => [
+                    'id' => '',
+                    'type' => 'bank_account',
+                    'bank_account' => [
+                        'ifsc' => 'RAZR0000001',
+                        'account_number' => '1234567890',
+                        'name' => 'Test User'
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+                'message' => 'Webhook triggered successfully'
+            ],
+        ],
+    ],
+
+    'testSendWebhookToMerchantFromFavService_Composite_FailedState' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations_internal/webhook',
+            'method'  => 'post',
+            'content' => [
+                'id' => 'fav_00000000000001',
+                'type' => 'composite',
+                'merchant_id' => '10000000000000',
+                'status' => 'failed',
+                'amount' => 100,
+                'currency' => 'INR',
+                'error_code' => 'BAD_REQUEST_ACCOUNT_VALIDATION_NOT_ENOUGH_BALANCE_BANKING',
+                'notes' => [
+                    'random_key_1'=> 'Make it so.',
+                    'random_key_2'=> 'Tea. Earl Grey. Hot.'
+                ],
+                'account_status' => null,
+                'registered_name' => null,
+                'validation_method' => 'citi_penniless',
+                'name_match_score' => null,
+                'reference_id' => 'ref_123456',
+                'utr' => null,
+                'created_at' => 1234567890,
+                'fund_account' => [
+                    'id' => '',
+                    'type' => 'bank_account',
+                    'bank_account' => [
+                        'ifsc' => 'RAZR0000001',
+                        'account_number' => '1234567890',
+                        'name' => 'Test User'
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+                'message' => 'Webhook triggered successfully'
+            ],
+        ],
+    ],
+
+    'testSendWebhookToMerchantFromFavService_NonComposite_CompletedState' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations_internal/webhook',
+            'method'  => 'post',
+            'content' => [
+                'id' => 'fav_00000000000001',
+                'type' => 'non_composite',
+                'merchant_id' => '10000000000000',
+                'status' => 'completed',
+                'amount' => 100,
+                'currency' => 'INR',
+                'error_code' => null,
+                'notes' => [
+                    'random_key_1'=> 'Make it so.',
+                    'random_key_2'=> 'Tea. Earl Grey. Hot.'
+                ],
+                'account_status' => 'valid',
+                'registered_name' => 'Test User',
+                'validation_method' => 'pennydrop',
+                'name_match_score' => 80.23,
+                'reference_id' => 'ref_123456',
+                'utr' => 1245,
+                'created_at' => 1234567890,
+                'fund_account' => [
+                    'id' => '',
+                    'type' => 'bank_account',
+                    'bank_account' => [
+                        'ifsc' => 'RAZR0000001',
+                        'account_number' => '1234567890',
+                        'name' => 'Test User'
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+                'message' => 'Webhook triggered successfully'
+            ],
+        ],
+    ],
+
+    'testSendWebhookToMerchantFromFavService_NonComposite_FailedState' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations_internal/webhook',
+            'method'  => 'post',
+            'content' => [
+                'id' => 'fav_00000000000001',
+                'type' => 'non_composite',
+                'merchant_id' => '10000000000000',
+                'status' => 'failed',
+                'amount' => 100,
+                'currency' => 'INR',
+                'error_code' => null,
+                'notes' => [
+                    'random_key_1'=> 'Make it so.',
+                    'random_key_2'=> 'Tea. Earl Grey. Hot.'
+                ],
+                'account_status' => null,
+                'registered_name' => null,
+                'validation_method' => 'pennydrop',
+                'name_match_score' => null,
+                'reference_id' => 'ref_123456',
+                'utr' => null,
+                'created_at' => 1234567890,
+                'fund_account' => [
+                    'id' => '',
+                    'type' => 'bank_account',
+                    'bank_account' => [
+                        'ifsc' => 'RAZR0000001',
+                        'account_number' => '1234567890',
+                        'name' => 'Test User'
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+                'message' => 'Webhook triggered successfully'
+            ],
+        ],
+    ],
+
+    'testFavCitiWebhookForwardToNewService' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations/webhook/citi',
+            'method'  => 'post',
+            'headers' => [
+                'xorgtoken' => 'RANDOM_CITI_WEBHOOK_SECRET'
+            ],
+            'content' => [
+                'id' => 'fav_00000000000001',
+                'type' => 'non_composite',
+                'merchant_id' => '10000000000000',
+                'status' => 'failed',
+                'amount' => 100,
+                'currency' => 'INR',
+                'error_code' => null,
+                'notes' => [
+                    'random_key_1'=> 'Make it so.',
+                    'random_key_2'=> 'Tea. Earl Grey. Hot.'
+                ],
+                'account_status' => null,
+                'registered_name' => null,
+                'validation_method' => 'pennydrop',
+                'name_match_score' => null,
+                'reference_id' => 'ref_123456',
+                'utr' => null,
+                'created_at' => 1234567890,
+                'fund_account' => [
+                    'id' => '',
+                    'type' => 'bank_account',
+                    'bank_account' => [
+                        'ifsc' => 'RAZR0000001',
+                        'account_number' => '1234567890',
+                        'name' => 'Test User'
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'  => 'success',
+                'message' => 'Webhook processed successfully'
+            ],
+        ],
+    ],
+
 ];

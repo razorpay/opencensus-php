@@ -3,6 +3,7 @@
 namespace RZP\Models\FundAccount\Validation;
 
 use Config;
+use RZP\Models\FundAccount\Type;
 
 class Constants
 {
@@ -26,6 +27,8 @@ class Constants
     const TYPE_PENNYDROP                    = "pennydrop";
 
     const TYPE_PENNILESS                    = "penniless";
+
+    const TYPE_CITI_PENNILESS               = "citi_penniless";
 
     const REASON_COMPLETED                  = "validation_completed";
 
@@ -56,6 +59,23 @@ class Constants
     const CREDENTIALS_VAULT_NAMESPACE = "nodal_certs";
 
     const RAZORPAYX_NODAL_CERTS     = 'razorpayx_nodal_certs';
+
+    const COMPOSITE                 = 'composite';
+
+    const ALLOWED_VALIDATION_TYPE = [
+        self::TYPE_PENNILESS,
+        self::TYPE_PENNYDROP,
+        self::TYPE_OPTIMIZED
+    ];
+
+    const ALLOWED_ACCOUNT_TYPE_IN_NEW_SERVICE = [
+        Type::BANK_ACCOUNT
+    ];
+
+    const ALLOWED_VALIDATION_TYPE_IN_NEW_SERVICE = [
+        self::TYPE_PENNILESS,
+        self::TYPE_OPTIMIZED,
+    ];
 
     protected $slackSettings;
 

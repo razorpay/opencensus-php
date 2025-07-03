@@ -317,6 +317,10 @@ return [
         'org_token' => env('RBL_VA_SECRET'),
     ],
 
+    'citi_webhook'    => [
+        'org_token' => env('CITI_WEBHOOK_SECRET'),
+    ],
+
     'ibl_va'    => [
         'org_token' => env('IBL_VA_SECRET'),
         'secret'    => env('IBL_VA_SYMM_KEY'),
@@ -2252,6 +2256,21 @@ return [
         'secret' => env('APP_IDP_SECRET'),
     ],
 
+    'fav_service' => [
+        'url'    => env('FAV_SERVICE_URL'),
+        'secret' => env('FAV_SERVICE_INTERNAL_APP_SECRET'),
+        'timeout' => env('FAV_SERVICE_TIMEOUT', 60),
+        'connect_timeout' => env('FAV_SERVICE_CONNECT_TIMEOUT', 10),
+        'live'   => [
+            'fav_key'    => env('FAV_SERVICE_AUTH_API_USERNAME_LIVE'),
+            'fav_secret' => env('FAV_SERVICE_AUTH_API_PASSWORD_LIVE')
+        ],
+        'test'   => [
+            'fav_key'    => env('FAV_SERVICE_AUTH_API_USERNAME_TEST'),
+            'fav_secret' => env('FAV_SERVICE_AUTH_API_PASSWORD_TEST')
+        ]
+    ],
+    
     'user_service' => [
         'secret' => env('USER_SERVICE_SECRET'),
     ]

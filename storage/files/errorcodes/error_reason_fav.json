@@ -6,6 +6,13 @@
       "description": "UPI validation failed. If the UPI ID is valid, please retry after sometime."
     }
   },
+  "INSUFFICIENT_BALANCE": {
+    "failed": {
+      "source": "internal",
+      "reason": "low_balance_failure",
+      "description": "validation failed due to low balance in your account."
+    }
+  },
   "TXN_REJECTED_BENE_BANK": {
     "failed": {
       "source": "beneficiary_bank",
@@ -706,6 +713,692 @@
       "source": "gateway",
       "reason": "gateway_down",
       "description": "Account Validation failed as the partner bank is facing technical issues. Please retry."
+    }
+  },
+  "INVALID_TRANSACTION": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Invalid transaction. Please retry."
+    }
+  },
+  "TRANSACTION_DEEMED_APPROVED": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Transaction is Deemed Approved. Final status awaited."
+    }
+  },
+  "UNABLE_TO_PROCESS": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Unable to process. Please retry."
+    }
+  },
+  "ACCOUNT_LIMIT_REACHED": {
+    "failed": {
+      "source": "business",
+      "reason": "transaction_limit_exceeded",
+      "description": "Beneficiary account limit reached. Please retry."
+    }
+  },
+  "PAYMENT_REQUEST_INVALID": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "Payment request invalid."
+    }
+  },
+  "BANK_OFFLINE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_offline",
+      "description": "Beneficiary bank is currently offline. Please retry."
+    }
+  },
+  "BANK_DECLINED_TRANSACTION": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Beneficiary bank declined transaction. Please retry."
+    }
+  },
+  "INVALID_MOBILE_NUMBER": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_beneficiary",
+      "description": "Beneficiary mobile number invalid."
+    }
+  },
+  "NRE_ACCOUNT_NOT_ALLOWED": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Beneficiary account is of type NRE and cannot receive funds."
+    }
+  },
+  "BANK_LIMIT_EXCEEDED": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "transaction_limit_exceeded",
+      "description": "Beneficiary bank limit with Clearing / NPCI exceeded."
+    }
+  },
+  "BANK_NOT_ENABLED_FOR_IMPS": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "imps_not_allowed",
+      "description": "Beneficiary bank not enabled for IMPS transaction to account (P2A)."
+    }
+  },
+  "FOREIGN_INWARD_REMITTANCE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Beneficiary bank sent invalid response as 'Foreign Inward Remittance for P2P only'."
+    }
+  },
+  "FRAUD_SUSPECTED": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "fraud_detected",
+      "description": "Beneficiary bank declined transaction since it triggered suspected fraud in their system."
+    }
+  },
+  "TRANSACTION_AMOUNT_EXCEEDS": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "transaction_limit_exceeded",
+      "description": "Beneficiary bank rejected with reason \"Transaction amount exceeds limits\"."
+    }
+  },
+  "CANNOT_ROUTE_TO_BANK": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Transaction cannot be routed to beneficiary bank."
+    }
+  },
+  "AMOUNT_LESS_THAN_ONE": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_amount",
+      "description": "Amount less than INR 1 not allowed under IMPS."
+    }
+  },
+  "AMOUNT_EXCEEDS_UPPER_LIMIT": {
+    "failed": {
+      "source": "business",
+      "reason": "amount_limit_exceeded",
+      "description": "Transaction exceeds upper limit for IMPS which is INR 5,00,000."
+    }
+  },
+  "UNABLE_TO_IDENTIFY_REFERENCE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_rejected",
+      "description": "Beneficiary bank unable to identify payment reference and declined transaction."
+    }
+  },
+  "INVALID_REMITTER_ACCOUNT": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_account",
+      "description": "Beneficiary bank declined transaction due to invalid remitter account number."
+    }
+  },
+  "BANK_DECLINED_DUE_TO_ERROR": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_technical_error",
+      "description": "Beneficiary bank declined transaction due to error."
+    }
+  },
+  "RISK_SCORE_DECLINE": {
+    "failed": {
+      "source": "internal",
+      "reason": "fraud_detected",
+      "description": "Suspected fraud, decline transactions declined basis risk score."
+    }
+  },
+  "MODEL_RISK_SCORE_DECLINE": {
+    "failed": {
+      "source": "internal",
+      "reason": "fraud_detected",
+      "description": "Suspected fraud, decline transactions declined based on model risk score."
+    }
+  },
+  "CURRENCY_CONVERSION_ERROR": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Currency conversion error. Please retry."
+    }
+  },
+  "VALIDATION_FAILURE": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Validation failure received for transaction message."
+    }
+  },
+  "TECHNICAL_FAILURE": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Technical failure received for transaction message. Please retry."
+    }
+  },
+  "AMOUNT_CAP_EXCEEDED": {
+    "failed": {
+      "source": "business",
+      "reason": "amount_limit_exceeded",
+      "description": "Amount CAP exceeded. Please retry."
+    }
+  },
+  "IMPROPER_TRANSACTION_FORMATION": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Formation of transaction improper."
+    }
+  },
+  "TRANSACTION_ID_MISMATCH": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Transaction ID is mismatched."
+    }
+  },
+  "VALIDATION_ERROR": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "VALIDATION ERROR."
+    }
+  },
+  "SYSTEM_EXCEPTION": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Clearing responded with System Exception."
+    }
+  },
+  "ILLEGAL_OPERATION": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Clearing responded with Illegal Operation."
+    }
+  },
+  "CREDENTIALS_NOT_PRESENT": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Clearing responded with Credentials not present."
+    }
+  },
+  "AMOUNT_CURRENCY_MISMATCH": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Amount or Currency mismatch."
+    }
+  },
+  "EXTERNAL_ERROR": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "External Error."
+    }
+  },
+  "ENCRYPTION_ERROR": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Encryption Error."
+    }
+  },
+  "CHECKSUM_FAIL": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Checksum fail."
+    }
+  },
+  "RISK_THRESHOLD_EXCEEDED": {
+    "failed": {
+      "source": "internal",
+      "reason": "fraud_detected",
+      "description": "RISK THRESHOLD EXCEEDED."
+    }
+  },
+  "BANK_NOT_REGISTERED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Bank is not registered."
+    }
+  },
+  "CREDIT_PAY_ACKNOWLEDGEMENT_NOT_RECEIVED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_timeout",
+      "description": "BANK REQUEST CREDIT PAY ACKNOWLEDGEMENT IS NOT RECEIVED."
+    }
+  },
+  "NO_RESPONSE_FROM_BENEFICIARY": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_timeout",
+      "description": "No response from Beneficiary. Please retry."
+    }
+  },
+  "TRANSACTION_FAILED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Transaction / credit has failed. Please retry."
+    }
+  },
+  "INITIAL_REQUEST_NOT_FOUND": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Initial request to credit not found by downstream participant."
+    }
+  },
+  "TRANSACTION_ID_NOT_PRESENT": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Transaction ID not present."
+    }
+  },
+  "REQUEST_MESSAGE_ID_NOT_PRESENT": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Request message ID is not present."
+    }
+  },
+  "ORGANIZATION_ID_MISMATCH": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Rejected due to mismatch of Organization ID."
+    }
+  },
+  "AMOUNT_MISMATCH": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Amount mismatch in original request and response."
+    }
+  },
+  "TIMEOUT_AT_BENEFICIARY": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_timeout",
+      "description": "Timeout at beneficiary/ credit side."
+    }
+  },
+  "BANK_THROTTLING_DECLINE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_throttled",
+      "description": "Beneficiary bank throttling decline. Please retry."
+    }
+  },
+  "HIGH_RESPONSE_TIMES": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_timeout",
+      "description": "Beneficiary bank facing high response times. Transactions being declined. Please retry."
+    }
+  },
+  "BANK_FORCED_OFFLINE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_offline",
+      "description": "Bank forced offline. Please retry."
+    }
+  },
+  "BANK_SCHEDULED_OFFLINE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_offline",
+      "description": "Beneficiary bank scheduled offline. Please retry."
+    }
+  },
+  "REMITTING_BANK_OFFLINE": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_down",
+      "description": "Remitting bank offline. Please retry."
+    }
+  },
+  "BANK_NON_RESPONSIVE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_timeout",
+      "description": "Bank non is currently responsive. Please retry."
+    }
+  },
+  "REMITTER_BANK_ISSUE": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Remitter bank issue. Please retry."
+    }
+  },
+  "BENEFICIARY_BANK_ISSUE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_technical_error",
+      "description": "Beneficiary bank issue. Please retry."
+    }
+  },
+  "PAYEE_BANK_THROTTLE_DECLINE": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "beneficiary_bank_throttled",
+      "description": "Payee bank throttle decline. Please retry."
+    }
+  },
+  "DECLINE_FROM_DOWNSTREAM": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Decline received from downstream participant. Please retry."
+    }
+  },
+  "REMITTING_BANK_NOT_REGISTERED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Remitting bank is currently not registered."
+    }
+  },
+  "TIMEOUT_OF_WAIT_TIME": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_timeout",
+      "description": "Timeout of wait time from clearing. Please retry."
+    }
+  },
+  "TRANSACTION_TYPE_NOT_SUPPORTED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Transaction type is not supported."
+    }
+  },
+  "CLEARING_DECLINED_FLAGGED": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Clearing declined transaction since it was flagged at their end."
+    }
+  },
+  "CONSENT_NOT_PRESENT": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "Consent not present."
+    }
+  },
+  "CONSENT_VALUE_NOT_Y": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "Cannot process request with Consent value other than Y."
+    }
+  },
+  "CONSENT_NAME_SHOULD_BE_CMREGISTRATION": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "Consent name should be CMREGISTRATION."
+    }
+  },
+  "IMPROPER_CONSENT_TYPE": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "Please input proper Consent type."
+    }
+  },
+  "REG_ID_DETAILS_NOT_PRESENT": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "RegIdDetails must be present."
+    }
+  },
+  "ID_NOT_PRESENT": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "Id must be present."
+    }
+  },
+  "ID_NAME_NOT_PRESENT": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "Id name must be present."
+    }
+  },
+  "ID_VALUE_NOT_PRESENT": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "Id value must be present."
+    }
+  },
+  "ID_NOT_ALPHANUMERIC": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "Id must consist of alphanumeric characters only Numeric ID."
+    }
+  },
+  "ID_LESS_THAN_6_DIGITS": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "Id must be larger than 6 digits."
+    }
+  },
+  "ID_LENGTH_10_TO_12": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "Id must not be of length 10/11/12."
+    }
+  },
+  "ID_LONGER_THAN_16_DIGITS": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "Id must be shorter than 16 digits."
+    }
+  },
+  "ID_STARTS_WITH_ZERO": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "Id must not start with 0."
+    }
+  },
+  "ID_ENDS_WITH_SAME_LAST_THREE": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "Id must not end with same last three digits."
+    }
+  },
+  "ID_CONTAINS_SAME_DIGITS": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "Id must not contain same digits."
+    }
+  },
+  "ID_NOT_PROPER_MOBILE_NUMBER": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "Id must consist of proper 10 digited mobile number."
+    }
+  },
+  "MAPPING_EXISTS": {
+    "failed": {
+      "source": "business",
+      "reason": "mapping_exists",
+      "description": "MAPPING EXISTS."
+    }
+  },
+  "MAPPING_DOES_NOT_EXIST": {
+    "failed": {
+      "source": "business",
+      "reason": "mapping_not_found",
+      "description": "MAPPING DOES NOT EXIST."
+    }
+  },
+  "MAPPING_BLOCKED": {
+    "failed": {
+      "source": "business",
+      "reason": "mapping_blocked",
+      "description": "MAPPING BLOCKED."
+    }
+  },
+  "MAPPING_INACTIVE": {
+    "failed": {
+      "source": "business",
+      "reason": "mapping_inactive",
+      "description": "MAPPING INACTIVE."
+    }
+  },
+  "VPA_MAPPED_TO_ANOTHER_MOBILE": {
+    "failed": {
+      "source": "business",
+      "reason": "vpa_mapped_to_another_mobile",
+      "description": "VPA MAPPED TO ANOTHER MOBILE."
+    }
+  },
+  "VPA_OF_DIFFERENT_ORG": {
+    "failed": {
+      "source": "business",
+      "reason": "vpa_of_different_org",
+      "description": "VPA OF DIFFERENT ORG."
+    }
+  },
+  "MAPPING_ACTIVATION_NOT_ALLOWED": {
+    "failed": {
+      "source": "business",
+      "reason": "mapping_activation_not_allowed",
+      "description": "MAPPING ACTIVATION NOT ALLOWED."
+    }
+  },
+  "PREV_VPA_NOT_SAME_AS_CACHE": {
+    "failed": {
+      "source": "business",
+      "reason": "prev_vpa_not_same_as_cache",
+      "description": "PREVVPA NOT SAME AS CACHE."
+    }
+  },
+  "CANNOT_ACTIVATE_DEREGISTERED_MOBILE": {
+    "failed": {
+      "source": "business",
+      "reason": "cannot_activate_deregistered_mobile",
+      "description": "CANNOT ACTIVATE DEREGISTERED MOBILE."
+    }
+  },
+  "COOLING_PERIOD_NOT_OVER": {
+    "failed": {
+      "source": "business",
+      "reason": "cooling_period_not_over",
+      "description": "COOLING PERIOD NOT OVER."
+    }
+  },
+  "TYPE_NOT_SUPPORTED_FOR_GETADD": {
+    "failed": {
+      "source": "business",
+      "reason": "type_not_supported",
+      "description": "TYPE NOT SUPPORTED FOR GETADD."
+    }
+  },
+  "TXN_SUBTYPE_ID_NO_REGIDDETAILS": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "TXN SUBTYPE ID NO REGIDDETAILS PRESENT."
+    }
+  },
+  "PROPER_TXN_SUBTYPE_NOT_PRESENT": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "PROPER TXN SUBTYPE NOT PRESENT."
+    }
+  },
+  "PROPER_TXN_TYPE_NOT_PRESENT": {
+    "failed": {
+      "source": "business",
+      "reason": "invalid_input",
+      "description": "PROPER TXN TYPE NOT PRESENT."
+    }
+  },
+  "MAPPING_AGAINST_VPA_ABSENT": {
+    "failed": {
+      "source": "business",
+      "reason": "mapping_not_found",
+      "description": "MAPPING AGAINST VPA ABSENT."
+    }
+  },
+  "CANNOT_PORT_NUMERIC_ID": {
+    "failed": {
+      "source": "business",
+      "reason": "cannot_port_numeric_id",
+      "description": "CANNOT PORT NUMERIC ID."
+    }
+  },
+  "CHECK_ACTION_NOT_PERMITTED": {
+    "failed": {
+      "source": "business",
+      "reason": "action_not_permitted",
+      "description": "CHECK ACTION NOT PERMITTED."
+    }
+  },
+  "ID_MAPPED_TO_DIFFERENT_VPA": {
+    "failed": {
+      "source": "business",
+      "reason": "id_mapped_to_different_vpa",
+      "description": "ID MAPPED TO DIFFERENT VPA."
+    }
+  },
+  "PORT_ACTION_PROHIBITED": {
+    "failed": {
+      "source": "business",
+      "reason": "port_action_prohibited",
+      "description": "PORT ACTION PROHIBITED."
+    }
+  },
+  "VAULT_INACCESSIBLE": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "VAULT INACCESSIBLE."
+    }
+  },
+  "CMID_ADDITION_PROHIBITED_BEYOND_THREE": {
+    "failed": {
+      "source": "business",
+      "reason": "cmid_limit_exceeded",
+      "description": "CMID ADDITION PROHIBITED BEYOND THREE."
     }
   }
 }

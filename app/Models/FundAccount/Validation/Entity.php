@@ -45,6 +45,7 @@ class Entity extends Base\PublicEntity
     const TAX                    = 'tax';
     const AMOUNT                 = 'amount';
     const CURRENCY               = 'currency';
+    const CREATED_AT             = 'created_at';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const BALANCE_ID             = 'balance_id';
     const ERROR_CODE             = 'error_code';
@@ -73,6 +74,10 @@ class Entity extends Base\PublicEntity
     const FUND_ACCOUNT_VALIDATION_IDS   = 'fund_account_validation_ids';
 
     const VALIDATION_TYPE        = 'validation_type';
+
+    const FAV_TYPE               = 'fav_type';
+
+    const VALIDATION_METHOD      = 'validation_method';
 
     const SOURCE_ACCOUNT_NUMBER  = 'source_account_number';
 
@@ -138,6 +143,7 @@ class Entity extends Base\PublicEntity
         self::ERROR_DESCRIPTION,
         self::CREATED_AT,
         self::UTR,
+        self::REFERENCE_ID
     ];
 
     protected $public = [
@@ -153,7 +159,8 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::VALIDATION_RESULTS,
         self::STATUS_DETAILS,
-        self::CONTACT
+        self::CONTACT,
+        self::REFERENCE_ID
     ];
 
     protected $publicSetters = [
@@ -166,7 +173,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::UTR,
-        self::CONTACT
+        self::CONTACT,
+        self::REFERENCE_ID
     ];
 
     protected $defaults = [
@@ -246,6 +254,11 @@ class Entity extends Base\PublicEntity
     public function setNameMatchScore(string $nameMatchScore = null)
     {
         $this->setAttribute(self::NAME_MATCH_SCORE, $nameMatchScore);
+    }
+
+    public function setReferenceId(string $referenceId = null): void
+    {
+        $this->setAttribute(self::REFERENCE_ID, $referenceId);
     }
 
     public function setSource(string $source = null)
@@ -387,6 +400,21 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::NOTES, $notes);
     }
 
+    public function setMerchantId(string $merchantId)
+    {
+        $this->setAttribute(self::MERCHANT_ID, $merchantId);
+    }
+
+    public function setFavType(string $favType)
+    {
+        $this->setAttribute(self::FAV_TYPE, $favType);
+    }
+
+    public function setValidationMethod(string $validationMethod)
+    {
+        $this->setAttribute(self::VALIDATION_METHOD, $validationMethod);
+    }
+
     // -------------- Public Setters --------------
 
     public function setPublicEntityAttribute(array & $array)
@@ -470,6 +498,14 @@ class Entity extends Base\PublicEntity
         if($this->isCompositeNewResponseRequired() === true)
         {
             unset($array[self::CURRENCY]);
+        }
+    }
+
+    public function setPublicReferenceIdAttribute(array & $array): void
+    {
+        if($this->isCompositeNewResponseRequired() === false)
+        {
+            unset($array[self::REFERENCE_ID]);
         }
     }
 
@@ -643,6 +679,11 @@ class Entity extends Base\PublicEntity
     public function getErrorCode()
     {
         return $this->getAttribute(self::ERROR_CODE);
+    }
+
+    public function getErrorDescription()
+    {
+        return $this->getAttribute(self::ERROR_DESCRIPTION);
     }
 
     public function getReason()

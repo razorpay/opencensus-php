@@ -3855,6 +3855,8 @@ class Route
         'fund_account_validate_vpa_internal'          => ['post',     'fund_accounts/validations_internal/vpa',                                    'FundAccountValidationController@validateVpaInternal'               ],
         'fund_account_validate_pennydrop_internal'    => ['post',     'fund_accounts/validations_internal/pennydrop',                              'FundAccountValidationController@validateBankAccountInternal'       ],
         'fetch_fav_pricing_info_internal'             => ['post',     'fund_accounts/validations_internal/pricing_info',                           'FundAccountValidationController@fetchPricingInfoForFavService'     ],
+        'fund_account_validate_webhook_internal'      => ['post',     'fund_accounts/validations_internal/webhook',                                'FundAccountValidationController@sendWebhookToMerchant'             ],
+        'fund_account_validate_bank_webhook_citi'     => ['post',     'fund_accounts/validations/webhook/citi',                                    'FundAccountValidationController@handleCitiBankWebhook'             ],
 
         //admin dashboard access
         'admin_fetch_fund_account_validate'        => ['get',      'fund_accounts/validations/{merchantId}/{favId}', 'FundAccountValidationController@getFavByMerchantIdAndFavId'        ],
@@ -7029,6 +7031,7 @@ class Route
         'fund_account_validate_vpa_internal',
         'fund_account_validate_pennydrop_internal',
         'fetch_fav_pricing_info_internal',
+        'fund_account_validate_webhook_internal',
         'merchant_payment_invoice_upload',
 
         'create_new_vendor_entities',
@@ -12492,6 +12495,9 @@ class Route
         // Vendor Payments Public approve reject pages
         'vendor_payment_approve_reject',
         'vendor_payment_approve_reject_cors',
+
+        // Fund Account Validation Webhooks
+        'fund_account_validate_bank_webhook_citi',
     ];
 
     public static $dynamicLifeTimeSession = [
@@ -14435,6 +14441,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'fund_account_validate_bank_webhook_citi',
             'merchant_pos_activation_status',
             'merchant_vkyc_submit',
             'merchant_edd_details_fetch',
@@ -18689,6 +18696,7 @@ class Route
             'fund_account_validate_pennydrop_internal',
             'fetch_fav_pricing_info_internal',
             'payout_source_event_info_internal',
+            'fund_account_validate_webhook_internal',
         ],
 
         'ledger' => [

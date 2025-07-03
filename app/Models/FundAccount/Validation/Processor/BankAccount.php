@@ -534,7 +534,12 @@ class BankAccount extends Base
             ]
         );
 
-        FavQueueForFTS::dispatch($this->mode, $this->validation->getId());
+        $payload = [
+            'mode' => $this->mode,
+            'id' => $this->validation->getId(),
+        ];
+
+        FavQueueForFTS::dispatch($payload);
 
         $this->trace->info(
             TraceCode::FAV_QUEUE_FOR_FTS_JOB_REQUEST_DISPATCHED,

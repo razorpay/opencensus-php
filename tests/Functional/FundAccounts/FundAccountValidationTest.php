@@ -18,6 +18,7 @@ use RZP\Jobs\FaVpaValidation;
 use RZP\Gateway\Mozart\Action;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Detail;
+use RZP\Services\Stork;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Services\FavService\Fetch;
 use RZP\Services\FTS\FundTransfer;
@@ -310,8 +311,13 @@ class FundAccountValidationTest extends TestCase
 
         Queue::assertPushed(FavQueueForFTS::class);
 
+        $payload = [
+            'mode' => 'test',
+            'id' => preg_replace('/^fav_/', '', $fav['id']),
+        ];
+
         // Test worker
-        $favQueueForFts = new FavQueueForFTS('test', preg_replace('/^fav_/', '', $fav['id']));
+        $favQueueForFts = new FavQueueForFTS($payload);
         $favQueueForFts->handle();
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
@@ -1909,8 +1915,13 @@ class FundAccountValidationTest extends TestCase
 
         Queue::assertPushed(FavQueueForFTS::class);
 
+        $payload = [
+            'mode' => 'test',
+            'id' => preg_replace('/^fav_/', '', $fav['id']),
+        ];
+
         // Test worker
-        $favQueueForFts = new FavQueueForFTS('test', preg_replace('/^fav_/', '', $fav['id']));
+        $favQueueForFts = new FavQueueForFTS($payload);
         $favQueueForFts->handle();
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
@@ -2005,8 +2016,13 @@ class FundAccountValidationTest extends TestCase
 
         Queue::assertPushed(FavQueueForFTS::class);
 
+        $payload = [
+            'mode' => 'test',
+            'id' => preg_replace('/^fav_/', '', $fav['id']),
+        ];
+
         // Test worker
-        $favQueueForFts = new FavQueueForFTS('test', preg_replace('/^fav_/', '', $fav['id']));
+        $favQueueForFts = new FavQueueForFTS($payload);
         $favQueueForFts->handle();
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
@@ -2102,8 +2118,13 @@ class FundAccountValidationTest extends TestCase
 
         Queue::assertPushed(FavQueueForFTS::class);
 
+        $payload = [
+            'mode' => 'test',
+            'id' => preg_replace('/^fav_/', '', $fav['id']),
+        ];
+
         // Test worker
-        $favQueueForFts = new FavQueueForFTS('test', preg_replace('/^fav_/', '', $fav['id']));
+        $favQueueForFts = new FavQueueForFTS($payload);
         $favQueueForFts->handle();
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
@@ -2126,7 +2147,6 @@ class FundAccountValidationTest extends TestCase
 
     public function testPennilessValidationWithWhitelistedBeneBank()
     {
-
         Queue::fake();
 
         (new AdminService())->setConfigKeys([ConfigKey::PENNILESS_WHITELISTED_BANKS_LIST => ['SBIN']]);
@@ -2266,8 +2286,13 @@ class FundAccountValidationTest extends TestCase
 
         Queue::assertPushed(FavQueueForFTS::class);
 
+        $payload = [
+            'mode' => 'test',
+            'id' => preg_replace('/^fav_/', '', $fav['id']),
+        ];
+
         // Test worker
-        $favQueueForFts = new FavQueueForFTS('test', preg_replace('/^fav_/', '', $fav['id']));
+        $favQueueForFts = new FavQueueForFTS($payload);
         $favQueueForFts->handle();
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
@@ -2327,36 +2352,53 @@ class FundAccountValidationTest extends TestCase
     {
         Queue::fake();
 
-        $this->ba->payoutInternalAppAuth();
-
         $this->fixtures->create('terminal:shared_sharp_terminal');
 
-        $content = $this->testData[__FUNCTION__]['request']['content'];
+        $fundAccountResponse = $this->createFundAccountBankAccount();
 
         $mock = Mockery::mock(FavServiceUpdate::class);
 
         $this->app->instance(FavServiceUpdate::FAV_SERVICE_UPDATE, $mock);
 
-        $mock->shouldReceive('updateFavInMicroservice')
-            ->withArgs(function ($fav_id, $fund_transfer_id, $type){
+        $mock->shouldReceive('handleBankWebhook')
+            ->withArgs(function ($input, $bank) {
+                $this->assertEquals('fts', $bank);
+                $this->assertEquals('created', $input['status']);
+                $this->assertNotEmpty($input['fund_transfer_id']);
+                $this->assertNotEmpty($input['fund_account_id']);
+                $this->assertEquals('fund transfer sent to fts.', $input['message']);
+                return true;
+            })
+            ->andReturn(["status" => "success"]);
 
-                return ($fav_id === '1234567890' && empty($fund_transfer_id) == false);})
-            ->times(1);
+        // Create queue message
+        $queueMessage = [
+            'mode' => 'test',
+            'id' => '12345678901234',
+            'merchant_id' => '10000000000000',
+            'amount' => 100,
+            'is_validx' => true,
+            'status' => 'initiated',
+            'fund_account' => [
+                'id' => $fundAccountResponse['id']
+            ]
+        ];
 
-        $this->startTest();
+        // Dispatch the job
+        FavQueueForFTS::dispatch($queueMessage);
 
+        // Assert the job was pushed
         Queue::assertPushed(FavQueueForFTS::class);
 
-        $favQueueForFts = new FavQueueForFTS('test', $content['fav_id'], $content);
-
-        $favQueueForFts->handle();
+        // Get the job and process it
+        $job = Queue::pushed(FavQueueForFTS::class)[0];
+        $job->handle();
 
         $fta = $this->getDbLastEntity('fund_transfer_attempt', 'test');
 
         // Penny drop assertion
-        $this->assertEquals("1234567890", $fta['source_id']);
+        $this->assertEquals("12345678901234", $fta['source_id']);
         $this->assertEquals('penny_testing', $fta['purpose']);
-        $this->assertEquals($content['bank_account']['id'], $fta['bank_account_id']);
     }
 
     public function testFavFtsRequestWithRemitterDetails()
@@ -2417,8 +2459,13 @@ class FundAccountValidationTest extends TestCase
 
         Queue::assertPushed(FavQueueForFTS::class);
 
+        $payload = [
+            'mode' => 'test',
+            'id' => preg_replace('/^fav_/', '', $fav['id']),
+        ];
+
         // Test worker
-        $favQueueForFts = new FavQueueForFTS('test', preg_replace('/^fav_/', '', $fav['id']));
+        $favQueueForFts = new FavQueueForFTS($payload);
 
         $this->fixtures->create('merchant_detail',[
             'merchant_id' => '10000000000000',
@@ -2545,8 +2592,13 @@ class FundAccountValidationTest extends TestCase
 
         Queue::assertPushed(FavQueueForFTS::class);
 
+        $payload = [
+            'mode' => 'test',
+            'id' => preg_replace('/^fav_/', '', $fav['id']),
+        ];
+
         // Test worker
-        $favQueueForFts = new FavQueueForFTS('test', preg_replace('/^fav_/', '', $fav['id']));
+        $favQueueForFts = new FavQueueForFTS($payload);
 
         $this->fixtures->create('merchant_detail',[
             'merchant_id' => '10000000000000',
@@ -2602,32 +2654,6 @@ class FundAccountValidationTest extends TestCase
 
     public function testFavMicroServiceFtsRequestWithRemitterDetails()
     {
-        $this->testData[__FUNCTION__] = $this->testData['testValidateTypeBankAccountInternal'];
-
-        Queue::fake();
-
-        $this->ba->payoutInternalAppAuth();
-
-        $this->fixtures->create('terminal:shared_sharp_terminal');
-
-        $content = $this->testData[__FUNCTION__]['request']['content'];
-
-        $mock = Mockery::mock(FavServiceUpdate::class);
-
-        $this->app->instance(FavServiceUpdate::FAV_SERVICE_UPDATE, $mock);
-
-        $mock->shouldReceive('updateFavInMicroservice')
-            ->withArgs(function ($fav_id, $fund_transfer_id, $type){
-
-                return ($fav_id === '1234567890' && empty($fund_transfer_id) == false);})
-            ->times(1);
-
-        $this->startTest();
-
-        Queue::assertPushed(FavQueueForFTS::class);
-
-        $favQueueForFts = new FavQueueForFTS('test', $content['fav_id'], $content);
-
         $this->fixtures->create('merchant_detail',[
             'merchant_id' => '10000000000000',
             'contact_name'=> 'Aditya',
@@ -2643,7 +2669,7 @@ class FundAccountValidationTest extends TestCase
             Detail\Entity::BUSINESS_REGISTERED_PIN        => "751490",
         ]);
 
-        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+        $mock = Mockery::mock(FundTransfer::class)->shouldAllowMockingProtectedMethods()->makePartial();
 
         $this->app->instance('fts_fund_transfer', $mock);
 
@@ -2676,51 +2702,67 @@ class FundAccountValidationTest extends TestCase
                 ];
             })->times(1);
 
-        $favQueueForFts->handle();
+        Queue::fake();
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $favMock = Mockery::mock(FavServiceUpdate::class);
+
+        $this->app->instance(FavServiceUpdate::FAV_SERVICE_UPDATE, $favMock);
+
+        $favMock->shouldReceive('handleBankWebhook')
+            ->withArgs(function ($input, $bank) {
+                $this->assertEquals('fts', $bank);
+                $this->assertEquals('created', $input['status']);
+                $this->assertNotEmpty($input['fund_transfer_id']);
+                $this->assertNotEmpty($input['fund_account_id']);
+                $this->assertEquals('fund transfer sent to fts.', $input['message']);
+                return true;
+            })
+            ->andReturn(["status" => "success"])
+            ->times(1);
+
+        // Create queue message
+        $queueMessage = [
+            'mode' => 'test',
+            'id' => '12345678901234',
+            'merchant_id' => '10000000000000',
+            'amount' => 100,
+            'is_validx' => true,
+            'status' => 'initiated',
+            'fund_account' => [
+                'id' => $fundAccountResponse['id']
+            ]
+        ];
+
+        // Dispatch the job
+        FavQueueForFTS::dispatch($queueMessage);
+
+        // Assert the job was pushed
+        Queue::assertPushed(FavQueueForFTS::class);
+
+        // Get the job and process it
+        $job = Queue::pushed(FavQueueForFTS::class)[0];
+        $job->handle();
 
         $fta = $this->getDbLastEntity('fund_transfer_attempt', 'test');
 
         // Penny drop assertion
-        $this->assertEquals("1234567890", $fta['source_id']);
+        $this->assertEquals("12345678901234", $fta['source_id']);
         $this->assertEquals('penny_testing', $fta['purpose']);
-        $this->assertEquals($content['bank_account']['id'], $fta['bank_account_id']);
     }
 
     public function testFavMicroServiceFtsRequestWithoutRemitterDetails()
     {
-        $this->testData[__FUNCTION__] = $this->testData['testValidateTypeBankAccountInternal'];
-
-        Queue::fake();
-
-        $this->ba->payoutInternalAppAuth();
-
-        $this->fixtures->create('terminal:shared_sharp_terminal');
-
-        $content = $this->testData[__FUNCTION__]['request']['content'];
-
-        $mock = Mockery::mock(FavServiceUpdate::class);
-
-        $this->app->instance(FavServiceUpdate::FAV_SERVICE_UPDATE, $mock);
-
-        $mock->shouldReceive('updateFavInMicroservice')
-            ->withArgs(function ($fav_id, $fund_transfer_id, $type){
-
-                return ($fav_id === '1234567890' && empty($fund_transfer_id) == false);})
-            ->times(1);
-
-        $this->startTest();
-
-        Queue::assertPushed(FavQueueForFTS::class);
-
-        $favQueueForFts = new FavQueueForFTS('test', $content['fav_id'], $content);
-
         $this->fixtures->create('merchant_detail',[
             'merchant_id' => '10000000000000',
             'contact_name'=> 'Aditya',
             'business_type' => 2
         ]);
 
-        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+        $mock = Mockery::mock(FundTransfer::class)->shouldAllowMockingProtectedMethods()->makePartial();
 
         $this->app->instance('fts_fund_transfer', $mock);
 
@@ -2747,14 +2789,56 @@ class FundAccountValidationTest extends TestCase
                 ];
             })->times(1);
 
-        $favQueueForFts->handle();
+        Queue::fake();
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $favMock = Mockery::mock(FavServiceUpdate::class);
+
+        $this->app->instance(FavServiceUpdate::FAV_SERVICE_UPDATE, $favMock);
+
+        $favMock->shouldReceive('handleBankWebhook')
+            ->withArgs(function ($input, $bank) {
+                $this->assertEquals('fts', $bank);
+                $this->assertEquals('created', $input['status']);
+                $this->assertNotEmpty($input['fund_transfer_id']);
+                $this->assertNotEmpty($input['fund_account_id']);
+                $this->assertEquals('fund transfer sent to fts.', $input['message']);
+                return true;
+            })
+            ->andReturn(["status" => "success"])
+            ->times(1);
+
+        // Create queue message
+        $queueMessage = [
+            'mode' => 'test',
+            'id' => '12345678901234',
+            'merchant_id' => '10000000000000',
+            'amount' => 100,
+            'is_validx' => true,
+            'status' => 'initiated',
+            'fund_account' => [
+                'id' => $fundAccountResponse['id']
+            ]
+        ];
+
+        // Dispatch the job
+        FavQueueForFTS::dispatch($queueMessage);
+
+        // Assert the job was pushed
+        Queue::assertPushed(FavQueueForFTS::class);
+
+        // Get the job and process it
+        $job = Queue::pushed(FavQueueForFTS::class)[0];
+        $job->handle();
 
         $fta = $this->getDbLastEntity('fund_transfer_attempt', 'test');
 
         // Penny drop assertion
-        $this->assertEquals("1234567890", $fta['source_id']);
+        $this->assertEquals("12345678901234", $fta['source_id']);
         $this->assertEquals('penny_testing', $fta['purpose']);
-        $this->assertEquals($content['bank_account']['id'], $fta['bank_account_id']);
     }
 
 
@@ -2790,62 +2874,35 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals(0, $response['tax']);
     }
 
-    public function createBankResponseForFavServiceMock($status='created', $contact = false)
+    public function createBankResponseForFavServiceMock(
+        $status='created',
+        $errorCode = null,
+        $utr = null,
+        $amount = null,
+        $favType = 'composite')
     {
         $response = new \WpOrg\Requests\Response();
 
         $content = [
             'id'=> 'fav_00000000000001',
-            'entity'=> 'fund_account.validation',
-            'status'=> 'created',
-            'validation_results'=> [
-                'account_status'=> null,
-                'registered_name'=> null,
-                'details'=> null,
-                'name_match_score'=> null
-            ],
-            'status_details'=> [
-                'description'=> 'Validation request is created',
-                'source'=> 'internal',
-                'reason'=> 'validation_request_created'
-            ],
+            'status'=> $status,
             'reference_id'=> '112233',
+            'type' => $favType,
             'notes'=> [
                 'random_key_1'=> 'Make it so.',
                 'random_key_2'=> 'Tea. Earl Grey. Hot.'
             ],
-            'fund_account'=> [
-                'id'=> 'fa_00000000000001',
-                'entity'=> 'fund_account',
-                'account_type'=> 'bank_account',
-                'bank_account'=> [
-                    'name'=> 'Gaurav Kumar',
-                    'bank_name'=> 'HDFC',
-                    'ifsc'=> 'HDFC0000053',
-                    'account_number'=> '765432123456789'
-                ],
-                'active'=> true,
-                'created_at'=> 1567064019,
-            ]
+            'created_at' => 1567064019,
+            'error_code' => $errorCode,
+            'utr' => $utr,
+            'amount' => $amount,
+            'merchant_id' => 'merch_123456',
+            'fund_account' => [
+                'id' => '',
+            ],
+            'currency' => 'INR',
+            'validation_method' => 'penniless',
         ];
-
-        if ($contact === true)
-        {
-            $content['fund_account']['contact'] = [
-                    'id'=> 'cont_00000000000001',
-                    'entity'=> 'contact',
-                    'name'=> 'Gaurav Kumar',
-                    'email'=> 'gaurav.kumar@example.com',
-                    'contact'=> '9123456789',
-                    'type'=> 'employee',
-                    'reference_id'=> 'Acme Contact ID 12345',
-                    'active'=> true,
-                    'created_at'=> 1567064019,
-                    'notes'=> [
-                        'notes_key_1'=> 'Tea, Earl Grey, Hot',
-                        'notes_key_2'=> 'Tea, Earl Grey... decaf.']
-                ];
-        }
 
         $response->body = json_encode($content);
         $response->status_code = 200;
@@ -2854,69 +2911,7 @@ class FundAccountValidationTest extends TestCase
         return $response;
     }
 
-    public function createVpaResponseForFavServiceMock($status='created', $contact = false)
-    {
-        $response = new \WpOrg\Requests\Response();
-
-        $content = [
-            'id'=> 'fav_00000000000001',
-            'entity'=> 'fund_account.validation',
-            'status'=> 'created',
-            'validation_results'=> [
-                'account_status'=> null,
-                'registered_name'=> null,
-                'details'=> null,
-                'name_match_score'=> null
-            ],
-            'status_details'=> [
-                'description'=> 'Validation request is created',
-                'source'=> 'internal',
-                'reason'=> 'validation_request_created'
-            ],
-            'reference_id'=> '112233',
-            'notes'=> [
-                'random_key_1'=> 'Make it so.',
-                'random_key_2'=> 'Tea. Earl Grey. Hot.'
-            ],
-            'fund_account'=> [
-                'id'=> 'fa_00000000000001',
-                'entity'=> 'fund_account',
-                'account_type'=> 'vpa',
-                'vpa'=> [
-                    'address' => 'gaurav.kumar@exampleupi'
-                ],
-                'active'=> true,
-                'created_at'=> 1567064019,
-            ]
-        ];
-
-        if ($contact === true)
-        {
-            $content['fund_account']['contact'] = [
-                'id'=> 'cont_00000000000001',
-                'entity'=> 'contact',
-                'name'=> 'Gaurav Kumar',
-                'email'=> 'gaurav.kumar@example.com',
-                'contact'=> '9123456789',
-                'type'=> 'employee',
-                'reference_id'=> 'Acme Contact ID 12345',
-                'active'=> true,
-                'created_at'=> 1567064019,
-                'notes'=> [
-                    'notes_key_1'=> 'Tea, Earl Grey, Hot',
-                    'notes_key_2'=> 'Tea, Earl Grey... decaf.'
-                ]
-            ];
-        }
-
-        $response->body = json_encode($content);
-        $response->status_code = 200;
-        $response->success = true;
-
-        return $response;
-    }
-
-    public function mockFavServiceCreate($account_type, $status = 'created', $contact = false)
+    public function mockFavServiceCreate($case): void
     {
         $FavServiceCreateMock = $this->getMockBuilder(FavServiceCreate::class)
             ->setConstructorArgs([$this->app])
@@ -2925,86 +2920,52 @@ class FundAccountValidationTest extends TestCase
 
         $this->app->instance(FavServiceCreate::FAV_SERVICE_CREATE, $FavServiceCreateMock);
 
-        if ($status === 'failed')
+        switch ($case)
         {
-            $this->app->fav_service_create
-                ->expects($this->once())
-                ->method('sendRequest')
-                ->willReturn(new \RZP\Exception\ServerErrorException(
-                    'server error',
-                    code: ErrorCode::SERVER_ERROR
-
-                ));
-            return;
-        }
-        else if ($account_type === 'bank_account') {
-            $response = $this->createBankResponseForFavServiceMock($status, $contact);
-        }
-        else
-        {
-            $response = $this->createVpaResponseForFavServiceMock($status, $contact);
+            case 'ba_fav_composite_created_state':
+                $response = $this->createBankResponseForFavServiceMock();
+                break;
+            case 'ba_fav_non_composite_created_state':
+                $response = $this->createBankResponseForFavServiceMock(favType: 'non_composite', amount: 100);
+                break;
         }
 
         $this->app->fav_service_create
                   ->expects($this->once())
                   ->method('sendRequest')
-                  ->willReturn($response);
+                  ->willReturnCallback(function() use ($response) {
+                      $responseArray = json_decode($response->body, true);
+                      $fundAccount = $this->getDbLastEntity('fund_account', 'test');
+                      $responseArray['fund_account']['id'] = $fundAccount['id'];
+                      $response->body = json_encode($responseArray);
+                      return $response;
+                  });
     }
 
-    public function testCreateFaOfTypeBankAndSendRequestToFavService()
+    public function testCreateFaOfTypeBankAndSendRequestToFavService_Composite()
     {
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
         // enabling the feature here for test merchant
         $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
 
-        $this->mockFavServiceCreate('bank_account', status: 'created');
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_COMPOSITE_SERVICE_FORWARDING => 'enable']);
+
+        $this->mockFavServiceCreate('ba_fav_composite_created_state');
 
         $response = $this->startTest();
-
-        $fundAccount = $this->getDbLastEntity('fund_account', 'test');
-
-        $bankAccount = $this->getDbLastEntity('bank_account', mode: 'test');
-
-        $this->assertEquals('HDFC0000053', $bankAccount['ifsc']);
-
-        $this->assertEquals('765432123456789', $bankAccount['account_number']);
-
-        $this->assertNotNull($fundAccount);
-
-        $this->assertNotNull($response['fund_account']['id']);
     }
 
-    public function testCreateFaOfTypeVpaAndSendRequestToFavService()
-    {
-        $this->setUpMerchantForBusinessBanking(false, 10000000);
-
-        // enabling the feature here for test merchant
-        $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
-
-        $this->mockFavServiceCreate('vpa', status: 'created');
-
-        $response = $this->startTest();
-
-        $fundAccount = $this->getDbLastEntity('fund_account');
-
-        $vpa = $this->getLastEntity('vpa', true);
-
-        $this->assertEquals('gaurav.kumar@exampleupi', $vpa['address']);
-
-        $this->assertNotNull($fundAccount);
-
-        $this->assertNotNull($response['fund_account']['id']);
-    }
-
-    public function testCreateFaAndContactOfTypeBankAndSendRequestToFavService(){
+    public function testCreateFavInNewService_WithContact_CreatedState_Composite(){
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
         // enabling the feature here for test merchant
         $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
 
-        $this->mockFavServiceCreate('bank_account', status: 'created', contact:true);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_COMPOSITE_SERVICE_FORWARDING => 'enable']);
+
+        $this->mockFavServiceCreate('ba_fav_composite_created_state');
 
         $response = $this->startTest();
 
@@ -3027,49 +2988,105 @@ class FundAccountValidationTest extends TestCase
         $this->assertNotNull($response['fund_account']['id']);
     }
 
-    public function testCreateFaOfTypeBankAndSendRequestToFavServiceFailure()
-    {
-        $this->setUpMerchantForBusinessBanking(false, 10000000);
+    public function testCreateFavInNewService_WithoutContact_CreatedState_Composite(){
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
-
-        $this->expectException('\RZP\Exception\ServerErrorException');
-
-        $this->expectExceptionCode(ErrorCode::SERVER_ERROR);
-
-        $this->mockFavServiceCreate('bank_account', status: 'failed');
-
-        $this->startTest();
-    }
-
-    public function testCreateFaAndContactOfTypeVpaAndSendRequestToFavService()
-    {
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
         // enabling the feature here for test merchant
         $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
 
-        $this->mockFavServiceCreate('vpa', status: 'created', contact: true);
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_COMPOSITE_SERVICE_FORWARDING => 'enable']);
+
+        $this->mockFavServiceCreate('ba_fav_composite_created_state');
 
         $response = $this->startTest();
 
         $fundAccount = $this->getDbLastEntity('fund_account');
 
-        $vpa = $this->getLastEntity('vpa', true);
+        $bankAccount = $this->getDbLastEntity('bank_account');
 
-        $this->assertEquals('gaurav.kumar@exampleupi', $vpa['address']);
+        $this->assertEquals('HDFC0000053', $bankAccount['ifsc']);
+
+        $this->assertEquals('765432123456789', $bankAccount['account_number']);
 
         $contact = $this->getDbLastEntity('contact');
 
         $this->assertEquals($fundAccount['source_id'], $contact['id']);
 
-        $this->assertNotNull($vpa);
+        $this->assertNull($contact);
+
+        $this->assertNotNull($fundAccount);
+
+        $this->assertNotNull($response['fund_account']['id']);
+    }
+
+    public function testCreateFavInNewService_WithContact_CreatedState_NonComposite(){
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        // enabling the feature here for test merchant
+        $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_COMPOSITE_SERVICE_FORWARDING => 'enable']);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] = $fundAccountResponse['id'];
+
+        $this->mockFavServiceCreate('ba_fav_non_composite_created_state');
+
+        $response = $this->startTest();
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $bankAccount = $this->getDbLastEntity('bank_account');
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $this->assertEquals('SBIN0007105', $bankAccount['ifsc']);
+
+        $this->assertEquals('111000111', $bankAccount['account_number']);
+
+        $contact = $this->getDbLastEntity('contact');
+
+        $this->assertEquals($fundAccount['source_id'], $contact['id']);
 
         $this->assertNotNull($contact);
 
         $this->assertNotNull($fundAccount);
 
         $this->assertNotNull($response['fund_account']['id']);
+    }
+
+    public function testCreateFaOfTypeBankAndSendRequestToFavServiceFailure()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_COMPOSITE_SERVICE_FORWARDING => 'enable']);
+
+        $this->expectException('\RZP\Exception\ServerErrorException');
+
+        $this->expectExceptionCode(ErrorCode::SERVER_ERROR);
+
+        $FavServiceCreateMock = $this->getMockBuilder(FavServiceCreate::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['sendRequest'])
+            ->getMock();
+
+        $this->app->instance(FavServiceCreate::FAV_SERVICE_CREATE, $FavServiceCreateMock);
+
+        $this->app->fav_service_create
+            ->expects($this->once())
+            ->method('sendRequest')
+            ->willReturn(new \RZP\Exception\ServerErrorException(
+                'server error',
+                code: ErrorCode::SERVER_ERROR
+
+            ));
+
+        $this->startTest();
     }
 
     public function testCreateValidationWithExposeUTRNotSetInResponse()
@@ -3550,6 +3567,47 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('completed', $fav->getStatus());
 
         return $favId;
+    }
+
+    public function testFavFtsWebhookForwardToNewService_FavNotFound()
+    {
+        $mock = Mockery::mock(FavServiceUpdate::class);
+
+        $this->app->instance(FavServiceUpdate::FAV_SERVICE_UPDATE, $mock);
+
+        $mock->shouldReceive('handleBankWebhook')
+            ->withArgs([Mockery::any(), 'fts'])
+            ->times(1);
+
+        $this->triggerFlowToUpdateFavWithNewState('fav_00000000000001', 'INITIATED', beneName: 'TestName');
+    }
+
+    public function testFavFtsWebhookForwardToNewService_FavFoundCreatedInNewService()
+    {
+        $mock = Mockery::mock(FavServiceUpdate::class);
+
+        $this->app->instance(FavServiceUpdate::FAV_SERVICE_UPDATE, $mock);
+
+        $this->testFundAccValidationWithAccountNumberAndBankAccount();
+
+        /** @var Entity $fav */
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $favId = $fav->getId();
+
+        $fav->setReceipt('_validx_'.$favId);
+
+        $fav->save();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED], $fav->getMerchantId());
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_COMPOSITE_SERVICE_FORWARDING => 'enable']);
+
+        $mock->shouldReceive('handleBankWebhook')
+            ->withArgs([Mockery::any(), 'fts'])
+            ->times(1);
+
+        $this->triggerFlowToUpdateFavWithNewState($favId, 'INITIATED', beneName: 'TestName');
     }
 
     public function testFavNameNotSet_FtsWebhookWithBeneNameAndInInitiatedState()
@@ -4523,8 +4581,6 @@ class FundAccountValidationTest extends TestCase
 
     public function testGetFavByIdInAPI()
     {
-
-
         $mock = Mockery::mock(Fetch::class);
 
         $this->app->instance(FavServiceFetch::FAV_SERVICE_FETCH, $mock);
@@ -4587,51 +4643,46 @@ class FundAccountValidationTest extends TestCase
         $this->startTest();
     }
 
-    public function createGetApiResponseForFavServiceMock()
+    public function createGetApiResponseForFavServiceMock($favType = 'composite'): array
     {
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
         $content = [
-        'entity' => "fund_account.validation",
-        'fund_account' => [
-            'entity' => "fund_account",
-            'contact_id' => "cont_1000000contact",
-            'account_type' => "bank_account",
-            'bank_account' => [
-                'ifsc' => "SBIN0007105",
-                'bank_name' => "State Bank of India",
-                'name' => "Amit M",
-                'notes' => [],
-                'account_number' => "111000111"
+            'id'=> 'fav_00000000000001',
+            'status'=> 'completed',
+            'reference_id'=> '112233',
+            'type' => $favType,
+            'notes'=> [
+                'random_key_1'=> 'Make it so.',
+                'random_key_2'=> 'Tea. Earl Grey. Hot.'
             ],
-            'batch_id' => null,
-            'active' => true,
-            'details' => [
-                'ifsc' => "SBIN0007105",
-                'bank_name' => "State Bank of India",
-                'name' => "Amit M",
-                'notes' => [],
-                'account_number' => "111000111"
+            'created_at' => 1567064019,
+            'error_code' => null,
+            'utr' => null,
+            'registered_name' => "Test User",
+            'amount' => 200,
+            'merchant_id' => '10000000000000',
+            'account_status' => 'active',
+            'fund_account' => [
+                'id' => $fundAccountResponse['id'],
             ],
-        ],
-        'status' => "completed",
-        'amount' => 100,
-        'currency' => "INR",
-        'notes' => [],
-        'results' => [
-            'account_status' => "active",
-            'registered_name' => "Razorpay Test"
-        ],
+            'currency' => 'INR',
+            'validation_method' => 'penniless',
+            'name_match_score' => 95.5
         ];
 
         return $content;
     }
 
-    public function testGetFavByIdFromMicroservice()
+    public function testGetFavByIdFromMicroservice_Composite()
     {
         $mock = Mockery::mock(Fetch::class);
 
         $this->app->instance(FavServiceFetch::FAV_SERVICE_FETCH, $mock);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_COMPOSITE_SERVICE_FORWARDING => 'enable']);
 
         $attribute = [
             Entity::MERCHANT_ID     => '10000000000000',
@@ -4647,18 +4698,71 @@ class FundAccountValidationTest extends TestCase
 
         $request = &$this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = sprintf($request['url'], $fav['id']);
+        $request['url'] = sprintf($request['url'], 'fav_00000000000001');
 
         $this->ba->privateAuth();
 
-        $mock->shouldReceive('fetch')
-            ->withArgs(["fund_account_validation", $fav['id'], []])
+        $mock->shouldReceive('fetchById')
+            ->withArgs(['00000000000001'])
             ->andReturn($this->createGetApiResponseForFavServiceMock())
             ->times(1);
 
         $this->startTest();
     }
 
+    public function testGetFavByIdFromMicroservice_NonComposite()
+    {
+        $mock = Mockery::mock(Fetch::class);
+
+        $this->app->instance(FavServiceFetch::FAV_SERVICE_FETCH, $mock);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_COMPOSITE_SERVICE_FORWARDING => 'enable']);
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], 'fav_00000000000001');
+
+        $this->ba->privateAuth();
+
+        $mock->shouldReceive('fetchById')
+            ->withArgs(['00000000000001'])
+            ->andReturn($this->createGetApiResponseForFavServiceMock('non_composite'))
+            ->times(1);
+
+        $this->startTest();
+    }
+
+    public function testGetFavByIdFromMicroservice_NotFoundError()
+    {
+        $mock = Mockery::mock(Fetch::class);
+
+        $this->app->instance(FavServiceFetch::FAV_SERVICE_FETCH, $mock);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::FAV_SERVICE_ENABLED]);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_COMPOSITE_SERVICE_FORWARDING => 'enable']);
+
+        $request = &$this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], 'fav_00000000000001');
+
+        $this->ba->privateAuth();
+
+        // Mock service to return FAV000003 error
+        $mock->shouldReceive('fetchById')
+            ->withArgs(['00000000000001'])
+            ->andThrow(new BadRequestException(
+                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_NOT_FOUND,
+                null,
+                [],
+                'The requested entity is not found',
+            ))
+            ->times(1);
+
+        $this->startTest();
+    }
     public function testFundAccValidationWithFailedStatus()
     {
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
@@ -5780,4 +5884,327 @@ class FundAccountValidationTest extends TestCase
 
         $this->assertEquals('failed_due_to_low_balance', $fav['error_description']);
     }
+
+    public function testSendWebhookToMerchantFromFavService_Composite_CompletedState()
+    {
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  substr($fundAccountResponse['id'], 3);
+
+        $this->ba->payoutInternalAppAuth();
+
+        $expectedPayload = [
+            'entity' => 'event',
+            'account_id' => 'acc_10000000000000',
+            'event' => 'fund_account.validation.completed',
+            'contains' => ['fund_account.validation'],
+            'payload' => [
+                'fund_account.validation' => [
+                    'entity' => [
+                        'id' => 'fav_00000000000001',
+                        'entity' => 'fund_account.validation',
+                        'fund_account' => [
+                            'id' => $fundAccountResponse['id'],
+                            'entity' => 'fund_account',
+                            'contact_id' => 'cont_1000000contact',
+                            'contact' => [
+                                'id' => 'cont_1000000contact',
+                                'entity' => 'contact',
+                                'contact' => '9123456789',
+                                'batch_id' => null,
+                                'active' => true,
+                                'notes' => [],
+                                'gstin' => null
+                            ],
+                            'account_type' => 'bank_account',
+                            'bank_account' => [
+                                'ifsc' => 'SBIN0007105',
+                                'bank_name' => 'State Bank of India',
+                                'name' => 'Amit M',
+                                'notes' => [],
+                                'account_number' => '111000111'
+                            ],
+                            'batch_id' => null,
+                            'active' => true,
+                        ],
+                        'status' => 'completed',
+                        'notes' => [
+                            'random_key_1' => 'Make it so.',
+                            'random_key_2' => 'Tea. Earl Grey. Hot.'
+                        ],
+                        'created_at' => 1234567890,
+                        'validation_results' => [
+                            'account_status' => 'active',
+                            'registered_name' => 'Test User',
+                            'name_match_score' => '80.23',
+                            'details' => "The beneficiary account is valid"
+                        ],
+                        'status_details' => [
+                            'description' => 'validation request is completed',
+                            'source' => 'beneficiary_bank',
+                            'reason' => 'validation_completed'
+                        ],
+                        'reference_id' => 'ref_123456'
+                    ]
+                ]
+            ],
+            'created_at' => 0
+        ];
+
+        $storkMock = Mockery::mock(Stork::class)->makePartial()->shouldAllowMockingProtectedMethods();
+        $this->app->instance('stork_service', $storkMock);
+
+        $storkMock->shouldReceive('request')
+            ->once()
+            ->with(Mockery::any(), Mockery::on(function($payload) use ($expectedPayload) {
+                $payloadData = json_decode($payload['event']['payload'], true);
+                $this->assertArraySelectiveEquals($expectedPayload, $payloadData);
+                return true;
+            }), Mockery::any())
+            ->andReturn(new \WpOrg\Requests\Response);
+
+        $this->startTest();
+    }
+
+    public function testSendWebhookToMerchantFromFavService_Composite_FailedState()
+    {
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  substr($fundAccountResponse['id'], 3);
+
+        $this->ba->payoutInternalAppAuth();
+
+        $expectedPayload = [
+            'entity' => 'event',
+            'account_id' => 'acc_10000000000000',
+            'event' => 'fund_account.validation.failed',
+            'contains' => ['fund_account.validation'],
+            'payload' => [
+                'fund_account.validation' => [
+                    'entity' => [
+                        'id' => 'fav_00000000000001',
+                        'entity' => 'fund_account.validation',
+                        'fund_account' => [
+                            'id' => $fundAccountResponse['id'],
+                            'entity' => 'fund_account',
+                            'contact_id' => 'cont_1000000contact',
+                            'contact' => [
+                                'id' => 'cont_1000000contact',
+                                'entity' => 'contact',
+                                'contact' => '9123456789',
+                                'batch_id' => null,
+                                'active' => true,
+                                'notes' => [],
+                                'gstin' => null
+                            ],
+                            'account_type' => 'bank_account',
+                            'bank_account' => [
+                                'ifsc' => 'SBIN0007105',
+                                'bank_name' => 'State Bank of India',
+                                'name' => 'Amit M',
+                                'notes' => [],
+                                'account_number' => '111000111'
+                            ],
+                            'batch_id' => null,
+                            'active' => true,
+                        ],
+                        'status' => 'failed',
+                        'notes' => [
+                            'random_key_1' => 'Make it so.',
+                            'random_key_2' => 'Tea. Earl Grey. Hot.'
+                        ],
+                        'created_at' => 1234567890,
+                        'validation_results' => [
+                            'account_status' => null,
+                            'registered_name' => null,
+                            'name_match_score' => null,
+                            'details' => null
+                        ],
+                        'status_details' => [
+                            'description' => 'Account Validation failed due to insufficient funds in your account.',
+                            'source' => 'business',
+                            'reason' => 'insufficient_funds'
+                        ],
+                        'reference_id' => 'ref_123456'
+                    ]
+                ]
+            ],
+            'created_at' => 0
+        ];
+
+        $storkMock = Mockery::mock(Stork::class)->makePartial()->shouldAllowMockingProtectedMethods();
+        $this->app->instance('stork_service', $storkMock);
+
+        $storkMock->shouldReceive('request')
+            ->once()
+            ->with(Mockery::any(), Mockery::on(function($payload) use ($expectedPayload) {
+                $payloadData = json_decode($payload['event']['payload'], true);
+                $this->assertArraySelectiveEquals($expectedPayload, $payloadData);
+                return true;
+            }), Mockery::any())
+            ->andReturn(new \WpOrg\Requests\Response);
+
+        $this->startTest();
+    }
+
+    public function testSendWebhookToMerchantFromFavService_NonComposite_CompletedState()
+    {
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  substr($fundAccountResponse['id'], 3);
+
+        $this->ba->payoutInternalAppAuth();
+
+        $expectedPayload = [
+            'entity' => 'event',
+            'account_id' => 'acc_10000000000000',
+            'event' => 'fund_account.validation.completed',
+            'contains' => ['fund_account.validation'],
+            'payload' => [
+                'fund_account.validation' => [
+                    'entity' => [
+                        'id' => 'fav_00000000000001',
+                        'entity' => 'fund_account.validation',
+                        'fund_account' => [
+                            'id' => $fundAccountResponse['id'],
+                            'entity' => 'fund_account',
+                            'contact_id' => 'cont_1000000contact',
+                            'account_type' => 'bank_account',
+                            'bank_account' => [
+                                'ifsc' => 'SBIN0007105',
+                                'bank_name' => 'State Bank of India',
+                                'name' => 'Amit M',
+                                'notes' => [],
+                                'account_number' => '111000111'
+                            ],
+                            'batch_id' => null,
+                            'active' => true,
+                            'details' => [
+                                'ifsc' => 'SBIN0007105',
+                                'bank_name' => 'State Bank of India',
+                                'name' => 'Amit M',
+                                'notes' => [],
+                                'account_number' => '111000111'
+                            ],
+                        ],
+                        'status' => 'completed',
+                        'amount' => 100,
+                        'currency' => 'INR',
+                        'notes' => [
+                            'random_key_1' => 'Make it so.',
+                            'random_key_2' => 'Tea. Earl Grey. Hot.'
+                        ],
+                        'created_at' => 1234567890,
+                        'results' => [
+                            'account_status' => 'valid',
+                            'registered_name' => 'Test User',
+                        ],
+                        'utr' => "1245",
+                    ]
+                ]
+            ],
+            'created_at' => 0
+        ];
+
+        $storkMock = Mockery::mock(Stork::class)->makePartial()->shouldAllowMockingProtectedMethods();
+        $this->app->instance('stork_service', $storkMock);
+
+        $storkMock->shouldReceive('request')
+            ->once()
+            ->with(Mockery::any(), Mockery::on(function($payload) use ($expectedPayload) {
+                $payloadData = json_decode($payload['event']['payload'], true);
+                $this->assertArraySelectiveEquals($expectedPayload, $payloadData);
+                return true;
+            }), Mockery::any())
+            ->andReturn(new \WpOrg\Requests\Response);
+
+        $this->startTest();
+    }
+
+    public function testSendWebhookToMerchantFromFavService_NonComposite_FailedState()
+    {
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  substr($fundAccountResponse['id'], 3);
+
+        $this->ba->payoutInternalAppAuth();
+
+        $expectedPayload = [
+            'entity' => 'event',
+            'account_id' => 'acc_10000000000000',
+            'event' => 'fund_account.validation.failed',
+            'contains' => ['fund_account.validation'],
+            'payload' => [
+                'fund_account.validation' => [
+                    'entity' => [
+                        'id' => 'fav_00000000000001',
+                        'entity' => 'fund_account.validation',
+                        'fund_account' => [
+                            'id' => $fundAccountResponse['id'],
+                            'entity' => 'fund_account',
+                            'contact_id' => 'cont_1000000contact',
+                            'account_type' => 'bank_account',
+                            'bank_account' => [
+                                'ifsc' => 'SBIN0007105',
+                                'bank_name' => 'State Bank of India',
+                                'name' => 'Amit M',
+                                'notes' => [],
+                                'account_number' => '111000111'
+                            ],
+                            'batch_id' => null,
+                            'active' => true,
+                            'details' => [
+                                'ifsc' => 'SBIN0007105',
+                                'bank_name' => 'State Bank of India',
+                                'name' => 'Amit M',
+                                'notes' => [],
+                                'account_number' => '111000111'
+                            ],
+                        ],
+                        'status' => 'failed',
+                        'amount' => 100,
+                        'currency' => 'INR',
+                        'notes' => [
+                            'random_key_1' => 'Make it so.',
+                            'random_key_2' => 'Tea. Earl Grey. Hot.'
+                        ],
+                        'created_at' => 1234567890,
+                        'results' => [
+                            'account_status' => null,
+                            'registered_name' => null,
+                        ]
+                    ]
+                ]
+            ],
+            'created_at' => 0
+        ];
+
+        $storkMock = Mockery::mock(Stork::class)->makePartial()->shouldAllowMockingProtectedMethods();
+        $this->app->instance('stork_service', $storkMock);
+
+        $storkMock->shouldReceive('request')
+            ->once()
+            ->with(Mockery::any(), Mockery::on(function($payload) use ($expectedPayload) {
+                $payloadData = json_decode($payload['event']['payload'], true);
+                $this->assertArraySelectiveEquals($expectedPayload, $payloadData);
+                return true;
+            }), Mockery::any())
+            ->andReturn(new \WpOrg\Requests\Response);
+
+        $this->startTest();
+    }
+
+    public function testFavCitiWebhookForwardToNewService()
+    {
+        $mock = Mockery::mock(FavServiceUpdate::class);
+
+        $this->app->instance(FavServiceUpdate::FAV_SERVICE_UPDATE, $mock);
+
+        $mock->shouldReceive('handleBankWebhook')
+            ->withArgs([Mockery::any(), 'citi'])
+            ->times(1);
+
+        $this->startTest();
+    }
 }
+

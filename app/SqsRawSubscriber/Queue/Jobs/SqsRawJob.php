@@ -110,6 +110,7 @@ class SqsRawJob extends SqsJob
             $commandName == 'RZP\\Jobs\\ArtReconProcess' or
             $commandName == 'RZP\\Jobs\\PayoutServiceDualWriteDirectPush' or
             $commandName == 'RZP\\Jobs\\XBalanceDualWrite' or
+            $commandName == 'RZP\\Jobs\\FavQueueForFTS' or
             $commandName == 'RZP\Jobs\RxContactDualWrite' or
             $commandName == 'RZP\Jobs\RxFundAccountDualWrite')
         {

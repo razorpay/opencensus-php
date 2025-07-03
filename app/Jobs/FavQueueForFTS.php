@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use Razorpay\Trace\Logger;
 
+use RZP\Constants\Mode;
 use RZP\Trace\Tracer;
 use RZP\Services\FTS;
 use RZP\Trace\TraceCode;
@@ -11,6 +12,7 @@ use RZP\Constants\Metric;
 use RZP\Constants\HyperTrace;
 use RZP\Services\RazorXClient;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundAccount\Validation\Core as FAVCore;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\FundAccount\Validation\Metric as FAVMetric;
@@ -35,14 +37,16 @@ class FavQueueForFTS extends Job
 
     protected $favInput;
 
-    public function __construct(string $mode, string $id, array $favInput = [])
+    public function __construct(array $payload)
     {
         // FAV ID
-        $this->favId = $id;
+        $payload['id'] = Entity::stripDefaultSign($payload['id']);
 
-        $this->favInput = $favInput;
+        $this->favId = $payload['id'];
 
-        parent::__construct($mode);
+        $this->favInput = $payload;
+
+        parent::__construct($payload['mode'] ?? Mode::LIVE);
     }
 
     public function handle()
@@ -77,11 +81,12 @@ class FavQueueForFTS extends Job
             {
                 $ftsTransferId = $response[FTS\Constants::BODY][FTS\Constants::FUND_TRANSFER_ID];
 
-                if (empty($this->favInput) === false)
+                if (empty($this->favInput['is_validx']) === false and
+                    $this->favInput['is_validx'] === true)
                 {
                     $data = $response[FTS\Constants::BODY];
 
-                    $favCore->updateFavInMicroservice($this->favId, $data, FundAccountEntity::BANK_ACCOUNT);
+                    $favCore->forwardBankWebhookToFavService($data, 'fts');
                 }
                 else
                 {

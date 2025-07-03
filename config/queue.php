@@ -901,6 +901,9 @@ return [
 
         env('AWS_X_BALANCE_DUAL_WRITE_LIVE_QUEUE') => 'RZP\\Jobs\\XBalanceDualWrite',
 
+        env('AWS_FAV_QUEUE_FOR_FTS_TEST_QUEUE') => 'RZP\\Jobs\\FavQueueForFTS',
+        env('AWS_FAV_QUEUE_FOR_FTS_LIVE_QUEUE') => 'RZP\\Jobs\\FavQueueForFTS',
+        
         env('AWS_RX_CONTACT_DUAL_WRITE_LIVE_QUEUE') => 'RZP\\Jobs\\RxContactDualWrite',
         env('AWS_RX_FUND_ACCOUNT_DUAL_WRITE_LIVE_QUEUE') => 'RZP\\Jobs\\RxFundAccountDualWrite',
     ],

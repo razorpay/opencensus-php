@@ -3,6 +3,7 @@
 namespace RZP\Services\FavService;
 
 use App;
+use Throwable;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Http\Route;
@@ -11,13 +12,14 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Http\RequestHeader;
-use \WpOrg\Requests\Response;
 use RZP\Http\Request\Requests;
 use RZP\Base\RepositoryManager;
 use RZP\Http\BasicAuth\BasicAuth;
 use Razorpay\Edge\Passport\Passport;
-use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
 use \WpOrg\Requests\Exception as Requests_Exception;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundAccount\Validation\Entity as FavEntity;
 use RZP\Models\FundAccount\Validation\Metric as FavMetric;
 
@@ -37,6 +39,10 @@ class Base
 
     protected $baseUrl;
 
+    protected $timeout = 60;
+
+    protected $connectTimeout = 10;
+
     /**
      * @var RepositoryManager
      */
@@ -51,13 +57,15 @@ class Base
 
     const VERSION = '/v1';
 
-    const X_REQUEST_ID  = 'X-Request-ID';
+    const X_REQUEST_ID = 'X-Request-ID';
 
-    const TYPE     = 'type';
+    const TYPE = 'type';
+
     const CONSUMER = 'consumer';
+
     const PASSPORT = 'passport';
 
-    const NAME               = 'name';
+    const NAME = 'name';
     const APP_USER_ID_HEADER = 'App-User-Id';
 
     public function __construct($app = null)
@@ -73,23 +81,30 @@ class Base
 
         $this->mode = $app['rzp.mode'] ?? 'live';
 
-        $this->config = $app['config']->get('applications.payouts_service');
+        $this->config = $app['config']->get('applications.fav_service');
 
         $this->baseUrl = $this->config['url'];
 
-        $this->key = $this->config[$this->mode]['payout_key'];
+        $this->key = $this->config[$this->mode]['fav_key'];
 
-        $this->secret = $this->config[$this->mode]['payout_secret'];
+        $this->secret = $this->config[$this->mode]['fav_secret'];
 
         $this->auth = $this->app['basicauth'];
 
         $this->repo = $this->app['repo'];
+
+        $this->timeout = $this->config[$this->mode]['timeout'] ?? $this->timeout;
+
+        $this->connectTimeout = $this->config[$this->mode]['connect_timeout'] ?? $this->connectTimeout;
     }
 
-    const TIMEOUT = 60;
-
-    const CONNECT_TIMEOUT = 10;
-
+    /**
+     * @throws Throwable
+     * @throws ServerErrorException
+     * @throws BadRequestValidationFailureException
+     * @throws Requests_Exception
+     * @throws BadRequestException
+     */
     public function makeRequestAndGetContent(array $input, string $action, string $method, array $headers = []) :array
     {
         $request = $this->getRequest($input, $action, $method, $headers);
@@ -107,6 +122,10 @@ class Base
         return $responseArray;
     }
 
+    /**
+     * @throws Throwable
+     * @throws Requests_Exception
+     */
     public function sendRequest(array $request)
     {
         try
@@ -122,7 +141,6 @@ class Base
         }
         catch (Requests_Exception $e)
         {
-
             /** @var Route $route */
             $route = $this->app['api.route'];
 
@@ -151,7 +169,7 @@ class Base
 
             throw $e;
         }
-        catch (\Throwable $ex)
+        catch (Throwable $ex)
         {
             $this->trace->traceException(
                 $ex,
@@ -173,19 +191,19 @@ class Base
         }
     }
 
-    public function getRequest(array $input, string $action, string $method, array $headers = [])
+    public function getRequest(array $input, string $action, string $method, array $headers = []): array
     {
         $request = [
-            'url' => $this->getUrl($action),
-            'method' => $method,
-            'headers' => [
+            'url'       => $this->getUrl($action),
+            'method'    => $method,
+            'headers'   => [
                 RequestHeader::CONTENT_TYPE  => 'application/json',
                 self::X_REQUEST_ID           => $this->app['request']->getId(),
             ],
-            'content' => empty($input) ? $input: json_encode($input),
-            'options' => [
-                'auth'            => $this->getAuthDetails(),
-                'timeout'         => self::TIMEOUT,
+            'content'   => empty($input) ? $input: json_encode($input),
+            'options'   => [
+                'auth'     => $this->getAuthDetails(),
+                'timeout'  => $this->timeout,
             ]
         ];
 
@@ -210,7 +228,7 @@ class Base
 
     }
 
-    public function traceFavServiceRequest(array $request)
+    public function traceFavServiceRequest(array $request): void
     {
         $traceRequest = $request;
 
@@ -221,7 +239,7 @@ class Base
         $this->trace->info(TraceCode::FAV_SERVICE_REQUEST, $traceRequest);
     }
 
-    public function traceFavServiceResponse($response)
+    public function traceFavServiceResponse($response): void
     {
         $this->trace->info(TraceCode::FAV_SERVICE_RESPONSE, [
             'response'    => $response->body,
@@ -270,7 +288,12 @@ class Base
         return false;
     }
 
-    public function checkResponseForError($response)
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws ServerErrorException
+     * @throws BadRequestException
+     */
+    public function checkResponseForError($response): void
     {
         if (is_null($response) === true)
         {
@@ -280,13 +303,61 @@ class Base
             );
         }
 
-        if (isset($response[FavEntity::ERROR]) === true)
+        // Check for new error format with 'details' array
+        if (isset($response['details']) === true &&
+            is_array($response['details']) === true &&
+            empty($response['details']) === false)
         {
-            if(isset($response[FavEntity::ID]) === true)
-            {
-                return;
-            }
+            // Get the first error detail from the details array
+            $errorDetail = $response['details'][0];
+            $errorCode = strtoupper($errorDetail['code'] ?? '');
 
+            switch ($errorCode)
+            {
+                case 'FAV000001': // Input validation failed (400)
+                    throw new Exception\BadRequestValidationFailureException(
+                        $errorDetail['description'] ?? $response['message'] ?? 'Validation failed',
+                        $errorDetail['field'] ?? ''
+                    );
+
+                case 'FAV000003': // Entity not found (404)
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_NOT_FOUND,
+                        null,
+                        null,
+                        $errorDetail['description'] ?? $response['message'] ?? 'Entity not found'
+                    );
+
+                case 'FAV000008': // Missing authentication (401)
+                case 'FAV000009': // Invalid authentication (403)
+                case 'FAV000010': // Not authorized (403)
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR,
+                        null,
+                        null,
+                        $errorDetail['description'] ?? $response['message'] ?? 'Authentication failed'
+                    );
+
+                case 'FAV000011': // Too many requests (429)
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR,
+                        null,
+                        null,
+                        $errorDetail['description'] ?? $response['message'] ?? 'Too many requests'
+                    );
+
+                default:
+                    throw new Exception\ServerErrorException(
+                        $errorDetail['description'] ?? $response['message'] ?? 'Unknown error occurred',
+                        ErrorCode::SERVER_ERROR,
+                        $response
+                    );
+            }
+        }
+
+        // If response has error but not in expected format, throw generic server error
+        if (isset($response['code']) === true && $response['code'] !== 0)
+        {
             $this->trace->error(
                 TraceCode::FAV_SERVICE_FAILURE_API_RESPONSE,
                 [
@@ -294,33 +365,15 @@ class Base
                 ]
             );
 
-            $error = $response[FavEntity::ERROR];
-
-            if (strtoupper($error[Error::PUBLIC_ERROR_CODE]) === ErrorCode::BAD_REQUEST_VALIDATION_FAILURE)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    $error[Error::DESCRIPTION],
-                    $error[Error::FIELD]);
-            }
-            else if (strtoupper($error[Error::PUBLIC_ERROR_CODE]) === ErrorCode::BAD_REQUEST_ERROR)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_ERROR,
-                    $error[Error::FIELD], null,
-                    $error[Error::DESCRIPTION]);
-            }
-            else
-            {
-                throw new Exception\ServerErrorException(
-                    $error[Error::DESCRIPTION],
-                    ErrorCode::SERVER_ERROR,
-                    $response
-                );
-            }
+            throw new Exception\ServerErrorException(
+                $response['message'] ?? 'Unknown error occurred',
+                ErrorCode::SERVER_ERROR,
+                $response
+            );
         }
     }
 
-    public function getHeadersWithJwt()
+    public function getHeadersWithJwt(): array
     {
         $jwt = $this->app['basicauth']->getPassportJwt($this->baseUrl);
 

@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Trace\TraceCode;
 
 class FundAccountValidationController extends Controller
 {
@@ -39,7 +40,7 @@ class FundAccountValidationController extends Controller
     {
         $input = Request::all();
 
-        $entity = $this->service()->fetchFAV($id, $input);
+        $entity = $this->service()->fetchFav($id, $input);
 
         return ApiResponse::json($entity);
     }
@@ -70,6 +71,67 @@ class FundAccountValidationController extends Controller
         $response = $this->service()->fetchPricingInfoForFavService($input);
 
         return ApiResponse::json($response);
+    }
+
+    public function sendWebhookToMerchant()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->sendWebhookToMerchant($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function handleCitiBankWebhook()
+    {
+        $input = Request::all();
+
+        $errorResp = $this->validateCitiRequestToken();
+
+        if ($errorResp !== null)
+        {
+            return $errorResp;
+        }
+
+        $response = $this->service()->handleBankWebhook($input, "citi");
+
+        return ApiResponse::json($response);
+    }
+
+    protected function validateCitiRequestToken()
+    {
+        $headers = Request::header();
+
+        if (empty($headers['xorgtoken']) === true)
+        {
+            $this->trace->error(TraceCode::CITI_WEBHOOK_INVALID_CALLBACK_DATA, [
+                'message'   => 'empty token',
+            ]);
+
+            return ApiResponse::json([
+                'status'  => 'failed',
+                'code'    => 'AUTH_FAILED',
+                'message' => 'Authentication failed - missing token',
+            ], 401);
+        }
+
+        $actualToken = Request::header('xorgtoken');
+        $expectedToken = $this->config['applications.citi_webhook.org_token'];
+
+        if (hash_equals($expectedToken, $actualToken) === false)
+        {
+            $this->trace->error(TraceCode::CITI_WEBHOOK_INVALID_CALLBACK_DATA, [
+                'message'   => 'invalid token',
+            ]);
+
+            return ApiResponse::json([
+                'status'  => 'failed',
+                'code'    => 'AUTH_FAILED',
+                'message' => 'Authentication failed - invalid token',
+            ], 401);
+        }
+
+        return null;
     }
 
 }

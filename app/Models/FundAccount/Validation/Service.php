@@ -16,6 +16,11 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Redaction;
 use RZP\Error\PublicErrorDescription;
 use RZP\Services\FTS\Transfer\Client as FtsClient;
+use RZP\Models\ApiEventSubscriber;
+use RZP\Http\Request\Request;
+use RZP\Http\Response\ApiResponse;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
 {
@@ -42,69 +47,77 @@ class Service extends Base\Service
     }
 
 
-    public function fetchFAV(string $id, array $input)
+    /**
+     * @throws \Exception
+     */
+    public function fetchFav(string $id, array $input): ?array
     {
-        $fav = null;
-
-        if ($this->core->shouldFetchFavByIdViaMicroservice($this->merchant))
-        {
-            try
-            {
-                $fav = $this->core->fetchByIdFromFavService($id, $input);
-            }
-
-            catch (\Exception $e)
-            {
-                if ($e->getMessage() !== PublicErrorDescription::BAD_REQUEST_INVALID_ID)
-                {
-                    throw $e;
-                }
-            }
-        }
-
-        if (empty($fav) === true)
+        try
         {
             /** @var Entity $fav */
             $fav = $this->repo->fund_account_validation->findByPublicIdAndMerchant($id, $this->merchant);
-
-            /** @var \RZP\Models\Merchant\Entity $merchant */
-            $merchant = $this->repo->merchant->findOrFail($fav->getMerchantId());
-
-            if (($fav->getFundAccountType() == Type::VPA) and
-                ($merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::VPA_BANK_INFO_ENABLED) === true))
+        }
+        catch (\Exception $ex)
+        {
+            if ($this->core->shouldFetchFavByIdViaMicroservice($this->merchant))
             {
-                $fav->setIsVpaBankInfoEnabledFlag();
+                try
+                {
+                    $fav = $this->core->fetchByIdFromFavService($id, $input);
+                }
+                catch (\Exception $ex2)
+                {
+                    // Check if it's a FAV not found error from the service
+                    if ($ex2->getCode() === ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_NOT_FOUND)
+                    {
+                        throw $ex;
+                    }
+                    throw $ex2;
+                }
             }
-
-            $fav = $this->core->setAdditionalFieldsForCompositeResponse($fav);
-
-            return $fav->toArrayPublic();
+            else {
+                throw $ex;
+            }
         }
 
-        return $fav;
+        /** @var \RZP\Models\Merchant\Entity $merchant */
+        $merchant = $this->repo->merchant->findOrFail($fav->getMerchantId());
+
+        if (($fav->getFundAccountType() == Type::VPA) and
+            ($merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::VPA_BANK_INFO_ENABLED) === true))
+        {
+            $fav->setIsVpaBankInfoEnabledFlag();
+        }
+
+        $fav = $this->core->setAdditionalFieldsForCompositeResponse($fav);
+
+        return $fav->toArrayPublic();
     }
 
     public function create(array $input): array
     {
+        $accountNumber = null;
+
         if (empty($input[Balance\Entity::ACCOUNT_NUMBER]) === false)
         {
+            $accountNumber = $input[Balance\Entity::ACCOUNT_NUMBER];
+
             // mandates account number and converts to balance id
             $this->processAccountNumber($input);
         }
 
         if (empty($input[Entity::SOURCE_ACCOUNT_NUMBER]) === false)
         {
+            $accountNumber = $input[Entity::SOURCE_ACCOUNT_NUMBER];
+
             $input[Balance\Entity::ACCOUNT_NUMBER] = $input[Entity::SOURCE_ACCOUNT_NUMBER];
 
             $this->processAccountNumber($input);
         }
 
-        $entity = $this->core->create($input, $this->merchant);
+        $input[Balance\Entity::ACCOUNT_NUMBER] = $accountNumber;
 
-        if($entity->isCreatedUsingFavService())
-        {
-            return $entity->favServiceResponse;
-        }
+        $entity = $this->core->create($input, $this->merchant);
 
         return $entity->toArrayPublic();
     }
@@ -176,11 +189,6 @@ class Service extends Base\Service
         {
             // mandates account number and converts to balance id
             $this->processAccountNumber($input);
-        }
-
-        if ($this->core->shouldFetchFavByIdViaMicroservice($this->merchant))
-        {
-            return $this->core->fetchMultipleFromFavService($input);
         }
 
         $entities = $this->entityRepo->fetch($input, $this->merchant->getId());
@@ -276,6 +284,9 @@ class Service extends Base\Service
         return ['success' => $count];
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function updateFavWithFtsWebhook(array $input) : array
     {
         $this->trace->info(
@@ -302,5 +313,118 @@ class Service extends Base\Service
     public function createFundAccountValidationViaLedgerCronJob(array $blacklistIds, array $whitelistIds, int $limit)
     {
         $this->core->createFundAccountValidationViaLedgerCronJob($blacklistIds, $whitelistIds, $limit);
+    }
+
+    public function sendWebhookToMerchant(array $input): array
+    {
+        $this->trace->info(TraceCode::FAV_SEND_WEBHOOK_TO_MERCHANT_REQUEST, [
+            'input' => $input
+        ]);
+
+        try
+        {
+            // Create a validation entity from the input
+            $validation = new Entity();
+            $validation->setId(Entity::stripDefaultSign($input['id']));
+            $validation->setFavType($input['type']);
+            $validation->setMerchantId($input['merchant_id']);
+            $validation->setStatus($input['status']);
+            $validation->setAmount($input['amount']);
+            $validation->setCurrency($input['currency']);
+            $validation->setNotes($input['notes']);
+            $validation->setValidationMethod($input['validation_method']);
+            $validation->setReferenceId($input['reference_id']);
+            $validation->setCreatedAt($input['created_at']);
+            $validation->setUtr($input['utr'] ?? null);
+
+            if ($input['status'] === 'completed'){
+                $validation->setAccountStatus($input['account_status']);
+                $validation->setRegisteredName($input['registered_name']);
+                $validation->setNameMatchScore($input['name_match_score']);
+            }
+            else if($input['status'] === 'failed') {
+                $validation->setErrorCode($input['error_code']);
+            }
+
+            // Get fund account ID from input
+            $fundAccountId = Entity::stripDefaultSign($input['fund_account']['id']);
+
+            // Fetch fund account entity
+            $fundAccount = (new \RZP\Models\FundAccount\Repository())->findByPublicId('fa_'.$fundAccountId);
+
+            // Associate fund account with validation
+            $validation->associateFundAccount($fundAccount);
+
+            // Dispatch the appropriate webhook event based on the status
+            $eventPayload = [
+                \RZP\Listeners\ApiEventSubscriber::MAIN => $validation
+            ];
+
+            if (($input['status'] === 'completed') || ($input['status'] === 'failed'))
+            {
+                $eventName = 'api.fund_account.validation.' . $input['status'];
+
+                $this->app['events']->dispatch($eventName, $eventPayload);
+            }
+
+            $this->trace->info(TraceCode::FAV_SEND_WEBHOOK_TO_MERCHANT_SUCCESS, [
+                'fav_id' => $input['id'],
+                'merchant_id' => $input['merchant_id']
+            ]);
+
+            return [
+                'success' => true,
+                'message' => 'Webhook triggered successfully',
+            ];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::FAV_SEND_WEBHOOK_TO_MERCHANT_FAILED, [
+                'input' => $input,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to trigger webhook',
+                'error'   => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Handle webhook from bank for fund account validation
+     *
+     * @param array $input Webhook payload from bank
+     * @param string $bank Bank identifier (e.g. 'citi')
+     * @return array
+     * @throws \Throwable
+     */
+    public function handleBankWebhook(array $input, string $bank): array
+    {
+        $this->trace->info(TraceCode::FAV_UPDATE_VIA_WEBHOOK_REQUEST, [
+            'bank' => $bank,
+            'input' => $input
+        ]);
+
+        try
+        {
+            // Forward the webhook to FAV service
+            $this->core->forwardBankWebhookToFavService($input, $bank);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::FAV_UPDATE_FROM_CITI_WEBHOOK_FAILED, [
+                'input'     => $input,
+                'bank'      => $bank,
+                'error'     => $e->getMessage()
+            ]);
+        }
+
+        return [
+            'status'  => 'success',
+            'message' => 'Webhook processed successfully'
+        ];
     }
 }
