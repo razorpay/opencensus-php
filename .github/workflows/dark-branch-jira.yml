@@ -2,7 +2,7 @@ name: Dark branch jira check
 
 on:
   pull_request:
-    types: [ labeled, unlabeled, opened, synchronize, reopened ]
+    types: [labeled, unlabeled, opened, synchronize, reopened]
 
 jobs:
   dark-branch-jira:
@@ -10,39 +10,50 @@ jobs:
     runs-on:
       - api-public
       - X64
+    continue-on-error: false
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Fetch Github Users
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        id: githubUsers
+      - name: Extract Ticket IDs from PR title
+        id: extract_tickets
         run: |
-          USER_CHECK=$(sh ./.github/actions/getGithubusers.sh ${{github.actor}})
-          echo "::set-output name=flaguser::$USER_CHECK"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          echo "PR Title: $PR_TITLE"
 
-      - name: Fetch Jira Id
-        uses: actions/github-script@0.9.0
-        id: jiraIssueId
-        with:
-          result-encoding: string
-          script: |
-            jiraIssueIdStr = context.payload.pull_request.body.toLowerCase()
-            console.log(jiraIssueIdStr)
-            var jiraIssueIdValueRow = (jiraIssueIdStr.substring(jiraIssueIdStr.indexOf("lightjiraid"))).split("\n")
-            var jiraId = jiraIssueIdValueRow[0].split("|")
-            var jiraIssueId = jiraId[1].trim()
-            console.log(jiraIssueId)
-            return jiraIssueId
+          JIRA_ID=$(echo "$PR_TITLE" | grep -ioE 'LIG-[0-9]+' | head -n1)
+          DEVREV_ID=$(echo "$PR_TITLE" | grep -ioE 'TKT-[0-9]+' | head -n1)
 
-      - name: Check Issue status
+          echo "jira_id=$JIRA_ID" >> $GITHUB_ENV
+          echo "devrev_id=$DEVREV_ID" >> $GITHUB_ENV
+
+          if [[ -n "$JIRA_ID" ]]; then
+            echo "jira_found=true" >> $GITHUB_ENV
+          else
+            echo "jira_found=false" >> $GITHUB_ENV
+          fi
+
+          if [[ -n "$DEVREV_ID" ]]; then
+            echo "devrev_found=true" >> $GITHUB_ENV
+          else
+            echo "devrev_found=false" >> $GITHUB_ENV
+          fi
+
+          if [[ -z "$JIRA_ID" && -z "$DEVREV_ID" ]]; then
+            echo "No valid Jira or DevRev IDs found"
+            exit 1
+          fi
+
+      - name: Check Ticket Status (Jira or DevRev)
+        if: env.jira_found == 'true' || env.devrev_found == 'true'
         env:
-          JIRA_ISSUE_ID: ${{steps.jiraIssueId.outputs.result}}
-          BASE_URL: ${{secrets.JIRA_BASE_URL}}
-          USER_EMAIL: ${{secrets.JIRA_USER_EMAIL}}
-          API_TOKEN: ${{secrets.JIRA_API_TOKEN}}
+          JIRA_ISSUE_ID: ${{ env.jira_id }}
+          DEVREV_ISSUE_ID: ${{ env.devrev_id }}
+          BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          DEVREV_API_TOKEN: ${{ secrets.DEVREV_API_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           bash ./.github/actions/checkLightJira.sh
-
-
