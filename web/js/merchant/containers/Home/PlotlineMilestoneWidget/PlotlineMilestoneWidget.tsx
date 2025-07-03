@@ -166,6 +166,12 @@ const PlotlineMilestoneWidget = () => {
         subheading: `Each payment gets you closer to your next reward. ${daysRemainingSinceActivation} days left.`,
       };
 
+    if (transactionCount >= 5)
+      titleDetails = {
+        heading: 'Welcome back to Razorpay',
+        subheading: 'Explore your transactions, settlements and more.',
+      };
+
     if (titleDetails)
       return (
         <Box
