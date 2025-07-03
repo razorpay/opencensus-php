@@ -22,6 +22,8 @@ import { bindActionCreators } from 'redux';
 import { Store } from 'common/typings';
 import { CountryCodeType } from '@razorpay/i18nify-js';
 import { getUser } from '@apps/shell/src/client/store/commonStore/exposedActions';
+import { useSplitzService } from 'common/splitz';
+import { isExperimentEnabled } from '@libs/shared-utils';
 
 type PhoneNumberEvent = {
   phoneNumber: string;
@@ -56,6 +58,14 @@ const ModalForm = ({
   const [isChecked, setIsChecked] = useState(true);
   const [hasValidationError, setHasValidationError] = useState(false);
   const validationState = hasValidationError ? 'error' : 'none';
+  const { abExperiments } = useSplitzService();
+
+  const isValidationEnabledForDisplayName = isExperimentEnabled(
+    abExperiments?.display_name_validation,
+  );
+
+  const isDisplayNameValidationEnabled =
+    entity?.id === PersonalProfileFields.DISPLAY_NAME && isValidationEnabledForDisplayName;
 
   const { merchant } = getUser();
 
@@ -69,12 +79,13 @@ const ModalForm = ({
     checkboxText = '',
     errorText = 'Invalid input',
     isValid = () => true,
+    getErrorText,
   } = modalConfig({ user })[entity?.id] || {};
 
   const handleUpdateClick = () => {
     const valueToValidate =
       typeof textInput === 'object' ? `${textInput.dialCode}${textInput.value}` : textInput || '';
-    if (textInput && isValid(valueToValidate)) {
+    if (textInput && isValid(valueToValidate, isDisplayNameValidationEnabled)) {
       setHasValidationError(false);
       onUpdateClick({
         textInput: valueToValidate,
@@ -96,6 +107,23 @@ const ModalForm = ({
     } else {
       return true;
     }
+  };
+
+
+  const computeErrorText = () => {
+    if (isDisplayNameValidationEnabled) {
+      const errorText = getErrorText?.(textInput);
+      const hasError = errorText?.length > 0;
+      return hasError ? errorText : undefined;
+    }
+    return hasValidationError ? errorText : undefined;
+  };
+
+  const computeValidationState = () => {
+    if (isDisplayNameValidationEnabled) {
+      return computeErrorText() ? 'error' : 'none';
+    }
+    return validationState;
   };
 
   const renderInput = () => {
@@ -121,8 +149,8 @@ const ModalForm = ({
         value={typeof textInput === 'string' ? textInput : ''}
         type="text"
         onChange={({ value }) => settextInput(value)}
-        validationState={validationState}
-        errorText={hasValidationError ? errorText : undefined}
+        validationState={computeValidationState()}
+        errorText={computeErrorText()}
         isRequired
         necessityIndicator="required"
         showClearButton

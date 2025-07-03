@@ -2300,6 +2300,27 @@ export const splitzConfig: SplitzInitConfig = {
       ],
     },
     {
+      routesToMatch: ['/business-settings/contact'],
+      abExperiments: [
+        {
+          uniqueHashKey: 'display_name_validation',
+          experimentId: {
+            beta: 'QoDj5o9q7ELIHV',
+            production: 'QoB0Wu1OlS1Nwr',
+          },
+          defaultVariant: {
+            name: 'variables',
+            variables: [
+              {
+                key: 'result',
+                value: 'off',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
       routesToMatch: ['website-app-settings/*', '/onboarding/api-keys'],
       abExperiments: [
         {

@@ -3,6 +3,7 @@ import { PersonalProfileFields } from 'merchant/views/AccountAndSettings/Account
 import { Text } from '@razorpay/blade/components';
 import { isPhone, isEmail } from 'common/utils/validators';
 import { Store } from 'common/typings';
+import { validateDisplayName } from './utils';
 
 const { DISPLAY_NAME, NAME, EMAIL, CONTACT_MOBILE } = PersonalProfileFields;
 type ModalConfigKey = typeof DISPLAY_NAME | typeof NAME | typeof EMAIL | typeof CONTACT_MOBILE;
@@ -15,6 +16,7 @@ interface EntityConfigI {
   checkboxText?: JSX.Element;
   isValid?: (input: string) => boolean;
   errorText: string;
+  getErrorText?: (input: string) => string;
 }
 
 export const modalConfig = ({
@@ -28,6 +30,9 @@ export const modalConfig = ({
     bodyText:
       'The new display name will reflect immediately on your dashboard after you update it. It will be visible to you and your team on the Razorpay dashboard.',
     errorText: 'Invalid display name',
+    getErrorText: (displayName) => validateDisplayName(displayName)?.errorText,
+    isValid: (displayName, isValidationEnabled = false) =>
+      isValidationEnabled ? validateDisplayName(displayName)?.isValid : true,
   },
   name: {
     title: 'Edit profile name',
