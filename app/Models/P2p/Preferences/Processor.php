@@ -189,7 +189,8 @@ class Processor extends Base\Processor
             Constants::TIMEOUTS                    => $this->fetchSDKTimeoutConfigs(),
             Constants::SENTRY_CONFIG               => $this->fetchSentrySamplingRate(),
             Entity::ERROR_MAPPING_HASH             => $this->getErrorMappingHash(),
-            Constants::PAYER_ACCOUNT_TYPE_MAPPINGS => Constants::getPayerAccountTypeMappings($this->getGateway())
+            Constants::PAYER_ACCOUNT_TYPE_MAPPINGS => Constants::getPayerAccountTypeMappings($this->getGateway()),
+            Constants::OTP_VERIFICATION_CONFIG     => Constants::getOtpVerificationConfig($this->getActiveHandle()),
         ];
     }
 

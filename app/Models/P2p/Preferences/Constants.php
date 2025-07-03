@@ -11,6 +11,8 @@ class Constants
     const MERCHANT_ID  = 'merchant_id';
     const DISPLAY_NAME = 'display_name';
     const PAYER_ACCOUNT_TYPE_MAPPINGS = 'payer_account_type_mappings';
+    const OTP_VERIFICATION_CONFIG = 'otp_verification_config';
+
     const DISPLAY_CONTROLS = 'DisplayControls';
     const REWARD_CONFIGS = 'RewardConfigs';
 
@@ -243,6 +245,17 @@ class Constants
         ]
     ];
 
+    private static array $otpVerificationMappings = [
+        'axis' => [
+            'otp_verification_enabled' => false,
+            'otp_verification_timeout' => 45,
+        ],
+        'default' => [
+            'otp_verification_enabled' => true,
+            'otp_verification_timeout' => 45,
+        ]
+    ];
+
     private static array $defaultPrefetchConfigs = [
         self::CONSENT_MESSAGE    => 'Automatically fetch & link my active UPI accounts from top banks',
         self::FETCH_RETRY        => 0,
@@ -285,6 +298,11 @@ class Constants
     public static function getPayerAccountTypeMappings($gateway)
     {
         return self::$payerAccountTypeMappings[$gateway] ?? self::$payerAccountTypeMappings['default'];
+    }
+
+    public static function getOtpVerificationConfig($handle)
+    {
+        return self::$otpVerificationMappings[$handle] ?? self::$otpVerificationMappings['default'];
     }
 
     public static function getDefaultPrefetchConfigs()
