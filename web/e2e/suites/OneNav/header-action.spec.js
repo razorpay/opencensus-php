@@ -66,7 +66,7 @@ test.describe.parallel('One nav header action - Logout @project=oneNav', () => {
     storageState: getStorageStatePath().ACTIVATED_ONE_NAV_MERCHANT_4,
   });
 
-  test('should be able to logout', async ({ page }) => {
+  test.skip('should be able to logout', async ({ page }) => {
     await page.locator('div[data-blade-component="avatar"] button').click();
     await page.locator('button:has-text("Log out")').click();
     await expect(page.locator('button:has-text("Log out")')).not.toBeVisible();

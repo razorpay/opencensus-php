@@ -280,6 +280,7 @@ describe('CriticalActions Component', () => {
     mockUseTheme.mockReturnValue({
       theme: { breakpoints: { base: 0, m: 768, l: 1024, xl: 1280 } },
     });
+
     mockUseBreakpoint.mockReturnValue({ matchedDeviceType: 'desktop', matchedBreakpoint: 'xl' });
 
     customRender(<CriticalActions />);
