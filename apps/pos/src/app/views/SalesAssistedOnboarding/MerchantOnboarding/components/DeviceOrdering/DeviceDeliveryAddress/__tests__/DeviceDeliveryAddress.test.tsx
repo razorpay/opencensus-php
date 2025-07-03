@@ -16,7 +16,7 @@ const defaultProps = {
   orderSummary: TestDeviceOrderSummary,
   merchantDetails: MOCK_MERCHANT_DETAILS as unknown as DashboardGraphQLMerchant,
   handleModularUpdate: jest.fn((payload) => {
-    payload["modular_callback"]();
+    payload['modular_callback']();
   }),
   handleGoToNextStep: jest.fn(),
   isUpdateModularLoading: false,
@@ -70,6 +70,7 @@ describe('DeviceDeliveryAddress', () => {
       qr_payment_amount_field: 2478,
       check_for_order_completion: moment().unix(),
       check_for_payment_exp_field: moment().unix(),
+      delivery_address_selection_completion_timestamp: moment().unix(),
     });
   });
 
