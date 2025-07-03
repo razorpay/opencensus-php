@@ -11,7 +11,7 @@ type ExecCommandOptions = Omit<SpawnOptions, 'shell'> & {
  * Executes a shell command using the spawn function and returns a promise.
  * @param command - The shell command to execute.
  * @param options - Additional spawn options.
- * @returns A Promise that resolves when the command completes successfully.
+ * @returns A Promise that resolves when the command completes successfully
  */
 const execCommand = (command: string, options?: ExecCommandOptions): Promise<void> => {
   return new Promise((resolve, reject) => {

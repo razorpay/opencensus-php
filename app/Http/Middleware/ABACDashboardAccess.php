@@ -56,6 +56,15 @@ class ABACDashboardAccess
     ];
     
     /**
+     * List of allowed organization IDs that can bypass ABAC checks
+     * Merchants belonging to these organizations will be allowed access
+     */
+    public static array $allowedOrgIds = [
+        "org_L2oByWVtgX25J5", // Curlec Devstack
+        "org_KjWRtYXwpK6VfK" // Curlec Prod
+    ];
+    
+    /**
      * Global access routes that are accessible to all organizations
      * Format: route_pattern => [http_methods => [allowed_methods]]
      */
@@ -95,7 +104,8 @@ class ABACDashboardAccess
         "user_logout",
         "admin_getIndex",
         "merchants_switch",
-        "get_org_by_domain"
+        "get_org_by_domain",
+        "graph_request"
     ];
     
     /**
@@ -361,7 +371,8 @@ class ABACDashboardAccess
         
         $currentMerchantOrgId = $this->getCurrentMerchantOrgId($currentMerchantId, $orgMerchantSessionTTL);
         if (($currentMerchantOrgId === null) ||
-            ($currentMerchantOrgId === $currentOrgId))
+            ($currentMerchantOrgId === $currentOrgId) ||
+            (in_array($currentMerchantOrgId, self::$allowedOrgIds) === true))
         {
             return $next($request);
         }
