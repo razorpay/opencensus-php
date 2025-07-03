@@ -6517,10 +6517,7 @@ class Gateway
                 self::TNGD,
             ],
             Method::EMANDATE => [
-                self::ENACH_NPCI_NETBANKING,
-                self::NETBANKING_AXIS,
-                self::NETBANKING_SBI,
-                self::NETBANKING_HDFC
+                self::ENACH_NPCI_NETBANKING
             ]
         ];
 
