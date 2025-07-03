@@ -33,6 +33,10 @@ import SubscriptionUsageDetails from './SubscriptionUsageDetails';
 import { UPI_APPS_SELECT_OPTIONS } from 'merchant/views/Offers/New/components/UPISelector';
 import { compose } from 'redux';
 
+const OfferContainer = ({ children }) => {
+  return <div className="Offers--Details content-wrapper content-sm txn-details">{children}</div>;
+};
+
 export class OffersDetails extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -254,6 +258,21 @@ export class OffersDetails extends React.Component {
 
   render() {
     const { loading, offer, splitz } = this.props;
+
+    if (loading) {
+      return (
+        <OfferContainer>
+          <div className="page-spinner-container">
+            <Spinner />
+          </div>
+        </OfferContainer>
+      );
+    }
+
+    if (!offer) {
+      return <OfferContainer></OfferContainer>;
+    }
+
     const {
       id,
       name,
@@ -326,180 +345,161 @@ export class OffersDetails extends React.Component {
 
     return (
       <div className="Offers--Details content-wrapper content-sm txn-details">
-        {loading ? (
-          <div className="page-spinner-container">
-            <Spinner />
+        <div className="panel panel-default SliderPanel">
+          <div className="panel-heading">
+            <i className="i i-link text-primary icon--formal" /> <strong>{id}</strong>
           </div>
-        ) : (
-          <div className="panel panel-default SliderPanel">
-            <div className="panel-heading">
-              <i className="i i-link text-primary icon--formal" /> <strong>{id}</strong>
-            </div>
 
-            {this.isSubscriptionOffer && (
-              <>
-                <Banner className="download-report">
-                  Download the report containing usage details for this offer across subscriptions.
-                  <AsyncBtn.Primary>Download Report</AsyncBtn.Primary>
-                </Banner>
+          {this.isSubscriptionOffer && (
+            <>
+              <Banner className="download-report">
+                Download the report containing usage details for this offer across subscriptions.
+                <AsyncBtn.Primary>Download Report</AsyncBtn.Primary>
+              </Banner>
 
-                <SubscriptionUsageDetails id={this.props.id} />
-              </>
-            )}
+              <SubscriptionUsageDetails id={this.props.id} />
+            </>
+          )}
 
-            <div className="SliderPanel__Body">
-              <div className="panel-body">
-                <div className="list-group details-row-container">
-                  <EntityDetailRow label="Created At">
-                    <Time format="DD MMM YYYY, hh:mm a" value={starts_at} />
+          <div className="SliderPanel__Body">
+            <div className="panel-body">
+              <div className="list-group details-row-container">
+                <EntityDetailRow label="Created At">
+                  <Time format="DD MMM YYYY, hh:mm a" value={starts_at} />
+                </EntityDetailRow>
+
+                <EntityDetailRow label="Status">
+                  <OfferStatusLabel status={active ? 'enabled' : 'disabled'} />
+                  <Button.Transparent
+                    className={`Button--Link ${disabledButtonClass}`}
+                    style={{ marginLeft: 12 }}
+                    onClick={this.toggleActivation}
+                  >
+                    {active ? 'Disable' : 'Enable'}
+                  </Button.Transparent>
+                </EntityDetailRow>
+
+                <EntityDetailRow label="Offer Name" value={name} />
+
+                <EntityDetailRow label="Display Text" value={display_text} />
+
+                <EntityDetailRow label="Terms" value={terms} />
+
+                {/* TODO: Check this logic with BE */}
+                {product_type && <EntityDetailRow label="Promotion Type" value={product_type} />}
+
+                <EntityDetailRow label="Offer Usage" value={current_offer_usage} />
+
+                <EntityDetailRow
+                  label="On Offer Failure"
+                  value={block ? 'Block Payment' : 'Allow Payment'}
+                />
+
+                <EntityDetailRow label="Checkout Visibility" value={default_offer ? 'Yes' : 'No'} />
+
+                <EntityDetailRow label="Min Payment">
+                  <Amount value={min_amount} currency="INR" />
+                </EntityDetailRow>
+
+                {max_order_amount && (
+                  <EntityDetailRow label="Max Payment">
+                    <Amount value={max_order_amount} currency="INR" />
                   </EntityDetailRow>
+                )}
 
-                  <EntityDetailRow label="Status">
-                    <OfferStatusLabel status={active ? 'enabled' : 'disabled'} />
-                    <Button.Transparent
-                      className={`Button--Link ${disabledButtonClass}`}
-                      style={{ marginLeft: 12 }}
-                      onClick={this.toggleActivation}
-                    >
-                      {active ? 'Disable' : 'Enable'}
-                    </Button.Transparent>
-                  </EntityDetailRow>
+                <EntityDetailRow label="Start of Offer">
+                  <Time format="DD MMM YYYY, hh:mm a" value={starts_at} />
+                </EntityDetailRow>
 
-                  <EntityDetailRow label="Offer Name" value={name} />
+                <EntityDetailRow label="Expiry of Offer">
+                  <Time format="DD MMM YYYY, hh:mm a" value={ends_at} />
+                </EntityDetailRow>
 
-                  <EntityDetailRow label="Display Text" value={display_text} />
+                <EntityDetailRow
+                  label="Offer Type"
+                  value={
+                    isClubbedOffer
+                      ? OFFER_TYPE_LABELS[OFFER_TYPES.Clubbed]
+                      : emi_subvention && emiTypeBenefit
+                      ? 'EMI'
+                      : OFFER_TYPE_LABELS[type]
+                  }
+                />
 
-                  <EntityDetailRow label="Terms" value={terms} />
+                <EntityDetailRow label="Bank Name" value={ISSUERS[issuer]} />
 
-                  {/* TODO: Check this logic with BE */}
-                  {product_type && <EntityDetailRow label="Promotion Type" value={product_type} />}
+                <EntityDetailRow label="Method" value={paymentMethod} />
 
-                  <EntityDetailRow label="Offer Usage" value={current_offer_usage} />
-
+                {paymentMethod === PAYMENT_METHODS.EMI && (
                   <EntityDetailRow
-                    label="On Offer Failure"
-                    value={block ? 'Block Payment' : 'Allow Payment'}
+                    label="Method Type"
+                    value={payment_method_type === 'debit' ? 'Debit Card' : 'Credit Card'}
                   />
+                )}
 
-                  <EntityDetailRow
-                    label="Checkout Visibility"
-                    value={default_offer ? 'Yes' : 'No'}
-                  />
+                {emi_subvention && emiTypeBenefit ? (
+                  <EntityDetailRow label="EMI Type" value={emiTypeBenefit} />
+                ) : null}
 
-                  <EntityDetailRow label="Min Payment">
-                    <Amount value={min_amount} currency="INR" />
+                {emi_subvention && (
+                  <EntityDetailRow label="Emi Durations" value={emiDurationString(emi_durations)} />
+                )}
+
+                <EntityDetailRow label="Maximum Usage" value={max_offer_usage} />
+
+                <EntityDetailRow
+                  label="Discount Type"
+                  value={isUptoTypeBenefit ? 'Percentage' : discountType}
+                />
+
+                {this.renderDiscountWorthField({
+                  discountWorthBenefit,
+                  isUptoTypeBenefit,
+                  percent_rate,
+                  flat_cashback,
+                })}
+
+                {maxCashbackBenefit || (isPercentageDiscount && max_cashback) ? (
+                  <EntityDetailRow label="Max Cashback">
+                    <Amount value={maxCashbackBenefit || max_cashback} currency="INR" />
                   </EntityDetailRow>
+                ) : null}
 
-                  {max_order_amount && (
-                    <EntityDetailRow label="Max Payment">
-                      <Amount value={max_order_amount} currency="INR" />
-                    </EntityDetailRow>
-                  )}
+                {isCardPayment && (
+                  <>
+                    <EntityDetailRow label="IINs" value={iins} />
+                    <EntityDetailRow label="Network" value={PAYMENT_NETWORK_MAP[payment_network]} />
+                  </>
+                )}
 
-                  <EntityDetailRow label="Start of Offer">
-                    <Time format="DD MMM YYYY, hh:mm a" value={starts_at} />
-                  </EntityDetailRow>
-
-                  <EntityDetailRow label="Expiry of Offer">
-                    <Time format="DD MMM YYYY, hh:mm a" value={ends_at} />
-                  </EntityDetailRow>
-
-                  <EntityDetailRow
-                    label="Offer Type"
-                    value={
-                      isClubbedOffer
-                        ? OFFER_TYPE_LABELS[OFFER_TYPES.Clubbed]
-                        : emi_subvention && emiTypeBenefit
-                        ? 'EMI'
-                        : OFFER_TYPE_LABELS[type]
-                    }
-                  />
-
-                  <EntityDetailRow label="Bank Name" value={ISSUERS[issuer]} />
-
-                  <EntityDetailRow label="Method" value={paymentMethod} />
-
-                  {paymentMethod === PAYMENT_METHODS.EMI && (
+                {this.isSubscriptionOffer && (
+                  <>
+                    <EntityDetailRow label="Redemption Type" value={redemption_type} />
+                    <EntityDetailRow label="Number of Cycles" value={no_of_cycles} />
+                  </>
+                )}
+                {upi ? (
+                  <>
                     <EntityDetailRow
-                      label="Method Type"
-                      value={payment_method_type === 'debit' ? 'Debit Card' : 'Credit Card'}
+                      data-testid="upi-apps"
+                      label="UPI Apps"
+                      value={this.mapKeysToText(upi.apps, UPI_APPS_SELECT_OPTIONS, 'ALL UPI Apps')}
                     />
-                  )}
-
-                  {emi_subvention && emiTypeBenefit ? (
-                    <EntityDetailRow label="EMI Type" value={emiTypeBenefit} />
-                  ) : null}
-
-                  {emi_subvention && (
                     <EntityDetailRow
-                      label="Emi Durations"
-                      value={emiDurationString(emi_durations)}
+                      data-testid="payer-account-types"
+                      label="Payer Account Type"
+                      value={this.mapKeysToText(
+                        upi.payer_account_type,
+                        PAYER_ACCOUNT_TYPES_DISPLAY,
+                        'All Payer Account Types',
+                      )}
                     />
-                  )}
-
-                  <EntityDetailRow label="Maximum Usage" value={max_offer_usage} />
-
-                  <EntityDetailRow
-                    label="Discount Type"
-                    value={isUptoTypeBenefit ? 'Percentage' : discountType}
-                  />
-
-                  {this.renderDiscountWorthField({
-                    discountWorthBenefit,
-                    isUptoTypeBenefit,
-                    percent_rate,
-                    flat_cashback,
-                  })}
-
-                  {maxCashbackBenefit || (isPercentageDiscount && max_cashback) ? (
-                    <EntityDetailRow label="Max Cashback">
-                      <Amount value={maxCashbackBenefit || max_cashback} currency="INR" />
-                    </EntityDetailRow>
-                  ) : null}
-
-                  {isCardPayment && (
-                    <>
-                      <EntityDetailRow label="IINs" value={iins} />
-                      <EntityDetailRow
-                        label="Network"
-                        value={PAYMENT_NETWORK_MAP[payment_network]}
-                      />
-                    </>
-                  )}
-
-                  {this.isSubscriptionOffer && (
-                    <>
-                      <EntityDetailRow label="Redemption Type" value={redemption_type} />
-                      <EntityDetailRow label="Number of Cycles" value={no_of_cycles} />
-                    </>
-                  )}
-                  {upi ? (
-                    <>
-                      <EntityDetailRow
-                        data-testid="upi-apps"
-                        label="UPI Apps"
-                        value={this.mapKeysToText(
-                          upi.apps,
-                          UPI_APPS_SELECT_OPTIONS,
-                          'ALL UPI Apps',
-                        )}
-                      />
-                      <EntityDetailRow
-                        data-testid="payer-account-types"
-                        label="Payer Account Type"
-                        value={this.mapKeysToText(
-                          upi.payer_account_type,
-                          PAYER_ACCOUNT_TYPES_DISPLAY,
-                          'All Payer Account Types',
-                        )}
-                      />
-                    </>
-                  ) : null}
-                </div>
+                  </>
+                ) : null}
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
     );
   }
