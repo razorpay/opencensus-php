@@ -49,9 +49,7 @@ export default class BaseModel {
   */
   serialize() {
     let fields =
-      typeof this.resourceFields === 'function'
-        ? this.resourceFields()
-        : this.resourceFields;
+      typeof this.resourceFields === 'function' ? this.resourceFields() : this.resourceFields;
     let serializedModel = {};
 
     for (let i = 0, len = fields.length; i < len; i++) {

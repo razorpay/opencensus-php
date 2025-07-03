@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, userEvent } from 'test-utils';
+import 'merchant_common/views/Reports/mocks/hooks/useReportsSplitzExperimentsMock';
 import { DownloadIndicator } from 'merchant_common/views/Reports/features/Downloads/components/DownloadIndicator';
 import * as notifications from 'merchant_common/reducers/notifications';
 import * as downloadFile from 'merchant/utils/downloadFile';

@@ -18,6 +18,7 @@ export const isLogInProgress = (logStatus: string): boolean =>
 export const fetchDownloadLogs = (
   { page = 1, filter = '' }: ReportsFetchAPIParams,
   headers: ReportsFetchHeaders,
+  isEdgeEnabled: boolean,
 ): Promise<ResType<ResPayload<BaseLogType>>> => {
   const [type, ...value] = filter.split('.');
 
@@ -35,8 +36,10 @@ export const fetchDownloadLogs = (
 
   const paginationParams = `limit=${LOGS_COUNT}&offset=${LOGS_COUNT * (page - 1)}`;
 
+  const pathPrefix = isEdgeEnabled ? 'reporting/merchant' : 'reporting';
+
   return merchantFetch({
-    url: `reporting/logs?${paginationParams}${filterParams}`,
+    url: `${pathPrefix}/logs?${paginationParams}${filterParams}`,
     headers: paramHeader,
   });
 };
@@ -59,9 +62,10 @@ export const initiateLogsPoll = ({
   pollResSuccessCallback,
   pollResFailedCallback,
   onPollStopCallback,
+  isEdgeEnabled,
 }: LongPollInitiatorArgs<BaseLogType>): LongPollReturnType<BaseLogType> => {
   return reportsLongPoll({
-    fetchFunc: () => fetchDownloadLogs(queryParams, headers),
+    fetchFunc: () => fetchDownloadLogs(queryParams, headers, isEdgeEnabled),
     // when sent true from validator polling will stop
     // continue polling if status is in progress
     validator: (data) => !data?.items.some((log) => isLogInProgress(log.status)),

@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from 'test-utils';
+import 'merchant_common/views/Reports/mocks/hooks/useReportsSplitzExperimentsMock';
 import { DownloadsTable } from 'merchant_common/views/Reports/features/Downloads/components/DownloadsTable';
 import { getDownloadsStateWith } from 'merchant_common/views/Reports/features/Downloads/__test__/fixtures/index';
 import { REPORT_TEST_DASHBOARD } from 'merchant_common/views/Reports/constants';

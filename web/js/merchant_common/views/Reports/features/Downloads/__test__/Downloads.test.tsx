@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, userEvent } from 'test-utils';
+import 'merchant_common/views/Reports/mocks/hooks/useReportsSplitzExperimentsMock';
 import { Downloads } from 'merchant_common/views/Reports/features/Downloads';
 import { REPORT_TEST_DASHBOARD } from 'merchant_common/views/Reports/constants';
 import { ReportContextProvider } from 'merchant_common/views/Reports/contexts/ReportsContext';

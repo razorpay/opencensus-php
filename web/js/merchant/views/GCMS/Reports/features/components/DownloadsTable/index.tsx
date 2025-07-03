@@ -15,8 +15,9 @@ import {
   startLogsPoll,
   stopLogsPoll,
 } from 'merchant_common/views/Reports/redux/reducer';
-
+import { useReportsSplitzExperiments } from 'merchant_common/views/Reports/hooks';
 import { baseDownloadsTableTemplate } from '../../configs/baseTableTemplate';
+
 const mapStateToProps = ({ reportsCore }, { dashboardType }) => {
   const { loading, logs, pageTrack, filter, genericPoll, totalCount } =
     reportsCore[dashboardType].downloads;
@@ -77,6 +78,7 @@ const DownloadsTableComponent = connect(
     // will hold abort fn of presently ongoing poll
     const abortPresentlyActivePoll = useRef<any>();
     const { headers: defaultHeaders } = getReportsDashboardConfig(dashboardType);
+    const { isEdgeEnabled } = useReportsSplitzExperiments();
 
     useEffect(() => {
       // abort present poll.
@@ -117,6 +119,7 @@ const DownloadsTableComponent = connect(
           },
           // updates redux state when generic poll times out
           onPollStopCallback: () => stopLogsPoll(),
+          isEdgeEnabled,
         });
 
         // update ref with new poll's abort fn

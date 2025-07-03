@@ -10,7 +10,7 @@ export default class ReportingLog extends GenericEntity {
       fetchFunc: () => this.fetch(logId),
       // when sent true from validator polling will stop
       // continue polling if status is in progress
-      validator: log => !isLogInProgress(log.status),
+      validator: (log) => !isLogInProgress(log.status),
       minWaitTime: 500,
     }).promise;
   }

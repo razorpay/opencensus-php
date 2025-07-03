@@ -40,7 +40,7 @@ const OverviewBannerComponent = ({ loading, openModal, user, org }): JSX.Element
 
   if (isBillMeOnlyMerchant(splitz)) {
     return null;
-  };
+  }
 
   const handleDownloadClick = () => {
     trackOverviewSection({

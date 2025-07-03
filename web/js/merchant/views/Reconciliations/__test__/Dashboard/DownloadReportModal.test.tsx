@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, waitFor, fireEvent, screen } from 'test-utils';
-
+import 'merchant_common/views/Reports/mocks/hooks/useReportsSplitzExperimentsMock';
 import DownloadReportModal from 'merchant/views/Reconciliations/Dashboard/DownloadReportModal';
 
 const mockSetIsOpenDownloadModal = jest.fn();
