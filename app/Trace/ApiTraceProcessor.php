@@ -109,6 +109,7 @@ class ApiTraceProcessor
         'fund_account_name',
         'fund_account_number',
         'contact.partial_search',
+        'debit_account_number',
     ];
 
     const highTierLogRoutes = [

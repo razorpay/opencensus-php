@@ -12882,4 +12882,91 @@ class Core extends Base\Core
             );
         }
     }
+
+    public function addAdditionalFieldsToResponse(array $response,Entity $payoutEntity,string $source): array
+    {
+        try
+        {
+            $this->trace->info(TraceCode::PAYOUTS_RESPONSE_ADDITIONAL_FIELDS_CHECK, [
+                'id'          => $payoutEntity->getId(),
+            ]);
+
+            // No change in response for unknown source
+            if (!in_array($source,[Entity::API,Entity::WEBHOOK],true)) {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null,
+                    [
+                        'id' => $payoutEntity->getId(),
+                        'reason' => $source,
+                    ], TraceCode::PAYOUTS_RESPONSE_ADDITIONAL_FIELDS_UNKNOWN_SOURCE);
+            }
+
+            // No change in response for sub_account payout
+            if ($payoutEntity->getPayoutType() === Entity::SUB_ACCOUNT) {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null,
+                    [
+                        'id' => $payoutEntity->getId(),
+                        'reason' => $payoutEntity->getPayoutType(),
+                    ], TraceCode::PAYOUTS_RESPONSE_ADDITIONAL_FIELDS_SUB_ACCOUNT_PAYOUT);
+            }
+
+            if ($source == Entity::API) {
+                // Only allow  for payout_fetch_by_id & payout_fetch_multiple route.
+                $routeName = $this->app['api.route']->getCurrentRouteName();
+                if (!in_array($routeName, [Entity::PAYOUT_FETCH_MULTIPLE, Entity::PAYOUT_FETCH_BY_ID], true)){
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null,
+                        [
+                            'id' => $payoutEntity->getId(),
+                            'route' => $routeName,
+                        ], TraceCode::PAYOUTS_RESPONSE_ADDITIONAL_FIELDS_ROUTE_NOT_ALLOWED);
+                }
+
+                // Only allow for private auth.
+                /** @var $auth BasicAuth */
+                $auth = $this->app['basicauth'];
+                if (!$auth->isPrivateAuth()){
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null,
+                        [
+                            'id' => $payoutEntity->getId(),
+                            'auth' => $auth->getAuthType(),
+                        ], TraceCode::PAYOUTS_RESPONSE_ADDITIONAL_FIELDS_AUTH_NOT_ALLOWED);
+                }
+            }
+
+            // Fetch Balance Entity if not found
+            $balance = $payoutEntity->balance;
+            if (empty($balance) === true)
+            {
+                /** @var Merchant\Balance\Entity $balance */
+                $balance = $this->repo->balance->findOrFailById($payoutEntity->getBalanceId());
+            }
+
+            // Check if field is missing
+            if (empty($balance->getAccountNumber()) === true) {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null,
+                    [
+                        'id' => $payoutEntity->getId(),
+                    ], TraceCode::PAYOUTS_RESPONSE_ADDITIONAL_FIELDS_MISSING_DEBIT_ACCOUNT_NUMBER);
+            }
+
+            // Map Additional Required Fields To Payload
+            $response[Entity::DEBIT_ACCOUNT_NUMBER] = $balance->getAccountNumber();
+
+            $this->trace->info(TraceCode::PAYOUTS_RESPONSE_ADDITIONAL_FIELDS_ADDED, [
+                'id'          => $payoutEntity->getId(),
+            ]);
+        }
+        catch(\Throwable $e)
+        {
+            // If any exception occurs, skipping additional mapping
+            switch ($e){
+                case BadRequestException::class:
+                    $this->trace->info(TraceCode::PAYOUTS_RESPONSE_ADDITIONAL_FIELDS_SKIPPED,[$e->getMessage()]);
+                    break;
+                default:
+                    $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYOUTS_RESPONSE_ADDITIONAL_FIELDS_SKIPPED);
+            }
+        }
+
+        return $response;
+    }
 }

@@ -145,9 +145,11 @@ class Entity extends Base\PublicEntity
     const QUEUED_REASON                         = 'queued_reason';
     const SOURCE_TYPE_EXCLUDE                   = 'source_type_exclude';
     const ON_HOLD_AT                            = 'on_hold_at';
+    const PAYOUT_FETCH_BY_ID                    = 'payout_fetch_by_id';
     const PAYOUT_FETCH_MULTIPLE                 = 'payout_fetch_multiple';
     const PAYOUT_FETCH_MULTIPLE_ALL             = 'payout_fetch_multiple_all';
     const VPA                                   = 'vpa';
+    const DEBIT_ACCOUNT_NUMBER                  = 'debit_account_number';
 
     // string constants
     const PARTNER_APPLICATION    = 'partner_application';
@@ -363,6 +365,7 @@ class Entity extends Base\PublicEntity
 
     const API       = 'api';
     const DASHBOARD = 'dashboard';
+    const WEBHOOK   = 'webhook';
 
     const ORIGIN_DESERIALIZER = [
         1 => self::API,
@@ -3190,6 +3193,21 @@ class Entity extends Base\PublicEntity
 
         $payoutArray = parent::toArrayPublic();
 
+        try {
+            $core = (new Core());
+            //Experiment Check for Payout Merchant
+            if($core->isSplitzExperimentEnable([
+                    'merchant_id'   => $this->getMerchantId(),
+                    'experiment_id' => config('app.api_and_webhook_additional_fields_experiment'),
+                    'request_data'  => json_encode(['merchant_id' => $this->getMerchantId()])
+                ],'default', TraceCode::API_AND_WEBHOOK_ADDITIONAL_FIELDS_SPLITZ_ERROR) === true){
+                $payoutArray = $core->addAdditionalFieldsToResponse($payoutArray,$this,self::API);
+            }
+        }
+        catch (\Throwable $e) {
+            app('trace')->traceException($e, Trace::ERROR, TraceCode::PAYOUTS_RESPONSE_ADDITIONAL_FIELDS_SKIPPED);
+        }
+
         $errorObj = $this->getErrorDetails();
 
         if (is_null($errorObj) === false)
@@ -3224,6 +3242,21 @@ class Entity extends Base\PublicEntity
         }
 
         $filteredAttributes = parent::toArrayWebhook();
+
+        try {
+            $core = (new Core());
+            //Experiment Check for Payout Merchant
+            if($core->isSplitzExperimentEnable([
+                    'merchant_id'   => $this->getMerchantId(),
+                    'experiment_id' => config('app.api_and_webhook_additional_fields_experiment'),
+                    'request_data'  => json_encode(['merchant_id' => $this->getMerchantId()])
+                ],'default', TraceCode::API_AND_WEBHOOK_ADDITIONAL_FIELDS_SPLITZ_ERROR) === true){
+                $filteredAttributes = $core->addAdditionalFieldsToResponse($filteredAttributes,$this,self::WEBHOOK);
+            }
+        }
+        catch (\Throwable $e) {
+            app('trace')->traceException($e, Trace::ERROR, TraceCode::PAYOUTS_RESPONSE_ADDITIONAL_FIELDS_SKIPPED);
+        }
 
         // Add new fields in webhook for MFN only when the payout was created within a batch
         if (($this->merchant->isFeatureEnabled(Features::PAYOUTS_BATCH)) and

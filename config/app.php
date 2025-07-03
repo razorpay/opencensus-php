@@ -1495,6 +1495,8 @@ return array(
 
     'payouts_to_phone_number_splitz_experiment' => env('PAYOUTS_TO_PHONE_NUMBER_SPLITZ_EXPERIMENT_ID'),
 
+    'api_and_webhook_additional_fields_experiment' => env('API_AND_WEBHOOK_ADDITIONAL_FIELDS_EXPERIMENT_ID'),
+
     'afa_splitz' => env('AFA_SPLITZ_EXP_ID'),
 
     'api_migration_v3' => env('API_MIGRATION_V3'),
