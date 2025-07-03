@@ -63,9 +63,11 @@ jobs:
       - name: Set Target Projects
         if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         id: target-projects-with-newauth
+        env:
+          PLAYWRIGHT_INPUTS: ${{ inputs.playwright_configured_affected_apps_comma_sep }}
         run: |
-          if [[ -n "${{ inputs.playwright_configured_affected_apps_comma_sep }}" ]]; then
-            PROJECTS_WITH_NEWAUTH="newauth-dashboard,${{ inputs.playwright_configured_affected_apps_comma_sep }}"
+          if [[ -n "$PLAYWRIGHT_INPUTS" ]]; then
+            PROJECTS_WITH_NEWAUTH="newauth-dashboard,$PLAYWRIGHT_INPUTS"
           else
             PROJECTS_WITH_NEWAUTH="newauth-dashboard"
           fi
@@ -84,8 +86,10 @@ jobs:
         env:
           GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
           COMMIT_SHA: ${{ github.sha }}
+          PLAYWRIGHT_APPS: ${{ inputs.playwright_configured_affected_apps_comma_sep }}
+          PROJECT_ROOTS: ${{ steps.get-project-dirs.outputs.project_roots }}
         run: |
-          node .github/scripts/playwright-rerun-analyser.js ${{ inputs.playwright_configured_affected_apps_comma_sep }} ${{ steps.get-project-dirs.outputs.project_roots }}
+          node .github/scripts/playwright-rerun-analyser.js "$PLAYWRIGHT_APPS" "$PROJECT_ROOTS"
 
       - name: Echo Playwright Rerun Analysis Results
         if: ${{ steps.check-skip.outputs.skip_job == 'false' }}

@@ -29,6 +29,9 @@ runs:
       if: ${{ inputs.targetEnvironment == 'canary' }}
       shell: bash
       run: |
-        node .github/scripts/s3-sync.js ${{ inputs.buildDir }} ${{ inputs.targetProject }} ${{ inputs.prodCacheBucket }}
+        node .github/scripts/s3-sync.js "$BUILD_DIR" "$TARGET_PROJECT" "$PROD_CACHE_BUCKET"
       env:
         ENVIRONMENT: canary
+        BUILD_DIR: ${{ inputs.buildDir }}
+        TARGET_PROJECT: ${{ inputs.targetProject }}
+        PROD_CACHE_BUCKET: ${{ inputs.prodCacheBucket }}
