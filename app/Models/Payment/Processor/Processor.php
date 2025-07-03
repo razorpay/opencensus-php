@@ -11526,24 +11526,13 @@ class Processor
             }
 
             //$this subscription data is not being initialize for the initial payment. if subscription is not present do fetching.
-            if ($this->subscription == null)
+            if ($this->subscription == null && $this->isAllowedAdditionalMPGSPayload($this->payment->getMerchantId()))
             {
-                $subscriptionData = [
-                    Payment\Entity::AMOUNT          => $this->payment->getAmount(),
-                    Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($this->payment->getSubscriptionId()),
-                    Payment\Entity::METHOD          => $this->payment->getMethod(),
-                ];
-
-                if ($gatewayData['token'] == null)
-                {
-                    $subscriptionData[Payment\Entity::TOKEN] = $this->payment->getTokenId();
-                }
-
                 $this->subscription = $this->app['module']
                     ->subscription
-                    ->fetchSubscriptionInfo(
-                        $subscriptionData,
+                    ->fetchSubscription(
                         $this->payment->merchant,
+                        Subscription\Entity::getSignedId($this->payment->getSubscriptionId())
                     );
             }
 
@@ -16992,10 +16981,47 @@ public function isLibrarySupportedForNbplusRearch($library): bool
             );
 
             return false;
+
         }
 
         return false;
     }
 
+    //Splitz Experiment for additional MPGS Payload
+    public function isAllowedAdditionalMPGSPayload($merchantID): bool
+    {
+        try
+        {
+            $experimentId = $this->app['config']->get('app.mpgs_authorize_payload');
 
+            $properties = [
+                'id'            => $merchantID,
+                'experiment_id' => $experimentId,
+                'request_data'  => json_encode(['merchant_id' => $merchantID]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            $this->trace->info(TraceCode::SPLITZ_REQUEST, [
+                'merchant_id'   =>  $this->merchant->getId(),
+                'variant'       => $variant,
+                'experiment_id' => $experimentId
+            ]);
+
+            return $variant === 'variant_on';
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::SPLITZ_REQUEST);
+
+            return false;
+        }
+
+        return false;
+    }
 }

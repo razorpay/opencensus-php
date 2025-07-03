@@ -1552,5 +1552,7 @@ return array(
 
     'invitation_orphan_users' => env('INVITATION_ORPHAN_USERS'),
 
+    'mpgs_authorize_payload' => env('MPGS_AUTHORIZE_PAYLOAD'),
+    
     'multi_account_email_update_workflow_experiment' => env('MULTI_ACCOUNT_EMAIL_UPDATE_WORKFLOW_EXPERIMENT'),
 );
