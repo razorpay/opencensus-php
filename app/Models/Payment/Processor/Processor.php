@@ -4953,7 +4953,7 @@ class Processor
         $merchant = $this->app['basicauth']->getMerchant();
 
         // 0. Master control flag. If it returns false, then don't route via rearch. Else, proceed for further checks
-        $isMasterControlVariantOn = $this->isWalletRearchVariantOn('',TraceCode::NBPLUS_WALLET_ROUTING_CRITERIA);
+        $isMasterControlVariantOn = $this->isWalletRearchVariantOn('',TraceCode::NBPLUS_WALLET_MASTER_CONTROL_SPLITZ_VARIANT);
         if (!$isMasterControlVariantOn) {
             return false;
         }
@@ -4961,8 +4961,8 @@ class Processor
         // 1. Custom checks
         $customChecks = $this->performCustomChecksToRouteNbPlusINRWalletViaRearchFlow($input, $merchant, $currentRouteName);
         $isNbPlusDFB = $customCheckResults['is_dfb'] ?? false;
-        $this->trace->info(TraceCode::NBPLUS_WALLET_ROUTING_CRITERIA, [
-                "payment_id"        => $input[Payment\Entity::ID],
+        $this->trace->info(TraceCode::NBPLUS_WALLET_ROUTING_DIMENSIONS, [
+                'wallet'            => $input[Payment\Entity::WALLET],
                 "merchant_id"       => $merchant->getId(),
                 "dimensions"        => $customChecks["dimensions"],
                 "route"             => $currentRouteName,
@@ -4974,16 +4974,15 @@ class Processor
         }
 
         // 2. Experiment to allow enabled wallets
-        // wallet ramp-up% can be controlled individually for each wallet by just adding
+        // wallet ramp-up% can be controlled individually for each wallet by just creating an
         // experiment with name 'nbplus_wallet_payments_via_pg_router_supported_wallet_<wallet_name>'
         $isWalletEnabled = $this->isWalletRearchVariantOn(
             '_supported_wallet_'.$input[Payment\Entity::WALLET],
-            TraceCode::NBPLUS_WALLET_ROUTING_CRITERIA,
+            TraceCode::NBPLUS_WALLET_ENABLED_WALLET_SPLITZ_VARIANT,
             ["wallet" => $input[Payment\Entity::WALLET]]
         );
         if (!$isWalletEnabled) {
             $this->trace->info(TraceCode::NBPLUS_WALLET_NOT_SUPPORTED_ON_REARCH, [
-                "payment_id"        => $input[Payment\Entity::ID],
                 'merchant_id'       => $merchant->getId(),
                 'wallet'            => $input[Payment\Entity::WALLET],
                 'route'             => $currentRouteName,
@@ -4991,15 +4990,14 @@ class Processor
             return false;
         }
 
-        // 3. Experiment to allow merchants
-        $isMerchantEnabled = $this->isWalletRearchVariantOn(
-            '_allow_merchants',
-            TraceCode::NBPLUS_WALLET_ROUTING_CRITERIA,
+        // 3. Experiment to block merchants
+        $isMerchantDisabled = $this->isWalletRearchVariantOn(
+            '_block_merchants',
+            TraceCode::NBPLUS_WALLET_BLOCK_MERCHANTS_SPLITZ_VARIANT,
             ["merchant_id" => $merchant->getId()]
         );
-        if (!$isMerchantEnabled) {
+        if ($isMerchantDisabled) {
             $this->trace->info(TraceCode::NBPLUS_WALLET_MERCHANT_NOT_SUPPORTED_ON_REARCH, [
-                "payment_id"        => $input[Payment\Entity::ID],
                 'merchant_id'       => $merchant->getId(),
                 'wallet'            => $input[Payment\Entity::WALLET],
                 'route'             => $currentRouteName,
@@ -5056,17 +5054,18 @@ class Processor
             $dimensions[5] = 1;
         }
 
-        if (!empty($input[Payment\Entity::PAYMENT_LINK_ID])) {
-            $routeViaReArch = false;
-            $dimensions[6] = 1;
-        }
+        // commenting this check since this will be controlled by $dimensions[19]
+        // if (!empty($input[Payment\Entity::PAYMENT_LINK_ID])) {
+        //     $routeViaReArch = false;
+        //     $dimensions[6] = 1;
+        // }
 
         if (!empty($input["reward_ids"])) {
             $routeViaReArch = true;
             $dimensions[7] = 1;
         }
 
-        if ($merchant->isFeatureEnabled("raas")) {
+        if ($merchant->isFeatureEnabled("raas") && !$this->isWalletRaasAllowedOnNbPlusRearch($merchant)) {
             $routeViaReArch= false;
             $dimensions[8]=1;
         }
@@ -5076,7 +5075,7 @@ class Processor
             $dimensions[9] = 1;
         }
 
-        if ($merchant->isFeatureEnabled("openwallet")) {
+        if ($merchant->isFeatureEnabled("openwallet") && !$this->isOpenWalletAllowedOnNbPlusRearch($merchant)) {
             $routeViaReArch=false;
             $dimensions[10]=1;
         }
@@ -5273,6 +5272,22 @@ class Processor
         );
     }
 
+    private function isOpenWalletAllowedOnNbPlusRearch(Merchant\Entity $merchant): bool {
+        return $this->isWalletRearchVariantOn(
+            '_openwallet',
+            TraceCode::NBPLUS_WALLET_OPENWALLET_SPLITZ_VARIANT,
+            ["merchant_id" => $merchant->getId()]
+        );
+    }
+
+    private function isWalletRaasAllowedOnNbPlusRearch(Merchant\Entity $merchant): bool {
+        return $this->isWalletRearchVariantOn(
+            '_raas',
+            TraceCode::NBPLUS_WALLET_RAAS_SPLITZ_VARIANT,
+            ["merchant_id" => $merchant->getId()]
+        );
+    }
+    
     private function isWalletRearchVariantOn(string $featureSuffix = '', string $traceCode, mixed $value = [], mixed $extraLog = []): bool {
         try {
             $featureFlag = self::NBPLUS_WALLET_PAYMENTS_VIA_PGROUTER . $featureSuffix;
