@@ -405,6 +405,7 @@ class Validator extends Base\Validator
             Payout\Method::FUND_TRANSFER,
             Payment\Method::NACH,
             Payment\Method::UPI,
+            Payout\Method::MOBILE,
         ];
 
         if ($input[Entity::FEATURE] === Feature::REFUND)

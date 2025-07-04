@@ -2,6 +2,12 @@
 
 namespace RZP\Models\Pricing\Calculator;
 
+use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Metric as MetricConstants;
+use RZP\Constants;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Models\Admin\Org;
 use RZP\Models\Pricing;
 use RZP\Http\BasicAuth;
 use RZP\Models\Payout\Purpose;
@@ -10,6 +16,8 @@ use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Payout as PayoutModel;
 use RZP\Models\Merchant\Balance\Entity;
 use RZP\Models\PayoutSource as PayoutSource;
+use RZP\Models\Pricing\Fee;
+use RZP\Trace\TraceCode;
 
 /**
  * Class Payout
@@ -26,6 +34,78 @@ class Payout extends Base
         // the balance check and balance deduction happens almost together.
         return;
     }
+    protected function getBasicPricingRule(Pricing\Plan $pricing, $feature)
+    {
+        $method   = $this->entity->getMethod();
+        $orgId    = $this->entity->merchant->org->getId();
+        $product  = $this->product;
+
+        if($this->checkMobileNumberPayout() === true)
+        {
+            $method = PayoutModel\Method::MOBILE;
+        }
+
+        $filters = $this->getBasicPricingRuleFilters($product, $feature, $method);
+
+        $rules = $this->applyFiltersOnRules($pricing, $filters);
+
+        $rulesCount = count($rules);
+
+        //
+        // If pricing for the feature is optional, no rules may exist
+        // In this case, we add the zero pricing rule and return
+        //
+        if (($rulesCount === 0) and
+            (Pricing\Feature::isFeaturePricingOptional($feature) === true) and
+            ($orgId === Org\Entity::RAZORPAY_ORG_ID))
+        {
+            $zeroPricingRule = (new Fee)->getZeroPricingPlanRule($this->entity);
+
+            $this->pricingRules->push($zeroPricingRule);
+
+            return;
+        }
+
+        $rule = $this->getPricingRule($rules, $method);
+
+        if ($rule === null)
+        {
+            $entityName = $this->entity->getEntityName();
+
+            $this->trace->count(count($pricing) == 0 ? MetricConstants::SERVER_ERROR_NO_PRICING_RULE_FOUND : MetricConstants::SERVER_ERROR_MULTIPLE_PRICING_RULES_FOUND,
+                [
+                    'route_name' => $this->app['api.route']->getCurrentRouteName(),
+                    'entity' => $entityName,
+                    'method' => $entityName == Constants\Entity::PAYMENT ? $this->entity->getMethod() : null,
+                ]);
+
+            throw new Exception\LogicException(
+                'No appropriate pricing rule found for entity ' . $this->entity->getEntity(),
+                ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
+                ['entity' => $this->entity->toArray()]);
+        }
+
+        $this->pricingRules->push($rule);
+    }
+
+    protected function checkMobileNumberPayout(): bool
+    {
+        try{
+            if($this->entity->getEntity() === Constants\Entity::PAYOUT and
+                isset($this->entity->fundAccount) and
+                (!empty($this->entity->fundAccount->getAttribute('customer_name')) and
+                    !empty($this->entity->fundAccount->getAttribute('linked_number'))))
+            {
+                return true;
+            }
+            return false;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYOUT_TO_PHONE_NUMBER_PRICING_CHECK_FAILED);
+            return false;
+        }
+    }
 
     protected function getPricingRule($rules, $method)
     {
@@ -38,11 +118,12 @@ class Payout extends Base
             $rules = $this->applyBankingAccountsFilters($rules);
         }
 
-        //
-        // Mode based pricing can only be defined on
-        // payouts of method=fund_transfer at the moment.
-        //
-        if ($method === PayoutModel\Method::FUND_TRANSFER)
+        /*
+         Mode based pricing can only be defined on
+         payouts of method=fund_transfer and method=mobile (Phone Number Payouts) at the moment.
+        */
+        if ($method === PayoutModel\Method::FUND_TRANSFER
+            || $method === PayoutModel\Method::MOBILE)
         {
             $rules = $this->applyPayoutModeFilters($rules);
         }

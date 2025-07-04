@@ -6238,4 +6238,25 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
         ],
     ],
+
+    'testAddPricingPlanRuleForMobileMethod' => [
+        'request' => [
+            'content' => [
+                'product'        => 'banking',
+                'feature'        => 'payout',
+                'payment_method' => 'mobile',
+                'fixed_rate'     => 500,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'      => 'TestPlan1',
+                'product'        => 'banking',
+                'feature'        => 'payout',
+                'payment_method' => 'mobile',
+                'fixed_rate'     => 500,
+            ],
+        ],
+    ],
 ];

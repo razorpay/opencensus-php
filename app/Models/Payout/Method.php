@@ -9,10 +9,12 @@ class Method
 {
     const FUND_TRANSFER     = 'fund_transfer';
     const UPI               = 'upi';
+    const MOBILE            = 'mobile';
 
     public static $methods = [
         self::FUND_TRANSFER,
         self::UPI,
+        self::MOBILE,
     ];
 
     public static $destinationMethodMap = [
