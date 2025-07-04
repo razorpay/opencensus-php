@@ -26,6 +26,7 @@ class Utility
         ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_PROCESS_IN_PROGRESS,
         ErrorCode::BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE,
         ErrorCode::BAD_REQUEST_INVALID_ID,
+        ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW
     ];
 
     public function isRetryableError($ex)

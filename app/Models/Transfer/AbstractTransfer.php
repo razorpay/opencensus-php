@@ -3,6 +3,7 @@
 namespace RZP\Models\Transfer;
 
 use Exception;
+use RZP\Error\PublicErrorDescription;
 use RZP\Jobs\AsyncBalanceUpdateForTransfer;
 use Throwable;
 use RZP\Constants;
@@ -318,6 +319,11 @@ abstract class AbstractTransfer
                 );
 
                 (new Metric())->pushTransferMerchantsOnboardingMismatchMetrics($reverseShadowEnabledForParent,$reverseShadowEnabledForLinkedAccount);
+
+                //  error while onboarding child to cls. Hence incorrect processing via API shouldnt happen here
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW
+                );
             }
         }
 
