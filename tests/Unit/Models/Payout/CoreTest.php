@@ -8,10 +8,12 @@ use RZP\Models\Contact;
 use RZP\Models\FundAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Trace\TraceCode;
 
 class CoreTest extends TestCase
 {
+    use MocksSplitz;
     protected function setUp(): void
     {
         parent::setUp();
@@ -344,6 +346,118 @@ class CoreTest extends TestCase
         $this->assertEquals('Test Contact', $result[Payout\Constants::NAME]);
         $this->assertEquals('test@example.com', $result[Payout\Constants::EMAIL]);
         $this->assertEquals('9876543210', $result[Payout\Constants::CONTACT]);
+    }
+
+    /**
+     * Test that updateStatusAfterFtaRecon properly merges existing notes with payee information
+     * when payout has existing notes stored as JSON and ftaData contains PAYEE_IFSC
+     */
+    public function testUpdateStatusAfterFtaReconMergesNotesWithPayeeInfo()
+    {
+        // Mock the rzp.mode service to avoid service resolution errors
+        $this->app->instance('rzp.mode', 'test');
+
+        // Create test entities
+        $contact = $this->fixtures->create('contact', [
+            'id' => '1000000contact',
+            'name' => 'Test Contact',
+            'email' => 'test@example.com',
+            'contact' => '9876543210',
+            'merchant_id' => '10000000000000'
+        ]);
+
+        // Create a bank account first
+        $bankAccount = $this->fixtures->create('bank_account', [
+            'beneficiary_name' => 'Test Account',
+            'account_number' => '12345678901234',
+            'ifsc_code' => 'HDFC0000123'
+        ]);
+
+        $fundAccount = $this->fixtures->create('fund_account', [
+            'id' => 'DC66xJ6xbcOLqU',
+            'merchant_id' => '10000000000000',
+            'source_type' => 'contact',
+            'source_id' => $contact->getId(),
+            'account_type' => 'bank_account',
+            'account_id' => $bankAccount->getId(),
+        ]);
+
+        $balance = $this->fixtures->create('balance', [
+            'id' => '1000000balance',
+            'merchant_id' => '10000000000000',
+            'type' => 'banking',
+            'account_type' => 'direct',
+        ]);
+
+        // Create payout with existing notes (this tests the real scenario)
+        $existingNotes = [
+            'amount' => null,
+            'aegonTransactionid' => null,
+            'policyno' => 'ALI000000081772',
+            'policyStatus' => null,
+            'aegonOrderid' => null,
+            'paymentMode' => null,
+            'dueDate' => null,
+            'additionalInfo' => null,
+            'payoutId' => '257793',
+            'fundAccountId' => null
+        ];
+
+        $payout = $this->fixtures->payout->createPayoutWithoutTransaction([
+            'merchant_id' => '10000000000000',
+            'fund_account_id' => $fundAccount->getId(),
+            'balance_id' => $balance->getId(),
+            'amount' => 100000,
+            'currency' => 'INR',
+            'mode' => 'IMPS',
+            'status' => 'created',
+            'notes' => $existingNotes,
+        ]);
+
+        // Test FTA data with PAYEE_IFSC
+        $ftaData = [
+            Payout\Constants::PAYEE_IFSC => 'SBIN0007105',
+            'status' => 'processed',
+            'fta_status' => 'processed',
+            'utr' => 'TEST123456789',
+            'bank_processed_time' => '2024-01-01 12:00:00',
+            'remarks' => 'Test payout processed'
+        ];
+
+        // Mock Splitz experiment to return true
+        $this->mockSplitzTreatment([
+            'id' => '10000000000000',
+            'experiment_name' => $this->app['config']->get('app.payouts_to_phone_number_splitz_experiment'),
+            'request_data' => json_encode(['merchant_id' => '10000000000000'])
+        ], [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ]);
+
+        $core = new Payout\Core();
+
+        // Call the actual method - it should handle the notes merging properly
+        $core->updateStatusAfterFtaRecon($payout, $ftaData);
+
+        // Refresh payout from database
+        $payout->refresh();
+
+        // Verify that notes were merged correctly
+        $updatedNotes = $payout->getNotes()->toArray();
+
+        // Check that existing notes are preserved
+        $this->assertEquals('ALI000000081772', $updatedNotes['policyno']);
+        $this->assertEquals('257793', $updatedNotes['payoutId']);
+
+        // Check that new payee information was added
+        $this->assertEquals('SBIN0007105', $updatedNotes[Payout\Constants::PAYEE_IFSC]);
+        $this->assertEquals('State Bank of India', $updatedNotes[Payout\Constants::PAYEE_BANK_NAME]);
+
+        // Verify status was updated
+        $this->assertEquals('processed', $payout->getStatus());
     }
 
     protected function tearDown(): void

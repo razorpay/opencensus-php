@@ -928,10 +928,23 @@ class Core extends Base\Core
                             ]
                         );
 
-                        $payout->setNotes(array_merge($payout->getNotes(), [
-                            PayoutConstants::PAYEE_IFSC => $ifsc,
-                            PayoutConstants::PAYEE_BANK_NAME => $payeeBankName
-                        ]));
+                        try {
+                            $payout->setNotes(array_merge($payout->getNotes()->toArray(), [
+                                PayoutConstants::PAYEE_IFSC => $ifsc,
+                                PayoutConstants::PAYEE_BANK_NAME => $payeeBankName
+                            ]));
+                        } catch (\Throwable $e) {
+                            $this->trace->error(
+                                TraceCode::PAYOUT_NOTES_MERGE_FAILED,
+                                [
+                                    'payout_id' => $payout->getId(),
+                                    'ifsc' => $ifsc,
+                                    'payee_bank_name' => $payeeBankName,
+                                    'error' => $e->getMessage(),
+                                    'existing_notes' => $payout->getNotes(),
+                                ]
+                            );
+                        }
                     }
                 }
 
