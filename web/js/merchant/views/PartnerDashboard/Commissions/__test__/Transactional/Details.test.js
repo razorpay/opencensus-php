@@ -3,10 +3,13 @@ import React from 'react';
 import { render, screen } from 'common/services/test/test-utils';
 import { CommissionEarningBreakUp } from 'merchant/views/PartnerDashboard/Commissions/Transactional/Details';
 
-function getInitialProps(isRzpOrg, isSourceTypeRefund) {
+function getInitialProps(isRzpOrg, isSourceTypeRefund, countryCode = 'IN') {
   return {
     user: {
       isOrgRZP: isRzpOrg,
+      merchant: {
+        country_code: countryCode,
+      },
     },
     org: {
       custom_code: isRzpOrg ? 'rzp' : 'curlec',
@@ -25,7 +28,7 @@ describe('test suite for transactional details', () => {
   };
 
   test('should render component with curlec text', () => {
-    const props = getInitialProps(false, false);
+    const props = getInitialProps(false, false, 'MY');
     render(<App {...props} />);
 
     expect(screen.getByText(/Earnings from Curlec/i)).toBeInTheDocument();
@@ -34,7 +37,7 @@ describe('test suite for transactional details', () => {
   });
 
   test('should render component with indian text', () => {
-    const props = getInitialProps(true, false);
+    const props = getInitialProps(true, false, 'IN');
     render(<App {...props} />);
 
     expect(screen.getByText(/Earnings from Razorpay/i)).toBeInTheDocument();
@@ -44,7 +47,7 @@ describe('test suite for transactional details', () => {
   });
 
   test('should show negative amount if source type is refund', () => {
-    const props = getInitialProps(true, true);
+    const props = getInitialProps(true, true, 'IN');
     render(<App {...props} />);
 
     // checking here to see if minus sign exists

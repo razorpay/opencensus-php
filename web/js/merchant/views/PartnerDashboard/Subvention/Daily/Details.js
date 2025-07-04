@@ -15,7 +15,7 @@ export default function SubventionDailyEntity(props) {
 }
 
 function renderBreakups(props) {
-  const { entity } = props;
+  const { entity, user } = props;
   const data = entity.data;
 
   return (
@@ -25,6 +25,7 @@ function renderBreakups(props) {
       tax={data.baseTax}
       feeBreakupType="danger"
       label="Subvention"
+      user={user}
     />
   );
 }

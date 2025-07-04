@@ -8,7 +8,7 @@ import Alert from 'common/ui/Forms/Alert';
 import Spinner from 'common/ui/Spinner';
 import Time from 'common/ui/Time';
 import Tooltip from 'common/ui/Tooltip';
-import { isPresent } from 'common/utils/rzp-utils';
+import { isPresent, getCountryTaxDefinition } from 'common/utils/rzp-utils';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { CommissionInvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import { fetchCommissionInvoiceDetails } from 'merchant/reducers/commissionInvoices/details';
@@ -49,7 +49,7 @@ class InvoiceDetails extends Component {
   renderPanelBody = () => {
     const { commissionInvoice, error, user } = this.props;
     const currency = user.merchant.currency;
-    const isOrgRZP = user.isOrgRZP;
+    const countryCode = user.merchant.country_code;
 
     if (error) {
       return (
@@ -105,7 +105,7 @@ class InvoiceDetails extends Component {
             )}
           />
           <EntityDetailRow label="Amount Breakup">
-            {renderAmountBreakup(commissionInvoice, currency, isOrgRZP)}
+            {renderAmountBreakup(commissionInvoice, currency, countryCode)}
           </EntityDetailRow>
         </div>
       </div>
@@ -162,7 +162,7 @@ class InvoiceDetails extends Component {
   }
 }
 
-function renderAmountBreakup(commissionInvoice, currency, isOrgRZP) {
+function renderAmountBreakup(commissionInvoice, currency, countryCode) {
   const lineItem = commissionInvoice.line_items[0];
   return (
     <Definition>
@@ -176,7 +176,7 @@ function renderAmountBreakup(commissionInvoice, currency, isOrgRZP) {
         </div>
       ))}
       <div>
-        Total {isOrgRZP ? 'GST' : 'Tax'} -{' '}
+        Total {getCountryTaxDefinition({ countryCode })} -{' '}
         <Amount value={lineItem.tax_amount} currency={currency} />
       </div>
     </Definition>

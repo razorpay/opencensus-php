@@ -355,6 +355,7 @@ export {
   shortenTextBasedOnDashboardAcronyms as shortenText,
   acronymsForShorteningText as acronyms,
   isElementXPercentInViewport,
+  getCountryTaxDefinition,
 } from '@libs/shared-utils';
 
 /**

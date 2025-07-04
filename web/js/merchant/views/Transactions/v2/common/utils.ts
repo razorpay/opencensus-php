@@ -307,17 +307,6 @@ export const isBounceMemoEnabled = (splitz: SpiltzContextState): boolean => {
   return isExperimentEnabled(abExperiments.bounce_memo);
 };
 
-export const getCountryTaxDefinition = ({ countryCode = '' }: { countryCode: string }) => {
-  switch (countryCode) {
-    case 'MY':
-      return 'Tax';
-    case 'IN':
-    case 'SG':
-    default:
-      return 'GST';
-  }
-};
-
 export const shouldHideAnalytics = (user: User, mode: Environments): boolean => {
   // Hide analytics overview for JnK Omni merchant.
   if (user.isJnKOmniEnabled) {

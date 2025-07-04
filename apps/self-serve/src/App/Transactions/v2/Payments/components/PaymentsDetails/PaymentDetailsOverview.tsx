@@ -22,7 +22,7 @@ import { withRouter } from '@libs/web-nexus/common/deprecated/withRouter';
 import { AnyAction, Dispatch, bindActionCreators, compose } from 'redux';
 
 import Amount from '@libs/web-nexus/common//ui/Amount';
-import { toTitleCase } from '@libs/shared-utils';
+import { toTitleCase, getCountryTaxDefinition } from '@libs/shared-utils';
 import {
   fetchSchedule,
   fetchHolidayList,
@@ -325,7 +325,7 @@ function PaymentDetailsOverview({
                         paddingLeft="spacing.3"
                       >
                         <Text>
-                          {user?.country_code !== 'IN' ? 'Tax' : 'GST'}{' '}
+                          {getCountryTaxDefinition({ countryCode: user?.merchant?.country_code })}{' '}
                           <Tooltip type="gst" size="small" />
                         </Text>
                         <BladeAmount

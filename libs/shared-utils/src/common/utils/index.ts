@@ -208,3 +208,4 @@ export {
 } from './searchVisibility';
 export { isBillMeOnlyUser } from './isBillMeOnlyUser';
 export { shareContent } from './shareContent';
+export { getCountryTaxDefinition } from './getCountryTaxDefinition';

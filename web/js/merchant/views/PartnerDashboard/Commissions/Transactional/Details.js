@@ -12,7 +12,7 @@ import { connect } from 'react-redux';
 import Alert from 'common/ui/Forms/Alert';
 import Spinner from 'common/ui/Spinner';
 import Time from 'common/ui/Time';
-import { isPresent, paiseToRupees } from 'common/utils/rzp-utils';
+import { isPresent, paiseToRupees, getCountryTaxDefinition } from 'common/utils/rzp-utils';
 import { fetchCommission } from 'merchant/reducers/commission';
 import { COMMISSION_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
@@ -167,7 +167,6 @@ class CommissionEntityContainer extends Component {
 
 export function CommissionEarningBreakUp(props) {
   const businessName = props.org?.business_name || 'Razorpay';
-  const isRzpOrg = props?.user?.isOrgRZP;
 
   // these tokens are currently not supported by blade, hence adding custom tokens
   // based on the figma designs
@@ -207,7 +206,11 @@ export function CommissionEarningBreakUp(props) {
         >
           <Box display="flex" flexDirection="column" gap="spacing.2">
             <Text size="large">Total Earnings</Text>
-            <Text size="small">{`Base + ${isRzpOrg ? 'GST' : 'Tax'}`}</Text>
+            <Text size="small">
+              {`Base + ${getCountryTaxDefinition({
+                countryCode: props.user?.merchant?.country_code,
+              })}`}
+            </Text>
           </Box>
           <Box display="flex" flexDirection="column" gap="spacing.2" alignItems="end">
             <Text color="feedback.text.negative.intense" size="large">

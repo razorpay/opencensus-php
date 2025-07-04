@@ -8,7 +8,7 @@ import Amount from 'common/ui/Amount';
 import FeeBreakup from 'common/ui/FeeBreakup';
 import Alert from 'common/ui/Forms/Alert';
 import Spinner from 'common/ui/Spinner';
-import { isPresent } from 'common/utils/rzp-utils';
+import { isPresent, getCountryTaxDefinition } from 'common/utils/rzp-utils';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { fetchSingleDayAggregate } from 'merchant/reducers/commission';
 
@@ -108,7 +108,9 @@ export function EarningsBreakup(props) {
             <div className="EarningsBreakup--Components">
               <Amount value={props.tax} currency={props.currency} />
             </div>
-            <small>{props.isRzpOrg ? 'GST' : 'Tax'}</small>
+            <small>
+              {getCountryTaxDefinition({ countryCode: props.user?.merchant?.country_code })}
+            </small>
           </>
         </FeeBreakup>
       </div>

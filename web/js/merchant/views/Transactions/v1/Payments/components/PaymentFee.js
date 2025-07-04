@@ -6,16 +6,17 @@ import { Amount } from '@razorpay/blade/components';
 import { i18nifyConvertToMajorUnit } from 'merchant/views/Transactions/v2/common/utils';
 import Definition from 'common/ui/Definition';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import { getCountryTaxDefinition } from 'common/utils/rzp-utils';
 
 export const PaymentFeeBreakdown = ({ payment, transfers }) => {
   const {
     merchantCurrency = 'INR',
-    isRZPOrg,
     businessName = 'Razorpay',
+    countryCode = 'IN',
   } = useStore((state) => ({
     merchantCurrency: state.session.user?.merchant?.currency,
-    isRZPOrg: state.session.user?.isOrgRZP,
     businessName: state.session.org?.business_name,
+    countryCode: state.session.user?.merchant?.country_code,
   }));
   const showPlatformFee = isPlatformTransaction(transfers);
 
@@ -67,8 +68,7 @@ export const PaymentFeeBreakdown = ({ payment, transfers }) => {
         />
       </span>
       <span>
-        {/* Todo : should be changed for SG merchants */}
-        {isRZPOrg ? 'GST' : 'Tax'} -{' '}
+        {getCountryTaxDefinition({ countryCode })} -{' '}
         <Amount
           value={i18nifyConvertToMajorUnit(payment.tax, merchantCurrency)}
           currency={merchantCurrency}

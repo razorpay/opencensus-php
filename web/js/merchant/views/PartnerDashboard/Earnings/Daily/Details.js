@@ -1,5 +1,5 @@
 import Amount from 'common/ui/Amount';
-import React from "react";
+import React from 'react';
 
 import CommissionDailyEntity, {
   EarningsBreakup,
@@ -21,7 +21,7 @@ function renderBreakups(props) {
   const { entity, user } = props;
   const data = entity.data;
   const currency = user.merchant.currency;
-  const isRzpOrg = user.isOrgRZP;
+
   return (
     <VerticalBreakup>
       <TotalValue data={data} currency={currency} />
@@ -30,14 +30,14 @@ function renderBreakups(props) {
         baseEarnings={data.baseEarnings}
         baseTax={data.baseTax}
         currency={currency}
-        isRzpOrg={isRzpOrg}
+        user={user}
       />
 
       <AddOnEarningsBreakup
         addonEarnings={data.addonEarnings}
         addonTax={data.addonTax}
         currency={currency}
-        isRzpOrg={isRzpOrg}
+        user={user}
       />
     </VerticalBreakup>
   );
@@ -51,7 +51,7 @@ function BaseEarningsBreakup(props) {
       value={props.baseEarnings}
       tax={props.baseTax}
       currency={props.currency}
-      isRzpOrg={props.isRzpOrg}
+      user={props.user}
     />
   );
 }
@@ -64,7 +64,7 @@ function AddOnEarningsBreakup(props) {
       value={props.addonEarnings}
       tax={props.addonTax}
       currency={props.currency}
-      isRzpOrg={props.isRzpOrg}
+      user={props.user}
     />
   );
 }
