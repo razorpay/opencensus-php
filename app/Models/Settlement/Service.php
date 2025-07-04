@@ -2824,9 +2824,47 @@ class Service extends Base\Service
 
         $fetchInput['pagination']['skip'] = $input['skip'] ?? 0;
 
-        $fetchInput['time_range']['to'] = Carbon::now(Timezone::IST)->endOfDay()->getTimestamp();
+        /**
+         * Date range validation and processing
+         * - When both from/to dates are provided: validate range and apply 30-day limit if exceeded
+         * - When dates are missing/incomplete: default to last 30 days
+         * - Maximum allowed range: 30 days
+         * - When range exceeds limit: preserve user's from date, limit to date to from + 30 days
+         */
+        if (isset($input['from']) && isset($input['to'])) {
+            $fromTimestamp = $input['from'];
+            $toTimestamp = $input['to'];
+            
+            $diffInDays = ($toTimestamp - $fromTimestamp) / (24 * 60 * 60);
+            $maxDays = 30;
+            
+            $fetchInput['time_range']['from'] = $fromTimestamp;
+            
+            if ($diffInDays > $maxDays) {
+                $fetchInput['time_range']['to'] = Carbon::createFromTimestamp($fromTimestamp, Timezone::IST)
+                    ->addDays($maxDays)
+                    ->endOfDay()
+                    ->getTimestamp();
+            } else {
+                $fetchInput['time_range']['to'] = $toTimestamp;
+            }
+        } else {
+            $fetchInput['time_range']['to'] = Carbon::now(Timezone::IST)->endOfDay()->getTimestamp();
+            $fetchInput['time_range']['from'] = Carbon::now(Timezone::IST)->subMonthNoOverflow()->startOfDay()->getTimestamp();
+        }
 
-        $fetchInput['time_range']['from'] = Carbon::now(Timezone::IST)->subMonthNoOverflow()->startOfDay()->getTimestamp();
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DS_FETCH_INPUT_CREATED,
+            [
+                'merchant_id' => $this->merchant->getId(),
+                'final_to' => $fetchInput['time_range']['to'],
+                'final_from' => $fetchInput['time_range']['from'],
+                'pagination' => [
+                    'limit' => $fetchInput['pagination']['limit'],
+                    'skip' => $fetchInput['pagination']['skip']
+                ]
+            ]
+        );
 
         foreach ($input as $key => $val)
         {

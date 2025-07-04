@@ -2431,7 +2431,7 @@ class SettlementTest extends TestCase
 
         $submTrxns = $this->getDbEntities('transaction', ['merchant_id' => Partner\Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID]);
 
-        $timestamp = Carbon::today('Asia/Kolkata')->subDays(35)->getTimestamp();;
+        $timestamp = Carbon::today('Asia/Kolkata')->subDays(35)->getTimestamp();
 
         foreach ($submTrxns as $trxn)
         {
@@ -2440,4 +2440,270 @@ class SettlementTest extends TestCase
 
         $response = $this->runSubmerchantPaymentOnHoldUpdateCron();
     }
+
+    // Test cases for 30-day date range validation
+    public function testGetSettlementWithLast7DaysRange()
+    {
+        $content = $this->testData['testSettlementCreateFromNewService'];
+        $result = $this->createSettlementEntry($content);
+        $settlement = $this->getLastEntity('settlement', true);
+
+        // Test with 7-day range (within 30 days limit) - should display all 7 days
+        $from = Carbon::now()->subDays(7)->startOfDay()->getTimestamp();
+        $to = Carbon::now()->endOfDay()->getTimestamp();
+
+        $request = [
+            'url'     => '/settlements?skip=0&count=25&from=' . $from . '&to=' . $to,
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->proxyAuth();
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($content);
+        $this->assertArrayHasKey('items', $content);
+        $this->assertArrayHasKey('count', $content);
+        
+        // Should use the full 7-day range as it's within 30 days limit
+        $settlementCreatedAt = $settlement['created_at'];
+        $this->assertGreaterThanOrEqual($from, $settlementCreatedAt);
+        $this->assertLessThanOrEqual($to, $settlementCreatedAt);
+        
+        $this->assertArraySelectiveEquals($content['items'][0], $settlement);
+    }
+
+    public function testGetSettlementWithDateRangeWithin30Days()
+    {
+        $content = $this->testData['testSettlementCreateFromNewService'];
+        $result = $this->createSettlementEntry($content);
+        $settlement = $this->getLastEntity('settlement', true);
+
+        // Test with 15-day range (within 30 days limit)
+        $from = Carbon::now()->subDays(15)->startOfDay()->getTimestamp();
+        $to = Carbon::now()->endOfDay()->getTimestamp();
+
+        $request = [
+            'url'     => '/settlements?skip=0&count=25&from=' . $from . '&to=' . $to,
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->proxyAuth();
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($content);
+        $this->assertArrayHasKey('items', $content);
+        $this->assertArrayHasKey('count', $content);
+        
+        // Should use the provided date range as it's within 30 days
+        $settlementCreatedAt = $settlement['created_at'];
+        $this->assertGreaterThanOrEqual($from, $settlementCreatedAt);
+        $this->assertLessThanOrEqual($to, $settlementCreatedAt);
+        
+        $this->assertArraySelectiveEquals($content['items'][0], $settlement);
+    }
+
+    public function testGetSettlementWithDateRangeExactly30Days()
+    {
+        $content = $this->testData['testSettlementCreateFromNewService'];
+        $result = $this->createSettlementEntry($content);
+        $settlement = $this->getLastEntity('settlement', true);
+
+        // Test with exactly 30-day range (should be allowed)
+        $from = Carbon::now()->subDays(30)->startOfDay()->getTimestamp();
+        $to = Carbon::now()->endOfDay()->getTimestamp();
+
+        $request = [
+            'url'     => '/settlements?skip=0&count=25&from=' . $from . '&to=' . $to,
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->proxyAuth();
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($content);
+        $this->assertArrayHasKey('items', $content);
+        $this->assertArrayHasKey('count', $content);
+        
+        // Should use the provided date range as it's exactly 30 days
+        $settlementCreatedAt = $settlement['created_at'];
+        $this->assertGreaterThanOrEqual($from, $settlementCreatedAt);
+        $this->assertLessThanOrEqual($to, $settlementCreatedAt);
+        
+        $this->assertArraySelectiveEquals($content['items'][0], $settlement);
+    }
+
+    public function testGetSettlementWithDateRangeOver30Days()
+    {
+        $content = $this->testData['testSettlementCreateFromNewService'];
+        $result = $this->createSettlementEntry($content);
+        $settlement = $this->getLastEntity('settlement', true);
+
+        // Test with 45-day range (over 30 days limit)
+        $from = Carbon::now()->subDays(45)->startOfDay()->getTimestamp();
+        $to = Carbon::now()->endOfDay()->getTimestamp();
+        
+        // Calculate the expected effective range (service will limit to first 30 days)
+        $expectedFromTimestamp = $from; // Keep user's from as-is
+        $expectedToTimestamp = Carbon::createFromTimestamp($from, Timezone::IST)->addDays(30)->endOfDay()->getTimestamp();
+        
+        // Modify the settlement's created_at to fall within the expected range 
+        // (somewhere between 45 days ago and 15 days ago)
+        $settlementTimestamp = Carbon::createFromTimestamp($from, Timezone::IST)->addDays(20)->getTimestamp();
+        $this->fixtures->settlement->edit($settlement['id'], ['created_at' => $settlementTimestamp]);
+        
+        // Refresh the settlement entity to get updated timestamp
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $request = [
+            'url'     => '/settlements?skip=0&count=25&from=' . $from . '&to=' . $to,
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->proxyAuth();
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($content);
+        $this->assertArrayHasKey('items', $content);
+        $this->assertArrayHasKey('count', $content);
+        
+        // Should keep user's from date but limit to = from + 30 days
+        // The effective date range should start from user's from date
+        $settlementCreatedAt = $settlement['created_at'];
+        
+        $this->assertGreaterThanOrEqual($expectedFromTimestamp, $settlementCreatedAt);
+        $this->assertLessThanOrEqual($expectedToTimestamp, $settlementCreatedAt);
+        
+        // Verify the settlement is within the expected limited range
+        $this->assertEquals($settlementTimestamp, $settlementCreatedAt, 'Settlement should have the modified timestamp');
+        
+        $this->assertArraySelectiveEquals($content['items'][0], $settlement);
+    }
+
+    public function testGetSettlementWithLast90DaysRangeShowsFirst30Days()
+    {
+        $content = $this->testData['testSettlementCreateFromNewService'];
+        $result = $this->createSettlementEntry($content);
+        $settlement = $this->getLastEntity('settlement', true);
+
+        // Test with 90-day range - should show only first 30 days from start date
+        $from = Carbon::now()->subDays(90)->startOfDay()->getTimestamp();
+        $to = Carbon::now()->endOfDay()->getTimestamp();
+        
+        // Calculate the expected effective range (service will limit to first 30 days)
+        $expectedFromTimestamp = $from; // Keep user's from as-is
+        $expectedToTimestamp = Carbon::createFromTimestamp($from, Timezone::IST)->addDays(30)->endOfDay()->getTimestamp();
+        
+        // Modify the settlement's created_at to fall within the expected range 
+        // (somewhere between 90 days ago and 60 days ago)
+        $settlementTimestamp = Carbon::createFromTimestamp($from, Timezone::IST)->addDays(15)->getTimestamp();
+        $this->fixtures->settlement->edit($settlement['id'], ['created_at' => $settlementTimestamp]);
+        
+        // Refresh the settlement entity to get updated timestamp
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $request = [
+            'url'     => '/settlements?skip=0&count=25&from=' . $from . '&to=' . $to,
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->proxyAuth();
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($content);
+        $this->assertArrayHasKey('items', $content);
+        $this->assertArrayHasKey('count', $content);
+        
+        // Should keep user's from date but limit to = from + 30 days
+        // For 90-day request, only first 30 days should be returned
+        $settlementCreatedAt = $settlement['created_at'];
+        
+        $this->assertGreaterThanOrEqual($expectedFromTimestamp, $settlementCreatedAt);
+        $this->assertLessThanOrEqual($expectedToTimestamp, $settlementCreatedAt);
+        
+        // Verify that the effective range is exactly 30 days from the start date
+        $actualRangeInDays = ($expectedToTimestamp - $expectedFromTimestamp) / (24 * 60 * 60);
+        $this->assertLessThanOrEqual(31, $actualRangeInDays, 'Range should be limited to 30 days');
+        
+        // Verify the settlement is within the expected limited range
+        $this->assertEquals($settlementTimestamp, $settlementCreatedAt, 'Settlement should have the modified timestamp');
+        
+        $this->assertArraySelectiveEquals($content['items'][0], $settlement);
+    }
+
+    public function testGetSettlementWithCustomDateRangeExceeding30Days()
+    {
+        $content = $this->testData['testSettlementCreateFromNewService'];
+        $result = $this->createSettlementEntry($content);
+        $settlement = $this->getLastEntity('settlement', true);
+
+        // Test with custom date range: January 1, 2025 to March 15, 2025 (74 days)
+        // Should show only January 1 to January 31 (first 30 days from start date)
+        $userFromDate = Carbon::create(2025, 1, 1)->startOfDay();
+        $userToDate = Carbon::create(2025, 3, 15)->endOfDay();
+        
+        $from = $userFromDate->getTimestamp();
+        $to = $userToDate->getTimestamp();
+        
+        // Calculate the expected range (30 days from start date)
+        $expectedFromTimestamp = $from; // January 1, 2025
+        $expectedToTimestamp = $userFromDate->copy()->addDays(30)->endOfDay()->getTimestamp(); // January 31, 2025
+        
+        // Modify the settlement's created_at to fall within the expected range 
+        // (January 15, 2025 - within the first 30 days)
+        $settlementTimestamp = Carbon::create(2025, 1, 15)->getTimestamp();
+        $this->fixtures->settlement->edit($settlement['id'], ['created_at' => $settlementTimestamp]);
+        
+        // Refresh the settlement entity to get updated timestamp
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $request = [
+            'url'     => '/settlements?skip=0&count=25&from=' . $from . '&to=' . $to,
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->proxyAuth();
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($content);
+        $this->assertArrayHasKey('items', $content);
+        $this->assertArrayHasKey('count', $content);
+        
+        // Verify the system keeps user's from date and limits to first 30 days
+        $settlementCreatedAt = $settlement['created_at'];
+        
+        $this->assertGreaterThanOrEqual($expectedFromTimestamp, $settlementCreatedAt);
+        $this->assertLessThanOrEqual($expectedToTimestamp, $settlementCreatedAt);
+        
+        // Verify that the original user request was for 74 days but system limits to 30
+        $originalRangeInDays = ($to - $from) / (24 * 60 * 60);
+        $effectiveRangeInDays = ($expectedToTimestamp - $expectedFromTimestamp) / (24 * 60 * 60);
+        
+        $this->assertGreaterThan(60, $originalRangeInDays, 'Original request should be > 60 days');
+        $this->assertLessThanOrEqual(31, $effectiveRangeInDays, 'Effective range should be ≤ 30 days');
+        
+        // Verify specific dates: starts Jan 1, ends Jan 31 (not March 15)
+        // January 1 + 30 days = January 31
+        $actualFromDate = Carbon::createFromTimestamp($expectedFromTimestamp);
+        $actualToDate = Carbon::createFromTimestamp($expectedToTimestamp);
+        
+        $this->assertEquals(1, $actualFromDate->month, 'Should start from January');
+        $this->assertEquals(1, $actualFromDate->day, 'Should start from January 1');
+        $this->assertEquals(1, $actualToDate->month, 'Should end in January');
+        $this->assertEquals(31, $actualToDate->day, 'Should end on January 31');
+        
+        // Verify that the to date was modified from the original request
+        $this->assertNotEquals($to, $expectedToTimestamp, 'The to date should be modified from March 15 to January 31');
+        
+        // Verify the settlement is within the expected limited range
+        $this->assertEquals($settlementTimestamp, $settlementCreatedAt, 'Settlement should have the modified timestamp');
+        
+        $this->assertArraySelectiveEquals($content['items'][0], $settlement);
+    }
+
 }

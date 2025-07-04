@@ -5478,6 +5478,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Lamdba Processor
     const LAMBDA_REQUEST                                        = 'LAMBDA_REQUEST';
+    const SETTLEMENT_DS_FETCH_INPUT_CREATED                     = 'SETTLEMENT_DS_FETCH_INPUT_CREATED';
     const LAMBDA_FILE_DETAILS                                   = 'LAMBDA_FILE_DETAILS';
     const LAMBDA_BATCH_FAILURE                                  = 'LAMBDA_BATCH_FAILURE';
     const INVALID_REPATRIATION_FILE                             = 'INVALID_REPATRIATION_FILE';
