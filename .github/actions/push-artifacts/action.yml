@@ -43,20 +43,14 @@ runs:
       if: ${{ inputs.targetEnvironment != 'production' }}
       shell: bash
       run: |
-        node .github/scripts/s3-sync.js "$BUILD_DIR" "$TARGET_PROJECT" "$NON_PROD_BUCKET"
+        node .github/scripts/s3-sync.js ${{ inputs.buildDir }} ${{ inputs.targetProject }} ${{ inputs.nonProdBucket }}
       env:
         ENVIRONMENT: ${{ inputs.targetEnvironment }}
-        BUILD_DIR: ${{ inputs.buildDir }}
-        TARGET_PROJECT: ${{ inputs.targetProject }}
-        NON_PROD_BUCKET: ${{ inputs.nonProdBucket }}
 
     - name: Push Browser Artifacts to Action Cache (S3) for ${{ inputs.targetProject }} - (production)
       if: ${{ inputs.targetEnvironment == 'production' }}
       shell: bash
       run: |
-        node .github/scripts/s3-sync.js "$BUILD_DIR" "$TARGET_PROJECT" "$PROD_CACHE_BUCKET"
+        node .github/scripts/s3-sync.js ${{ inputs.buildDir }} ${{ inputs.targetProject }} ${{ inputs.prodCacheBucket }}
       env:
         ENVIRONMENT: production
-        BUILD_DIR: ${{ inputs.buildDir }}
-        TARGET_PROJECT: ${{ inputs.targetProject }}
-        PROD_CACHE_BUCKET: ${{ inputs.prodCacheBucket }}

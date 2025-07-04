@@ -16,11 +16,9 @@ runs:
     - name: Get Project Roots
       shell: bash
       id: get-project-roots
-      env:
-        TARGET_PROJECTS: ${{ inputs.targetProjects }}
       run: |
         # Read the input projects as a comma-separated string
-        target_projects="$TARGET_PROJECTS"
+        target_projects="${{ inputs.targetProjects }}"
         
         # Initialize an empty array to store project roots
         project_roots=()
