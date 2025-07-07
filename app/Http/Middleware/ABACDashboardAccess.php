@@ -105,6 +105,7 @@ class ABACDashboardAccess
         "admin_getIndex",
         "merchants_switch",
         "get_org_by_domain",
+        "user_session_register_cross_region",
         "graph_request"
     ];
     

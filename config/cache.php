@@ -61,6 +61,10 @@ return [
             'connection' => 'default',
         ],
 
+        'session_redis' => [
+            'driver' => 'redis',
+            'connection' => 'session',
+        ],
     ],
 
     /*

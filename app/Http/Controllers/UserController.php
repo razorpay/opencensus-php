@@ -31,6 +31,7 @@ use App\Merchant\Constants as MerchantConstants;
 use App\User\Constants as UserConstants;
 use Illuminate\Http\Request as HttpRequest;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Utils\RegionUtils\RegionUtils;
 
 
 const EVENT_TRIGGER_COUNT = 1;
@@ -2027,7 +2028,8 @@ class UserController extends Controller
 
         Cookie::expire(AppConstants::RZP_REFRESH_TOKEN, AppConstants::ROOT_PATH);
 
-        Cookie::expire(AppConstants::RZP_USER_MERCHANT_REGION, AppConstants::ROOT_PATH);
+        // Use centralized method to expire region cookies
+        RegionUtils::expireRegionCookies();
 
         return AppResponse::jsonResponse([]);
     }
@@ -2635,5 +2637,19 @@ class UserController extends Controller
             ]);
             return AppResponse::jsonResponse(['An error occurred while creating the session'], null, 500);
         }
+    }
+
+    /**
+     * Register a user in a crossregion session
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function postRegisterCrossRegion()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new User\Service)->registerCrossRegion($input);
+
+        return AppResponse::jsonResponse($error, $data);
     }
 }

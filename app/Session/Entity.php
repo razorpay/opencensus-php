@@ -4,6 +4,8 @@ namespace App\Session;
 
 use App\Base;
 use Http\Client\Common\Exception\ServerErrorException;
+use App\Trace\TraceCode;
+use App\Session\SessionConstants;
 
 use Redis;
 use Session;
@@ -40,16 +42,34 @@ class Entity extends Base\Entity
 
     public function getAllSessionsForAdmin($id)
     {
+        // Get sessions from Redis
+        $redisSessions = $this->getAllSessionsForAdminFromRedis($id);
+
+        // Get sessions from Memory DB
+        $memoryDbSessions = $this->getAllSessionsForAdminFromMemoryDb($id);
+
+        // Merge and deduplicate sessions by session ID
+        $allSessions = $this->mergeAndDeduplicateSessions($redisSessions, $memoryDbSessions);
+
+        return $allSessions;
+    }
+
+    /**
+     * Get all sessions for admin from Redis only
+     */
+    private function getAllSessionsForAdminFromRedis($id): array
+    {
         $sessions = [];
+        $setKey = SessionUtils::getAdminSessionKey($id);
 
-        $setKey = $this->getAdminSessionKey($id);
-
+        // Read admin sessions from Redis
         $sessionIds = Redis::smembers($setKey);
 
         foreach ($sessionIds as $sessionId)
         {
-            $key = $this->getSessionKey($sessionId);
+            $key = SessionUtils::getSessionKey($sessionId);
 
+            // Read session data from Redis
             $hash = Redis::hgetall($key);
 
             // This is a very edge-case scenario bug fix
@@ -62,12 +82,12 @@ class Entity extends Base\Entity
             // about the user relation.
             if (empty($hash))
             {
-                $this->deleteAdminSessionRelation($id, $sessionId);
-
+                $this->deleteAdminSessionRelationFromRedis($id, $sessionId);
                 continue;
             }
 
             $hash['id'] = $sessionId;
+            $hash['source'] = 'redis'; // Track source for debugging
 
             $sessions[] = $hash;
         }
@@ -75,10 +95,80 @@ class Entity extends Base\Entity
         return $sessions;
     }
 
+    /**
+     * Get all sessions for admin from Memory DB only
+     */
+    private function getAllSessionsForAdminFromMemoryDb($id): array
+    {
+        $sessions = [];
+        $setKey = SessionUtils::getAdminSessionKey($id);
+
+        // Read admin sessions from Memory DB
+        $sessionIds = SessionUtils::getSessionIdsFromMemoryDb($setKey);
+
+        foreach ($sessionIds as $sessionId)
+        {
+            // Read session data from Memory DB
+            $hash = SessionUtils::getSessionDataFromMemoryDb($sessionId);
+
+            // Handle edge case where session data doesn't exist
+            if (empty($hash))
+            {
+                $this->deleteAdminSessionRelationFromMemoryDb($id, $sessionId);
+                continue;
+            }
+
+            $hash['id'] = $sessionId;
+            $hash['source'] = 'memory_db'; // Track source for debugging
+
+            $sessions[] = $hash;
+        }
+
+        return $sessions;
+    }
+
+    /**
+     * Merge and deduplicate sessions from Redis and Memory DB
+     * Priority: Memory DB data takes precedence over Redis data for same session ID
+     */
+    private function mergeAndDeduplicateSessions(array $redisSessions, array $memoryDbSessions): array
+    {
+        $sessionMap = [];
+
+        // First, add all Redis sessions
+        foreach ($redisSessions as $session) {
+            $sessionId = $session['id'];
+            $sessionMap[$sessionId] = $session;
+        }
+
+        // Then, add Memory DB sessions (overwriting Redis data for same session ID)
+        foreach ($memoryDbSessions as $session) {
+            $sessionId = $session['id'];
+            // Memory DB data takes precedence
+            $sessionMap[$sessionId] = $session;
+        }
+
+        // Convert back to indexed array
+        return array_values($sessionMap);
+    }
+
     public function deleteAllOtherSessionsForAdmin($id, $currentSessionId)
     {
-        $setKey = $this->getAdminSessionKey($id);
+        // Delete sessions from Redis
+        $this->deleteAllOtherSessionsForAdminFromRedis($id, $currentSessionId);
 
+        // Delete sessions from Memory DB
+        $this->deleteAllOtherSessionsForAdminFromMemoryDb($id, $currentSessionId);
+    }
+
+    /**
+     * Delete all other admin sessions from Redis only
+     */
+    private function deleteAllOtherSessionsForAdminFromRedis($id, $currentSessionId)
+    {
+        $setKey = SessionUtils::getAdminSessionKey($id);
+
+        // Read admin sessions from Redis
         $sessionIds = Redis::smembers($setKey);
 
         foreach ($sessionIds as $sessionId)
@@ -88,19 +178,59 @@ class Entity extends Base\Entity
                 continue;
             }
 
-            $key = $this->getSessionKey($sessionId);
+            $key = SessionUtils::getSessionKey($sessionId);
 
+            // Read session data from Redis
             $hash = Redis::hgetall($key);
 
-            Redis::del($key);
-
-            $this->deleteAdminSessionRelation($id, $sessionId);
-
-            // Delete from admins:adminId:sessions set as well
-            if (isset($hash['user_id']))
+            // This is a very edge-case scenario bug fix
+            //
+            // If for some reason the main session hash doesn't exist
+            // or the key is lost for some reason (bug in code, memory issue, etc.)
+            // we should check for the relations and nuke them as well.
+            //
+            // Ofcourse since we don't have the userId we can't do anything
+            // about the user relation.
+            if (empty($hash))
             {
-                $this->deleteUserSessionRelation($hash['user_id'], $sessionId);
+                $this->deleteAdminSessionRelationFromRedis($id, $sessionId);
+                continue;
             }
+
+            // Delete session from Redis only
+            $this->deleteSessionFromRedis($sessionId, $hash);
+        }
+    }
+
+    /**
+     * Delete all other admin sessions from Memory DB only
+     */
+    private function deleteAllOtherSessionsForAdminFromMemoryDb($id, $currentSessionId)
+    {
+        $setKey = SessionUtils::getAdminSessionKey($id);
+
+        // Read admin sessions from Memory DB
+        $sessionIds = SessionUtils::getSessionIdsFromMemoryDb($setKey);
+
+        foreach ($sessionIds as $sessionId)
+        {
+            if ($sessionId === $currentSessionId)
+            {
+                continue;
+            }
+
+            // Read session data from Memory DB
+            $hash = SessionUtils::getSessionDataFromMemoryDb($sessionId);
+
+            // Handle edge case where session data doesn't exist
+            if (empty($hash))
+            {
+                $this->deleteAdminSessionRelationFromMemoryDb($id, $sessionId);
+                continue;
+            }
+
+            // Delete session from Memory DB only
+            $this->deleteSessionFromMemoryDb($sessionId, $hash);
         }
     }
 
@@ -115,8 +245,21 @@ class Entity extends Base\Entity
      */
     public function deleteSessionsForUser($userId, $currentSessionId = null)
     {
-        $setKey = $this->getUserSessionKey($userId);
+        // Delete sessions from Redis
+        $this->deleteSessionsForUserFromRedis($userId, $currentSessionId);
 
+        // Delete sessions from Memory DB
+        $this->deleteSessionsForUserFromMemoryDb($userId, $currentSessionId);
+    }
+
+    /**
+     * Delete user sessions from Redis only
+     */
+    private function deleteSessionsForUserFromRedis($userId, $currentSessionId = null)
+    {
+        $setKey = SessionUtils::getUserSessionKey($userId);
+
+        // Read user sessions from Redis
         $sessionIds = Redis::smembers($setKey);
 
         foreach ($sessionIds as $sessionId)
@@ -126,19 +269,38 @@ class Entity extends Base\Entity
                 continue;
             }
 
-            $key = $this->getSessionKey($sessionId);
+            $key = SessionUtils::getSessionKey($sessionId);
 
+            // Read session data from Redis
             $hash = Redis::hgetall($key);
 
-            Redis::del($key);
+            // Delete session from Redis only
+            $this->deleteSessionFromRedis($sessionId, $hash);
+        }
+    }
 
-            // Delete from admins:adminId:sessions set as well
-            if (isset($hash['admin_id']))
+    /**
+     * Delete user sessions from Memory DB only
+     */
+    private function deleteSessionsForUserFromMemoryDb($userId, $currentSessionId = null)
+    {
+        $setKey = SessionUtils::getUserSessionKey($userId);
+
+        // Read user sessions from Memory DB
+        $sessionIds = SessionUtils::getSessionIdsFromMemoryDb($setKey);
+
+        foreach ($sessionIds as $sessionId)
+        {
+            if ((empty($currentSessionId) === false) and ($sessionId === $currentSessionId))
             {
-                $this->deleteAdminSessionRelation($hash['admin_id'], $sessionId);
+                continue;
             }
 
-            $this->deleteUserSessionRelation($userId, $sessionId);
+            // Read session data from Memory DB
+            $hash = SessionUtils::getSessionDataFromMemoryDb($sessionId);
+
+            // Delete session from Memory DB only
+            $this->deleteSessionFromMemoryDb($sessionId, $hash);
         }
     }
 
@@ -151,36 +313,88 @@ class Entity extends Base\Entity
     public function deleteCurrentSessionForUser($userId)
     {
         $sessionId = Session::getId();
-        $key = $this->getSessionKey($sessionId);
+
+        // Delete from Redis if exists
+        $this->deleteCurrentSessionForUserFromRedis($userId, $sessionId);
+
+        // Delete from Memory DB if exists
+        $this->deleteCurrentSessionForUserFromMemoryDb($userId, $sessionId);
+    }
+
+    /**
+     * Delete current session for user from Redis only
+     */
+    private function deleteCurrentSessionForUserFromRedis($userId, $sessionId)
+    {
+        $key = SessionUtils::getSessionKey($sessionId);
+
+        // Read session data from Redis
         $hash = Redis::hgetall($key);
 
-        // remove it from sessions
-        Redis::del($key);
-        $this->deleteUserSessionRelation($userId, $sessionId);
-
-        // Delete from admins:adminId:sessions set as well
-        if (isset($hash['admin_id']))
+        // Only delete if session exists in Redis
+        if (!empty($hash))
         {
-            $this->deleteAdminSessionRelation($hash['admin_id'], $sessionId);
+            // Delete session from Redis only
+            $this->deleteSessionFromRedis($sessionId, $hash);
+        }
+    }
+
+    /**
+     * Delete current session for user from Memory DB only
+     */
+    private function deleteCurrentSessionForUserFromMemoryDb($userId, $sessionId)
+    {
+        // Read session data from Memory DB
+        $hash = SessionUtils::getSessionDataFromMemoryDb($sessionId);
+
+        // Only delete if session exists in Memory DB
+        if (!empty($hash))
+        {
+            // Delete session from Memory DB only
+            $this->deleteSessionFromMemoryDb($sessionId, $hash);
         }
     }
 
     public function deleteOneSessionForAdmin($sessionId)
     {
-        $key = $this->getSessionKey($sessionId);
+        // Delete from Redis if exists
+        $this->deleteOneSessionForAdminFromRedis($sessionId);
 
+        // Delete from Memory DB if exists
+        $this->deleteOneSessionForAdminFromMemoryDb($sessionId);
+    }
+
+    /**
+     * Delete one specific session for admin from Redis only
+     */
+    private function deleteOneSessionForAdminFromRedis($sessionId)
+    {
+        $key = SessionUtils::getSessionKey($sessionId);
+
+        // Read session data from Redis
         $hash = Redis::hgetall($key);
 
-        Redis::del($key);
-
-        if (isset($hash['admin_id']))
+        // Only delete if session exists in Redis
+        if (!empty($hash))
         {
-            $this->deleteAdminSessionRelation($hash['admin_id'], $sessionId);
+            // Delete session from Redis only
+            $this->deleteSessionFromRedis($sessionId, $hash);
         }
+    }
 
-        if (isset($hash['user_id']))
+    /**
+     * Delete one specific session for admin from Memory DB only
+     */
+    private function deleteOneSessionForAdminFromMemoryDb($sessionId)
+    {
+        // Read session data from Memory DB
+        $hash = SessionUtils::getSessionDataFromMemoryDb($sessionId);
+
+        // Only delete if session exists in Memory DB
+        if (!empty($hash))
         {
-            $this->deleteUserSessionRelation($hash['user_id'], $sessionId);
+            // Delete session from Memory DB only
+            $this->deleteSessionFromMemoryDb($sessionId, $hash);
         }
     }
 
@@ -189,9 +403,8 @@ class Entity extends Base\Entity
     */
     private function deleteAdminSessionRelation($adminId, $sessionId)
     {
-        $key = $this->getAdminSessionKey($adminId);
-
-        return Redis::srem($key, $sessionId);
+        // Use Redis-only deletion since we now handle each storage separately
+        return $this->deleteAdminSessionRelationFromRedis($adminId, $sessionId);
     }
 
     /*
@@ -199,23 +412,87 @@ class Entity extends Base\Entity
     */
     private function deleteUserSessionRelation($userId, $sessionId)
     {
-        $key = $this->getUserSessionKey($userId);
+        // Use Redis-only deletion since we now handle each storage separately
+        return $this->deleteUserSessionRelationFromRedis($userId, $sessionId);
+    }
 
+    /**
+     * Delete a session from Redis only with all related cleanup
+     */
+    private function deleteSessionFromRedis($sessionId, $hash)
+    {
+        $key = SessionUtils::getSessionKey($sessionId);
+
+        // Delete the main session data from Redis
+        Redis::del($key);
+
+        // Clean up admin session relations from Redis
+        if (isset($hash['admin_id']))
+        {
+            $this->deleteAdminSessionRelationFromRedis($hash['admin_id'], $sessionId);
+        }
+
+        // Clean up user session relations from Redis
+        if (isset($hash['user_id']))
+        {
+            $this->deleteUserSessionRelationFromRedis($hash['user_id'], $sessionId);
+        }
+    }
+
+    /**
+     * Delete a session from Memory DB only with all related cleanup
+     */
+    private function deleteSessionFromMemoryDb($sessionId, $hash)
+    {
+        // Delete the main session data from Memory DB
+        SessionUtils::cleanupSessionFromMemoryDb($sessionId, $hash, SessionConstants::CONTEXT_SESSION_DELETE);
+
+        // Clean up admin session relations from Memory DB
+        if (isset($hash['admin_id']))
+        {
+            $this->deleteAdminSessionRelationFromMemoryDb($hash['admin_id'], $sessionId);
+        }
+
+        // Clean up user session relations from Memory DB
+        if (isset($hash['user_id']))
+        {
+            $this->deleteUserSessionRelationFromMemoryDb($hash['user_id'], $sessionId);
+        }
+    }
+
+    /**
+     * Delete admin session relation from Redis only
+     */
+    private function deleteAdminSessionRelationFromRedis($adminId, $sessionId)
+    {
+        $key = SessionUtils::getAdminSessionKey($adminId);
         return Redis::srem($key, $sessionId);
     }
 
-    private function getSessionKey($sessionId)
+    /**
+     * Delete admin session relation from Memory DB only
+     */
+    private function deleteAdminSessionRelationFromMemoryDb($adminId, $sessionId)
     {
-        return "sessions:$sessionId";
+        $key = SessionUtils::getAdminSessionKey($adminId);
+        SessionUtils::deleteSessionRelationFromMemoryDb($key, $sessionId, null, $adminId, SessionConstants::ACTION_ADMIN_SESSION_DELETE_FROM_MEMORY_DB_SET);
     }
 
-    private function getAdminSessionKey($adminId)
+    /**
+     * Delete user session relation from Redis only
+     */
+    private function deleteUserSessionRelationFromRedis($userId, $sessionId)
     {
-        return "admins:$adminId:sessions";
+        $key = SessionUtils::getUserSessionKey($userId);
+        return Redis::srem($key, $sessionId);
     }
 
-    private function getUserSessionKey($userId)
+    /**
+     * Delete user session relation from Memory DB only
+     */
+    private function deleteUserSessionRelationFromMemoryDb($userId, $sessionId)
     {
-        return "users:$userId:sessions";
+        $key = SessionUtils::getUserSessionKey($userId);
+        SessionUtils::deleteSessionRelationFromMemoryDb($key, $sessionId, $userId, null, SessionConstants::ACTION_USER_SESSION_DELETE_FROM_MEMORY_DB_SET);
     }
 }

@@ -55,6 +55,7 @@ use App\Admin\ApiPromiseAny as ApiPromiseAny;
 use function PHPUnit\Framework\at;
 use App\Base\UniqueIdEntity;
 use Illuminate\Support\Facades\Validator as LaravelValidator;
+use App\Utils\RegionUtils\RegionUtils;
 
 const EVENT_TRIGGER_COUNT = 1;
 class Service extends Base\Service
@@ -97,6 +98,10 @@ class Service extends Base\Service
 
     const RZP_ACCESS_TOKEN = 'rzp_access_token';
     const RZP_REFRESH_TOKEN = 'rzp_refresh_token';
+
+    const MERCHANT_SELECTED_REGION = 'merchant_selected_region';
+
+    const INVALID_MERCHANT_REGION_PROVIDED = 'Invalid merchant region provided';
 
     const PROMISES_PARALLEL_API_CALL = [
         self::EXPERIMENT_PROMISE,
@@ -972,7 +977,7 @@ class Service extends Base\Service
                 return [['Verification failed because of incorrect OTP.', self::LOGIN_UNAUTHENTICATED], null, $httpCode];
             }
 
-            return [['The email or password you have entered is incorrect. Click on “Forgot?” to reset your password. ', self::LOGIN_UNAUTHENTICATED], null, $httpCode];
+            return [['The email or password you have entered is incorrect. Click on "Forgot?" to reset your password. ', self::LOGIN_UNAUTHENTICATED], null, $httpCode];
         }
 
         Auth::login($genericUser, false);
@@ -4626,18 +4631,18 @@ class Service extends Base\Service
     public function isUSLRedirectionSkipForOauth()
     {
         $uuid = $this->getUUID();
-        
+
         $isUSLRedirectionSkipForOauthExpId = \Config::get('splitz.experiments')[Constants::USL_REDIRECTION_SKIP_FOR_OAUTH];
-        
+
         $experimentData = (new SplitzService())->getVariantBulk($uuid, [$isUSLRedirectionSkipForOauthExpId], [], "splitz/bulkEvaluate");
 
         return ($experimentData[$isUSLRedirectionSkipForOauthExpId]['variables']['result'] ?? null) === 'on';
     }
-    
+
     public function isDashboardHomepageRedirectionEnabledtoUSL($currentRouteName, $data, $org): bool {
 
         try {
-    
+
             if (($this->isUSLRedirectionSkipForOauth() === true) and
                 (str_contains(request()->fullUrl(), 'authorize-multi-token') === true))
             {
@@ -4961,5 +4966,37 @@ class Service extends Base\Service
             ]);
             return [['An error occurred while generating the session'], null, 500];
         }
+    }
+
+    /**
+     * Register a new user in a cross-region merchant
+     *
+     * @param array $input The input data containing merchant_selected_region
+     * @return array [error, response]
+     */
+    public function registerCrossRegion(array $input): array
+    {
+        $merchantSelectedRegion = $input[self::MERCHANT_SELECTED_REGION] ?? '';
+
+        $this->trace->info(TraceCode::CROSS_REGION_REGISTRATION_ATTEMPT, [
+            self::MERCHANT_SELECTED_REGION => $merchantSelectedRegion,
+            'cell_region' => RegionUtils::getCellRegion(),
+        ]);
+
+        // Validate region using RegionUtils
+        if (!RegionUtils::isValidMerchantRegion($merchantSelectedRegion)) {
+            return [[self::INVALID_MERCHANT_REGION_PROVIDED], null];
+        }
+
+        // Use RegionUtils to set cross-region in request context if applicable
+        $isCrossRegionSet = RegionUtils::setCrossRegionInRequestContextIfApplicable($merchantSelectedRegion);
+
+        $this->trace->info(TraceCode::CROSS_REGION_REGISTRATION_SUCCESS, [
+            self::MERCHANT_SELECTED_REGION => $merchantSelectedRegion,
+            'cell_region' => RegionUtils::getCellRegion(),
+            'cross_region_set_in_context' => $isCrossRegionSet
+        ]);
+
+        return [null, []];
     }
 }

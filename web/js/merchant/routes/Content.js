@@ -2594,7 +2594,7 @@ class Content extends Component {
   };
 
   /**
-   * Fixes : https://razorpay.slack.com/archives/C7WEGELHJ/p1722844794024829?thread_ts=1722842921.016489&cid=C7WEGELHJ
+   * Fixes: https://razorpay.slack.com/archives/C7WEGELHJ/p1722844794024829?thread_ts=1722842921.016489&cid=C7WEGELHJ
    * The slider component at web/js/common/ui/Slider/index.js, pushes to history on unmount. The URL to push is passed as a prop in closeUrl.
    * In certain cases, we don't want to pass the closeUrl prop. The following function helps us to skip passing closeUrl prop, conditionally.
    */

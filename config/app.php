@@ -119,6 +119,24 @@ return array(
 
     'log' => 'daily',
 
+        /*
+    |--------------------------------------------------------------------------
+    | Cell Region Configuration
+    |--------------------------------------------------------------------------
+    |
+    | This configuration determines the current deployment region/cell where
+    | the application is running. This is used for cross-region functionality
+    | and session storage decisions. Valid values are:
+    | - 'IN' for India region
+    | - 'US' for United States region
+    | - 'SG' for Singapore region
+    |
+    | Set APP_CELL_REGION environment variable to override the default.
+    |
+    */
+
+    'cell_region' => env('APP_CELL_REGION', 'IN'),
+
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers
@@ -129,6 +147,8 @@ return array(
     | this array to grant expanded functionality to your applications.
     |
     */
+
+
 
     'providers' => [
 

@@ -34,6 +34,9 @@ export const merchantPayoutsFetchMiddleware: MerchantPayoutsFetchMiddleware =
 
         if (setCookies) {
           res.locals['x-set-cookie'] = setCookies;
+          // Store cookies for forwarding to subsequent middleware and API calls
+          req.forward_cookies = setCookies;
+
           req.shellLogger.info({
             message: 'Set-Cookie headers retrieved and stored in locals.',
             moduleName: '@merchantPayoutsFetchMiddleware',

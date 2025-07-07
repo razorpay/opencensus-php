@@ -31,6 +31,7 @@ class EncryptCookies extends BaseEncrypter
         Constants::RZP_REFRESH_TOKEN,
         Constants::RZP_USER_MERCHANT_REGION,
         Constants::ADMIN_EXPERIENCE_SESSION,
+        Constants::RZP_CROSS_REGION,
     ];
 
 

@@ -91,6 +91,12 @@ return [
             'database' => env('REDIS_DB', 0),
         ],
 
+        'session' => [
+            'host'     => env('MEMORY_DB_HOST', '127.0.0.1'),
+            'port'     => env('MEMORY_DB_PORT', 6379),
+            'timeout'  => env('MEMORY_DB_TIMEOUT', 1),
+            'read_write_timeout' => env('MEMORY_DB_READ_WRITE_TIMEOUT', 1),
+        ],
     ],
 
 ];

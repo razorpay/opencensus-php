@@ -2,6 +2,8 @@
 
 namespace App\Constants;
 
+use App\Utils\RegionUtils\RegionConstants;
+
 class Constants {
     const HTTP_CLIENT                   = "http_client";
 
@@ -76,5 +78,11 @@ class Constants {
 
     const NEW_AUTH_REARCH = 'NEW_AUTH_REARCH';
     const BIN_SERVICE_UPLOAD_ROUTE = '/upload';
+
+    const RZP_CROSS_REGION = 'rzp_cross_region_enabled';
+
+    // Cookie Values for Region Management
+    const CROSS_REGION_COOKIE_VALUE_TRUE = 'true';
+    const CROSS_REGION_COOKIE_VALUE_FALSE = 'false';
 
 }

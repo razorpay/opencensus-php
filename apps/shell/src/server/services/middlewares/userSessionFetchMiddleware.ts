@@ -31,6 +31,9 @@ export const userSessionFetchMiddleware: UserSessionFetchMiddleware =
 
         if (setCookies) {
           res.locals['x-set-cookie'] = setCookies;
+          // Store parsed cookies on req object for easier access
+          req.forward_cookies = setCookies;
+
           req.shellLogger.info({
             message: `Set-Cookie headers retrieved and stored in locals.`,
             moduleName: '@userSessionFetchMiddleware',

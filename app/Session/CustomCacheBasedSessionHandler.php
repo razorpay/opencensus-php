@@ -2,11 +2,11 @@
 
 namespace App\Session;
 
-use App;
+
 use Auth;
 use Config;
-use Illuminate\Support\Arr;
 use Illuminate\Contracts\Auth\Guard;
+use App\Utils\RegionUtils\RegionUtils;
 use Illuminate\Contracts\Cache\Repository as CacheContract;
 
 class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessionHandler
@@ -22,46 +22,125 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
         $this->nonLoggedInUserSessionTimeout = $nonLoggedInUserSessionTimeout;
     }
 
-
-    public function read($sessionId):string
+    /**
+     * Read session data based on storage type determined by cross-region requirements
+     */
+    public function read($sessionId): string
     {
-        $connection = $this->cache->connection()->client();
+        $storageType = RegionUtils::getSessionStorageType();
 
-        $key = $this->sessionNamespace.':'.$sessionId;
-
-        $data = $connection->hgetall($key);
-
-        if (isset($data['payload']))
-        {
-            $payload = $data['payload'];
-
-            return $payload;
+        if ($storageType === SessionConstants::STORAGE_TYPE_MEMORY_DB) {
+            return $this->readFromMemoryDb($sessionId);
+        } else {
+            return $this->readFromRedis($sessionId);
         }
+    }
+
+    /**
+     * Read session data from Memory DB
+     */
+    private function readFromMemoryDb($sessionId): string
+    {
+        $data = SessionUtils::getSessionDataFromMemoryDb($sessionId);
+
+        if (SessionUtils::isSessionExpired($data))
+        {
+            $this->destroyFromMemoryDb($sessionId);
+
+            return '';
+        }
+
+        if (isset($data['payload'])) {
+            return $data['payload'];
+        }
+
         return '';
     }
 
-    public function write($sessionId, $data):bool
+    /**
+     * Read session data from Redis
+     */
+    private function readFromRedis($sessionId): string
     {
-        // dont override session if it is already handled
-        // currently sessions are manually modified by edge team
-        // to keep dashboard sessions in sync with edge on ValidateEdgeToken.php
-        // laravel session handler will try to override the manual modifications
-        // hence we use this flag to identify if the session has to be overridden or not
-        $shouldOverrideSession = app('request.ctx')->shouldOverrideSession();
-        if (! $shouldOverrideSession) {
-            return true;
+        $connection = $this->cache->connection()->client();
+        $key = SessionUtils::getSessionKey($sessionId);
+        $data = $connection->hgetall($key);
+
+        if (isset($data['payload'])) {
+            return $data['payload'];
         }
 
-        $connection = $this->cache->connection()->client();
+        return '';
+    }
+
+    /**
+     * Write session data based on storage type and handle migration if needed
+     */
+    public function write($sessionId, $data): bool
+    {
+        // Don't override session if it is already handled
+        // Currently sessions are manually modified by edge team
+        // to keep dashboard sessions in sync with edge on ValidateEdgeToken.php
+        // Laravel session handler will try to override the manual modifications
+        // hence we use this flag to identify if the session has to be overridden or not
+        $shouldOverrideSession = app('request.ctx')->shouldOverrideSession();
+        if (!$shouldOverrideSession) {
+            return true;
+        }
 
         $data = $this->getDefaultPayload($data, app());
 
         $lifetime = $this->getLifetime($data);
 
+        $data[SessionUtils::SESSION_TIMEOUT_KEY] = SessionUtils::getSessionTimeout($lifetime);
+
+        // Get session storage storageConfig from RegionUtils
+        $storageConfig = RegionUtils::getSessionStorageConfiguration();
+        $storageType = $storageConfig[SessionConstants::STRATEGY_KEY_STORAGE_TYPE];
+        $requiresMigration = $storageConfig[SessionConstants::STRATEGY_KEY_REQUIRES_MIGRATION];
+
+        // Handle migration if required (from Redis to Memory DB)
+        if ($requiresMigration) {
+            $this->migrateSessionFromRedisToMemoryDb($sessionId, $data);
+        }
+
+        // Write to appropriate storage based on storage type
+        if ($storageType === SessionConstants::STORAGE_TYPE_MEMORY_DB) {
+            return $this->writeToMemoryDb($sessionId, $data);
+        } else {
+            $connection = $this->cache->connection()->client();
+            return $this->writeToRedis($connection, $sessionId, $data, $lifetime);
+        }
+    }
+
+    /**
+     * Migrate session from Redis to Memory DB by cleaning up Redis storage
+     */
+    private function migrateSessionFromRedisToMemoryDb($sessionId, $data): void
+    {
+        $connection = $this->cache->connection()->client();
+        $this->destroyFromRedis($connection, $sessionId, $data);
+    }
+
+    /**
+     * Write session data to Memory DB
+     */
+    private function writeToMemoryDb($sessionId, $data): bool
+    {
+        SessionUtils::writeSessionToMemoryDb($sessionId, $data);
+        return true;
+    }
+
+    /**
+     * Write session data to Redis with observability (existing functionality)
+     */
+    protected function writeToRedis($connection, $sessionId, $data, $lifetime): bool
+    {
+
         // Write to admins:adminID:sessions = [ Sid1, Sid2, Sid3 ]
         if (isset($data['admin_id']))
         {
-            $adminKey = $this->getAdminSessionKey($data['admin_id']);
+            $adminKey = SessionUtils::getAdminSessionKey($data['admin_id']);
 
             $connection->sadd($adminKey, $sessionId);
 
@@ -71,14 +150,14 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
         // Write to users:userID:sessions = [ Sid1, Sid2, Sid3 ]
         if (isset($data['user_id']))
         {
-            $userKey = $this->getUserSessionKey($data['user_id']);
+            $userKey = SessionUtils::getUserSessionKey($data['user_id']);
 
             $connection->sadd($userKey, $sessionId);
 
             $connection->expire($userKey, $lifetime);
         }
 
-        $sessionKey = $this->sessionNamespace.':'.$sessionId;
+        $sessionKey = SessionUtils::getSessionKey($sessionId);
 
         // Write to the main cache (hash)
 
@@ -127,13 +206,43 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
         return $payload;
     }
 
-    public function destroy($sessionId):bool
+    /**
+     * Destroy session data based on storage type
+     */
+    public function destroy($sessionId): bool
     {
-        $connection = $this->cache->connection()->client();
+        $storageType = RegionUtils::getSessionStorageType();
 
-        $key = $this->getSessionKey($sessionId);
+        if ($storageType === SessionConstants::STORAGE_TYPE_MEMORY_DB) {
+            return $this->destroyFromMemoryDb($sessionId);
+        } else {
+            $connection = $this->cache->connection()->client();
+            $key = SessionUtils::getSessionKey($sessionId);
+            $data = $connection->hgetall($key);
+            return $this->destroyFromRedis($connection, $sessionId, $data);
+        }
+    }
 
-        $data = $connection->hgetall($key);
+    /**
+     * Destroy session from Memory DB
+     */
+    private function destroyFromMemoryDb($sessionId): bool
+    {
+        // Get session data first for cleanup
+        $data = SessionUtils::getSessionDataFromMemoryDb($sessionId);
+
+        // Cleanup session from Memory DB
+        SessionUtils::cleanupSessionFromMemoryDb($sessionId, $data, SessionConstants::CONTEXT_SESSION_HANDLER);
+
+        return true;
+    }
+
+    /**
+     * Destroy session from Redis (existing functionality)
+     */
+    protected function destroyFromRedis($connection, $sessionId, $data): bool
+    {
+        $key = SessionUtils::getSessionKey($sessionId);
 
         // Delete the key holding entire session data
         $connection->del($key);
@@ -143,7 +252,7 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
         {
             $userId = $data['user_id'];
 
-            $userKey = $this->getUserSessionKey($userId);
+            $userKey = SessionUtils::getUserSessionKey($userId);
 
             $connection->srem($userKey, $sessionId);
         }
@@ -153,29 +262,13 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
         {
             $adminId = $data['admin_id'];
 
-            $adminKey = $this->getAdminSessionKey($adminId);
+            $adminKey = SessionUtils::getAdminSessionKey($adminId);
 
             $connection->srem($adminKey, $sessionId);
         }
 
         return true;
     }
-
-    private function getSessionKey($sessionId)
-    {
-        return $this->sessionNamespace . ":$sessionId";
-    }
-
-    private function getAdminSessionKey($adminId)
-    {
-        return "admins:$adminId:" . $this->sessionNamespace;
-    }
-
-    private function getUserSessionKey($userId)
-    {
-        return "users:$userId:" . $this->sessionNamespace;
-    }
-
 
     protected function getLifetime($data)
     {

@@ -73,7 +73,7 @@ class RegionCookieHandlerTest extends BaseTestCase
         });
 
         $cookies = $response->headers->getCookies();
-        $this->assertCount(1, $cookies);
+        $this->assertCount(2, $cookies);
         $this->assertEquals('rzp_user_merchant_region', $response->headers->getCookies()[0]->getName());
         $this->assertEquals('SG', $response->headers->getCookies()[0]->getValue());
         $this->assertEquals(false, $response->headers->getCookies()[0]->isHttpOnly());
@@ -85,7 +85,7 @@ class RegionCookieHandlerTest extends BaseTestCase
         });
 
 
-        $accessTokenCookie    =  cookie(Constants::RZP_ACCESS_TOKEN);
+        $accessTokenCookie    = cookie(Constants::RZP_ACCESS_TOKEN);
         $refreshTokenCookie   = cookie(Constants::RZP_REFRESH_TOKEN);
         $merchantRegionCookie = cookie(Constants::RZP_USER_MERCHANT_REGION);
 
@@ -124,7 +124,7 @@ class RegionCookieHandlerTest extends BaseTestCase
         });
 
         $cookies = $response->headers->getCookies();
-        $this->assertCount(1, $cookies);
+        $this->assertCount(2, $cookies);
         $this->assertEquals('rzp_user_merchant_region', $response->headers->getCookies()[0]->getName());
         $this->assertEquals('SG', $response->headers->getCookies()[0]->getValue());
         $this->assertEquals(200, $response->getStatusCode());
@@ -141,6 +141,6 @@ class RegionCookieHandlerTest extends BaseTestCase
         });
 
         $cookies = $response->headers->getCookies();
-        $this->assertCount(0, $cookies);
+        $this->assertCount(1, $cookies);
     }
 }

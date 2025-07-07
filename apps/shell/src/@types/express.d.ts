@@ -5,6 +5,7 @@ declare global {
     interface Request {
       shellLogger: typeof shellLogger;
       x_shell_request_id: string;
+      forward_cookies: string[];
     }
 
     interface Response {

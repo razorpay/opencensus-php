@@ -14,6 +14,9 @@ final class RequestContext
     // used by CustomCacheBasedSessionHandler write()
     public ?bool $shouldOverrideSession = true;
 
+    // Merchant region for session handling and cross-region operations
+    public ?string $isCrossRegion = null;
+    
     /**
      * @return string|null
      */
@@ -70,5 +73,21 @@ final class RequestContext
     public function shouldOverrideSession(): bool
     {
         return $this->shouldOverrideSession;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCrossRegion(): string|null
+    {
+        return $this->isCrossRegion;
+    }
+
+    /**
+     * @param string $merchantRegion
+     */
+    public function setCrossRegion(string $isCrossRegion): void
+    {
+        $this->isCrossRegion = $isCrossRegion;
     }
 }

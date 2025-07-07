@@ -136,6 +136,29 @@ class Constants
     ];
 
     /**
+     * List of supported cross-region codes
+     * 
+     * This constant stores the list of country codes that are supported for cross-region registration
+     * 
+     * @var array
+     */
+    const SUPPORTED_CROSS_REGION_CODES = [
+        'IN',
+        'SG',
+        'US',
+        'MY',
+    ];
+
+    /**
+     * Default region code
+     * 
+     * This constant stores the default region code
+     * 
+     * @var string
+     */
+    const DEFAULT_REGION_CODE = 'IN';
+
+    /**
      * Email verification can happen in two scenarios
      * 1. User is logged in
      * 2. User and merchant are logged in

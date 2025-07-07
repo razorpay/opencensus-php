@@ -40,6 +40,9 @@ export const merchantConfigStoreFetchMiddleware: MerchantConfigStoreFetchMiddlew
         const setCookies = response.headers.raw()['set-cookie'];
         dashboardBackendRequestId = response.headers.get('x-request-id');
 
+        // Store cookies for forwarding to subsequent middleware and API calls
+        req.forward_cookies = setCookies;
+
         if (setCookies) {
           res.locals['x-set-cookie'] = setCookies;
           req.shellLogger.info({

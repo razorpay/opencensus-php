@@ -131,6 +131,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/session', 'UserController@getSessionData')->middleware(['auth:user'])->name('user_session');
         Route::get('/identifier/{client_id}', 'UserController@getIdentityToken')->middleware(['auth:user'])->name('user_identity');
         Route::post('/salesforce_event', 'UserController@postUserDetailsToSalesforce')->name('user_salesforce_event');
+        Route::post('/register/cross_region', 'UserController@postRegisterCrossRegion')->name('user_session_register_cross_region');
     });
 
     Route::group(['middleware' => ['auth:user', 'tnc_popup'], 'prefix' => 'user'], function()

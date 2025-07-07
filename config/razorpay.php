@@ -45,6 +45,7 @@ return array(
 
     'graphql'   => [
         'server_url'    => env('GRAPHQL_SERVER_URL'),
+        'server_canary_url' => env('GRAPHQL_SERVER_URL'),
         'server_path'   => env('GRAPHQL_SERVER_PATH')
     ],
 );

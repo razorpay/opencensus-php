@@ -183,4 +183,24 @@ class Constants
   const METRIC_USER_LANDING_PAGE_REQUESTS = 'user_landing_page_requests';
 
   const USL_REDIRECTION_EXCEPTION = 'USL_REDIRECTION_EXCEPTION';
+
+
+
+  // Memory DB operation observability metrics
+  const METRIC_COUNTER_MEMORY_DB_OPERATIONS = 'memory_db_operations_total';
+  const METRIC_HISTOGRAM_MEMORY_DB_OPERATION_DURATION = 'memory_db_operations_duration_seconds';
+
+
+  // Memory DB operation status values
+  const MEMORY_DB_STATUS_SUCCESS = 'success';
+  const MEMORY_DB_STATUS_FAILURE = 'failure';
+
+  // Memory DB key status values
+  const MEMORY_DB_KEY_FOUND = 'found';
+  const MEMORY_DB_KEY_NOT_FOUND = 'not_found';
+  const MEMORY_DB_KEY_WRITTEN = 'written';
+  const MEMORY_DB_KEY_DELETED = 'deleted';
+  const MEMORY_DB_KEY_MODIFIED = 'modified';
+  const MEMORY_DB_KEY_UNKNOWN = 'unknown';
+
 }
