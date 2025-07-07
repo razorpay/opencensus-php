@@ -18,7 +18,7 @@ class TLDExtract
     {
         if (empty(trim($url)) === true)
         {
-            return null;
+            return "";
         }
 
         $host = parse_url($url, PHP_URL_HOST);
