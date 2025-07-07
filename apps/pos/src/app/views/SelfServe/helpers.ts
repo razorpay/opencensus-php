@@ -5,8 +5,8 @@ import { ExperimentInfoType } from 'apps/pos/src/app/views/SelfServe/types';
 import {
   setItemInLocalStorage as setLocalStorageItem,
   getItemFromLocalStorage as getLocalStorageItem,
+  isProductionEnv,
 } from '@libs/shared-utils';
-const isProductionEnv = window.APP_ENV === 'production';
 
 import {
   ORDER_STATUS_META_DATA,
