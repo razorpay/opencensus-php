@@ -1351,8 +1351,8 @@ class Core extends Base\Core
                     $token->merchant && strtoupper($token->merchant->getCountry()) === 'IN' &&
                     $token->isRecurring() === false &&
                     $token->isCard() && $token->card &&
-                    $token->card->getNetwork() !== 'American Express' &&
-                    strtoupper($token->card->getCountry()) !== 'IN');
+                    ($token->card->getCountry() !== null && !empty($token->card->getCountry()) && strtoupper($token->card->getCountry()) !== 'IN') &&
+                    ($token->card->getNetwork() !== null && !empty($token->card->getNetwork()) && $token->card->getNetwork() !== 'American Express'));
         })->values();
     }
 

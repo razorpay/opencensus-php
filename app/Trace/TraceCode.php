@@ -13537,6 +13537,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUTS_RESPONSE_ADDITIONAL_FIELDS_MISSING_DEBIT_ACCOUNT_NUMBER = 'PAYOUTS_RESPONSE_ADDITIONAL_FIELDS_MISSING_DEBIT_ACCOUNT_NUMBER';
     const API_AND_WEBHOOK_ADDITIONAL_FIELDS_SPLITZ_ERROR         = 'API_AND_WEBHOOK_ADDITIONAL_FIELDS_SPLITZ_ERROR';
 
+    const ROUTING_THROUGH_REARCH_FOR_IN_MERCHANT_NON_IN_SAVED_CARD = 'ROUTING_THROUGH_REARCH_FOR_IN_MERCHANT_NON_IN_SAVED_CARD';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

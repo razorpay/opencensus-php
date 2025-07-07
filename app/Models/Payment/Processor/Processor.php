@@ -2128,7 +2128,15 @@ class Processor
                 if ($token !== null) {
                     $card = $this->repo->card->fetchForToken($token);
 
-                    if ($card !== null && strtoupper($card->getCountry()) !== 'IN' && $card->getNetwork() !== 'American Express' && $this->saveInternationalcardforIndianMerchantExperimentEnabled()) {
+                    if ($card !== null &&
+                        ($card->getCountry() !== null && !empty($card->getCountry()) && strtoupper($card->getCountry()) !== 'IN') &&
+                        ($card->getNetwork() !== null && !empty($card->getNetwork()) && $card->getNetwork() !== 'American Express')
+                        && $this->saveInternationalcardforIndianMerchantExperimentEnabled()) {
+                        $this->trace->info(Tracecode::ROUTING_THROUGH_REARCH_FOR_IN_MERCHANT_NON_IN_SAVED_CARD, [
+                            'merchant_id' => $merchant->getId(),
+                            'token_id' => $tokenId,
+                            'card_id' => $card->getId()
+                        ]);
                         $this->trace->count(
                             Token\Metric::ROUTING_VIA_REARCH_FOR_INDIAN_MERCHANT_INTERNATIONAL_TOKEN,
                             [
