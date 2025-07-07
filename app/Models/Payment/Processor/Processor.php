@@ -2410,19 +2410,30 @@ class Processor
                     }
                 }
 
-                if (empty($order) === false and ($order->getProductId() !== null
-                        and $order->getProductType() !== ProductType::PAYMENT_LINK_V2
-                        and $order->getProductType() !== ProductType::INVOICE
-                        and $order->getProductType() !== ProductType::PAYMENT_STORE
-                        and ($order->getProductType() !== ProductType::AUTH_LINK or ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD))
-                        and !in_array($order->getProductType(), PaymentLink\Entity::paymentLinkEntityProductTypes())))
-                {
-
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => $order->getProductType(),
-                        'merchant_id' => $merchant->getId(),
-                    ]);
-                    return false;
+                if (empty($order) === false && $order->getProductId() !== null) {
+                    if ($order->getProductType() === ProductType::SUBSCRIPTION) {
+                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                            'reason' => 'product_type_subscription',
+                            'merchant_id' => $merchant->getId(),
+                        ]);
+                        return false;
+                    } elseif ($order->getProductType() === ProductType::MAGIC_CHECKOUT) {
+                        $redirectToCPSRearch = (new Payment\Service())->getSplitzExpResponse($merchant->getId(), 'app.cps_force_offers_rearch');
+                        if ($redirectToCPSRearch === 'switch_on') {
+                            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_SUCCESS_REASON, [
+                                'reason' => 'splitz_exp_redirecting_magic_checkout_to_rearch',
+                                'merchant_id' => $merchant->getId(),
+                            ]);
+                            return true;
+                        } else {
+                            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                                'reason' => 'redirecting_magic_checkout_to_non_rearch',
+                                'merchant_id' => $merchant->getId(),
+                            ]);
+                            return false;
+                        }
+                    }
+                    // for any other product type let code fall through
                 }
 
                 if ((empty($orderTransfers) === false) and
@@ -3098,85 +3109,6 @@ class Processor
                 return false;
             }
 
-            if (empty($input[Payment\Entity::SAVE]) === false)
-            {
-                if ($iin->getNetworkCode() === Card\Network::DICL)
-                {
-                    $result ='off';
-                    if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
-                        $result = 'on';
-                    }
-                    if ($result !== 'on') {
-                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                            'reason' => "not_engaged_in_saved_card_payments_via_pg_router_v3",
-                            'merchant_id' => $merchant->getId(),
-                            'razorx_result' => $result,
-                        ]);
-                    }
-
-                    return ($result === 'on');
-                }
-
-                $library = null;
-                if((isset($input['_']) === true) and
-                    (isset($input['_']['library']) === true))
-                {
-                    $library = $input['_']['library'];
-                }
-
-                if ($library !== null && $library !== Payment\Analytics\Metadata::CHECKOUTJS)
-                {
-                    if ($library === Payment\Analytics\Metadata::CUSTOM || $library === Payment\Analytics\Metadata::RAZORPAYJS)
-                    {
-                        $result = 'off';
-                        if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
-                            $result = 'on';
-                        }
-                        if ($result !== 'on') {
-                            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                                'reason' => "not_engaged_in_saved_card_payments_via_pg_router_v2",
-                                'merchant_id' => $merchant->getId(),
-                                'razorx_result' => $result,
-                            ]);
-                        }
-
-                        return ($result === 'on');
-                    }
-                    if ($library === Payment\Analytics\Metadata::S2S)
-                    {
-                        $result = 'off';
-                        if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
-                            $result = 'on';
-                        }
-                        if ($result !== 'on') {
-                            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                                'reason' => "not_engaged_in_saved_card_payments_via_pg_router_v4",
-                                'merchant_id' => $merchant->getId(),
-                                'razorx_result' => $result,
-                            ]);
-                        }
-
-                        return ($result === 'on');
-                    }
-
-                    return false;
-                }
-
-                $result = 'off';
-                if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
-                    $result = 'on';
-                }
-                if ($result !== 'on') {
-                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "not_engaged_in_saved_card_payments_via_pg_router",
-                        'merchant_id' => $merchant->getId(),
-                        'razorx_result' => $result,
-                    ]);
-                }
-
-                return ($result === 'on');
-            }
-
             if ($merchant->isFeatureEnabled('openwallet') === true)
             {
                 return true;
@@ -3274,18 +3206,11 @@ class Processor
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::S2S_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
             }
 
-            if ($result !== 'on') {
-                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                    'reason' => "not_engaged_in_any_function",
-                    'merchant_id' => $merchant->getId(),
-                    'razorx_result' => $result,
-                ]);
-
-                unset($input['convenience_fee']);
-                unset($input['convenience_fee_gst']);
-            }
-
-            return ($result === 'on');
+            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_SUCCESS_REASON, [
+                'reason' => 'not_engaged_in_any_function_routing_to_rearch',
+                'merchant_id' => $merchant->getId(),
+            ]);
+            return true;
 
         }
         catch(\Throwable $e)
