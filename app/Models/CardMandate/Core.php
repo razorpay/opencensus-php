@@ -592,15 +592,25 @@ class Core extends Base\Core
             return;
         }
 
-        $this->repo->transaction(
-            function () use ($cardMandate)
-            {
-                $this->repo->card_mandate->lockForUpdateAndReload($cardMandate);
+        if(!($cardMandate->isExternal()))
+        {
+            $this->repo->transaction(
+                function () use ($cardMandate) {
+                    $this->repo->card_mandate->lockForUpdateAndReload($cardMandate);
 
-                $cardMandate->setStatus(Status::CANCELLED);
+                    $cardMandate->setStatus(Status::CANCELLED);
 
-                $cardMandate->saveOrFail();
-            });
+                    $cardMandate->saveOrFail();
+                });
+        }
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_REGISTRATION_DELETE_TOKEN,
+            [
+                'card_mandate_id' => $cardMandate->getId(),
+                'is external'  => $cardMandate->isExternal(),
+            ]
+        );
 
         $mandateHub = (new MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
 
