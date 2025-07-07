@@ -5227,12 +5227,11 @@ class Core extends Base\Core
 
     }
 
-    public function getActivationStatusMappingForModularMerchants(): array
+    public function getActivationStatusMappingForModularMerchants(string $merchantId): array
     {
-        $merchant = $this->app['basicauth']->getMerchant();
-        if (empty($merchant) === false)
+        $workflowDetails = [];
+        if (empty($merchantId) === false)
         {
-            $merchantId = $merchant->getId();
             $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantId($merchantId);
             $workflowDetails = $userDeviceDetail ? $userDeviceDetail->getValueFromMetadata(DDConstants::WORKFLOW_DETAILS) : [];
         }
@@ -5253,6 +5252,8 @@ class Core extends Base\Core
         }
 
         $this->app->trace->info(TraceCode::ALLOWABLE_ACITVATION_STATUS_MAP_FOR_MODULAR_MERCHANT, [
+            'merchant_id' => $merchantId,
+            'workflow_details' => $workflowDetails,
             'allowed_next_activation_status_map' => $allowedNextActivationStatusMap,
         ]);
 

@@ -741,7 +741,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
         if (($merchantOnboardingProxyController->getIndiaModularMerchantResult($this->merchant)[DetailConstants::IS_MODULAR_INDIA] ?? false) === true)
         {
-            $allowedNextActivationStatusMap = (new Core())->getActivationStatusMappingForModularMerchants();
+            $allowedNextActivationStatusMap = (new Core())->getActivationStatusMappingForModularMerchants($this->merchant->getId());
             $allowedNextActivationStatuses = $allowedNextActivationStatusMap[$activationStatus];
         }
 
@@ -1820,15 +1820,15 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     protected function modifyBankBranchInput(& $input)
     {
-        $merchantCountry = strtolower($this->merchant != null ? $this->merchant->getCountry() : Country::IN); 
+        $merchantCountry = strtolower($this->merchant != null ? $this->merchant->getCountry() : Country::IN);
 
         if ($this->merchant === null)
-        {    
+        {
             $merchantCountry = Utility::getRowMerchantCountry();
         }
 
         if ($merchantCountry === Country::IN){
-            
+
             if (isset($input[Entity::BANK_BRANCH_IFSC]) === true)
             {
                 $input[Entity::BANK_BRANCH_CODE] = $input[Entity::BANK_BRANCH_IFSC];
