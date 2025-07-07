@@ -677,9 +677,6 @@ class PGRouter
 
             $payment = (new Payment\Entity)->forceFill($response['body']['data']['payment']);
 
-
-            $this->associateOfferDiscountIfApplicable($payment, $response['body']['data']);
-
             if ($payment->isUpi() === true)
             {
                 $input = $response['body']['data']['payment'];
@@ -695,6 +692,7 @@ class PGRouter
                 }
             }
 
+            $this->associateOfferDiscountIfApplicable($payment, $response['body']['data']);
             if ($card !== null)
             {
                 $payment->card()->associate($card);
