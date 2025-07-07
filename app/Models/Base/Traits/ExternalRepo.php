@@ -33,20 +33,39 @@ trait ExternalRepo
 
         if ($this->entity === Entity::PAYMENT)
         {
-            try
-            {
-                if (Entity::validateExternalRepoEntity($this->entityName) === true and $this->validateExternalFetchEnabled() === true )
+            if (Environment::isLowerEnvironment($this->app['env']) === false
+                and Environment::isEnvironmentQA($this->app['env']) === false) {
+                try
                 {
-                    return $this->fetchExternalEntity($id);
+                    if (Entity::validateExternalRepoEntity($this->entityName) === true and $this->validateExternalFetchEnabled() === true )
+                    {
+                        return $this->fetchExternalEntity($id);
+                    }
                 }
-            }
-            catch (\Throwable $e) {}
+                catch (\Throwable $e) {}
 
-            try
-            {
-                return parent::findByPublicId($id, $connectionType);
+                try
+                {
+                    return parent::findByPublicId($id, $connectionType);
+                }
+                catch (\Throwable $e) {}
+            } else {
+                try
+                {
+                    return parent::findByPublicId($id, $connectionType);
+                }
+                catch (\Throwable $e) {}
+
+                try
+                {
+                    if (Entity::validateExternalRepoEntity($this->entityName) === true and $this->validateExternalFetchEnabled() === true )
+                    {
+                        return $this->fetchExternalEntity($id);
+                    }
+                }
+                catch (\Throwable $e) {}
             }
-            catch (\Throwable $e) {}
+
         }
         else
         {
@@ -95,26 +114,51 @@ trait ExternalRepo
 
         if ($this->entity === Entity::PAYMENT)
         {
-            try
-            {
-                if ($this->validateExternalFetchEnabled() === true)
+            if (Environment::isLowerEnvironment($this->app['env']) === false
+                and Environment::isEnvironmentQA($this->app['env']) === false) {
+                try
                 {
-                    return $this->fetchExternalEntity($id, $merchant->getId(), $params);
+                    if ($this->validateExternalFetchEnabled() === true)
+                    {
+                        return $this->fetchExternalEntity($id, $merchant->getId(), $params);
+                    }
                 }
+                catch (\Throwable $e) {}
+
+                try
+                {
+                    $entity =  parent::findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
+
+                    $class = Entity::getExternalRepoSingleton($this->entity);
+
+                    $this->handleOrderExpands($params,$this->entity, $entity, $id, $class, $merchant->getId());
+
+                    return $entity;
+                }
+                catch (\Throwable $e) {}
+            } else {
+                try
+                {
+                    $entity =  parent::findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
+
+                    $class = Entity::getExternalRepoSingleton($this->entity);
+
+                    $this->handleOrderExpands($params,$this->entity, $entity, $id, $class, $merchant->getId());
+
+                    return $entity;
+                }
+                catch (\Throwable $e) {}
+
+                try
+                {
+                    if ($this->validateExternalFetchEnabled() === true)
+                    {
+                        return $this->fetchExternalEntity($id, $merchant->getId(), $params);
+                    }
+                }
+                catch (\Throwable $e) {}
             }
-            catch (\Throwable $e) {}
 
-            try
-            {
-                $entity =  parent::findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
-
-                $class = Entity::getExternalRepoSingleton($this->entity);
-
-                $this->handleOrderExpands($params,$this->entity, $entity, $id, $class, $merchant->getId());
-
-                return $entity;
-            }
-            catch (\Throwable $e) {}
         }
         else
         {
@@ -175,20 +219,39 @@ trait ExternalRepo
 
         if ($this->entity === Entity::PAYMENT)
         {
-            try
-            {
-                if ($this->validateExternalFetchEnabled() === true)
+            if (Environment::isLowerEnvironment($this->app['env']) === false
+                and Environment::isEnvironmentQA($this->app['env']) === false) {
+                try
                 {
-                    return $this->fetchExternalEntity($id, $merchant->getId(), $params);
+                    if ($this->validateExternalFetchEnabled() === true)
+                    {
+                        return $this->fetchExternalEntity($id, $merchant->getId(), $params);
+                    }
                 }
-            }
-            catch (\Throwable $e) {}
+                catch (\Throwable $e) {}
 
-            try
-            {
-                return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
+                try
+                {
+                    return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
+                }
+                catch (\Throwable $e) {}
+            } else {
+                try
+                {
+                    return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
+                }
+                catch (\Throwable $e) {}
+
+                try
+                {
+                    if ($this->validateExternalFetchEnabled() === true)
+                    {
+                        return $this->fetchExternalEntity($id, $merchant->getId(), $params);
+                    }
+                }
+                catch (\Throwable $e) {}
             }
-            catch (\Throwable $e) {}
+
         }
         else
         {
@@ -233,20 +296,39 @@ trait ExternalRepo
 
         if ($this->entity === Entity::PAYMENT)
         {
-            try
-            {
-                if ($this->validateExternalFetchEnabled() === true)
+            if (Environment::isLowerEnvironment($this->app['env']) === false
+                and Environment::isEnvironmentQA($this->app['env']) === false) {
+                try
                 {
-                    return $this->fetchExternalEntity($id, $merchantId);
+                    if ($this->validateExternalFetchEnabled() === true)
+                    {
+                        return $this->fetchExternalEntity($id, $merchantId);
+                    }
                 }
-            }
-            catch (\Throwable $e) {}
+                catch (\Throwable $e) {}
 
-            try
-            {
-                return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
+                try
+                {
+                    return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
+                }
+                catch (\Throwable $e) {}
+            } else {
+                try
+                {
+                    return parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
+                }
+                catch (\Throwable $e) {}
+
+                try
+                {
+                    if ($this->validateExternalFetchEnabled() === true)
+                    {
+                        return $this->fetchExternalEntity($id, $merchantId);
+                    }
+                }
+                catch (\Throwable $e) {}
             }
-            catch (\Throwable $e) {}
+
         }
         else
         {
@@ -399,20 +481,38 @@ trait ExternalRepo
 
         if ($this->entity === Entity::PAYMENT)
         {
-            try
-            {
-                if ($this->validateExternalFetchEnabled() === true)
+            if (Environment::isLowerEnvironment($this->app['env']) === false
+                and Environment::isEnvironmentQA($this->app['env']) === false) {
+                try
                 {
-                    return $this->fetchExternalEntity($id, "");
+                    if ($this->validateExternalFetchEnabled() === true)
+                    {
+                        return $this->fetchExternalEntity($id, "");
+                    }
                 }
-            }
-            catch (\Throwable $e) {}
+                catch (\Throwable $e) {}
 
-            try
-            {
-                return parent::findOrFailPublic($id, $columns, $connectionType);
+                try
+                {
+                    return parent::findOrFailPublic($id, $columns, $connectionType);
+                }
+                catch (\Throwable $e) {}
+            } else {
+                try
+                {
+                    return parent::findOrFailPublic($id, $columns, $connectionType);
+                }
+                catch (\Throwable $e) {}
+
+                try
+                {
+                    if ($this->validateExternalFetchEnabled() === true)
+                    {
+                        return $this->fetchExternalEntity($id, "");
+                    }
+                }
+                catch (\Throwable $e) {}
             }
-            catch (\Throwable $e) {}
         }
         else
         {
@@ -457,20 +557,38 @@ trait ExternalRepo
 
         if ($this->entity === Entity::PAYMENT)
         {
-            try
-            {
-                if ($this->validateExternalFetchEnabled() === true)
+            if (Environment::isLowerEnvironment($this->app['env']) === false
+                and Environment::isEnvironmentQA($this->app['env']) === false) {
+                try
                 {
-                    return $this->fetchExternalEntity($id, "");
+                    if ($this->validateExternalFetchEnabled() === true)
+                    {
+                        return $this->fetchExternalEntity($id, "");
+                    }
                 }
-            }
-            catch (\Throwable $e) {}
+                catch (\Throwable $e) {}
 
-            try
-            {
-                return parent::findOrFail($id, $columns, $connectionType);
+                try
+                {
+                    return parent::findOrFail($id, $columns, $connectionType);
+                }
+                catch (\Throwable $e) {}
+            } else {
+                try
+                {
+                    return parent::findOrFail($id, $columns, $connectionType);
+                }
+                catch (\Throwable $e) {}
+
+                try
+                {
+                    if ($this->validateExternalFetchEnabled() === true)
+                    {
+                        return $this->fetchExternalEntity($id, "");
+                    }
+                }
+                catch (\Throwable $e) {}
             }
-            catch (\Throwable $e) {}
         }
         else
         {
