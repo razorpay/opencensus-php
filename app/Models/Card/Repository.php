@@ -79,7 +79,14 @@ class Repository extends Base\Repository
 
     public function retrieveIinDetails($iin)
     {
-        if (strlen($iin) > 6)
+
+        if (strlen($iin) >= 8){
+            $iin = intval(substr($iin, 0, 8));
+        }
+        else if (strlen($iin) >= 7){
+            $iin = intval(substr($iin, 0, 7));
+        }
+        else if (strlen($iin) >= 6)
         {
             $iin = intval(substr($iin, 0, 6));
         }

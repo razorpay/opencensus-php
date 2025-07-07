@@ -390,7 +390,7 @@ class Entity extends Base\PublicEntity
     {
         if (empty($input['number']) === false)
         {
-            $iin = substr($input['number'], 0, 6);
+            $iin = substr($input['number'], 0, 9);
 
             if (((empty($input[self::IS_TOKENIZED_CARD]) === false) and
                 ($input[self::IS_TOKENIZED_CARD] === true)) or $this->isExternalAltIdPayment($input))

@@ -1037,7 +1037,7 @@ class Core extends Base\Core
         $card->setNetwork($networkName);
 
         // Get details for this iin from card repository
-        if(isset($merchant) && $merchant->getCountry() !== Country::IN){
+        if(isset($merchant) && strtolower($merchant->getCountry()) !== Country::IN){
             $iin = $this->repo->card->retrieveApiIinEntityDetails($iinNumber);
         }
         else{
