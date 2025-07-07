@@ -102,29 +102,43 @@ jobs:
         timeout-minutes: 2
         run: pnpm nx test:e2e:add-prod-commits
 
-      - name: Generate Devstack Labels
-        id: generate-devstack-labels
+      - name: Generate Variables
+        id: generate-common-variables
         if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         run: |
           COMMIT_SHA="${{ github.sha }}"
           COMMIT_LABEL="e2e-dash-${COMMIT_SHA:0:8}"
           TIMESTAMP=$(date +%s)
           ASSIGNED_ARGO_WORKFLOW_NAME="dashboard-cis-${COMMIT_LABEL}-t${TIMESTAMP}"
+          BRANCH_NAME="${{ github.ref_name }}"
+          REPO_NAME="${{ github.event.repository.name }}"
 
           echo "assigned_devstack_label=$COMMIT_LABEL" >> $GITHUB_OUTPUT
           echo "assigned_argo_workflow_name=$ASSIGNED_ARGO_WORKFLOW_NAME" >> $GITHUB_OUTPUT
+          echo "commit_id=$COMMIT_SHA" >> $GITHUB_OUTPUT
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
+
+          # Source of Truth Logging
+          echo "=== Source of Truth Values ==="
+          echo "COMMIT_SHA: $COMMIT_SHA"
+          echo "BRANCH_NAME: $BRANCH_NAME"
+          echo "REPO_NAME: $REPO_NAME"
+          echo "DEVSTACK_LABEL: $COMMIT_LABEL"
+          echo "============================="
 
       - name: Prepare Infra For E2Es
         run: pnpm nx test:e2e:infra
         if: ${{ steps.check-skip.outputs.skip_job == 'false' }}
         timeout-minutes: 45
         env:
-          COMMIT_ID: ${{ github.sha }}
-          REPO_NAME: ${{ github.event.repository.name }}
+          COMMIT_ID: ${{ steps.generate-common-variables.outputs.commit_id }}
+          REPO_NAME: ${{ steps.generate-common-variables.outputs.repo_name }}
+          BRANCH_NAME: ${{ steps.generate-common-variables.outputs.branch_name }}
           AFFECTED_PROJECTS: ${{ inputs.affected_apps }}
           ARGO_TOKEN: ${{ secrets.ARGO_TOKEN }}
-          ASSIGNED_ARGO_WORKFLOW_NAME: ${{steps.generate-devstack-labels.outputs.assigned_argo_workflow_name}}
-          ASSIGNED_DEVSTACK_LABEL: ${{steps.generate-devstack-labels.outputs.assigned_devstack_label}}
+          ASSIGNED_ARGO_WORKFLOW_NAME: ${{steps.generate-common-variables.outputs.assigned_argo_workflow_name}}
+          ASSIGNED_DEVSTACK_LABEL: ${{steps.generate-common-variables.outputs.assigned_devstack_label}}
           WAIT_FOR_INFRA_DEPLOYMENT_POLL_INTERVAL_MIN: 2
           SERVICES_TTL: "2h"
 
@@ -134,12 +148,13 @@ jobs:
         continue-on-error: true
         env:
           CI: true
-          ASSIGNED_DEVSTACK_LABEL: ${{steps.generate-devstack-labels.outputs.assigned_devstack_label}}
-          COMMIT_ID: ${{ github.sha }}
+          ASSIGNED_DEVSTACK_LABEL: ${{steps.generate-common-variables.outputs.assigned_devstack_label}}
+          COMMIT_ID: ${{ steps.generate-common-variables.outputs.commit_id }}
           REPORT_PORTAL_TOKEN: ${{ secrets.REPORT_PORTAL_TOKEN }}
           REPORT_PORTAL_HOST: ${{ secrets.REPORT_PORTAL_HOST }}
           REPORT_PORTAL_PROJECT: ${{ secrets.REPORT_PORTAL_PROJECT }}
-          REPO_NAME: ${{ github.event.repository.name }}
+          REPO_NAME: ${{ steps.generate-common-variables.outputs.repo_name }}
+          BRANCH_NAME: ${{ steps.generate-common-variables.outputs.branch_name }}
         run: pnpm nx test:e2e:auth
 
       - name: Run Failed E2E tests
@@ -147,12 +162,13 @@ jobs:
         id: run-e2e-failed-tests
         env:
           CI: true
-          COMMIT_ID: ${{ github.sha }}
-          ASSIGNED_DEVSTACK_LABEL: ${{steps.generate-devstack-labels.outputs.assigned_devstack_label}}
+          COMMIT_ID: ${{ steps.generate-common-variables.outputs.commit_id }}
+          ASSIGNED_DEVSTACK_LABEL: ${{steps.generate-common-variables.outputs.assigned_devstack_label}}
           REPORT_PORTAL_TOKEN: ${{ secrets.REPORT_PORTAL_TOKEN }}
           REPORT_PORTAL_HOST: ${{ secrets.REPORT_PORTAL_HOST }}
           REPORT_PORTAL_PROJECT: ${{ secrets.REPORT_PORTAL_PROJECT }}
-          REPO_NAME: ${{ github.event.repository.name }}
+          REPO_NAME: ${{ steps.generate-common-variables.outputs.repo_name }}
+          BRANCH_NAME: ${{ steps.generate-common-variables.outputs.branch_name }}
           FILTERED_PROJECTS_FOR_FAILED_RERUN: ${{ env.FILTERED_PROJECTS_FOR_FAILED_RERUN }}
         if: ${{ env.FILTERED_PROJECTS_FOR_FAILED_RERUN != '' && steps.check-skip.outputs.skip_job == 'false' }}
         run: |
@@ -167,12 +183,13 @@ jobs:
         id: run-e2e-tests
         env:
           CI: true
-          COMMIT_ID: ${{ github.sha }}
-          ASSIGNED_DEVSTACK_LABEL: ${{steps.generate-devstack-labels.outputs.assigned_devstack_label}}
+          COMMIT_ID: ${{ steps.generate-common-variables.outputs.commit_id }}
+          ASSIGNED_DEVSTACK_LABEL: ${{steps.generate-common-variables.outputs.assigned_devstack_label}}
           REPORT_PORTAL_TOKEN: ${{ secrets.REPORT_PORTAL_TOKEN }}
           REPORT_PORTAL_HOST: ${{ secrets.REPORT_PORTAL_HOST }}
           REPORT_PORTAL_PROJECT: ${{ secrets.REPORT_PORTAL_PROJECT }}
-          REPO_NAME: ${{ github.event.repository.name }}
+          REPO_NAME: ${{ steps.generate-common-variables.outputs.repo_name }}
+          BRANCH_NAME: ${{ steps.generate-common-variables.outputs.branch_name }}
           FILTERED_PROJECTS_FOR_FULL_RERUN: ${{ env.FILTERED_PROJECTS_FOR_FULL_RERUN }}
         if: ${{ env.FILTERED_PROJECTS_FOR_FULL_RERUN != '' && steps.check-skip.outputs.skip_job == 'false' }}
         run: |

@@ -45,7 +45,7 @@ async function checkArgoStatus(): Promise<boolean> {
 }
 
 async function initializePolling(intervalMinutes: number = 2): Promise<void> {
-  const avgSetupDelayMs = 5 * 60 * 1000;
+  const avgSetupDelayMs = 3.5 * 60 * 1000;
   const intervalMs = intervalMinutes * 60 * 1000;
   const timeoutMs = 60 * 60 * 1000;
   const startTime = Date.now();
@@ -55,7 +55,7 @@ async function initializePolling(intervalMinutes: number = 2): Promise<void> {
 
   let didArgoWorkflowSucceed = await checkArgoStatus();
 
-  console.log(`[@libs/shared-core] Waiting for 5 minutes (min expected time)...`);
+  console.log(`[@libs/shared-core] Waiting for 3.5 minutes (min expected time)...`);
   await new Promise((resolve) => setTimeout(resolve, avgSetupDelayMs));
 
   while (true) {

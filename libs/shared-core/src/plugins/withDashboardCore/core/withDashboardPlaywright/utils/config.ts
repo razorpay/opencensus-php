@@ -11,6 +11,24 @@ export const getReporter = ({ moduleName }: { moduleName: string }) => {
     playwrightAnalysisDir,
     'playwright-report.json',
   );
+
+  const reportPortalConfig = {
+    apiKey: process.env.REPORT_PORTAL_TOKEN,
+    endpoint: `${process.env.REPORT_PORTAL_HOST}/api/v1`,
+    project: process.env.REPORT_PORTAL_PROJECT,
+    launch: `FE Payments Dashboard-${process.env.BRANCH_NAME}`,
+    skippedIssue: false,
+    attributes: [
+      {
+        key: 'build',
+        value: process.env.COMMIT_ID,
+      },
+    ],
+    restClientConfig: {
+      timeout: 30000, // REST client timeout
+    },
+  };
+
   return [
     isCi && ['dot'],
     [
@@ -35,6 +53,8 @@ export const getReporter = ({ moduleName }: { moduleName: string }) => {
         fullReportJson,
       },
     ],
+    // Enabling Report Portal reporter for debugging failures easily - based on E2E SR report
+    isCi && ['@reportportal/agent-js-playwright', reportPortalConfig],
   ].filter(Boolean);
 };
 
