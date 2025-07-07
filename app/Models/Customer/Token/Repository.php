@@ -81,11 +81,14 @@ class Repository extends Base\Repository
 
             if($tokenList != null)
             {
-                $this->trace->count(
-                    Token\Metric::TOKENS_FETCHED_FROM_TOKEN_SERVICE_AND_API,
+                $this->trace->info(
+                    TraceCode::TOKENS_FETCHED_FROM_TOKEN_SERVICE_AND_API,
                     [
                         'merchant_country' => $this->merchant->getCountry(),
                         'token_count' => count($tokenList),
+                        'customer_id' => $customer->getId(),
+                        'merchant_id' => $this->merchant->getId(),
+                        'source' => 'external_service_and_api',
                     ]
                 );
                 return $tokenList;
