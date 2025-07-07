@@ -62,7 +62,7 @@ describe('getMerchantComms', () => {
       'Submit your KYC details to activate your account and to order POS.',
     );
     expect(stages[1].cta?.[0].name).toBe('Submit KYC');
-    expect(stages[1].cta?.[0].url).toBe('/onboarding/pos/store-details');
+    expect(stages[1].cta?.[0].url).toBe('/onboarding/pos/store-details?posselfserve=true');
     expect(stages[1].cta?.[0].type).toBe('button');
 
     expect(stages[2].status).toBe('pending');
@@ -137,7 +137,7 @@ describe('getMerchantComms', () => {
       'Please note that you must update your required details to ensure timely delivery of your device.',
     );
     expect(stages[0].cta?.[0].name).toBe('Update KYC');
-    expect(stages[0].cta?.[0].url).toBe('/onboarding/needs-clarification');
+    expect(stages[0].cta?.[0].url).toBe('/onboarding/needs-clarification?posselfserve=true');
     expect(stages[0].cta?.[0].type).toBe('button');
 
     expect(stages[1].status).toBe('notice');
@@ -170,7 +170,7 @@ describe('getMerchantComms', () => {
     expect(stages[0].description).toBe(
       'To continue your POS journey, please ensure that you update the required details and then proceed to order your device.',
     );
-    expect(stages[0].cta?.[0].url).toBe('/onboarding/needs-clarification');
+    expect(stages[0].cta?.[0].url).toBe('/onboarding/needs-clarification?posselfserve=true');
 
     expect(stages[1].title).toBe('Access POS');
     expect(stages[1].description).toBe(

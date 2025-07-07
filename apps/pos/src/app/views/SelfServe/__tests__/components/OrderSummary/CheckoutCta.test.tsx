@@ -294,7 +294,7 @@ describe('<CheckoutCta/>', () => {
     await userEvent.click(screen.getByText('Add Details'));
     await waitFor(() => {
       expect(window.location.assign).toHaveBeenCalledWith(
-        'https://easy.razorpay.com/onboarding/pos/store-details',
+        'https://easy.razorpay.com/onboarding/pos/store-details?posselfserve=true',
       );
     });
   });
@@ -320,7 +320,7 @@ describe('<CheckoutCta/>', () => {
     await userEvent.click(screen.getByText('Add Details'));
     await waitFor(() => {
       expect(window.location.assign).toHaveBeenCalledWith(
-        'https://easy.razorpay.com/onboarding/l2?intent=pos',
+        'https://easy.razorpay.com/onboarding/l2?intent=pos&posselfserve=true',
       );
     });
   });
@@ -347,7 +347,7 @@ describe('<CheckoutCta/>', () => {
     await userEvent.click(screen.getByText('Add Details'));
     await waitFor(() => {
       expect(window.location.assign).toHaveBeenCalledWith(
-        'https://easy.razorpay.com/onboarding/pos/store-details?intent=pos',
+        'https://easy.razorpay.com/onboarding/pos/store-details?intent=pos&posselfserve=true',
       );
     });
   });

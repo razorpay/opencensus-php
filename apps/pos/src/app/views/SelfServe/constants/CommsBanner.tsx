@@ -25,9 +25,9 @@ type StatusAssets = {
 
 const EASY_DASHBOARD_ROUTES = {
   l2onboarding: '/onboarding/l2',
-  storeDetails: '/onboarding/pos/store-details',
-  storeDetailsWithIntent: '/onboarding/pos/store-details?intent=pos',
-  needsClarification: '/onboarding/needs-clarification',
+  storeDetails: '/onboarding/pos/store-details?posselfserve=true',
+  storeDetailsWithIntent: '/onboarding/pos/store-details?intent=pos&posselfserve=true',
+  needsClarification: '/onboarding/needs-clarification?posselfserve=true',
 };
 
 const getNcUrl = (): string => {

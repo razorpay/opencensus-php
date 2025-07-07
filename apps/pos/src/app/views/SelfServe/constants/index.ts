@@ -364,10 +364,10 @@ export const POS_TERMS_AND_CONDITION_DATE = 1702916817;
 
 export const EASY_DASHBOARD_ROUTES = {
   l2onboarding: '/onboarding/l2',
-  storeDetails: '/onboarding/pos/store-details',
-  storeDetailsWithIntent: '/onboarding/pos/store-details?intent=pos',
-  l2onboardingWithIntent: '/onboarding/l2?intent=pos',
-  needsClarification: '/onboarding/needs-clarification',
+  storeDetails: '/onboarding/pos/store-details?posselfserve=true',
+  storeDetailsWithIntent: '/onboarding/pos/store-details?intent=pos&posselfserve=true',
+  l2onboardingWithIntent: '/onboarding/l2?intent=pos&posselfserve=true',
+  needsClarification: '/onboarding/needs-clarification?posselfserve=true',
 };
 
 export const OFFER_CARDS_STRUCT: OfferCardsStruct = {
