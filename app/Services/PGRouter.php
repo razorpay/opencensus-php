@@ -742,14 +742,33 @@ class PGRouter
     public function fetchOrder(string $id, string $merchantId, array $input)
     {
         $endpoint = 'v1/orders/' . $id;
+        $queryParams = [];
 
         $this->currentEndPoint = self::PGRouterFetchOrder;
 
         if (empty($merchantId) === false)
         {
-            $endpoint .= '?merchant_id='.$merchantId;
+            $queryParams['merchant_id'] = $merchantId;
         }
 
+        if (isset($input['expand']) && is_array($input['expand']))
+        {
+            $queryParams['expand'] = $input['expand'];
+
+        }
+
+        $queryString = '';
+
+        if (empty($queryParams) === false)
+        {
+            $queryString = http_build_query($queryParams);
+
+            // This converts keys like expand[0] to expand[] to match the expected format.
+            $queryString = preg_replace('/%5B\d+%5D/i', '%5B%5D', $queryString);
+
+            $endpoint .= '?' . $queryString;
+        }
+        // Make request to PGRouter service to fetch order:
         $response = $this->sendRequest($endpoint, Requests::GET, [], true, 2, true);
 
         return $this->forceFillOrderFromResponse($response);

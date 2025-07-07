@@ -196,6 +196,8 @@ class Entity extends Base\PublicEntity
 
     const APPLIED_OFFERS     = 'applied_offers';
 
+    const OFFERS_APPLIED    = 'offers_applied';
+
     //paginated fetch params
     const FROM         = 'from';
     const TO           = 'to';
@@ -266,6 +268,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENTS,
         self::OFFER_ID,
         self::OFFERS,
+        self::OFFERS_APPLIED,
         self::STATUS,
         self::ATTEMPTS,
         self::PRODUCTS,
@@ -313,6 +316,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::OFFERS,
+        self::OFFERS_APPLIED,
         self::CHECKOUT_CONFIG_ID,
         self::PRODUCTS,
         // This is likely needed for the merchant,
@@ -1041,6 +1045,35 @@ class Entity extends Base\PublicEntity
             //
             $array[self::OFFER_ID] = null;
         }
+    }
+    // Recursively filters out null values from fields of the array:
+    private static function arrayFilterRecursive(array $array): array
+    {
+        foreach ($array as &$value)
+        {
+            if (is_array($value))
+            {
+                $value = self::arrayFilterRecursive($value);
+            }
+        }
+
+        return array_filter($array, function($v) {
+            return $v !== null;
+        });
+    }
+
+    protected function setPublicOffersAppliedAttribute(array & $array)
+    {
+        $offersApplied = $this->getAttribute('offers_applied');
+
+        if (empty($offersApplied))
+        {
+            unset($array[self::OFFERS_APPLIED]);
+
+            return;
+        }
+
+        $array[self::OFFERS_APPLIED] = self::arrayFilterRecursive($offersApplied);
     }
 
     protected function setInternalOffersAttribute(array & $array)
