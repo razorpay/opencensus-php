@@ -7,9 +7,14 @@ export const paylaterConfig: Record<keyof typeof paylaterProviders, paylaterConf
     value: 'epaylater',
   },
   getsimpl: {
-    name: 'Simpl',
-    display_name: 'Simpl Pay In 3',
+    name: 'Simpl Paylater',
+    display_name: 'Simpl Paylater',
     value: 'getsimpl',
+  },
+  simpl_pay_in_3: {
+    name: 'Simpl Pay In 3',
+    display_name: 'Simpl Pay In 3',
+    value: 'simpl_pay_in_3',
   },
   icic: {
     name: 'ICICI Bank PayLater',
@@ -50,6 +55,7 @@ export const paylaterConfig: Record<keyof typeof paylaterProviders, paylaterConf
 
 export const paylaterProviders = {
   getsimpl: 'getsimpl',
+  simpl_pay_in_3: 'simpl_pay_in_3',
   lazypay: 'lazypay',
   icic: 'icic',
   hdfc: 'hdfc',
@@ -62,6 +68,7 @@ export const paylaterProviders = {
 
 export const paylaterOrder = [
   paylaterProviders.getsimpl,
+  paylaterProviders.simpl_pay_in_3,
   paylaterProviders.lazypay,
   paylaterProviders.icic,
   paylaterProviders.hdfc,
