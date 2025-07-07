@@ -2527,7 +2527,10 @@ class Processor
 
                     if ($card->isInternational()) {
                         try {
-                            $cardInput[Card\Entity::NUMBER]    = (new Card\CardVault)->getCardNumber($card->getVaultToken());;
+                            $additionalInput = [
+                                Card\Entity::INTERNATIONAL => 1,
+                            ];
+                            $cardInput[Card\Entity::NUMBER]    = (new Card\CardVault)->getCardNumber($card->getVaultToken(), $additionalInput);
                             $cardInput[Card\Entity::NAME]      = $card->getName();
                             $cardInput[Card\Entity::TOKENISED] = false;
                             $cardInput[Card\Entity::EXPIRY_MONTH] = $card->getExpiryMonth();
@@ -5287,7 +5290,7 @@ class Processor
             ["merchant_id" => $merchant->getId()]
         );
     }
-    
+
     private function isWalletRearchVariantOn(string $featureSuffix = '', string $traceCode, mixed $value = [], mixed $extraLog = []): bool {
         try {
             $featureFlag = self::NBPLUS_WALLET_PAYMENTS_VIA_PGROUTER . $featureSuffix;
