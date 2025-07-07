@@ -29,6 +29,7 @@ const Stroke = styled.div(
 
 function TestModeHighlight({ product }): JSX.Element | null {
   let { mode, partnerMode } = useStore((state) => state.session);
+
   const { type, alias } = product;
 
   const currentMode = useMemo(() => {

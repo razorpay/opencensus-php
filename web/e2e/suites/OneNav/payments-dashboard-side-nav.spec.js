@@ -37,7 +37,7 @@ test.describe.parallel('One nav payments dashboard side nav tabs @project=oneNav
     await tabOpenInSameTab({
       page,
       expectedUrl: '/app/settlements',
-      expectedTextRegex: 'View settlement',
+      expectedTextRegex: 'Settlement ID',
     });
   });
 
@@ -57,7 +57,7 @@ test.describe.parallel('One nav payments dashboard side nav tabs @project=oneNav
     await tabOpenInSameTab({
       page,
       expectedUrl: '/app/reports',
-      expectedTextRegex: 'Report Type',
+      expectedTextRegex: 'Generate & schedule reports',
     });
   });
 

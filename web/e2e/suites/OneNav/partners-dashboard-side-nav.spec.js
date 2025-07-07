@@ -60,7 +60,7 @@ test.describe.parallel('One nav partners dashboard side nav tabs @project=oneNav
     await tabOpenInSameTab({
       page,
       expectedUrl: '/app/partners/reports',
-      expectedTextRegex: 'Report Type',
+      expectedTextRegex: 'Generate & schedule reports',
     });
   });
 });
