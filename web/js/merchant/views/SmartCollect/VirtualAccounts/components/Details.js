@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link as BladeLink } from '@razorpay/blade/components';
+import { Link as BladeLink, Box } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -370,8 +370,15 @@ class VirtualAccountDetails extends React.Component {
                 <hr />
 
                 <div>
-                  <p className="text-muted" style={{ lineHeight: '35px' }}>
-                    Payments to this customer identifier - {va_payments.length} payments
+                  <Box
+                    display="flex"
+                    flexDirection="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    <p className="text-muted" style={{ lineHeight: '35px' }}>
+                      Last 10 payments on this customer identifier
+                    </p>
                     <Link
                       className="pull-right"
                       to={`/smartcollect/payments/?virtual_account_id=${virtualaccount.id}`}
@@ -379,8 +386,7 @@ class VirtualAccountDetails extends React.Component {
                     >
                       View All Payments
                     </Link>
-                  </p>
-
+                  </Box>
                   <Table rows={va_payments} columns={[_paymentId(), amount]} showHeaders={false} />
                 </div>
               </div>
