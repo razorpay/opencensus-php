@@ -364,6 +364,18 @@ class Service extends Base\Service
                 }
 
                 $planId = $merchant->getPricingPlanId();
+                
+                 // Check splitz experiment for the pricing plan
+                $rampPhase = $this->ccRouter->shouldRouteRequestToChargeCollections(
+                    'RZP\\Models\\Pricing\\Service\\replicatePlanAndAssign',
+                    $planId
+                );
+                // skip IDs generation if rampPhase is enable
+                if ($rampPhase == CCRouter::ENABLE) {
+                    $item['initial_pricing_plan_id'] = '';
+                    $item['generated_ids'] = null;
+                    continue;
+                }
 
                 $plan = $this->repo->pricing->getPlanByIdOrFailPublicLegacy($planId, $orgId);
 
