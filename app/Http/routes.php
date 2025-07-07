@@ -232,6 +232,9 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('settings/invitations/{invite}/accept', 'InvitationsController@postAcceptMerchantInvitation')
             ->name('merchant_invitation_accept');
 
+        // This route returns enabled products for logged in user, under the provided merchant id
+        Route::get('get_enabled_products/merchant/{id}', 'UserController@getEnabledProducts')->name('get_enabled_products');
+
         // Update password
         Route::post('/password', 'UserController@postPassword')->name('change_password');
         Route::post('/password/otp_verify', 'UserController@postPasswordWithOtpVerification')->name('change_password_with_otp_verification');

@@ -2077,6 +2077,13 @@ class UserController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
+    public function getEnabledProducts($merchantId)
+    {
+        list($error, $products) = (new User\Service)->getEnabledProducts($merchantId);
+
+        return AppResponse::jsonResponse($error, $products);
+    }
+
     public function resendEmailOtp()
     {
         $input = Input::all();

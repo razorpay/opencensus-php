@@ -76,7 +76,7 @@ class Constants
     const DEFAULT_MERCHANT_ID = 'default_merchant_id';
 
     const DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED = 'DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED';
-    
+
     const USL_REDIRECTION_SKIP_FOR_OAUTH = "USL_REDIRECTION_SKIP_FOR_OAUTH";
 
     /**
@@ -555,4 +555,13 @@ class Constants
             ]
         ]
     ];
+
+    // Product Detection Constants
+    const PRODUCT_PG = 'product_pg';
+    const PRODUCT_X = 'product_x';
+    const ROLE = 'role';
+    const BANKING_ROLE = 'banking_role';
+
+    const FUNC_NAME_DETACH_PRODUCT_PG = 'detectProductPg';
+    const FUNC_NAME_DETACH_PRODUCT_X = 'detectProductX';
 }

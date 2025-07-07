@@ -35,6 +35,7 @@ use Lcobucci\JWT\Configuration;
 use Lcobucci\Clock\SystemClock;
 use App\Session as SessionTable;
 use App\Merchant\GenericMerchant;
+use Illuminate\Support\Collection;
 use Razorpay\Api\Errors\ErrorCode;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Illuminate\Contracts\Cache\Store;
@@ -130,6 +131,8 @@ class Service extends Base\Service
 
     private $splitzExprimentData;
 
+    private $productDetectors;
+
     public function __construct(array $options = [])
     {
         $app = \App::getFacadeRoot();
@@ -145,6 +148,8 @@ class Service extends Base\Service
         $this->httpClient = array_get($options, AppConstants::HTTP_CLIENT);
 
         $this->splitzExprimentData = [];
+
+        $this->registerProductDetectors();
     }
 
     /**
@@ -1296,6 +1301,15 @@ class Service extends Base\Service
         }
 
         return ["Couldn't find the merchant you are looking for."];
+    }
+
+    public function getEnabledProducts(string $merchantId)
+    {
+        $authUser = Auth::user();
+        // Get enabled products for the merchant
+        $products = $this->getEnabledProductsForMerchant($merchantId, $authUser);
+
+        return [[], $products];
     }
 
     public function upgradeUserToMerchant($input)
@@ -4966,6 +4980,81 @@ class Service extends Base\Service
             ]);
             return [['An error occurred while generating the session'], null, 500];
         }
+    }
+
+    /**
+     * Get enabled products for a specific merchant
+     *
+     * @param string $merchantId
+     * @param GenericUser $user
+     * @return array
+     */
+    private function getEnabledProductsForMerchant(string $merchantId, GenericUser $user): array
+    {
+
+        // Initialize product detectors registry
+        if (empty($this->productDetectors)) {
+            $this->registerProductDetectors();
+        }
+
+        $enabledProducts = [];
+
+        // Get the first merchant entry for the given merchant ID
+        $merchantEntry = $user->merchants->where('id', $merchantId)->first();
+
+        if ($merchantEntry === null) {
+            return [];
+        }
+
+        // Apply each product detector
+        foreach ($this->productDetectors as $productName => $detectorFunction) {
+            if (call_user_func($detectorFunction, $merchantEntry)) {
+                $enabledProducts[] = $productName;
+            }
+        }
+
+        $this->trace->error(TraceCode::MERCHANT_USER_ENABLED_PRODUCT_DETECTION, [
+            'user_id' => $user->id,
+            'enabled_products' => $enabledProducts,
+        ]);
+
+        return $enabledProducts;
+    }
+
+    /**
+     * Register product detection functions
+     */
+    private function registerProductDetectors(): void
+    {
+        $this->productDetectors = [
+            UserConstants::PRODUCT_PG => [$this, UserConstants::FUNC_NAME_DETACH_PRODUCT_PG],
+            UserConstants::PRODUCT_X => [$this, UserConstants::FUNC_NAME_DETACH_PRODUCT_X],
+            // Future products can be added here
+        ];
+    }
+
+    /**
+     * Detect if product_pg is enabled for merchant
+     * Enabled if merchant entry has non-null role
+     *
+     * @param GenericMerchant $merchantEntry
+     * @return bool
+     */
+    private function detectProductPg($merchantEntry): bool
+    {
+        return isset($merchantEntry->role);
+    }
+
+    /**
+     * Detect if product_x is enabled for merchant
+     * Enabled if merchant entry has non-null banking_role
+     *
+     * @param GenericMerchant $merchantEntry
+     * @return bool
+     */
+    private function detectProductX($merchantEntry): bool
+    {
+        return isset($merchantEntry->banking_role);
     }
 
     /**
