@@ -282,7 +282,11 @@ class ActivationWizard extends React.Component {
       BANK_ACCOUNT_TAB = 3;
       DOCUMENT_UPLOAD_STEP = 4;
 
-      if (props.isAdminAsMerchant.data && props.data.activation_status === 'activated') {
+      if (
+        props.user.isOrgRZP &&
+        props.isAdminAsMerchant?.data &&
+        props.data.activation_status === 'activated'
+      ) {
         FORM_TABS = FORM_TABS.slice(0, BANK_ACCOUNT_TAB);
         FORM_TABS_CONTENT = FORM_TABS_CONTENT.slice(0, BANK_ACCOUNT_TAB);
         FORM_TABS_NAMES = FORM_TABS_NAMES.slice(0, BANK_ACCOUNT_TAB);
@@ -623,7 +627,7 @@ class ActivationWizard extends React.Component {
   }
 
   setInitialTab() {
-    if (this.props.isAdminAsMerchant.data) {
+    if (this.props.user.isOrgRZP && this.props.isAdminAsMerchant?.data) {
       this.props.setCurrentTab({
         tab_name: this.mainTabs[0],
       });
@@ -2323,7 +2327,7 @@ class ActivationWizard extends React.Component {
     const isBusinessDetailsStep = activeTab === BUSINESS_DETAILS_STEP;
     const showSubmitLayer = this.state.showSubmitLayer;
 
-    if (this.isFormLocked && this.props.isAdminAsMerchant.data) {
+    if (user.isOrgRZP && this.isFormLocked && this.props.isAdminAsMerchant?.data) {
       footerButtons.push(FOOTER_BUTTONS.SAVE_AND_NEXT);
       return footerButtons;
     }
@@ -3258,7 +3262,8 @@ export function ActivationField(field) {
   const { user, websiteSectionDetailsData } = this.props;
 
   if (
-    this.props.isAdminAsMerchant.data &&
+    this.props.user.isOrgRZP &&
+    this.props.isAdminAsMerchant?.data &&
     this.props.data.activation_status === 'activated' &&
     !rest.isVisibleToAdminForActivatedMerchant
   ) {
@@ -3309,7 +3314,8 @@ export function ActivationField(field) {
         data-name={_name}
         defaultValue={defaultValue}
         disabled={
-          (isComponentDisabled || isNCFlowComponentDisabled) && !this.props.isAdminAsMerchant.data
+          (isComponentDisabled || isNCFlowComponentDisabled) &&
+          !(this.props.isAdminAsMerchant?.data && user.isOrgRZP)
         }
         autoRender={_autoRenderImpure}
         required={
