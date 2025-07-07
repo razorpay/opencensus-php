@@ -151,7 +151,8 @@ class ApiRequestAny
         'admin/offers',
         'admin/usage-limits',
         'idp',
-        'cross_border_import'
+        'cross_border_import',
+        'risk_cms'
     ];
 
     /**
