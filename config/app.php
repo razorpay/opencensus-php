@@ -981,6 +981,8 @@ return array(
 
     'emi_rearch_rampup_provider_exp_id'  => env('EMI_REARCH_RAMPUP_PROVIDER_EXP_ID'),
 
+    'emi_rearch_tokenized_payments_exp_id'  => env('EMI_REARCH_TOKENIZED_PAYMENTS_EXP_ID'),
+
     'icici_dcemi_whitelisted_mid_experiment_id'  => env('ICICI_DCEMI_WHITELISTED_MERCHANTS_SPLITZ_EXP_ID'),
 
     'skip_last4_for_amex_emi_payments' => env('SKIP_LAST4_FOR_AMEX_EMI_EXP_ID'),
@@ -1555,6 +1557,6 @@ return array(
     'invitation_orphan_users' => env('INVITATION_ORPHAN_USERS'),
 
     'mpgs_authorize_payload' => env('MPGS_AUTHORIZE_PAYLOAD'),
-    
+
     'multi_account_email_update_workflow_experiment' => env('MULTI_ACCOUNT_EMAIL_UPDATE_WORKFLOW_EXPERIMENT'),
 );

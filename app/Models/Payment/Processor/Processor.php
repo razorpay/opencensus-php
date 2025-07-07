@@ -15294,6 +15294,7 @@ class Processor
      */
     private function isPaymentViaTokenisedCard($input): bool
     {
+
         return empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false &&
             boolval($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === true;
     }
@@ -16815,7 +16816,7 @@ public function isLibrarySupportedForNbplusRearch($library): bool
                 return false;
             }
 
-            // test mode payments are not supported
+//          // test mode payments are not supported
             if ($this->mode === Mode::TEST)
             {
                 return false;
@@ -16852,7 +16853,7 @@ public function isLibrarySupportedForNbplusRearch($library): bool
 
                 if ((empty($order) === false) and ($order->isDiscountApplicable() === true)) {
                     $this->trace->info(TraceCode::EMI_REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "discounts",
+                        'reason' => "discount present for order",
                         'merchant_id' => $merchant->getId(),
                     ]);
                     return false;
@@ -16867,13 +16868,20 @@ public function isLibrarySupportedForNbplusRearch($library): bool
                     return false;
                 }
             }
-            if (empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false and $input[Payment\Entity::CARD][Card\Entity::TOKENISED] === true)
+
+            if ($this->isPaymentViaTokenisedCard($input) || $this->isExternalAltIdPayment($input))
             {
+                $isTokenisedEmiEnabled = $this->IsTokenisedAndAltIdEnabledForEmiRearch($merchant->getId());
                 $this->trace->info(TraceCode::EMI_REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                     'reason' => "tokenised field is true for emi payment",
                     'merchant_id' => $merchant->getId(),
+                    'tokenised experiment' => $isTokenisedEmiEnabled,
+                    'input' => $input,
                 ]);
-                return false;
+
+                return $isTokenisedEmiEnabled === true;
+
+                //Todo add iin fetch logic here
             }
             else if (empty($input[Payment\Entity::TOKEN]) === true)
             {
@@ -16883,9 +16891,9 @@ public function isLibrarySupportedForNbplusRearch($library): bool
                 if ($iin->getCountry() !== 'IN')
                 {
                     $this->trace->info(TraceCode::EMI_REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                        'reason' => "international_card_initial",
+                        'reason' => "international card for emi",
                         'merchant_id' => $merchant->getId(),
-                        'flow' => 'card_recurring',
+                        'input' => $input
                     ]);
                     return false;
                 }
@@ -16919,6 +16927,46 @@ public function isLibrarySupportedForNbplusRearch($library): bool
 
 
     }
+
+    public function IsTokenisedAndAltIdEnabledForEmiRearch(string $merchantId)
+    {
+        try {
+            $experimentId = $this->app['config']->get('app.emi_rearch_tokenized_payments_exp_id');
+            $experimentsData[] = [
+                "experiment_id" => $experimentId,
+                'id' => UniqueIdEntity::generateUniqueId(),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId
+                    ]),
+            ];
+
+            $experimentResponses = $this->app['splitzService']->bulkCallsToSplitz($experimentsData);
+
+            foreach ($experimentResponses as $response)
+            {
+                $variables = $response['variant']['variables'];
+
+                foreach ($variables as $variable)
+                {
+                    if ($variable['key'] == "result" && $variable['value'] == "on") {
+                        return true;
+                    }
+                }
+            }
+
+        } catch (\Exception $e) {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::EMI_REARCH_ROUTING_SPLITZ_ERROR
+            );
+
+            return false;
+        }
+
+        return false;
+    }
     /**
      * Get the experiment key for EMI rearch flow based on IIN entity and merchant ID
      *
@@ -16928,7 +16976,6 @@ public function isLibrarySupportedForNbplusRearch($library): bool
      */
     public function IsIssuerAndMerchantWhitelistedforEmiRearch($iin, $merchantId)
     {
-
         if($iin == null)
         {
             return false;
