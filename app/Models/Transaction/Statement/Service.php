@@ -135,6 +135,34 @@ class Service extends Transaction\Service
         // but has not been linked to an entity. We are not sending invalid ID error in these edge cases.
         if (strpos($id, DirectAccount\Statement\Entity::getSign()) !== false)
         {
+            $isReadCutoffMerchant = $this->isReadCutoffEnabled($this->merchant->getId());
+
+            if ($isReadCutoffMerchant === true) {
+
+                $dimension = $this->getDimensions();
+
+                try {
+
+                    return $this->redirectSearchStatementToXAS([
+                        'merchant_id' => $this->merchant->getId(),
+                        'id' => $id
+                    ], $dimension);
+
+                } catch (\Exception $e) {
+                    $this->trace->traceException($e, null,  TraceCode::ACCOUNT_STATEMENTS_READ_CUTOFF_FAILURE, [
+                        'input' => $input,
+                        'merchant_id' => $this->merchant->getId()
+                    ]);
+
+                    $this->trace->info(TraceCode::ACCOUNT_STATEMENTS_READ_CUTOFF_FALLBACK_FLOW, [
+                        'merchant_id' => $this->merchant->getId()
+                    ]);
+
+                    // Count fallback to BAS
+                    $this->trace->count(TxnMetric::READ_CUTOFF_XAS_FALLBACK_TOTAL, $dimension);
+                }
+            }
+
             return $this->repo->direct_account_statement
                 ->fetchByPublicIdAndMerchantForTransactionsBasedOnBasId($id, $this->merchant, $input)
                 ->toArrayPublic();
@@ -372,5 +400,283 @@ class Service extends Transaction\Service
         }
 
         return $balance;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function redirectSearchStatementToXAS(array $input, $dimension): array
+    {
+        $this->trace->info(TraceCode::DEBUG_LOGGING, [
+            "account_statements_xas_redirect" => true,
+            "input" => $input
+        ]);
+
+        $xasService = $this->app['x_account_statements'];
+
+        $startTimeMs = round(microtime(true) * 1000);
+
+        // Count all XAS attempts for account statements read cutoff
+        $this->trace->count(TxnMetric::READ_CUTOFF_XAS_REQUEST_TOTAL, $dimension);
+
+        $xasResponse = $xasService->getAccountStatements($input);
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        // Track latency for XAS requests
+        $this->trace->histogram(
+            TxnMetric::READ_CUTOFF_XAS_REQUEST_LATENCY_MILLISECONDS,
+            $endTimeMs - $startTimeMs,
+            $dimension
+        );
+
+        // Transform XAS response to maintain API response structure
+        $transformedResponse = $this->transformXASResponse($xasResponse, $input);
+
+        $this->trace->info(
+            TraceCode::STATEMENT_SEARCH_XAS_SERVICE_SUCCESS,
+            [
+                'input' => $input,
+                'merchant_id' => $this->merchant->getId(),
+                'original_response_count' => count($xasResponse['statements'] ?? []),
+                'transformed_response_count' => isset($transformedResponse['count']) ? $transformedResponse['count'] : (isset($transformedResponse['id']) ? 1 : 0),
+            ]
+        );
+
+        // Count all XAS success responses for account statements read cutoff
+        $this->trace->count(TxnMetric::READ_CUTOFF_XAS_SUCCESS_TOTAL, $dimension);
+
+        return $transformedResponse;
+    }
+
+    /**
+     * Transform XAS service response to maintain the existing /transactions_banking API response structure
+     *
+     * @param array $xasResponse
+     * @param array $input Original input parameters to determine response format
+     * @return array
+     * @throws \Exception
+     */
+    private function transformXASResponse(array $xasResponse, array $input = []): array
+    {
+        // Check if the response contains statements
+        if (!isset($xasResponse['statements']) || !is_array($xasResponse['statements'])) {
+            $xasServiceException = new \Exception("XAS service error: missing statements");
+
+            // Log the response and throw exception to caller
+            $this->trace->traceException($xasServiceException, null, TraceCode::STATEMENT_SEARCH_XAS_SERVICE_ERROR, [
+                'response' => $xasResponse,
+            ]);
+
+            throw $xasServiceException;
+        }
+
+        $statements = $xasResponse['statements'];
+
+        // If id is provided in input, we expect a single transaction - return it directly
+        if (isset($input['id']) && !empty($input['id'])) {
+            if (count($statements) === 0) {
+                return []; // Return empty array if no statement found
+            }
+
+            $statement = $statements[0]; // Get the first (and should be only) statement
+
+            $transformedItem = [
+                'id' => 'txn_' . $statement['id'], // Prefix with txn_ to match API format
+                'entity' => 'transaction',
+                'account_number' => $statement['account_number'] ?? '',
+                'amount' => abs((int) ($statement['amount'] ?? 0)), // Always positive amount
+                'currency' => $statement['currency'] ?? 'INR',
+                'credit' => $statement['type'] === 'credit' ? abs((int) ($statement['amount'] ?? 0)) : 0,
+                'debit' => $statement['type'] === 'debit' ? abs((int) ($statement['amount'] ?? 0)) : 0,
+                'balance' => (int) ($statement['balance'] ?? 0),
+                'created_at' => (int) ($statement['posted_date'] ?? $statement['created_at'] ?? time()),
+            ];
+
+            // Transform source based on entity_type
+            $source = $this->transformXASSourceEntity($statement);
+            if (!empty($source)) {
+                $transformedItem['source'] = $source;
+            }
+
+            return $transformedItem; // Return single transaction object directly
+        }
+
+        // Otherwise, process multiple transactions and return collection format
+        $transformedItems = [];
+
+        foreach ($statements as $statement) {
+            $transformedItem = [
+                'id' => 'txn_' . $statement['id'], // Prefix with txn_ to match API format
+                'entity' => 'transaction',
+                'account_number' => $statement['account_number'] ?? '',
+                'amount' => abs((int) ($statement['amount'] ?? 0)), // Always positive amount
+                'currency' => $statement['currency'] ?? 'INR',
+                'credit' => $statement['type'] === 'credit' ? abs((int) ($statement['amount'] ?? 0)) : 0,
+                'debit' => $statement['type'] === 'debit' ? abs((int) ($statement['amount'] ?? 0)) : 0,
+                'balance' => (int) ($statement['balance'] ?? 0),
+                'created_at' => (int) ($statement['posted_date'] ?? $statement['created_at'] ?? time()),
+            ];
+
+            // Transform source based on entity_type
+            $source = $this->transformXASSourceEntity($statement);
+            if (!empty($source)) {
+                $transformedItem['source'] = $source;
+            }
+
+            $transformedItems[] = $transformedItem;
+        }
+
+        return [
+            'entity' => 'collection',
+            'count' => count($transformedItems),
+            'items' => $transformedItems
+        ];
+    }
+
+    /**
+     * Transform XAS statement to source entity format
+     *
+     * @param array $statement
+     * @return array
+     */
+    private function transformXASSourceEntity(array $statement): array
+    {
+        $entityType = $statement['entity_type'] ?? '';
+        $entityId = $statement['entity_id'] ?? '';
+
+        $source = [
+            'id' => $entityId,
+            'entity' => $entityType,
+            'amount' => (int) ($statement['amount'] ?? 0),
+            'utr' => $statement['utr'] ?? '',
+            'created_at' => (int) ($statement['posted_date'] ?? $statement['created_at'] ?? time()),
+        ];
+
+        $source['id'] = $this->mapPublicID($entityType).$source['id'];
+
+        // Add entity-specific fields based on entity_type
+        switch ($entityType) {
+            case 'payout':
+                // Fetch actual payout details from database
+                $payoutDetails = $this->fetchPayoutDetails("pout_".$entityId);
+                if ($payoutDetails) {
+                    $source = array_merge($source, [
+                        'fund_account_id' => "fa_".$payoutDetails['fund_account_id'] ?? null,
+                        'notes' => $payoutDetails['notes'] ?? [],
+                        'fees' => (int) ($payoutDetails['fees'] ?? 0),
+                        'tax' => (int) ($payoutDetails['tax'] ?? 0),
+                        'status' => $payoutDetails['status'] ?? 'processed',
+                        'mode' => $payoutDetails['mode'] ?? $this->getModeFromDescription($statement['description'] ?? ''),
+                        'fee_type' => $payoutDetails['fee_type'] ?? null,
+                    ]);
+                } else {
+                    // Fallback if payout not found
+                    $source = array_merge($source, [
+                        'fund_account_id' => null,
+                        'notes' => [],
+                        'fees' => 0,
+                        'tax' => 0,
+                        'status' => 'processed',
+                        'mode' => $this->getModeFromDescription($statement['description'] ?? ''),
+                        'fee_type' => null,
+                    ]);
+                }
+                break;
+
+            case 'payout_reversal':
+                $source['entity'] = 'reversal';
+                $source = array_merge($source, [
+                    'payout_id' => "pout_".$entityId,
+                ]);
+                // Fetch Payout details if payout ID comes from XAS
+                $payoutDetails = $this->fetchPayoutDetails("pout_".$entityId);
+                if ($payoutDetails){
+                    $source = array_merge($source, [
+                        'fee' => (int) ($payoutDetails['fees'] ?? 0),
+                        'tax' => (int) ($payoutDetails['tax'] ?? 0),
+                    ]);
+                }
+                break;
+
+            case 'external':
+                $source['id'] = "ext_".$statement['id'];
+                break;
+
+            default:
+                break;
+        }
+
+        return $source;
+    }
+
+    /**
+     * Fetch payout details from database
+     *
+     * @param string $payoutId
+     * @return array|null
+     */
+    private function fetchPayoutDetails(string $payoutId): ?array
+    {
+        try {
+            $payout = $this->repo->payout->findByPublicId($payoutId);
+            if ($payout) {
+                return [
+                    'fund_account_id' => $payout->getFundAccountId(),
+                    'notes' => $payout->getNotes() ?? [],
+                    'fees' => $payout->getFees(),
+                    'tax' => $payout->getTax(),
+                    'status' => $payout->getStatus(),
+                    'mode' => $payout->getMode(),
+                    'fee_type' => $payout->getFeeType(),
+                ];
+            }
+        } catch (\Throwable $e) {
+            $this->trace->traceException($e, null, TraceCode::PAYOUT_FETCH_FAILED_FOR_XAS_RESPONSE, [
+                'payout_id' => $payoutId
+            ]);
+        }
+
+        return null;
+    }
+
+    /**
+     * Extract payment mode from transaction description
+     *
+     * @param string $description
+     * @return string
+     */
+    private function getModeFromDescription(string $description): string
+    {
+        $description = strtoupper($description);
+
+        if (str_contains($description, 'NEFT')) return 'NEFT';
+        if (str_contains($description, 'RTGS')) return 'RTGS';
+        if (str_contains($description, 'IMPS')) return 'IMPS';
+        if (str_contains($description, 'UPI')) return 'UPI';
+
+        return ''; // Default mode
+    }
+
+    private function isReadCutoffEnabled(string $merchantID): bool{
+        $requestPayload = [
+            "id" =>  $merchantID,
+            "experiment_name" => Merchant\RazorxTreatment::ACCOUNT_STATEMENTS_READ_CUTOFF,
+            'request_data'  => json_encode(['id' =>  $merchantID])
+        ];
+
+        return (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,Merchant\RazorxTreatment::VARIANT_ENABLE);
+    }
+
+    private function mapPublicID(string $entityType) : string {
+        $publicIdMap = [
+            'payout' => 'pout_',
+            'external' => 'ext_',
+            'reversal' => 'rvrsl_',
+            'payout_reversal' => 'rvrsl_',
+            '' => '' // No mapping for empty entity types
+        ];
+
+        return $publicIdMap[$entityType];
     }
 }

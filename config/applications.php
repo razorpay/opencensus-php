@@ -1134,6 +1134,12 @@ return [
         'timeout'                => env('XPERIENCE_URL_TIMEOUT_SECS', 25)
     ],
 
+    'x_account_statements' => [
+        'url' => env('APP_X_ACCOUNT_STATEMENTS_URL'),
+        'secret' => env('APP_X_ACCOUNT_STATEMENTS_SECRET'),
+        'timeout' => env('APP_X_ACCOUNT_STATEMENTS_TIMEOUT', 60),
+    ],
+
     'abacus' => [
         'url'                    => env('APP_ABACUS_URL', 'http://localhost:8000'),
         'secret'                 => env('APP_ABACUS_SECRET'),

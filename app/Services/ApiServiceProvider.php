@@ -969,6 +969,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerCaseManagementService();
 
+        $this->registerXAccountStatements();
+
         $this->app->singleton('pos.deviceservice', function($app)
         {
 
@@ -1093,7 +1095,9 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             ASVV2Constant::ASV_SDK_CLIENT,
             'offers_engine',
             'credcase',
-            'credcaseService'
+            'credcaseService',
+            'cms',
+            'x_account_statements'
         ];
     }
 
@@ -3056,6 +3060,15 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             }
 
             return new CaseManagementServiceClient();
+        });
+    }
+
+
+    protected function registerXAccountStatements()
+    {
+        $this->app->singleton('x_account_statements', function($app)
+        {
+            return new XAccountStatements($app);
         });
     }
 }

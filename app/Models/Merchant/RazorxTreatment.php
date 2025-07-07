@@ -1071,6 +1071,8 @@ final class RazorxTreatment
 
     const FAV_POSTPAID_DISABLE = 'fav_postpaid_disable';
 
+    const ACCOUNT_STATEMENTS_READ_CUTOFF = 'account_statements_read_cutoff';
+
     const Allowed_alt_id_experiments = [
         "non_rearch_alt__RUPAY_isg_kotak",
         "non_rearch_alt__RUPAY_cybersource_axis",
