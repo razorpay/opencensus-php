@@ -131,6 +131,7 @@ class Entity extends Base\PublicEntity
 
     const KLARNA    = 'klarna';
     const ZIP       = 'zip';
+    const SHOPBACK  = 'shopback';
 
     const ONLINE_CONVERSION_ENABLED = 'online_conversion_enabled';
     const CREDIT_LINE = "credit_line";
@@ -259,6 +260,7 @@ class Entity extends Base\PublicEntity
         self::MCASH,
         self::GRABPAY,
         self::TOUCHNGO,
+        self::SHOPBACK,
         self::INTL_BANK_TRANSFER,
         self::SODEXO,
         self::ONLINE_CONVERSION_ENABLED,
@@ -338,6 +340,7 @@ class Entity extends Base\PublicEntity
         self::MCASH,
         self::GRABPAY,
         self::TOUCHNGO,
+        self::SHOPBACK,
         self::INTL_BANK_TRANSFER,
         self::SODEXO,
         self::ONLINE_CONVERSION_ENABLED,
@@ -393,6 +396,7 @@ class Entity extends Base\PublicEntity
         self::IN_APP_CREDIT_LINE,
         self::INSTALMENT,
         self::INSTALMENT_PROVIDERS,
+        self::SHOPBACK,
     ];
 
     protected static $shouldAcceptSubMethods = [
@@ -522,7 +526,8 @@ class Entity extends Base\PublicEntity
         self::GOPAY,
         self::OVO,
         self::LINKAJA,
-        self::DOKU
+        self::DOKU,
+        self::SHOPBACK,
     );
 
 
@@ -542,14 +547,15 @@ class Entity extends Base\PublicEntity
         self::GOPAY,
         self::OVO,
         self::LINKAJA,
-        self::DOKU
+        self::DOKU,
+        self::SHOPBACK,
     ];
 
     protected static $aff_method_public_name_mapping = [
         self::CREDIT_EMI => self::CREDIT_EMI_PROVIDERS,
         self::PAYLATER => self::PAYLATER_PROVIDERS,
         self::CARDLESS_EMI => self::CARDLESS_EMI_PROVIDERS,
-        self::INSTALMENT => self::INSTALMENT_PROVIDERS,   
+        self::INSTALMENT => self::INSTALMENT_PROVIDERS,
     ];
 
     protected static $addon_affordability_methods = [
@@ -662,7 +668,7 @@ class Entity extends Base\PublicEntity
             PaylaterProvider::KLARNA,
             PaylaterProvider::ZIP,
         ],
-        
+
         self::INSTALMENT => [
             InstalmentProvider::VIS,
         ],
@@ -1024,6 +1030,11 @@ class Entity extends Base\PublicEntity
     public function isTouchngoEnabled(): bool
     {
         return $this->getTouchNGo();
+    }
+
+    public function isShopbackEnabled(): bool
+    {
+        return $this->getShopback();
     }
 
     public function isGrabpayEnabled(): bool
@@ -1478,6 +1489,11 @@ class Entity extends Base\PublicEntity
     public function getTouchNGo(): bool
     {
         return in_array(self::TOUCHNGO, $this->getAttribute(self::ADDITIONAL_WALLETS));
+    }
+
+    public function getShopback(): bool
+    {
+        return in_array(self::SHOPBACK, $this->getAttribute(self::ADDITIONAL_WALLETS));
     }
 
     public function getPayzapp(): bool
@@ -2413,6 +2429,11 @@ class Entity extends Base\PublicEntity
     protected function getTouchNGoAttribute()
     {
         return $this->getTouchNGo();
+    }
+
+    protected function getShopbackAttribute(): bool
+    {
+        return $this->getShopback();
     }
 
     protected function getBoostAttribute()

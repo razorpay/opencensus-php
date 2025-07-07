@@ -50,6 +50,7 @@ class Wallet
     const KLARNA        = 'klarna';
 
     const ZIP           = 'zip';
+    const SHOPBACK      = 'shopback';
 
     const PROVIDER       = 'provider';
 
@@ -101,7 +102,8 @@ class Wallet
         self::DOKU              => 'Doku',
         self::LINKAJA           => 'LinkAja',
         self::GOPAY             => 'GoPay',
-        self::OVO               => 'OVO'
+        self::OVO               => 'OVO',
+        self::SHOPBACK          => 'ShopBack',
     );
 
     public static $emailRequiredWallets = array(
