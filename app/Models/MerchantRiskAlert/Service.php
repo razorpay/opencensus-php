@@ -511,6 +511,8 @@ class Service extends Base\Service
                     'cf_risk_woc_category'          =>  Constants::FD_RISK_WOC_CATEGORY_NEED_CLARIFICATION,
                     'cf_new_requester_category'     =>  Constants::FD_NEW_RISK_CATEGORY,
                     "cf_new_requester_sub_category" =>  Constants::FD_NEW_RISK_SUB_CATEGORY,
+                    'cf_merchant_id'                =>  $merchant->getId(),
+                    'cf_merchant_id_dashboard'      =>  'merchant_dashboard_' . $merchant->getId(),
                 ];
             }
             else
@@ -522,6 +524,8 @@ class Service extends Base\Service
                     'cf_category'     => 'Risk Report_Merchant',
                     'cf_subcategory'  => $fdSubcategory,
                     'cf_product'      => 'Payment Gateway',
+                    'cf_merchant_id'                =>  $merchant->getId(),
+                    'cf_merchant_id_dashboard'      =>  'merchant_dashboard_' . $merchant->getId(),
                 ];
             }
 

@@ -223,6 +223,8 @@ class MerchantActionNotification
                     'cf_risk_woc_category'          =>  Constants::FD_RISK_WOC_CATEGORY[$action] ?? ($requestParams['sub_category'] ?? Constants::FD_RISK_WOC_CATEGORY_FOH),
                     "cf_new_requester_category"     =>  Constants::FD_NEW_RISK_CATEGORY,
                     "cf_new_requester_sub_category" =>  Constants::FD_NEW_RISK_SUB_CATEGORY,
+                    'cf_merchant_id'                =>  $merchant->getId(),
+                    'cf_merchant_id_dashboard'      =>  'merchant_dashboard_' . $merchant->getId(),
                 ],
             ];
 
