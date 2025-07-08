@@ -20,10 +20,6 @@ class OTPVerificationSessionTest extends BaseTestCase
         parent::setUp();
 
         $this->app = \App::getFacadeRoot();
-
-        $this->cache = $this->app['cache'];
-        // clear the cache for an individual test case
-        $this->cache->flush();
     }
 
     public function createApplication()
