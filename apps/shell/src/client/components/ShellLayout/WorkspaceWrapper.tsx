@@ -12,7 +12,7 @@ export const WorkspaceWrapper = ({
   isFullPage = false,
   padding,
 }: WorkspaceWrapperProps) => {
-  const marginLeftMediumValue = isFullPage ? '0px' : '245px';
+  const marginLeftMediumValue = isFullPage ? '0px' : '240px';
   const marginLeftXLValue = isFullPage ? '0px' : '264px';
   return (
     <Box

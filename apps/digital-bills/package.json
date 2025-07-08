@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@razorpay/universe-cli": "20.2.13",
-    "@razorpay/blade": "12.31.5",
+    "@razorpay/blade": "12.40.0",
     "@razorpay/i18nify-js": "1.12.5",
     "prop-types": "15.7.2",
     "react-dom": "17.0.2",

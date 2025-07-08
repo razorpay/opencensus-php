@@ -33,7 +33,7 @@ const withConnectedLayout = (WrappedComponent: React.FC<any>) => {
     const isMobile = matchedDeviceType === 'mobile';
     const { isConnectedFullPageView = false, ...restProps } = props;
 
-    const marginLeftMediumValue = isConnectedFullPageView ? '0px' : '245px';
+    const marginLeftMediumValue = isConnectedFullPageView ? '0px' : '240px';
     const marginLeftXLValue = isConnectedFullPageView ? '0px' : '264px';
 
     useEffect(() => {
