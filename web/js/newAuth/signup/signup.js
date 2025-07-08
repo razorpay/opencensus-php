@@ -6,7 +6,7 @@ import Auth from 'newAuth/@commander-shield/bootstrap/SignUpWrapper';
 import QueryString from 'query-string';
 import { ThemeProvider } from 'styled-components';
 import { FullPageLoader } from 'newAuth/@deprecated/common/components/Loader'; // eslint-disable-line
-import { setCookie } from '@libs/shared-utils';
+import { isProductionEnv, setCookie } from '@libs/shared-utils';
 import { fetchOrg } from 'newAuth/apis';
 import { ContentContainer } from 'newAuth/commonStyles';
 import {
@@ -18,7 +18,6 @@ import {
 
 import Header from './components/Header';
 import InfoContainer from './components/InfoContainer';
-import PartnerSignup from './components/PartnerSignup';
 import RefereeBanner from './components/RefereeBanner';
 import { AbsoluteView, RelativeView, Container } from './styles';
 
@@ -128,7 +127,14 @@ const SignUp = () => {
     window.location.href = '/#/access/signin';
   };
 
-  if (isSigningUpAsPartner) return <PartnerSignup />;
+  if (isSigningUpAsPartner) {
+    const partnerSignupUrl = isProductionEnv()
+      ? 'https://accounts.razorpay.com/auth/?auth_intent=signup&user_type=partner'
+      : 'https://accounts.np.razorpay.in/auth/?auth_intent=signup&user_type=partner';
+
+    window.location.href = partnerSignupUrl;
+    return null;
+  }
 
   return (
     <ThemeProvider theme={theme}>
