@@ -135,6 +135,12 @@ class Entity extends Base\PublicEntity
 
     const ONLINE_CONVERSION_ENABLED = 'online_conversion_enabled';
     const CREDIT_LINE = "credit_line";
+
+    // VIS Enabled Banks
+    const HSBC = 'HSBC';
+    const ARBK = 'ARBK';
+    const SCBL = 'SCBL';
+    
     protected $primaryKey = self::MERCHANT_ID;
 
     // Table name has been renamed to 'merchant_banks'
@@ -811,18 +817,19 @@ class Entity extends Base\PublicEntity
         return !empty($addonMethods[self::INSTALMENT]);
     }
 
-    public function isVisSupported($issuer)
+    public function isVisSupported($issuer, $country)
     {
-        // List of enabled issuers
-        $enabledIssuers = [
-            // Provided by VIS
-            'HSBC AMANAH MALAYSIA BERHAD',
-            'HSBC BANK MALAYSIA BERHAD',
-            'STANDARD CHARTERED BANK MALAYSIA BERHAD',
-            'AMBANK (M) BERHAD',
-            'AMBANK ISLAMIC BERHAD'
+        // Map of countries to their supported issuers for VIS
+        $countryIssuerMap = [
+            'MY' => [  // Malaysia
+                self::ARBK,
+                self::HSBC,
+                self::SCBL
+            ]
         ];
-        return in_array($issuer, $enabledIssuers, true);
+
+        return isset($countryIssuerMap[$country]) && 
+               in_array($issuer, $countryIssuerMap[$country], true);
     }
 
     public function getEnabledInstalmentProviders()

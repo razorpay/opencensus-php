@@ -127,7 +127,7 @@ class Service extends Base\Service
             if (
                 $iinEntity->getType() === Card\Type::CREDIT and
                 $merchant->methods->isVisEnabled() and
-                $merchant->methods->isVisSupported($iinEntity->getIssuerName())
+                $merchant->methods->isVisSupported($iinEntity->getIssuer(), $iinEntity->getCountry())
             )
             {
                 $data['flows']['instalment'] = true;

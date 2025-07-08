@@ -319,4 +319,94 @@ class CoreTest extends TestCase
 
         return $mock;
     }
+
+    public function testIsVisSupportedWithValidMalaysiaIssuer()
+    {
+        $methods = $this->getMerchantMethodsFixture(true, 0, '8vUslVi0uFOSoy');
+
+        // Test with valid Malaysia issuer (ARBK)
+        $result = $methods->isVisSupported(Entity::ARBK, 'MY');
+        $this->assertTrue($result);
+
+        // Test with valid Malaysia issuer (HSBC)
+        $result = $methods->isVisSupported(Entity::HSBC, 'MY');
+        $this->assertTrue($result);
+
+        // Test with valid Malaysia issuer (SCBL)
+        $result = $methods->isVisSupported(Entity::SCBL, 'MY');
+        $this->assertTrue($result);
+    }
+
+    public function testIsVisSupportedWithInvalidMalaysiaIssuer()
+    {
+        $methods = $this->getMerchantMethodsFixture(true, 0, '8vUslVi0uFOSoy');
+
+        // Test with invalid issuer for Malaysia
+        $result = $methods->isVisSupported('INVALID_BANK', 'MY');
+        $this->assertFalse($result);
+
+        // Test with empty issuer for Malaysia
+        $result = $methods->isVisSupported('', 'MY');
+        $this->assertFalse($result);
+    }
+
+    public function testIsVisSupportedWithUnsupportedCountry()
+    {
+        $methods = $this->getMerchantMethodsFixture(true, 0, '8vUslVi0uFOSoy');
+
+        // Test with unsupported country
+        $result = $methods->isVisSupported(Entity::ARBK, 'IN');
+        $this->assertFalse($result);
+
+        $result = $methods->isVisSupported(Entity::HSBC, 'US');
+        $this->assertFalse($result);
+
+        $result = $methods->isVisSupported(Entity::SCBL, 'SG');
+        $this->assertFalse($result);
+    }
+
+    public function testIsVisSupportedWithInvalidCountry()
+    {
+        $methods = $this->getMerchantMethodsFixture(true, 0, '8vUslVi0uFOSoy');
+
+        // Test with invalid country code
+        $result = $methods->isVisSupported(Entity::ARBK, 'INVALID');
+        $this->assertFalse($result);
+
+        // Test with empty country
+        $result = $methods->isVisSupported(Entity::HSBC, '');
+        $this->assertFalse($result);
+    }
+
+    public function testIsVisSupportedWithNullValues()
+    {
+        $methods = $this->getMerchantMethodsFixture(true, 0, '8vUslVi0uFOSoy');
+
+        // Test with null issuer
+        $result = $methods->isVisSupported(null, 'MY');
+        $this->assertFalse($result);
+
+        // Test with null country
+        $result = $methods->isVisSupported(Entity::ARBK, null);
+        $this->assertFalse($result);
+
+        // Test with both null values
+        $result = $methods->isVisSupported(null, null);
+        $this->assertFalse($result);
+    }
+
+    public function testIsVisSupportedCaseSensitivity()
+    {
+        $methods = $this->getMerchantMethodsFixture(true, 0, '8vUslVi0uFOSoy');
+
+        // Test case sensitivity - should be case sensitive
+        $result = $methods->isVisSupported('arbk', 'MY');
+        $this->assertFalse($result);
+
+        $result = $methods->isVisSupported('ARBK', 'my');
+        $this->assertFalse($result);
+
+        $result = $methods->isVisSupported('arbk', 'my');
+        $this->assertFalse($result);
+    }
 }
