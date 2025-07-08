@@ -1,13 +1,28 @@
 import React from 'react';
 import { AlertProps, Text } from '@razorpay/blade/components';
+import { moment } from 'merchant/components/SelfServeRekyc/moment';
 
 import { User } from 'common/typings';
 
 import { Strong } from './styled';
 import { getParamsFromUser, onClickRedirectNC, onClickRedirectVKYC } from './utils';
 
-const REKYC_DEADLINE = '5th July, 2025';
-const REKYC_DEADLINE_SHORT = '5th July';
+const getDeadline = (dateEpoch: string) => {
+  const deadLines = { REKYC_DEADLINE: '', REKYC_DEADLINE_SHORT: '' };
+
+  if (!dateEpoch || isNaN(Number(dateEpoch))) {
+    return deadLines;
+  }
+
+  try {
+    const convertedDateEpoch = moment.unix(Number(dateEpoch));
+    deadLines.REKYC_DEADLINE = convertedDateEpoch.format('Do MMMM, YYYY');
+    deadLines.REKYC_DEADLINE_SHORT = convertedDateEpoch.format('Do MMMM');
+    return deadLines;
+  } catch (error) {
+    return deadLines;
+  }
+};
 
 export const REKYC_STATUS_OPTIONS = {
   UNDER_REVIEW: 'under_review',
@@ -24,8 +39,10 @@ type ModalContent = {
   action?: { text: string; onClick: (...props) => Promise<void> | void };
 };
 
-export const getModalContent = (user: User): ModalContent | null => {
+export const getModalContent = (user: User, dateEpoch: string): ModalContent | null => {
   const { status, canPerformActions, ncCount } = getParamsFromUser(user);
+
+  const { REKYC_DEADLINE, REKYC_DEADLINE_SHORT } = getDeadline(dateEpoch);
 
   switch (status) {
     case REKYC_STATUS_OPTIONS.NEEDS_CLARIFICATION:
@@ -106,8 +123,9 @@ type BannerContent = {
   dismissible?: boolean;
 };
 
-export const getBannerContent = (user: User): BannerContent | null => {
+export const getBannerContent = (user: User, dateEpoch: string): BannerContent | null => {
   const { status, canPerformActions, ncCount } = getParamsFromUser(user);
+  const { REKYC_DEADLINE, REKYC_DEADLINE_SHORT } = getDeadline(dateEpoch);
 
   switch (status) {
     case REKYC_STATUS_OPTIONS.UNDER_REVIEW:

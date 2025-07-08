@@ -14,6 +14,7 @@ import {
 } from '@razorpay/blade/components';
 import kycImage from 'assets/onboarding/ncKyc.svg';
 import { useStore } from '@federated/apps/shell/commonStore';
+import { useSplitzService } from 'common/splitz';
 
 import { getItem, setItem } from 'common/utils/localStorage';
 
@@ -25,10 +26,12 @@ export const ReKycStatusModal = () => {
   const user = useStore((state) => state.session.user);
   const notify = useStore((state) => state.showNotification);
   const [isOpen, setIsOpen] = useState(true);
+  const { abExperiments } = useSplitzService();
+  const deadline = abExperiments?.manual_rekyc_date_epoch?.variables?.result ?? '';
 
   const widget = 'modal';
   const canPerformActions = user.isAdminOrOwner;
-  const content = getModalContent(user);
+  const content = getModalContent(user, deadline);
   const isVisible = !!content;
 
   useEffect(() => {
@@ -80,7 +83,11 @@ export const ReKycStatusBanner = ({ isRtux = false }) => {
   const widget = 'banner';
   const isDismissed = getItem('rekyc_banner_dismiss') === 'true';
   const canPerformActions = user.isAdminOrOwner;
-  const content = getBannerContent(user);
+
+  const { abExperiments } = useSplitzService();
+  const deadline = abExperiments?.manual_rekyc_date_epoch?.variables?.result ?? '';
+
+  const content = getBannerContent(user, deadline);
   const isVisible = !!content && (!content.dismissible || !isDismissed);
 
   useEffect(() => {

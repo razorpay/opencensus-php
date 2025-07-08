@@ -23,6 +23,23 @@ export const splitzConfig: SplitzInitConfig = {
     default: [],
     merchant: [
       {
+        // This is not a feature controlling experiment, it returns a date epoch which is displayed to merchants
+        uniqueHashKey: 'manual_rekyc_date_epoch',
+        experimentId: {
+          beta: 'QqUqRyrTVGteHR',
+          production: 'QqWEMm17iPNhYr',
+        },
+        defaultVariant: {
+          name: 'variables',
+          variables: [
+            {
+              key: 'result',
+              value: '0',
+            },
+          ],
+        },
+      },
+      {
         uniqueHashKey: 'plotline_milestone_widget',
         experimentId: {
           beta: 'QM3OeCgZML96rb',
