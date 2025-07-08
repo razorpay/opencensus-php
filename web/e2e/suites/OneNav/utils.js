@@ -54,7 +54,8 @@ export async function scrollAndVerify(page, selector) {
 }
 
 export async function waitForOneDashboard(page) {
-  await page.locator('.main-content--one-dashboard').waitFor({
+  // Slack thread: https://razorpay.slack.com/archives/C06F9MYVBR7/p1751372364744419?thread_ts=1751355410.206079&cid=C06F9MYVBR7
+  await page.locator('.main-content--one-dashboard, .main-content--connected-navigation').waitFor({
     state: 'visible',
     timeout: 60000,
   });

@@ -113,10 +113,13 @@ test.describe.parallel('One nav scroll Verification @project=oneNav', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(routes.DASHBOARD);
-    await page.locator('.main-content--one-dashboard').waitFor({
-      state: 'visible',
-      timeout: 60000,
-    });
+    // Slack thread: https://razorpay.slack.com/archives/C06F9MYVBR7/p1751372364744419?thread_ts=1751355410.206079&cid=C06F9MYVBR7
+    await page
+      .locator('.main-content--one-dashboard, .main-content--connected-navigation')
+      .waitFor({
+        state: 'visible',
+        timeout: 60000,
+      });
   });
 
   test('should scroll when side nav present', async ({ page }) => {
