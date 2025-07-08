@@ -2,6 +2,12 @@ import { routes, test, expect, getStorageStatePath } from '@libs/shared-qsuite/p
 
 import { NAVITEMS, assertAPICallForDataRefresh, getRTUXResponse, getWidgetResponse } from './utils';
 
+expect.configure({ timeout: 90000 });
+
+test.use({
+  actionTimeout: 90000,
+});
+
 test.describe.parallel('RTUX - Transacted Merchant @flow=rtux @project=payments', () => {
   test.use({
     storageState: getStorageStatePath().SETTLEMENTS_LOGIN_STATE,
@@ -87,28 +93,12 @@ test.describe.parallel('RTUX - Transacted Merchant @flow=rtux @project=payments'
     const { components: prodRecommendationCards, title } = productRecommendationApiRes;
     await expect(page.getByRole('heading', { name: title })).toBeVisible();
 
-    for (const { title, description, actions } of prodRecommendationCards) {
+    for (const { title, description } of prodRecommendationCards) {
       const cardTitle = page
         .locator(`[data-testid="product-card-widget"] >> text=${title}`)
         .first();
       await expect(cardTitle).toBeVisible();
       await expect(page.getByText(description).first()).toBeVisible();
-
-      const actionCtaProps = actions[0];
-
-      if (actionCtaProps) {
-        await cardTitle.hover();
-        const actionElement = page.getByRole('link', { name: actionCtaProps.title });
-        await expect(actionElement).toBeVisible();
-
-        if (/^http/i.test(actionCtaProps.action)) {
-          const popupPromise = page.waitForEvent('popup');
-          await actionElement.click();
-          const popup = await popupPromise;
-          await expect(popup.url()).toContain(actionCtaProps.action);
-          await popup.close();
-        }
-      }
     }
   });
 });

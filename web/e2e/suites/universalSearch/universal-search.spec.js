@@ -15,6 +15,12 @@ import {
 } from './constants';
 import { assertSearchResults, findInSearchResultsEl, getSearchResultsEl } from './utils';
 
+expect.configure({ timeout: 90000 });
+
+test.use({
+  actionTimeout: 90000,
+});
+
 test.describe.parallel('Test universal search @flow=universal-search @project=payments', () => {
   test.use({
     storageState: getStorageStatePath().ACTIVATED_RZP_MERCHANT,

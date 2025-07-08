@@ -16,7 +16,7 @@ const fields = [
 ];
 
 export default class QRCode extends GenericEntity {
-  // TODO: update the resourceUrl to qr_codes
+  // TODO: update the resourceUrl to qr_codes!
   resourceUrl = 'payments/qr_codes';
 
   resourceFields() {
