@@ -3,7 +3,7 @@ import React from 'react';
 import { Box } from '@razorpay/blade/components';
 
 const Banking = () => {
-  return <Box>Banking content will go here.</Box>;
+  return <Box>Banking</Box>;
 };
 
 export default Banking;

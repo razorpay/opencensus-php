@@ -70,6 +70,21 @@ export const generateAnalyticsScriptElement = () => {
             window.rzpAnalytics = function (data) {
                 // If there's no data, don't track anything
                 if (!data) return;
+
+                // Handle Lumberjack Events for RazorpayX
+                if (data.ljEventName && window.rzpQ) {
+                    if (!checkGa(data)) return;
+
+                    var ljEventType = data.ljEventType;
+                    var ljEventName = data.ljEventName;
+                    var ljProperties = data.ljProperties;
+                    var ljEventTypes = ['initiated', 'success', 'dropped', 'failed', 'viewed'];
+                    var eventType = ljEventTypes.indexOf(ljEventType) === -1 ? 'interaction' : ljEventType;
+
+                    window.rzpQ.merchantActions()[eventType](ljEventName);
+                    window.rzpQ.push(ljProperties);
+                }
+
                 const eventTypes = { twitterAgency: 'twitterAgency' };
                 switch (data.name) {
                     case 'set_dimensions': { // Set the dimensions
