@@ -18415,6 +18415,7 @@ class Route
         'emandate_service' => [
             'internal_payment_pricing',
             'customer_fetch_token_emandate_internal',
+            'pricing_fetch_plan',
         ],
 
         'workflows' => [

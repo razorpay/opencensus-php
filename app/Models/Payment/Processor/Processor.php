@@ -4593,13 +4593,6 @@ class Processor
         // 6. Merchant should be fee bearer
         // 7. Not enabling for raas merchants
 
-        // emandate rearch changes: Need to remove live condition before going to production
-        if ((app()->isEnvironmentProduction() === true) and
-            ($this->mode === Mode::LIVE or $this->mode === Mode::TEST))
-        {
-            return false;
-        }
-
         if($input[Payment\Entity::METHOD] !== Payment\METHOD::EMANDATE &&
             $input[Payment\Entity::METHOD] !== Payment\METHOD::NACH)
         {
@@ -4624,17 +4617,6 @@ class Processor
             }
         }
 
-        if(empty($input[Constants::TOKEN_ENTITY]) === false)
-        {
-            $token = $input[Constants::TOKEN_ENTITY];
-
-            unset($input[Constants::TOKEN_ENTITY]);
-        }
-        else
-        {
-            return false;
-        }
-
         $currentRouteName = $this->route->getCurrentRouteName();
 
         $merchant = $this->app['basicauth']->getMerchant();
@@ -4644,6 +4626,8 @@ class Processor
         {
             $customCheckResults = $this->performEmandateRearchFlowChecks($input, $merchant, $currentRouteName);
 
+            $token = $customCheckResults['token'];
+
             $this->trace->info(TraceCode::EMANDATE_SERVICE_ROUTING_CRITERIA,
                 [
                     'merchant_id' => $merchant->getId(),
@@ -4652,7 +4636,7 @@ class Processor
                     'route_via_emandate_service' => $customCheckResults['route_via_emandate_service'],
                 ]);
 
-            $razorxKey = null;
+            $splitzKey = null;
 
             if ($customCheckResults['route_via_emandate_service'] === true) {
                 // Need to do terminal fetch from token to get gateway
@@ -4660,54 +4644,87 @@ class Processor
 
                 $terminal = $token->getTerminalAttribute();
 
+
+
                 $gateway = $terminal["gateway"] ?? null;
 
                 $gatewayAcquirer = $terminal["gateway_acquirer"] ?? null;
 
-                $razorxKey = self::$emandateGatewayMapping[$gateway];
+                $splitzKey = self::$emandateGatewayMapping[$gateway];
 
-                $this->trace->info(TraceCode::EMANDATE_SERVICE_RAZORX_KEY,
+                $this->trace->info(TraceCode::EMANDATE_SERVICE_SPLITZ_KEY,
                     [
                         'gateway' => $gateway,
                         'acquirer' => $gatewayAcquirer,
-                        'razorxKey' => $razorxKey,
+                        'splitzKey' => $splitzKey,
                     ]);
 
-                if ($razorxKey === null and $gatewayAcquirer !== null) {
+                if ($splitzKey === null and $gatewayAcquirer !== null) {
                     $npciGateway = $gateway . '_' . $gatewayAcquirer;
+                    $splitzKey = self::$emandateGatewayAcquirerMapping[$npciGateway];
 
-                    $razorxKey = self::$emandateGatewayAcquirerMapping[$npciGateway];
-
-                    $this->trace->info(TraceCode::EMANDATE_SERVICE_RAZORX_NPCI_KEY,
+                    $this->trace->info(TraceCode::EMANDATE_SERVICE_SPLITZ_NPCI_KEY,
                         [
                             'gateway' => $gateway,
                             'acquirer' => $gatewayAcquirer,
                             'npci_gateway' => $npciGateway,
-                            'razorxKey' => $razorxKey,
+                            'razorxKey' => $splitzKey,
                         ]);
+
                 }
             }
 
-            if ($razorxKey === null)
+            if ($splitzKey === null)
             {
+                $this->trace->info(TraceCode::EMANDATE_SERVICE_ROUTING_CRITERIA,
+                [
+                    'merchant_id' => $merchant->getId(),
+                    'dimensions' => $customCheckResults['dimensions'],
+                    'route' => $currentRouteName,
+                    'route_via_emandate_service' => $customCheckResults['route_via_emandate_service'],
+                    'reason' => $customCheckResults['reason']
+                ]);
                 return false;
             }
 
-            //TODO: Uncomment this before going to prod
-//            $rearchRazorxExperiment = "emandate_rearch_razorx_for_" . $razorxKey;
-//
-//            $result = $this->app->razorx->getTreatment($merchant->getId(), $rearchRazorxExperiment, $this->mode);
-//
-//            $this->trace->info(TraceCode::EMANDATE_SERVICE_REARCH_RAZORX,
-//                [
-//                    'razorx_selected' => $rearchRazorxExperiment,
-//                    'result' => $result,
-//                ]);
-//
-//            if ($result === 'on')
-//            {
-//                return true;
-//            }
+            $rearchSplitzExperiment = "emandate_subsequent_create_ramp_up_for_" . $splitzKey;
+
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_name' => $rearchSplitzExperiment,
+                'request_data'  => json_encode(
+                    [
+                        'mid' => $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::EMANDATE_SERVICE_REARCH_SPLITZ_RESPONSE,
+                [
+                    'experiment_selected' => $rearchSplitzExperiment,
+                    'result' => $variant,
+                ]);
+
+
+            if ($variant === 'enable')
+            {
+                return true;
+            }
+
+            $this->trace->info(TraceCode::EMANDATE_SERVICE_ROUTING_CRITERIA,
+                [
+                    'merchant_id' => $merchant->getId(),
+                    'dimensions' => $customCheckResults['dimensions'],
+                    'route' => $currentRouteName,
+                    'splitz_experiment' => $rearchSplitzExperiment,
+                    'route_via_emandate_service' => false,
+                    'reason' => 'Splitz variant is not enabled'
+                ]);
+
+
         }
         catch (\Throwable $ex)
         {
@@ -4776,38 +4793,70 @@ class Processor
         }
     }
 
-    private function performEmandateRearchFlowChecks(array $input, Merchant\Entity $merchant, string $currentRouteName): array
+    private function performEmandateRearchFlowChecks(array& $input, Merchant\Entity $merchant, string $currentRouteName): array
     {
         $routeViaReArch = true;
 
-        $dimensions = array_fill(0, 8, 0);
+        $dimensions = array_fill(0, 11, 0);
+
+        $reason = null;
 
         $response = [
             'route_via_emandate_service' => $routeViaReArch
         ];
 
+        // Token validation check
+        if(empty($input[Constants::TOKEN_ENTITY]) === false)
+        {
+            $token = $input[Constants::TOKEN_ENTITY];
+
+            $response['token'] = $token;
+
+            if(empty($token->getTerminalAttribute()) || !isset($token->getTerminalAttribute()['id'])){
+                $this->trace->info(TraceCode::EMANDATE_SERVICE_TOKEN_WITH_NO_TERMINAL,
+                    [
+                        'token_id' => $token->getId(),
+                        'token_entity' => $token->toArray(),
+                    ]);
+                $routeViaReArch = false;
+                $dimensions[7] = 1;
+                $reason = 'Token entity does not have valid terminal attribute';
+            }
+
+            unset($input[Constants::TOKEN_ENTITY]);
+        }
+        else {
+            $routeViaReArch = false;
+            $dimensions[8] = 1;
+            $reason = 'Token entity is not present in input';
+        }
+
         if (empty($input[Payment\Entity::METHOD]) === true)
         {
             $routeViaReArch = false;
             $dimensions[0] = 1;
+            $reason = 'Method is not set in input';
         }
 
         if ($this->isEmandateRearchRoute($currentRouteName) == false)
         {
             $routeViaReArch = false;
             $dimensions[1] = 1;
+            $reason = 'Only allow recurring payments via recurring route';
         }
 
         if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
         {
             $routeViaReArch = false;
             $dimensions[2] = 1;
+            $reason = 'Not allowing subscriptions';
         }
 
         if ($merchant->isFeeBearerPlatform() === false)
         {
             $routeViaReArch = false;
             $dimensions[3] = 1;
+            $reason = 'Not allowing non-platform fee bearer merchants';
         }
 
         if (empty($input[Payment\Entity::ORDER_ID]) === false)
@@ -4822,6 +4871,7 @@ class Processor
             {
                 $routeViaReArch = false;
                 $dimensions[4] = 1;
+                $reason = 'Not allowing transfer order payments';
             }
         }
 
@@ -4831,17 +4881,19 @@ class Processor
         {
             $routeViaReArch = false;
             $dimensions[5] = 1;
+            $reason = 'Not allowing non-INR payments';
         }
 
         if ($merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::RAAS) === true)
         {
             $routeViaReArch = false;
             $dimensions[6] = 1;
+            $reason = 'Not allowing raas merchants';
         }
 
-        $dimensions[7] = (string) strtolower($input['_']['library'] ?? 'unknown');
+        $dimensions[9] = (string) strtolower($input['_']['library'] ?? 'unknown');
 
-        $dimensions[8] = (string) $currentRouteName;
+        $dimensions[10] = (string) $currentRouteName;
 
         $dimensionsString = implode(', ', $dimensions);
 
@@ -4850,6 +4902,8 @@ class Processor
         $response['route_via_emandate_service'] = $routeViaReArch;
 
         $response['dimensions'] = $dimensionsString;
+
+        $response['reason'] = $reason;
 
         return $response;
     }
@@ -7895,7 +7949,7 @@ class Processor
 
             if ($tokenMethod === Payment\Method::EMANDATE or $tokenMethod === Payment\Method::NACH)
             {
-                $this->checkForCooloffAndTokenValidateStatus($token, $merchant);
+                $this->checkForCooloffAndTokenValidateStatus($input, $token, $merchant);
             }
 
             if ($tokenMethod === Payment\Method::EMANDATE)
@@ -7921,7 +7975,7 @@ class Processor
      * @return void
      * @throws BadRequestValidationFailureException
      */
-    protected function checkForCooloffAndTokenValidateStatus(Token\Entity $token, Merchant\Entity $merchant)
+    protected function checkForCooloffAndTokenValidateStatus(& $input, Token\Entity $token, Merchant\Entity $merchant)
     {
         $removeCooloff = $merchant->isFeatureEnabled(Feature::REMOVE_EMANDATE_COOLOFF);
 
@@ -7939,11 +7993,12 @@ class Processor
                 ]);
         }
 
-//                emandate rearch changes: Need to uncomment before going to production, need token to determine gateway
-//                if($this->isEmandateRearchRoute($this->route->getCurrentRouteName()) === true)
-//                {
-//                    $input[Constants::TOKEN_ENTITY] = $token;
-//                }
+        // emandate rearch changes: need token to determine gateway
+        if($this->isEmandateRearchRoute($this->route->getCurrentRouteName()) === true)
+        {
+            $input[Constants::TOKEN_ENTITY] = $token;
+        }
+
     }
 
     /**
@@ -17023,3 +17078,4 @@ public function isLibrarySupportedForNbplusRearch($library): bool
         return false;
     }
 }
+
