@@ -553,6 +553,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
             return true;
         }
 
+        if ($this->isIndiaConversationalModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail) === true)
+        {
+            return true;
+        }
+
         if ($this->isCrossBorderModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail) === true)
         {
             return true;
@@ -608,6 +613,17 @@ class MerchantOnboardingProxyController extends BaseProxyController
         }
 
         return $this->getProductSpecificWorkflowType($userDeviceDetail, DeviceDetailConstants::PRODUCT_PG_ONBOARDING)
+            === DeviceDetailConstants::MODULAR_ONBOARDING;
+    }
+
+    protected function isIndiaConversationalModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail): bool
+    {
+        if (strtolower($merchant->getCountry()) !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
+
+        return $this->getProductSpecificWorkflowType($userDeviceDetail, DeviceDetailConstants::CONVERSATIONAL_ONBOARDING)
             === DeviceDetailConstants::MODULAR_ONBOARDING;
     }
 
@@ -674,6 +690,14 @@ class MerchantOnboardingProxyController extends BaseProxyController
             return [
                 MerchantDetailConstants::IS_MODULAR_INDIA => true,
                 MerchantDetailConstants::MODULAR_PRODUCT_INDIA    => 'pg_onboarding',
+            ];
+        }
+
+        $indiaConversationalResult = $this->isIndiaConversationalModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail);
+        if (!empty($indiaConversationalResult)) {
+            return [
+                MerchantDetailConstants::IS_MODULAR_INDIA => true,
+                MerchantDetailConstants::MODULAR_PRODUCT_INDIA    => DeviceDetailConstants::CONVERSATIONAL_ONBOARDING,
             ];
         }
 

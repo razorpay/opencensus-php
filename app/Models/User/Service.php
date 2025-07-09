@@ -1094,7 +1094,7 @@ class Service extends Base\Service
     // should be stored separately. as of now, this change is enforced only for one product but other products should also adopt this approach.
     public function shouldStoreProductSpecificWorkflowType($product): bool
     {
-        return in_array($product, [DeviceDetailConstants::PRODUCT_PG_ONBOARDING, DeviceDetailConstants::CROSS_BORDER_ONBOARDING, DeviceDetailConstants::SUBMERCHANT_ONBOARDING]);
+        return in_array($product, [DeviceDetailConstants::PRODUCT_PG_ONBOARDING, DeviceDetailConstants::CROSS_BORDER_ONBOARDING, DeviceDetailConstants::SUBMERCHANT_ONBOARDING, DeviceDetailConstants::CONVERSATIONAL_ONBOARDING]);
     }
 
     private function shouldOnboardViaPGOSForNonOAuthMerchants(MerchantEntity $merchant, $signupCampaign, $countryCode): bool

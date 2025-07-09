@@ -80,6 +80,8 @@ class Constants
 
     const SUBMERCHANT_ONBOARDING = 'submerchant_onboarding';
 
+    const CONVERSATIONAL_ONBOARDING = 'conversational_onboarding';
+
     const PRODUCT_BANKING_ONBOARDING ='banking_onboarding';
 
     const PRODUCT_WORKFLOW_TYPE_TEMPLATE = '%s_workflow_type';
