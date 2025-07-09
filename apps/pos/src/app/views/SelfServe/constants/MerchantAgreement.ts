@@ -59,7 +59,7 @@ th {
                  <ul class='mb-24'>
             <li>Applicable taxes wherever not mentioned shall be charged separately.</li>
             <li>3 (three) free of charge paper rolls will be provided (one time) at the time of Device deployment.</li>
-            <li>In cases where the Merchant requires additional paper rolls, then the same shall be provided @ INR 15 (plus GST) per paper roll, subject to the minimum order quantity of 5 paper rolls per order. </li>
+            <li>In cases where the Merchant requires additional paper rolls, then the same shall be provided @ INR 15 (plus GST) per paper roll, subject to the minimum order quantity of 5 paper rolls per order. Prices specified above are in INR. </li>
        </ul>
        </div>
             </li>
@@ -140,7 +140,7 @@ th {
         <ol type="a">
             <li>If the Merchant terminates the Master Agreement and / or returns the Devices within 12 months from the date of installation, then the Merchant shall be liable to pay one-time early cancellation fee of INR 399 (plus GST) to ${org?.business_name}.</li>
             <br/>
-            <li>The Merchant hereby understands that if the Device terminals deployed at Merchant location remains inactive for a continuous period of 45 days, then the Merchant shall be liable to pay terminal recovery charges of INR 5500 (for A50/A99) and / or INR 7500 (for A910) per Device terminal. The same may be recovered in any manner including charging the Merchant account via Nach / E-Nach. <br/><br/>The aforementioned terminal recovery charges will be refunded / reversed to the Merchant only in cases where the Merchant initiates a suo moto de-installation request to ${org?.business_name} and subsequently ${org?.business_name} is successfully able to recover the Device in the original condition, subject to normal wear & tear resulting from daily usage. It is to be noted that if the event mentioned under this sub-clause (b) is triggered within a period of 12 months from the date of installation of Device terminals then ${org?.business_name} will also recover early cancellation fee, as enumerated under sub-clause (a) above. </li>
+            <li>The Merchant hereby understands that if the Device terminals deployed at Merchant location remains inactive for a continuous period of 45 calendar days, then the Merchant shall be liable to pay terminal recovery charges of INR 5500 (for A50/A99) and / or INR 7500 (for A910) and / or INR 1500 (for WD10) per Device terminal / soundbox. The same may be recovered in any manner including charging the Merchant account via Nach / E-Nach. In the event the Soundbox does not remain utilized for a continuous period of 45 calendar days, the Merchant shall be liable to an amount of INR 1500/-. <br/><br/>The aforementioned terminal recovery charges will be refunded / reversed to the Merchant only in cases where the Merchant initiates a suo moto de-installation request to ${org?.business_name} and subsequently ${org?.business_name} is successfully able to recover the Device in the original condition, subject to normal wear & tear resulting from daily usage. It is to be noted that if the event mentioned under this sub-clause (b) is triggered within a period of 12 months from the date of installation of Device terminals then ${org?.business_name} will also recover early cancellation fee, as enumerated under sub-clause (a) above. </li>
              <br/>
             <li>In cases where ${org?.business_name} is not able to collect terminal recovery charges as mentioned in sub-clause (b) above, then ${org?.business_name} may at its discretion initiate the deinstallation of Devices from Merchant’s location.</li>
              <br/>
@@ -148,6 +148,64 @@ th {
              <br/>
             <li>The Merchant understands that this “Commercial / Fee” document shall be a part of the Master Agreement (Merchant Acquiring Form) and / or T&Cs signed-up by the Merchant. The Merchant further understands that except for the terms mentioned herein, all the remaining terms & conditions of the Master Agreement / T&Cs shall be applicable mutatis-mutandis. In relation to the terms wherein there is a direct conflict between this “Commercial / Fee” document and the Master Agreement / T&Cs, the provision of this “Commercial / Fee”  document shall prevail.</li>
         </ol>
+    </li>
+    <br/>
+    <li>
+     <b>Soundbox</b>
+     <table>
+        <tbody>
+            <tr>
+                <td>Model</td>
+                <td>WD 10</td>
+            </tr>
+            <tr>
+                <td>Monthly Rental</td>
+                <td>INR 49/- per month per device</td>
+            </tr>
+            <tr>
+                <td>Set-up Fee</td>
+                <td>INR 249/-</td>
+            </tr>
+        </tbody>
+     </table>
+    </li>
+    <br/>
+    <li>
+    <b>Pricing for Merchants selling Alcohol</b>
+    <br/>
+    <br/>
+    <p>Plan duration: 3 Years</p>
+    <p>Upfront pricing A99: INR 6050/-</p>
+    <p>Upfront pricing WD10: INR 1249/-</p>
+    <p>TRC: Not Applicable</p>
+    <p>45 days inactivity de-installation applicable for both APOS & WD10</p>
+    <p>AMC: Applicable</p>
+    <p>Low Output rental: Not applicable</p>
+    <br/>
+    <p>Relevant MCC codes for liquor are:</p>
+    <table>
+        <tbody>
+            <tr>
+                <td>5813</td>
+                <td>Drinking Places (Alcoholic Beverages) - Bars, Taverns, Nightclubs, Cocktail Lounges, and Discotheques</td>
+            </tr>
+            <tr>
+                <td>5921</td>  
+                <td>Package Stores--Beer, Wine, and Liquor</td>
+        </tbody>
+    </table>
+    </li>
+    <br/>
+    <li>
+    <b>A99 One-Time Payment Scheme</b>
+    <br/>
+    <br/>
+    <p>Payment: INR 5500 (one-time)</p>
+    <p>Setup Fee: INR 549 (Waived Off)</p>
+    <p>Inactivity Clause: If the terminal is inactive for 3 months, the terminal will be deinstalled and payment refunded.</p>
+    <p>TRC: Not Applicable</p>
+    <p>LOR: Not Applicable</p>
+    <p>AMC: Not Applicable</p>
     </li>
     <br/>
     <li><b><u>Commercials / Fee / MDR for Payment Aggregation Services:</u></b></li>
@@ -284,6 +342,10 @@ th {
             <tr>
                 <td>Digital Invoicing (BillMe) and SMS charges</td>
                 <td>{{billMeSms}}</td>
+            </tr>
+            <tr>
+                <td>Digital Merchant Portal</td>
+                <td>{{digitalMerchantPortal}}</td>
             </tr>
             <tr>
                 <td>One time Tech Integration Fee</td>
