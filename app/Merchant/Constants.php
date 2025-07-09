@@ -276,13 +276,14 @@ class Constants
     const OAUTH_ACTION_REDIRECT = 'REDIRECT';
     const OAUTH_ACTION_RENDER   = 'RENDER';
 
+    // Note: for edd pending merchants, we will not render the authorize page
+    // as they are supposed to finish VCIP before coming back to authorize page
     const ACTIVATION_STATUS_ALLOWED_FOR_OAUTH_ACTION = [
         'activated',
         'under_review',
         'needs_clarification',
         'activated_mcc_pending',
         'instantly_activated',
-        'edd_pending',
     ];
 
     const OAUTH_SOURCE = 'oauth';

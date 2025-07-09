@@ -242,7 +242,8 @@ class UserSessionTest extends IlluminateTestCase
     }
 
     /**
-     * Tests getSessionData with input containing query and source attributes for activated mcc pending merchant
+     * Tests getSessionData with input containing query and source attributes for edd pending merchant
+     * They are supposed to finish VCIP before coming back to authorize page
      */
     public function testGetSessionDataForEddPendingMerchant()
     {
@@ -262,7 +263,7 @@ class UserSessionTest extends IlluminateTestCase
 
         $sessionData = $response[1];
         $this->checkAndVerifyResponse($sessionData, $userData, $merchantData[0]);
-        self::assertEquals(Constants::OAUTH_ACTION_RENDER, $sessionData[User\Service::OAUTH_ACTION]);
+        self::assertEquals(Constants::OAUTH_ACTION_REDIRECT, $sessionData[User\Service::OAUTH_ACTION]);
     }
 
     private function getQueryParams(bool $source = false) : array
