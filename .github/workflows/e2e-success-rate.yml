@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: "30 18 * * *" # Runs daily at 12:00 AM IST (India Standard Time) - GitHub Actions runs in UTC (18:30)
   workflow_dispatch:
+  # TODO: comment this after testing
+  # push:
 
 jobs:
   dashboard-e2e-success-rate-cron:
@@ -21,6 +23,10 @@ jobs:
       - name: Make API Call and Generate Report
         id: generate-report
         uses: actions/github-script@v7
+        # Optional: Set custom time range (Unix timestamps in seconds).
+        # env:
+        #   E2E_CUSTOM_FROM: "1751352960" # Example: July 1, 2025 12:26 PM IST
+        #   E2E_CUSTOM_TO: "1751439360" # Example: July 2, 2025 12:26 PM IST
         with:
           script: |
             const { generateReport } = require('./.github/scripts/e2e-sr/script.js');
@@ -31,6 +37,11 @@ jobs:
         uses: actions/github-script@v7
         env:
           DASHBOARD_E2E_SLACK_BOT_TOKEN: ${{ secrets.DASHBOARD_E2E_SLACK_BOT_TOKEN }}
+          # TODO: uncomment this during testing
+          # E2E_SLACK_TEST_MODE: "true"
+          # TODO: uncomment these to tag directors and EMs (only works in production mode)
+          E2E_TAG_DIRECTORS: "true"
+          E2E_TAG_EMS: "true"
         with:
           script: |
             const { sendReportToSlack } = require('./.github/scripts/e2e-sr/script.js');
