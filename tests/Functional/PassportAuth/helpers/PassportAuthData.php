@@ -230,8 +230,8 @@ return [
     ],
     'inValidAppAuthWithEdgePassport' => [
         'request' => [
-            'method' => 'GET',
-            'url' => '/payments',
+            'method' => 'PATCH',
+            'url' => '/orders/order_dummyorder1111',
             'content' => [
                 'count' => 1
             ],

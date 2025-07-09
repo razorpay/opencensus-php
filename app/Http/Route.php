@@ -18431,6 +18431,7 @@ class Route
         'pg_router' => [
             'payment_fetch_by_id',
             'internal_order_payments',
+            'payment_fetch_multiple',
             'internal_merchant_fetch',
             'internal_currency_rates_update',
             'api_entity_fetch',
@@ -21716,6 +21717,7 @@ class Route
         'order_fetch_by_id',
         'order_payments',
         'internal_order_payments',
+        'payment_fetch_multiple',
         'payment_fetch_by_id',
         'payment_otp_submit_private',
         'payment_otp_resend_private'
