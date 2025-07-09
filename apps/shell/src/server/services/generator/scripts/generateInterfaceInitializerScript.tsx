@@ -31,6 +31,9 @@ export const generateInterfaceInitializerScript = () => {
             merchantActions: function() {
                 return window.rzpQ;
             },
+            xMerchantActions: function() {
+                return window.rzpQ;
+            },
             productOnboarding: function() {
                 return window.rzpQ;
             },

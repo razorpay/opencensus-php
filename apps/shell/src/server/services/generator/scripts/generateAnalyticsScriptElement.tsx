@@ -81,7 +81,7 @@ export const generateAnalyticsScriptElement = () => {
                     var ljEventTypes = ['initiated', 'success', 'dropped', 'failed', 'viewed'];
                     var eventType = ljEventTypes.indexOf(ljEventType) === -1 ? 'interaction' : ljEventType;
 
-                    window.rzpQ.merchantActions()[eventType](ljEventName);
+                    window.rzpQ.xMerchantActions()[eventType](ljEventName);
                     window.rzpQ.push(ljProperties);
                 }
 
