@@ -27,7 +27,11 @@ import ReorderRules from './ReorderRule';
 import { PreconditionModel } from 'merchant/views/Optimizer/Rules/models/PreconditionModel';
 import { FullPageCover } from './FullPageCover';
 import { FullPageCoverHeader } from './FullPageCoverHeader';
-import { amountConversionToMinorUnit, amountConversionToMajorUnit, getCurrency } from 'merchant/views/Optimizer/Rules/utils';
+import {
+  getCurrency,
+  amountConversionToMinorUnit,
+  amountConversionToMajorUnit,
+} from 'merchant/views/Optimizer/Rules/utils';
 
 import {
   PARAMETERS,
@@ -471,6 +475,11 @@ const CreateRule = (props, context): JSX.Element => {
     return createRuleAction(convertedData);
   };
 
+  const handleUpdateRule = (data) => {
+    const convertedData = amountConversionToMinorUnit(structuredClone(data));
+    return updateRule(convertedData);
+  };
+
   const goNext = (index: number) => {
     dispatch({ type: 'set_next_step', payload: { index } });
   };
@@ -813,7 +822,7 @@ const CreateRule = (props, context): JSX.Element => {
         abortLabel: 'Cancel',
       })
       .then(() => {
-        return updateRule(rule);
+        return handleUpdateRule(rule);
       })
       .then(() => {
         showNotification({
@@ -957,7 +966,7 @@ const CreateRule = (props, context): JSX.Element => {
         abortLabel: 'Cancel',
       })
       .then(() => {
-        return updateRule(rule);
+        return handleUpdateRule(rule);
       })
       .then(() => {
         showNotification({
