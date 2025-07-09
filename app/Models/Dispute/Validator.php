@@ -5,6 +5,7 @@ namespace RZP\Models\Dispute;
 use App;
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Dispute\Constants as DisputeConstants;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
@@ -20,6 +21,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use RZP\Models\Dispute\Phase;
+use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
 {
@@ -191,6 +193,34 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException( PublicErrorDescription::BAD_REQUEST_DISPUTE_AUTO_CLOSURE_CHARGEBACK_FAILURE);
             }
         }
+        $category2 = $merchant->getCategory2();
+        if ( in_array($category2, DisputeConstants::CATEGORY2_TO_EXCLUDE_FROM_DEDUCT_AT_ONSET) === true &&
+            $this->isPhaseDispute($input) &&
+            (new Core)->isSplitzExperimentEnable($merchant->getId(),DisputeConstants::AUTO_CONTEST_DISPUTE_GOVT_MX_EXPERIMENT_ID,DisputeConstants::VARIANT_ENABLE)
+        ) {
+            $this->getTrace()->info(
+                TraceCode::DISPUTE_FOR_GOVT_MX_NOT_ELIGIBLE_BY_FRESH_DESK_PROCESS,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
+            throw new Exception\BadRequestValidationFailureException(
+                    PublicErrorDescription::BAD_REQUEST_DISPUTE_AUTO_CONTEST_FOR_GOVT_MX,null,
+                    ['isDisputeNotEligible' => true] );
+        }
+    }
+
+    public function isAutoContestEligibleForDispute($phase,Merchant\Entity $merchant)
+    {
+        $category2 = $merchant->getCategory2();
+
+        if ( in_array($category2, DisputeConstants::CATEGORY2_TO_EXCLUDE_FROM_DEDUCT_AT_ONSET) === true &&
+            in_array(strtolower($phase),[Phase::CHARGEBACK,Phase::PRE_ARBITRATION]) === true &&
+            (new Core)->isSplitzExperimentEnable($merchant->getId(),DisputeConstants::AUTO_CONTEST_DISPUTE_GOVT_MX_EXPERIMENT_ID,DisputeConstants::VARIANT_ENABLE)
+        ){
+            return true;
+        }
+
+        return false;
     }
 
     protected function validateMerchantForDisputeDeductAtOnset($input, $payment)

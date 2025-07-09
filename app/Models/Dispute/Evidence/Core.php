@@ -415,6 +415,8 @@ class Core extends Base\Core
 
     protected function submitEvidenceForDispute(Dispute\Entity $dispute, array $input)
     {
+        $phase = $input[self::PHASE];
+        unset($input[self::PHASE]);
         $result = $this->updateForDispute($dispute, $input);
 
         $update = [
@@ -426,9 +428,14 @@ class Core extends Base\Core
 
         if ($merchantDetails->isFeatureEnabled(Feature\Constants::AUTO_CLOSURE_CBK_MF_MX) === true)
         {
-            if ($input[self::PHASE] === self::AUTO_CLOSURE_CHARGEBACK) {
+            if (strtolower($phase) === self::AUTO_CLOSURE_CHARGEBACK) {
                 $update[Dispute\Entity::DISPUTE_OUTCOME_REASON_ID] = 1;
             }
+        }
+
+        if ((new Dispute\Validator)->isAutoContestEligibleForDispute($phase,$merchantDetails)){
+            // auto contest for govt mx reason id
+            $update[Dispute\Entity::DISPUTE_OUTCOME_REASON_ID] = 10;
         }
 
         (new Dispute\Core)->update($dispute, $update);

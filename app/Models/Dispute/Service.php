@@ -178,6 +178,9 @@ class Service extends Base\Service
         'ICCL_Circular.pdf','AMFI_Circular.pdf'
     ];
 
+    // TO BE ADDED FILE NAMES
+    const AUTO_CONTEST_GOVT_MX_CIRCULARS = ['GOVT_OF_INDIA_Circular.pdf','RBI_Circular.pdf'];
+
     public function create(array $input, string $paymentId, Payment\Entity $payment = null): array
     {
         if ($payment === null)
@@ -1229,6 +1232,23 @@ class Service extends Base\Service
 
     }
 
+    public function getAutoContestCircularDocIdsForGovtMx(Payment\Entity $payment)
+    {
+        $files  = $this->getGovtMxCirculars();
+
+        return $this->uploadBSECircularsToUFH($payment,$files);
+    }
+
+    public function getGovtMxCirculars()
+    {
+        $fileName = self::AUTO_CONTEST_GOVT_MX_CIRCULARS;
+
+        array_map(fn($file) => $this->downloadFileFromAws($file), $fileName);
+
+        return array_map(fn($file) => new UploadedFile(storage_path("files/filestore/{$file}"),"{$file}",null, null, true), $fileName);
+    }
+
+
     public function getBSECircularsFromS3()
     {
         $fileName = self::AUTO_CLOSURE_CHARGEBACK_FILES;
@@ -1305,15 +1325,32 @@ class Service extends Base\Service
         return (new GenericDocumentService)->uploadChargebackDisputeDocuments($payment->merchant,$file);
     }
 
-    public function getContestDisputePayload(Payment\Entity $payment, array $documentIds): array
+    public function getContestDisputePayload(Payment\Entity $payment, array $documentIds,$input): array
     {
         return [
             'amount' => $payment->getAmount(),
             'action' => 'submit',
             'summary' => 'CBK raised before T+5',
+            'phase'=> $input[Entity::PHASE],
             'others' => [
                 [
                     'type' => 'BSE Circulars',
+                    'document_ids' => $documentIds,
+                ]
+            ]
+        ];
+    }
+
+    public function getAutoContestDisputePayloadForGovtMx(Payment\Entity $payment, array $documentIds,$input): array
+    {
+        return [
+            'amount' => $payment->getAmount(),
+            'action' => 'submit',
+            'summary' => 'Chargeback or Pre-arb cannot be raised against Govt Mx',
+            'phase' => $input[Entity::PHASE],
+            'others' => [
+                [
+                    'type' => 'Dispute circulars for Govt Mx',
                     'document_ids' => $documentIds,
                 ]
             ]
@@ -1327,6 +1364,14 @@ class Service extends Base\Service
     public function mockContestChargebackDispute(Entity $dispute)
     {
         $dispute[Entity::DISPUTE_OUTCOME_REASON_ID] = 1;
+        $dispute[Entity::STATUS] = 'under_review';
+        $dispute[Entity::INTERNAL_STATUS] = 'contested';
+        return $dispute;
+    }
+
+    public function mockAutoContestGovtMxDispute(Entity $dispute)
+    {
+        $dispute[Entity::DISPUTE_OUTCOME_REASON_ID] = 10;
         $dispute[Entity::STATUS] = 'under_review';
         $dispute[Entity::INTERNAL_STATUS] = 'contested';
         return $dispute;

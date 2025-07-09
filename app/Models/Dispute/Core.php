@@ -296,6 +296,10 @@ class Core extends Base\Core
                     }
                 }
 
+                // Auto contest for govt mx in CBK And Pre-Arb phase
+                if ((new Validator)->isAutoContestEligibleForDispute($input[Entity::PHASE],$payment->merchant) === true){
+                    $this->processAutoContestForGovtMX($dispute, $payment, $input);
+                }
                 // This function check's the auto_closure_cbk_mf_mx featured enabled are not
                 // if enabled then this dispute will contest & internal_status & merchant_status will be under review
                 $this->processChargebackAutoClosure($input,$dispute,$payment);
@@ -3070,7 +3074,7 @@ class Core extends Base\Core
         return $input;
     }
 
-    private function isSplitzExperimentEnable(string $merchantId, string $experimentName, string $checkVariant): bool
+    public function isSplitzExperimentEnable(string $merchantId, string $experimentName, string $checkVariant): bool
     {
         $variant = $this->getSplitzResponse($merchantId, $experimentName);
 
@@ -3237,6 +3241,29 @@ class Core extends Base\Core
         }
     }
 
+    private function processAutoContestForGovtMX(Entity $dispute, Payment\Entity $payment, array $input) : Entity
+    {
+        $this->merchant = $dispute->merchant;
+        $disputeService = new DisputeService();
+        $this->trace->info(TraceCode::DISPUTE_AUTO_CONTEST_FOR_GOVT_MX, ['DISPUTE_AUTO_CONTEST_FOR_GOVT_MX'=> $input]);
+
+        $docIds = $disputeService->getAutoContestCircularDocIdsForGovtMx($payment);
+
+        $disputePayload = $disputeService->getAutoContestDisputePayloadForGovtMx($payment, $docIds,$input);
+
+        $this->trace->info(TraceCode::DISPUTE_AUTO_CONTEST_FOR_GOVT_MX_REQUEST, $disputePayload);
+
+        $config = $this->app['config']->get('filestore.aws');
+
+        if ($config['mock']) {
+            return (new DisputeService())->mockAutoContestGovtMxDispute($dispute);
+        }
+
+        $this->patchDisputeContestById((new DisputeService())->getDisputeId($dispute), $disputePayload);
+
+        return $dispute;
+    }
+
     private function processTPlus5Chargeback(Entity $dispute, Payment\Entity $payment, array $input) : Entity
     {
         $this->merchant = $dispute->merchant;
@@ -3245,7 +3272,7 @@ class Core extends Base\Core
 
         $docIds = (new DisputeService())->getChargebackDisputeDocIds($payment);
 
-        $input = (new DisputeService())->getContestDisputePayload($payment, $docIds);
+        $input = (new DisputeService())->getContestDisputePayload($payment, $docIds,$input);
 
         $this->trace->info(TraceCode::DISPUTE_AUTO_CLOSURE_CHARGEBACK_TPLUS5_CONTEST_REQUEST, $input);
 
@@ -3269,6 +3296,15 @@ class Core extends Base\Core
             $input[Entity::SKIP_EMAIL] = 1;
 
             $this->trace->info(TraceCode::DISPUTE_AUTO_CLOSURE_CHARGEBACK_SKIP_EMAIL, ['AUTO_CLOSURE_CBK_MF_MX_SKIP_MAIL'=> $input]);
+
+            return $input;
+        }
+
+        if ((new Validator)->isAutoContestEligibleForDispute($input[Entity::PHASE],$merchant) === true)
+        {
+            $input[Entity::SKIP_EMAIL] = true;
+
+            $this->trace->info(TraceCode::DISPUTE_AUTO_CONTEST_SKIP_EMAIL_FOR_GOVT_CATEGORY, ['DISPUTE_AUTO_CONTEST_SKIP_EMAIL_FOR_GOVT_CATEGORY'=> $input]);
 
             return $input;
         }

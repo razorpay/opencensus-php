@@ -1007,6 +1007,8 @@ return array(
 
     'arb_pre_arb_fee_adjustment_experiment_id' => env('ARB_PRE_ARB_FEE_ADJUSTMENT_EXP_ID'),
 
+    'auto_contest_dispute_govt_mx_experiment_id' => env('AUTO_CONTEST_DISPUTE_GOVT_MX_EXPERIMENT_ID'),
+
     'url_mismatch_reply_on_ticket_experiment_id' => env('URL_MISMATCH_REPLY_ON_TICKET_EXPERIMENT_ID'),
 
     'transaction_isolation_for_order_experiment_id' => env('TRANSACTION_ISOLATION_FOR_ORDER_EXP_ID'),

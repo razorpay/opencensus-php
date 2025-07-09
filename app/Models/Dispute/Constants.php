@@ -102,6 +102,8 @@ Razorpay';
 
     const ARB_PRE_ARB_FEE_ADJUSTMENT_EXPERIMENT = 'app.arb_pre_arb_fee_adjustment_experiment_id';
 
+    const  AUTO_CONTEST_DISPUTE_GOVT_MX_EXPERIMENT_ID ='app.auto_contest_dispute_govt_mx_experiment_id';
+
     // Network
     public const MASTERCARD = 'MasterCard';
     public const VISA = 'Visa';
