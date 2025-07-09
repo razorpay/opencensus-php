@@ -2480,6 +2480,42 @@ class Header
     const HDFC_SMS_ERROR_DESCRIPTION = 'Error Description';
     const HDFC_SMS_RAZORPAY_MID      = 'Razorpay MID';
 
+
+    // Headers for Indian bank Onboarding
+
+    const IDB_REQUEST_ID = "Request ID";
+    const IDB_APPLICATION_DATE = "Application Date";
+    const IDB_CUSTOMER_NAME = "Customer Name";
+    const IDB_ADDRESS_LINE_1 = "Address Line 1";
+    const IDB_ADDRESS_LINE_2 = "Address Line 2";
+    const IDB_ADDRESS_LINE_3 = "Address Line 3";
+    const IDB_CITY = "City";
+    const IDB_STATE = "State";
+    const IDB_PINCODE = "Pincode";
+    const IDB_MERCHANT_MOBILE = "Merchant Mobile";
+    const IDB_EMAIL_ID = "Emailid";
+    const IDB_CONTACT_PERSON = "Contact Person";
+    const IDB_CONTACT_NO_OF_THE_INSTALLATION_LOCATION = "Contact no. of the installation location";
+    const IDB_ALTERNATE_MERCHANT_MOBILE = "Alternate Merchant Mobile";
+    const IDB_MCC = "MCC";
+    const IDB_ACCOUNT_NUMBER = "Account number";
+    const IDB_SETTLEMENT_TYPE = "Settlement type";
+    const IDB_ACCOUNT_TYPE = "Account type";
+    const IDB_IFSC = "IFSC";
+    const IDB_FIRM_TYPE = "Firm Type";
+    const IDB_DEVICE_MODEL = "Device Model";
+    const IDB_DEVICE_TYPE = "Device Type";
+    const IDB_NO_OF_PORTABLE_DEVICES = "No of Portable devices";
+    const IDB_NO_OF_WEARABLE_DEVICES = "No of Wearable devices";
+    const IDB_BRANCH_CODE = "BranchCode";
+    const IDB_BRANCH_NAME = "BranchName";
+    const IDB_BRANCH_ZONE = "BranchZone";
+    const IDB_CC_TXN = "CC_TXN";
+    const IDB_MDR_CONSENT = "MDR consent";
+    const IDB_MERCHANT_TYPE = "merchantType";
+    const IDB_LATITUDE = "latitude";
+    const IDB_LONGITUDE = "longitude";
+
     // mandatory headers for wallet account batch
     const MANDATORY_HEADERS_FOR_WALLET_ACCOUNTS = [
         Header::WALLET_ACCOUNTS_NAME,
@@ -7836,7 +7872,79 @@ class Header
             ],
         ],
 
-        Type::HDFC_BANK_ACQUIRED_TERMINAL_ONBOARDING => [
+        Type::INDIAN_BANK_ONBOARDING => [
+            self::INPUT => [
+                self::IDB_REQUEST_ID,
+                self::IDB_APPLICATION_DATE,
+                self::IDB_CUSTOMER_NAME,
+                self::IDB_ADDRESS_LINE_1,
+                self::IDB_ADDRESS_LINE_2,
+                self::IDB_ADDRESS_LINE_3,
+                self::IDB_CITY,
+                self::IDB_STATE,
+                self::IDB_PINCODE,
+                self::IDB_MERCHANT_MOBILE,
+                self::IDB_EMAIL_ID,
+                self::IDB_CONTACT_PERSON,
+                self::IDB_CONTACT_NO_OF_THE_INSTALLATION_LOCATION,
+                self::IDB_ALTERNATE_MERCHANT_MOBILE,
+                self::IDB_MCC,
+                self::IDB_ACCOUNT_NUMBER,
+                self::IDB_SETTLEMENT_TYPE,
+                self::IDB_ACCOUNT_TYPE,
+                self::IDB_IFSC,
+                self::IDB_FIRM_TYPE,
+                self::IDB_DEVICE_MODEL,
+                self::IDB_DEVICE_TYPE,
+                self::IDB_NO_OF_PORTABLE_DEVICES,
+                self::IDB_NO_OF_WEARABLE_DEVICES,
+                self::IDB_BRANCH_CODE,
+                self::IDB_BRANCH_NAME,
+                self::IDB_BRANCH_ZONE,
+                self::IDB_CC_TXN,
+                self::IDB_MDR_CONSENT,
+                self::IDB_MERCHANT_TYPE,
+                self::IDB_LATITUDE,
+                self::IDB_LONGITUDE,
+            ],
+            self::OUTPUT => [
+                self::IDB_REQUEST_ID,
+                self::IDB_APPLICATION_DATE,
+                self::IDB_CUSTOMER_NAME,
+                self::IDB_ADDRESS_LINE_1,
+                self::IDB_ADDRESS_LINE_2,
+                self::IDB_ADDRESS_LINE_3,
+                self::IDB_CITY,
+                self::IDB_STATE,
+                self::IDB_PINCODE,
+                self::IDB_MERCHANT_MOBILE,
+                self::IDB_EMAIL_ID,
+                self::IDB_CONTACT_PERSON,
+                self::IDB_CONTACT_NO_OF_THE_INSTALLATION_LOCATION,
+                self::IDB_ALTERNATE_MERCHANT_MOBILE,
+                self::IDB_MCC,
+                self::IDB_ACCOUNT_NUMBER,
+                self::IDB_SETTLEMENT_TYPE,
+                self::IDB_ACCOUNT_TYPE,
+                self::IDB_IFSC,
+                self::IDB_FIRM_TYPE,
+                self::IDB_DEVICE_MODEL,
+                self::IDB_DEVICE_TYPE,
+                self::IDB_NO_OF_PORTABLE_DEVICES,
+                self::IDB_NO_OF_WEARABLE_DEVICES,
+                self::IDB_BRANCH_CODE,
+                self::IDB_BRANCH_NAME,
+                self::IDB_BRANCH_ZONE,
+                self::IDB_CC_TXN,
+                self::IDB_MDR_CONSENT,
+                self::IDB_MERCHANT_TYPE,
+                self::IDB_LATITUDE,
+                self::IDB_LONGITUDE,
+            ],
+        ],
+
+
+                Type::HDFC_BANK_ACQUIRED_TERMINAL_ONBOARDING => [
             self::INPUT => [
                 self::HDFC_TERMINAL_TID,
                 self::HDFC_TERMINAL_MERCHANT,

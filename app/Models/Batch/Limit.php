@@ -57,6 +57,7 @@ class Limit
         Type::JAMMU_AND_KASHMIR_ONBOARDING          => 10000,
         Type::HDFC_SMS_PAY_ONBOARDING              => 10000,
         Type::HDFC_ONBOARDING                       => 10000,
+        Type::INDIAN_BANK_ONBOARDING                => 10000,
         Type::HDFC_BANK_ACQUIRED_TERMINAL_ONBOARDING=> 10000,
         Type::SUBMERCHANT_ASSIGN                    => 50000,
         TYPE::IIN_NPCI_RUPAY                        => 50000,

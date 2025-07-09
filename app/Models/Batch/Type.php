@@ -152,6 +152,8 @@ class Type
 
     const  HDFC_ONBOARDING  = 'hdfc_onboarding';
 
+    const  INDIAN_BANK_ONBOARDING  = 'indian_bank_onboarding';
+
     const HDFC_BANK_ACQUIRED_TERMINAL_ONBOARDING = 'hdfc_bank_acquired_terminal_onboarding';
 
     const PARTNER_REFERRAL_FETCH = 'partner_referral_fetch';
@@ -417,6 +419,7 @@ class Type
         self::JAMMU_AND_KASHMIR_ONBOARDING,
         self::HDFC_SMS_PAY_ONBOARDING,
         self::HDFC_ONBOARDING,
+        self::INDIAN_BANK_ONBOARDING,
         self::HDFC_BANK_ACQUIRED_TERMINAL_ONBOARDING,
         self::MERCHANT_ACTIVATION,
         self::INTERNAL_INSTRUMENT_REQUEST,
@@ -737,6 +740,7 @@ class Type
         self::JAMMU_AND_KASHMIR_ONBOARDING,
         self::HDFC_SMS_PAY_ONBOARDING,
         self::HDFC_ONBOARDING,
+        self::INDIAN_BANK_ONBOARDING,
         self::HDFC_BANK_ACQUIRED_TERMINAL_ONBOARDING,
         self::EZETAP_SETTLEMENT,
         self::LOC_WITHDRAWAL,
@@ -914,6 +918,7 @@ class Type
         self::JAMMU_AND_KASHMIR_ONBOARDING       => Name::ADMIN_BATCH_CREATE,
         self::HDFC_SMS_PAY_ONBOARDING           => Name::ADMIN_BATCH_CREATE,
         self::HDFC_ONBOARDING                    => Name::ADMIN_BATCH_CREATE,
+        self::INDIAN_BANK_ONBOARDING             => Name::ADMIN_BATCH_CREATE,
         self::EARLY_SETTLEMENT_TRIAL             => Name::ADMIN_BATCH_CREATE,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG=> Name::ADMIN_BATCH_CREATE,
         self::REWARDS                            => Name::ADMIN_BATCH_CREATE,
