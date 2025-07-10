@@ -150,7 +150,7 @@ describe('SettlementsBannerV2', () => {
 
       expect(screen.getByLabelText('settlement-banner')).toBeInTheDocument();
       expect(
-        screen.getByText('Your bank details have been successfully updated and are under review.'),
+        screen.getByText('Your bank details have been successfully updated and are under review'),
       ).toBeInTheDocument();
       expect(
         screen.getByText('Settlements will be retried after your bank account has been verified.'),

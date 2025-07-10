@@ -76,7 +76,7 @@ const SettlementsBannerV2 = ({
   const isSOH = settlementConfig?.data?.config?.features?.hold?.status;
 
   const isSohContactSupport =
-    isSOH && feature?.hold?.cta_text === SETTLEMENT_HOLD_CTA_TEXT.FOH && isExpEnabled;
+    isSOH && feature?.hold?.cta_text === SETTLEMENT_HOLD_CTA_TEXT.CONTACT_SUPPORT && isExpEnabled;
 
   const isFOH = feature?.global_hold_config?.status;
 
