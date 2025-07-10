@@ -38,8 +38,11 @@ const EntitiesOverview = ({ location: { pathname }, user, mode }: any): JSX.Elem
   const shouldShowHeading = [FAILED_PAYMENTS, SUCCESS_RATE].includes(
     pathname as TransactionsEntityRoute,
   );
+  const { isConfigTagEnabled } = useI18Service();
 
-  const isAnalyticsHidden = shouldHideAnalytics(user, mode);
+  const isAnalyticsHidden = shouldHideAnalytics(user, mode, {
+    isConfigTagEnabled,
+  });
 
   const shouldShowOverview =
     !isAnalyticsHidden &&
@@ -48,7 +51,6 @@ const EntitiesOverview = ({ location: { pathname }, user, mode }: any): JSX.Elem
     );
   const entityAnalyticsType =
     pathname === FAILED_PAYMENTS ? EntityOverviewType.Failed : EntityOverviewType.Refunds;
-  const { isConfigTagEnabled } = useI18Service();
   const navigate = useNavigate();
 
   const goBackProps = pathname === DISPUTES ? { onClickCb: () => navigate('/payments') } : {};

@@ -160,6 +160,7 @@ export enum CONFIG_TAGS_ENUM {
   'webhooks.subscription' = 'webhooks.subscription',
   'transactions.upload_invoices' = 'transactions.upload_invoices',
   'transactions.bank_rrn' = 'transactions.bank_rrn',
+  'transactions.overview_card_test_mode' = 'transactions.overview_card_test_mode',
 }
 
 export type ConfigTagType = keyof typeof CONFIG_TAGS_ENUM;

@@ -47,11 +47,13 @@ export const LandingContainer = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const isAnalyticsHidden = shouldHideAnalytics(user, mode);
+  const isAnalyticsHidden = shouldHideAnalytics(user, mode, {
+    isConfigTagEnabled,
+  });
 
   return (
     <div className="tabbed-container">
-      {isAnalyticsHidden ? null : <LandingPageAnalyticsOverview />}
+      {isAnalyticsHidden? null : <LandingPageAnalyticsOverview />}
       <StyledTabHeader id="transactions-header">
         <StyledTabItem to={PAYMENTS_ROUTE} onClick={trackTransactionsTabClick(PAYMENTS_ROUTE)} end>
           Payments

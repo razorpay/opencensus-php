@@ -34,6 +34,7 @@ import {
   TODAY,
 } from './constants';
 import { Duration, DurationOption, DurationOptionsMap, Paginate } from './types';
+import { ConfigTagType } from '@dashboards/payments/constants/tags';
 
 export const generateOptions = (optionsMap: {
   [key: string]: string;
@@ -307,11 +308,18 @@ export const isBounceMemoEnabled = (splitz: SpiltzContextState): boolean => {
   return isExperimentEnabled(abExperiments.bounce_memo);
 };
 
-export const shouldHideAnalytics = (user: User, mode: Environments): boolean => {
+export const shouldHideAnalytics = (user: User, mode: Environments, extraConfig?: {
+  isConfigTagEnabled: (tag: ConfigTagType) => boolean;
+}): boolean => {
   // Hide analytics overview for JnK Omni merchant.
   if (user.isJnKOmniEnabled) {
     return true;
   }
+
+  if (extraConfig?.isConfigTagEnabled && mode === 'test') {
+    return extraConfig.isConfigTagEnabled('transactions.overview_card_test_mode');
+  }
+
   const isCurlecVASTestMode = mode === 'test' && !user.isOrgRZP;
   return isCurlecVASTestMode;
 };
