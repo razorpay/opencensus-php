@@ -44,8 +44,6 @@ class Constants {
 
     const ELIGIBLE_FOR_POS = 'ELIGIBLE_FOR_POS';
 
-    const CHUNKED_BASED_STREAMING_DISABLED = 'CHUNKED_BASED_STREAMING_DISABLED';
-
     const PARTNER_AGENT_ROLE = 'partner_agent';
 
     const PG3_V1_ENABLED = 'PG3_V1_ENABLED';

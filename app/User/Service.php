@@ -4480,12 +4480,10 @@ class Service extends Base\Service
         $splitzCachingEnabled = config('splitz.experiments')[Constants::SPLITZ_API_CACHING_ENABLED];
         $razorxCachingEnabled = config('splitz.experiments')[Constants::RAZORX_CACHING_ENABLED];
         $eligibleForPosExperiment = config('splitz.experiments')[AppConstants::ELIGIBLE_FOR_POS];
-        $chunkedBasedStreamingEnabled = config('splitz.experiments')[AppConstants::CHUNKED_BASED_STREAMING_DISABLED];
         $shellRedirection = config('splitz.experiments')[AppConstants::SHELL_REDIRECTION_EXPERIMENT_ID];
 
         $experimentIds = [$shellRedirection, $onboardingFtuxExperiment, $concurrentApiCallExperimentId,
-            $splitzCachingEnabled, $razorxCachingEnabled, $onboardingFtuxV2Experiment, $eligibleForPosExperiment,
-            $chunkedBasedStreamingEnabled];
+            $splitzCachingEnabled, $razorxCachingEnabled, $onboardingFtuxV2Experiment, $eligibleForPosExperiment];
 
         if (! empty($experiments))
         {

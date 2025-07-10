@@ -601,6 +601,7 @@ export class ShellRedirectionService {
       (isActivationFormMilestoneReached || submitted === 1) &&
       activationStatus !== AppConstants.ACTIVATION_STATUS_ACTIVATED
     ) {
+
       return true;
     }
 

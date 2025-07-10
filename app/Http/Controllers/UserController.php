@@ -66,8 +66,6 @@ class UserController extends Controller
 
     const ELIGIBLE_FOR_POS = 'ELIGIBLE_FOR_POS';
 
-    const CHUNKED_BASED_STREAMING_DISABLED = 'CHUNKED_BASED_STREAMING_DISABLED';
-
     const PARTNER_AGENT_ROLE = 'partner_agent';
 
     const RAZORPAY_SALES_ROLE = 'razorpay_sales';
@@ -667,15 +665,8 @@ class UserController extends Controller
 
     private function isChunkedBasedSteamingDisabledForDashboardUser(): bool
     {
-        $experimentId = config('splitz.experiments')[self::CHUNKED_BASED_STREAMING_DISABLED];
-
-        if (!array_key_exists($experimentId, $this->splitzExprimentData))
-        {
-            return false;
-        }
-
-        return ($this->splitzExprimentData[$experimentId]['variables']['result'] ?? null) === 'on';
-
+        // CHUNKED_BASED_STREAMING_DISABLED experiment is 100% ramped up
+        return true;
     }
 
 
