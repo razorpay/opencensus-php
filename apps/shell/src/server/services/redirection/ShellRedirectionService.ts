@@ -532,6 +532,7 @@ export class ShellRedirectionService {
         merchantFeatures.includes(AppConstants.SHOW_PG_V3) &&
         !merchantFeatures.includes(AppConstants.PG_V3_ONBOARDING_COMPLETE)
       ) {
+
         return true;
       }
     }

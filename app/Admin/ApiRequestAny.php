@@ -69,8 +69,6 @@ class ApiRequestAny
 
     const ADMIN_AS_MERCHANT             = 'admin_as_merchant';
 
-    const URL_PATH_REFINEMENT_EXPERIMENT_NAME = "URL_PATH_REFINEMENT_EXPERIMENT_NAME";
-
     // field passed by the API in case of errors are exposed
     // dashboard handles these error in a custom way
     // by passing the data to the frontend

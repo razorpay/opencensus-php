@@ -97,8 +97,6 @@ class GenericController extends Controller
 
     const EMANDATE_SERVICE = 'emandate/report/bounce-memo';
 
-    const URL_PATH_REFINEMENT_EXPERIMENT_NAME = "URL_PATH_REFINEMENT_EXPERIMENT_NAME";
-
     public function handleAny($mode, $path = null)
     {
         $app = App::getFacadeRoot();
@@ -265,27 +263,8 @@ class GenericController extends Controller
 
     public function isRefinedUrlPathExpEnabled(): bool
     {
-        $currentMerchantId = $this->getMerchantId();
-        if (empty($currentMerchantId) === true)
-        {
-            return false;
-        }
-
-        $concurrentApiCallExperimentId = config('splitz.experiments')[self::URL_PATH_REFINEMENT_EXPERIMENT_NAME] ?? null;
-        if ($concurrentApiCallExperimentId === null)
-        {
-            return false;
-        }
-
-        $experimentIds = [$concurrentApiCallExperimentId];
-
-        $data = (new SplitzService())->getVariantBulk($currentMerchantId, $experimentIds, isSplitzCachingEnabled: true);
-        if (!array_key_exists($concurrentApiCallExperimentId, $data))
-        {
-            return false;
-        }
-
-        return ($data[$concurrentApiCallExperimentId]['variables']['result'] ?? null) === 'on';
+        // URL_PATH_REFINEMENT_EXPERIMENT_NAME experiment is 100% ramped up, so always return true
+        return true;
     }
 
     public function bounceMemo()

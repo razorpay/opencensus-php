@@ -84,7 +84,7 @@ return [
         'UNIFIED_PG_REDIRECTION_ENABLED' => env('UNIFIED_PG_REDIRECTION_ENABLED'),
 
         'DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED' => env('DASHBOARD_HOMEPAGE_REDIRECTION_ENABLED'),
-        
+
         'USL_REDIRECTION_SKIP_FOR_OAUTH' => env('USL_REDIRECTION_SKIP_FOR_OAUTH'),
 
         'PG3_V1_ENABLED'                 => env('PG3_V1_ENABLED'),
@@ -262,9 +262,6 @@ return [
         // enable rrn search in Payments
         'VAS_RRN_SEARCH' => env('VAS_RRN_SEARCH', ''),
 
-        // to refine the url path
-        'URL_PATH_REFINEMENT_EXPERIMENT_NAME' => env('URL_PATH_REFINEMENT_EXPERIMENT_NAME', ''),
-
         // razorx api call disabled
         'RAZORX_API_CALL_DISBALED' => env('RAZORX_API_CALL_DISBALED', ''),
 
@@ -288,7 +285,7 @@ return [
 
         // banking unified signup
         'BANKING_REDIRECTION_ENABLED' => env('BANKING_REDIRECTION_ENABLED', ''),
-        
+
         'ABAC_ACCESS_DASHBOARD'   =>  env('ABAC_ACCESS_DASHBOARD', ''),
     ]
 ];
