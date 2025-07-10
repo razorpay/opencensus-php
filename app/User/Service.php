@@ -4684,6 +4684,7 @@ class Service extends Base\Service
                 'experimentId'              => $dashboardRedirectionExpId,
                 'currentRouteName'          => $currentRouteName,
                 'isMerchantAuthenticated'   => $data['isAuthenticated'],
+                 'isDashboardHomepageRedirectionEnabledToUSL' => true
             ]);
 
             if (($experimentData[$dashboardRedirectionExpId]['variables']['result'] ?? null) != 'on'
@@ -4883,6 +4884,7 @@ class Service extends Base\Service
             $this->trace->info(TraceCode::OLD_DASHBOARD_REDIRECT, [
                 'referral_code' => $requestData['referral_code'],
                 'org' => $requestData['org'],
+                'redirectionApplicableForGuest' => true
             ]);
 
             $this->metrics->count(MetricConstants::OLD_DASHBOARD_REDIRECT_COUNT, \App\Http\Controllers\EVENT_TRIGGER_COUNT);
@@ -4890,6 +4892,10 @@ class Service extends Base\Service
 
         if ($this->matchExclusionsToRedirect($isReferralExpEnabled))
         {
+            $this->trace->info(TraceCode::PATTERN_MATCHING_REDIRECTION, [
+                    'isRedirectionApplicableForGuest' => true
+            ]);
+
             return false;
         }
 

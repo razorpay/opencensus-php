@@ -383,6 +383,8 @@ class UserController extends Controller
                 'user'            => $data['user'] ?? null,
                 'api_host'        => $data['api_host'] ?? null,
                 'session_id'      => $data['session_id'] ?? null,
+                'viewOrRedirectUrl' => true,
+                'queryParams' => $queryParams
             ]);
 
             return redirect($redirectPath);
@@ -406,6 +408,9 @@ class UserController extends Controller
                     'user'            => $data['user'] ?? null,
                     'api_host'        => $data['api_host'] ?? null,
                     'session_id'      => $data['session_id'] ?? null,
+                    'queryParam'      => $queryParams,
+                    'unified_signup_redirection' => true,
+                    'requestUri' => \Request::getRequestUri(),
                 ]);
 
                 return redirect($redirectPath);
@@ -428,6 +433,11 @@ class UserController extends Controller
                         'user'            => $data['user'] ?? null,
                         'api_host'        => $data['api_host'] ?? null,
                         'session_id'      => $data['session_id'] ?? null,
+                        'is_authenticated' => $data['isAuthenticated'] ?? false,
+                        "redirectionApplicableForGuest" => true,
+                        "signup_redirection" => true,
+                        'requestUri' => \Request::getRequestUri(),
+                        'queryParam' => $queryParams
                     ]);
 
                     return redirect($redirectPath);
@@ -448,6 +458,8 @@ class UserController extends Controller
                     'user'            => $data['user'] ?? null,
                     'api_host'        => $data['api_host'] ?? null,
                     'session_id'      => $data['session_id'] ?? null,
+                    'is_authenticated' => $data['isAuthenticated'] ?? false,
+                    'query_params' => $queryParams,
                 ]);
 
                 return redirect($redirectPath);
@@ -466,6 +478,11 @@ class UserController extends Controller
         {
             if (empty($details) === false)
             {
+                $this->trace->info(TraceCode::NOTIFICATION_SERVICE_CODE_EXECUTION, [
+                    'notification_service' => true,
+                    'isAuthenticated' => $data['isAuthenticated'] ?? null,
+                ]);
+
                 $oldNotification = (new Merchant\Notifications\Service)->getOldNotificationsForUser($details, $org);
                 $newNotification = (new Merchant\Notifications\Service)->getNewNotificationsForUser($details, $org);
                 $data['old_notifications'] = json_encode($oldNotification);
@@ -481,6 +498,12 @@ class UserController extends Controller
 
             if(is_null($currentMerchantId) === false)
             {
+                $this->trace->info(TraceCode::PAYMENT_LINK_CUSTOM_NOTES, [
+                    'payment_link_custom_notes' => true,
+                    'isAuthenticated' => $data['isAuthenticated'] ?? null,
+                    'merchantId' => $currentMerchantId
+                ]);
+
                 $data['custom_notes'] = json_encode((new Merchant\CustomNotes\Service)->getNotesForPaymentLinksForMerchant($currentMerchantId));
                 $data['pl_expiry_in_hrs'] = json_encode((new Merchant\PaymentLinkCustomization\Service)->getDefaultExpiryTimeForPaymentLinksForMerchant($currentMerchantId));
                 $data['pl_extra_fields'] = json_encode((new Merchant\PaymentLinkCustomization\Service)->getExtraFormFieldsByMID($currentMerchantId));
@@ -488,6 +511,13 @@ class UserController extends Controller
                 $data['is_pl_customer_name_field_enabled'] = json_encode((new Merchant\PaymentLinkCustomization\Service)->getIsCustomerNameFieldEnabledByMID($currentMerchantId));
             }
             else {
+
+                $this->trace->info(TraceCode::PAYMENT_LINK_CUSTOM_NOTES_NULL, [
+                    'payment_link_custom_notes_null' => true,
+                    'isAuthenticated' => $data['isAuthenticated'] ?? null,
+                    'merchantId' => $currentMerchantId
+                ]);
+
                 $data['custom_notes'] = null;
                 $data['pl_expiry_in_hrs'] = null;
                 $data['pl_extra_fields'] = null;
@@ -515,7 +545,8 @@ class UserController extends Controller
             $this->trace->info(TraceCode::CHUNKED_DETAILS, [
                 'isMerchantLogin'                 => $isMerchantLogin,
                 'currentMerchantId'               => $currentMerchantId,
-                'isChunkedBasedStreamingDisabled' => $isChunkedBasedStreamingDisabled
+                'isChunkedBasedStreamingDisabled' => $isChunkedBasedStreamingDisabled,
+                'isAuthenticated' => $data['isAuthenticated'] ?? null,
             ]);
 
             $data['isNewAuthReArch'] = $this->isNewAuthReArch();
@@ -536,6 +567,7 @@ class UserController extends Controller
 
                     $this->trace->info(TraceCode::CHUNKED_DETAILS_LOGIN_CACHED, [
                         'chunked_based_login_cached' =>  true,
+                        'isAuthenticated' => $data['isAuthenticated'] ?? null,
                     ]);
 
                 }
@@ -546,11 +578,15 @@ class UserController extends Controller
                 $domainBasedRedirect = $this->userService->getDomainBasedRedirectionUrlIfApplicable();
 
                 if (!empty($domainBasedRedirect)) {
+                    $this->trace->info(TraceCode::DOMAIN_BASED_REDIRECTION, [
+                        'domain_based_redirect' =>  true,
+                    ]);
                     return redirect($domainBasedRedirect);
                 }
 
                 $this->trace->info(TraceCode::VIEW_MERCHANT_INDEX_FILE, [
                     'merchant_index_file_show' =>  true,
+                    'full_index_file_show' =>  true,
                 ]);
 
                 return view('merchant.index', $data);
@@ -559,8 +595,11 @@ class UserController extends Controller
             {
                 // Chunk based straming: send second chunk
                 $view = view('merchant.index2', $data)->render();
+
                 $this->trace->info(TraceCode::CHUNKED_DETAILS, [
                     'chunkRendered' => '2',
+                    'isAuthenticated' => $data['isAuthenticated'] ?? null,
+                    'second_chunk_data_rendering' => true
                 ]);
 
                 $timeTaken = self::millitime() - $startTime;
