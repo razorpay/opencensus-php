@@ -24,8 +24,6 @@ class Service extends Base\Service
     protected $trace;
 
     protected $app;
-    
-    const razorxApiCallDisable= "RAZORX_API_CALL_DISBALED";
     /**
      * @var Store
      */
@@ -224,62 +222,45 @@ class Service extends Base\Service
 
         return $data;
     }
-    
+
     public function isRazorxApiCallDisable($merchantId): bool
     {
-        if ($merchantId === '')
-        {
-            return false;
-        }
-        
-        $experimentId = config('splitz.experiments')[self::razorxApiCallDisable];
-        $data = (new SplitzService())->getVariantBulk($merchantId, [$experimentId], isSplitzCachingEnabled: true);
-    
-        if (!array_key_exists($experimentId, $data))
-        {
-            return false;
-        }
-        
-        $value =  ($data[$experimentId]['variables']['result'] ?? null) === 'on';
-        $this->trace->info(TraceCode::RAZORX_API_CALL_DISABLED, [
-            'merchant_id' => $merchantId,
-            'value' =>   $value
-        ]);
-        
-        return $value;
+
+        // Removed RAZORX_API_CALL_DISBALED experiment as its 100% ramped up
+        return true;
     }
-    
+
     public function getRazorxTreatment($featureFlag, $merchantId = '')
     {
         if ($this->isRazorxApiCallDisable($merchantId) === true)
         {
             $data = [];
-    
+
             $data[$featureFlag] = ['result' => 'control'];
-            
+
             return  $data;
         }
-        
+
         // make an api call to razorx.
         $startTime = microtime(true) * 1000;
-        
+
         $this->trace->info(TraceCode::GET_RAZORX_EXPERIMENTS_ROUTE_INFO, [
           'action'                => 'FetchStarted',
           'start_time'            => $startTime
         ]);
-        
+
         $request = new ApiRequestAny(['client_type' => 'merchant']);
-        
+
         list($error, $data) = $request->send("razorx/evaluate/$featureFlag", 'GET');
-        
+
         if (empty($error) === false)
         {
             $data = [];
-            
+
             $this->trace->info(TraceCode::BULK_RAZORX_CALL_FAILED, [
               "error" => $error
             ]);
-            
+
             $data[$featureFlag] = ['result' => 'control'];
 
 //            throw new BadRequestError(
@@ -288,20 +269,20 @@ class Service extends Base\Service
 //                400
 //            );
         }
-        
+
         $endTime  = microtime(true) * 1000;
         $duration = round($endTime - $startTime);
-        
+
         $this->trace->info(TraceCode::GET_RAZORX_EXPERIMENTS_ROUTE_INFO, [
           'action'              => 'FetchEnded',
           'end_time'            => $endTime,
           'duration'            => $duration,
           'controller'          => app('request')->route()->getAction()['controller']
         ]);
-        
+
         return $data;
     }
-    
+
     public function getBulkTreatment(array $features, $razorxCachingEnabled = false, $merchantId = '')
     {
         if ($this->isRazorxApiCallDisable($merchantId) === true)
@@ -313,7 +294,7 @@ class Service extends Base\Service
             }
             return  $data;
         }
-        
+
         $startTime = microtime(true) * 1000;
 
         $this->trace->info(TraceCode::GET_RAZORX_EXPERIMENTS_BULK_ROUTE_INFO, [

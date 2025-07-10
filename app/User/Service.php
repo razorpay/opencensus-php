@@ -1833,7 +1833,7 @@ class Service extends Base\Service
         if (empty($data[Constants::EXPERIMENTS]))
         {
             if((isset($allApiResponses[self::EXPERIMENT_PROMISE]) === true) and
-               ($razorxService->isRazorxApiCallDisable($currentMerchantId) === false))
+                ($razorxService->isRazorxApiCallDisable($currentMerchantId) === false))
             {
                 $experiments = $merchantService->processExperimentPromiseResponse($apiPromiseAny[self::EXPERIMENT_PROMISE]);
             }
@@ -1842,6 +1842,7 @@ class Service extends Base\Service
             {
                 $experiments = $merchantService->getExperiments(true, $currentMerchantId);
             }
+
 
             $data['experiments'] = $experiments;
 
@@ -1941,7 +1942,7 @@ class Service extends Base\Service
 
         // API 1.1
         if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
-            ($this->isFieldExcluededInPgRendering(Constants::EXPERIMENTS) === false)) and
+                ($this->isFieldExcluededInPgRendering(Constants::EXPERIMENTS) === false)) and
             ($experiments === "1") and empty($data[Constants::EXPERIMENTS]) and
             ($razorxService->isRazorxApiCallDisable($currentMerchantId) === false))
         {

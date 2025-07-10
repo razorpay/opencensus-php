@@ -447,10 +447,12 @@ export class ShellRedirectionService {
       }
 
       if (this.isFtuxV2ExperimentEnabled()) {
+
         return false;
       }
 
       if (!this.isFtuxExperimentEnabled()) {
+
         return false;
       }
 
