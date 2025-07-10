@@ -1216,10 +1216,11 @@ class ActivationWizard extends React.Component {
   }
 
   get isFormLocked() {
+    const user = this.props.user;
     return (
       !!this.props.data.locked ||
       this.isNeedsClarificationMode() ||
-      this.props.user?.isRouteDSEnabled
+      (user?.isRouteDSEnabled && !!user?.merchant?.parent_id)
     );
   }
 
