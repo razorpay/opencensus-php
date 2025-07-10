@@ -113,9 +113,7 @@ return [
 
         // Account Settings Revamp
         'ACCOUNT_SETTINGS_REVAMP'  => env('ACCOUNT_SETTINGS_REVAMP', ''),
-
-        // Universal Search V1
-        'UNIVERSAL_SEARCH_ENABLED' => env('UNIVERSAL_SEARCH_ENABLED', ''),
+ 
 
          // Bank Account update Revamp
         'BANK_ACCOUNT_UPDATE_REVAMP'  => env('BANK_ACCOUNT_UPDATE_REVAMP', ''),

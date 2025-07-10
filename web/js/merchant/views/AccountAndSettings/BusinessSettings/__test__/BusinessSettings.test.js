@@ -62,11 +62,6 @@ jest.mock('merchant/views/AccountAndSettings/utils/conditionUtils', () => ({
   shouldShowTeamInvitations: jest.fn(),
 }));
 
-const useGSTUpdateExperimentSpy = jest.spyOn(gstUtils, 'useGSTUpdateExperiment');
-useGSTUpdateExperimentSpy.mockReturnValue({
-  isGSTUpdateEnabled: false,
-});
-
 const isOrgAllowedFunctionality = jest.fn();
 
 const renderApp = ({ user, pathname } = {}) => {

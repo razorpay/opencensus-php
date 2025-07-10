@@ -1,18 +1,6 @@
 import { useSplitzService } from 'common/splitz';
 import { Store } from 'common/typings';
 
-export const useGSTUpdateExperiment = (): {
-  isGSTUpdateEnabled: boolean;
-} => {
-  const {
-    abExperiments: { gst_update },
-  } = useSplitzService();
-
-  return {
-    isGSTUpdateEnabled: gst_update?.variables?.result === 'on',
-  };
-};
-
 export const getBusinessRegisteredAddress = (
   {
     business_registered_address,

@@ -32,7 +32,6 @@ import {
   shouldShowTeamInvitations,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
-import { useGSTUpdateExperiment } from './Tabs/GSTDetails/utils';
 import { BusinessSettingsProps } from './typings';
 import DocsLink from 'merchant/components/DocsLink';
 
@@ -50,11 +49,6 @@ const ActivationDetails = lazy(
 
 const BusinessDetails = lazy(
   () => import(/* webpackChunkName: "BusinessDetails" */ './Tabs/BusinessDetails'),
-);
-
-const GSTDetails = lazy(
-  () =>
-    import(/* webpackChunkName: "GSTDetails" */ 'merchant/views/Account/Profile/components/GST'),
 );
 
 const GSTDetailsV2 = lazy(
@@ -97,9 +91,8 @@ const TeamInvitations = lazy(
 const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Element => {
   const { abExperiments } = useSplitzService();
   const { isConfigTagEnabled } = useI18Service();
-  const { isGSTUpdateEnabled } = useGSTUpdateExperiment();
-  const GSTDetailsComponent = isGSTUpdateEnabled ? GSTDetailsV2 : GSTDetails;
-  const isHideStyle = isGSTUpdateEnabled && location.pathname === ROUTES_INFO.GST_DETAILS;
+
+  const isHideStyle = location.pathname === ROUTES_INFO.GST_DETAILS;
   const extraConfig: ExtraConfig = { abExperiments, isConfigTagEnabled };
   if (!user.isAccountAndSettingsRevampEnabled) {
     const path = location.pathname;
@@ -209,7 +202,7 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
                       path={getRefRoute(ROUTES_INFO.GST_DETAILS)}
                       element={
                         <RouteGuard>
-                          <GSTDetailsComponent />
+                          <GSTDetailsV2 />
                         </RouteGuard>
                       }
                     />

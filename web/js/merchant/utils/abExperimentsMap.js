@@ -294,12 +294,6 @@ export default {
     // prod experiment ids
     'KE6QIX5uyJrKOq',
   ],
-  universal_search_enabled: [
-    // beta experiment ids
-    'Lf6qHEprAH4UCm',
-    // prod experiment ids
-    'Lf6oo0XiYnyal4',
-  ],
 
   settlement_v3_revamp: [
     // beta experiment ids

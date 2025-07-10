@@ -1944,11 +1944,7 @@ export default class User {
   }
 
   get isUniversalSearchEnabled() {
-    return (
-      getSplitzExperimentVariant('universal_search_enabled')?.variables?.result === 'on' &&
-      this.isOrgRZP &&
-      this.isCountryIndia
-    );
+    return this.isOrgRZP && this.isCountryIndia;
   }
 
   get isSearchv2Phase1Enabled() {
