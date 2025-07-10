@@ -1027,6 +1027,7 @@ class Header
     const TERMINAL_CREATION_ENABLED              = 'Enabled';
     const TERMINAL_CREATION_STATUS               = 'Status';
     const TERMINAL_CREATION_CAPABILITY           = 'Capability';
+    const TERMINAL_CREATION_KEY_SCHEME           = 'Key Scheme';
 
     // Bulk Terminal Creation Headers
     const DEVICE_TERMINAL_MAPPING_TERMINAL_ID                 = 'Terminal Id';
@@ -2442,6 +2443,7 @@ class Header
     const HDFC_TERMINAL_PARENT_MECODE = "PARENT MECODE";
     const HDFC_TERMINAL_PARENT_TID = "PARENT TID";
     const HDFC_TERMINAL_DEVICE_ID = "DEVICE ID";
+    const HDFC_TERMINAL_KEY_SCHEME = "Key Scheme";
     const HDFC_TERMINAL_NEW_TID = "NEW TID";
     const HDFC_TERMINAL_NEW_MID = "NEW MID";
     const HDFC_TERMINAL_SUCCESS = "SUCCESS";
@@ -2772,6 +2774,7 @@ class Header
                 self::TERMINAL_CREATION_STATUS,
                 self::TERMINAL_CREATION_CAPABILITY,
                 self::TERMINAL_CREATION_PLAN_ID,
+                self::TERMINAL_CREATION_KEY_SCHEME,
             ],
             self::OUTPUT => [
                 self::TERMINAL_ID,
@@ -2815,6 +2818,7 @@ class Header
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+                self::TERMINAL_CREATION_KEY_SCHEME,
             ],
             self::SENSITIVE_HEADERS => [
                 self::TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD,
@@ -2878,6 +2882,7 @@ class Header
                 self::TERMINAL_CREATION_STATUS,
                 self::TERMINAL_CREATION_CAPABILITY,
                 self::TERMINAL_CREATION_PLAN_ID,
+                self::TERMINAL_CREATION_KEY_SCHEME,
             ],
             self::OUTPUT => [
                 self::TERMINAL_ID,
@@ -2923,6 +2928,7 @@ class Header
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+                self::TERMINAL_CREATION_KEY_SCHEME,
             ],
             self::SENSITIVE_HEADERS => [
                 self::TERMINAL_CREATION_GATEWAY_TERMINAL_PASSWORD,
@@ -7984,7 +7990,8 @@ class Header
                 self::HDFC_TERMINAL_UPDATED_IN_FILE_,
                 self::HDFC_TERMINAL_PARENT_MECODE,
                 self::HDFC_TERMINAL_PARENT_TID,
-                self::HDFC_TERMINAL_DEVICE_ID
+                self::HDFC_TERMINAL_DEVICE_ID,
+                self::HDFC_TERMINAL_KEY_SCHEME,
             ],
             self::OUTPUT => [
                 self::HDFC_TERMINAL_OLD_TID,
@@ -7992,6 +7999,7 @@ class Header
                 self::HDFC_TERMINAL_NEW_MID,
                 self::HDFC_TERMINAL_TENURE,
                 self::HDFC_TERMINAL_DEVICE_ID,
+                self::HDFC_TERMINAL_KEY_SCHEME,
                 self::HDFC_TERMINAL_SUCCESS,
                 self::HDFC_TERMINAL_ERROR_CODE,
                 self::HDFC_TERMINAL_ERROR_DESCRIPTION,
