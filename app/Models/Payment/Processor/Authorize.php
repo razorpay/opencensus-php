@@ -9634,7 +9634,6 @@ trait Authorize
         {
             return;
         }
-
         (new Payment\Metric)->pushAuthenticationMetrics($this->payment);
     }
 

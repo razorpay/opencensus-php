@@ -65,6 +65,8 @@ class Metric extends Base\Core
     const LABEL_IS_REARCH                       = 'is_rearch';
     const LABEL_IMPORT_PAYMENT                  = 'import_payment';
 
+    // Add constant for router canary label
+    const LABEL_ROUTER_CANARY = 'router_canary';
 
     // Metric Names
     const PAYMENT_CREATED                           = 'payment_created';
@@ -408,14 +410,15 @@ class Metric extends Base\Core
         $dimensions = [
             self::LABEL_PAYMENT_GATEWAY          => $payment->getGateway(),
             self::LABEL_PAYMENT_METHOD           => $payment->getMethod(),
-            self::LABEL_PAYMENT_ISSUER           => $payment->getIssuer(),
             self::LABEL_PAYMENT_CURRENCY         => $payment->getCurrency(),
             self::LABEL_PAYMENT_INTERNATIONAL    => $payment->isInternational(),
+            self::LABEL_PAYMENT_ISSUER           => $payment->getIssuer(),
             self::LABEL_PAYMENT_TRANSACTION_TYPE => $payment->getTransactionType(),
             self::LABEL_PAYMENT_IS_TPV           => $payment->merchant->isTPVRequired(),
             self::LABEL_ORG                      => $payment->merchant->getOrgId(),
             self::LABEL_MERCHANT_COUNTRY_CODE    => $payment->merchant->getCountry(),
-            self::LABEL_IS_COLLECTX_PAYMENT      => $isCollectXPayment
+            self::LABEL_IS_COLLECTX_PAYMENT      => $isCollectXPayment,
+            self::LABEL_ROUTER_CANARY            => app('request.ctx.v2')->routerCanaryContext,
         ];
 
         $offer = $payment->getOffer();

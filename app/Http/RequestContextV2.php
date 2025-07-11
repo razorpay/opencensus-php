@@ -109,4 +109,12 @@ final class RequestContextV2
      * @var array<string, array>|null
      */
     public $merchantOnboardingDetails = [];
+
+    /**
+     * Stores the router canary context for the current request.
+     * This is set by SmartRouting service and used by metrics.
+     * 
+     * @var bool
+     */
+    public $routerCanaryContext = false;
 }
