@@ -2762,14 +2762,6 @@ class Processor
                 return false;
             }
 
-            // for rearch juspay payments, populating the application id in input to pass it to cps.
-            $appId = $this->ba->getOAuthApplicationId();
-
-            if(empty($appId) === false)
-            {
-                $input['application_id'] = $appId;
-            }
-
             if ($merchant->isFeeBearerDynamic() === true) {
                 // Re-calculates fees on the amount, using a dummy payment creation flow.
                 // This sets re-calculated fee and amount value (in paise) in $input.
@@ -2782,6 +2774,15 @@ class Processor
 
                     $input['convenience_fee_gst'] = $feesArray['customer_fee_gst'];
                 }
+            }
+
+            // moving the setting of app_id logic after fee processing because processAndReturnFees() does not expect appId, leading to error and code going to catch block
+            // for rearch juspay payments, populating the application id in input to pass it to cps.
+            $appId = $this->ba->getOAuthApplicationId();
+
+            if(empty($appId) === false)
+            {
+                $input['application_id'] = $appId;
             }
 
             //Check for saved card token payments
@@ -3179,29 +3180,13 @@ class Processor
                 return ($result === 'on');
             }
 
-
-            if ($merchant->isFeatureEnabled(Feature::MARKETPLACE) === true)
-            {
-                return true;
-            }
-
-
-            if ($this->ba->getOAuthClientId() !== null)
-            {
-               return true;
-            }
-
-            if ($this->ba->isPartnerAuth() === true)
-            {
-                return true;
-            }
-
             if ($this->app['basicauth']->isPrivateAuth() === false)
             {
                 $result = 'off';
                 if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
                     $result = 'on';
-                }            }
+                }
+            }
             else
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::S2S_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
