@@ -184,6 +184,11 @@ class Core extends Base\Core
             $token->setStatus($input[Token\Entity::STATUS]);
         }
 
+        if (isset($input[Token\Entity::NOTES]) === true)
+        {
+            $token->setNotes($input[Token\Entity::NOTES]);
+        }
+
         $token->build($input);
 
         if ($card !== null)

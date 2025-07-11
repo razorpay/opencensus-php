@@ -2644,6 +2644,7 @@ class Service extends Base\Service
         $saveMethodInput = [
             Token\Entity::METHOD => $payment->getMethod(),
             Token\Entity::CARD_ID => $tokenCard->getId(),
+            Token\Entity::NOTES => $payment->getNotes()->toArray(),
         ];
 
         $token = null;
