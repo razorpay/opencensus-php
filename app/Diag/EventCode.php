@@ -1246,6 +1246,11 @@ class EventCode
         'name'   => 'payouts_to_phone_number_event.vpa_type_fund_account_created'
     ];
 
+    const PAYOUTS_TO_PHONE_NUMBER_EVENT_VPA_FETCH_TIME_TAKEN = [
+        'group'  => 'payouts_to_phone_number_event',
+        'name'   => 'payouts_to_phone_number_event.vpa_fetch_time_taken'
+    ];
+
     const PAYOUT_FETCH_REQUESTS = [
         'group'   => 'external_payouts',
         'name'    => 'external_payouts.fetch.request'

@@ -18,6 +18,8 @@ class Events
 
     const VPA_TYPE_FUND_ACCOUNT_CREATED = 'VPA_TYPE_FUND_ACCOUNT_CREATED';
 
+    const VPA_FETCH_TIME_TAKEN = 'VPA_FETCH_TIME_TAKEN';
+
 
     protected $app;
     protected $trace;
@@ -82,6 +84,9 @@ class Events
                 break;
             case self::VPA_TYPE_FUND_ACCOUNT_CREATED:
                 $eventDataGroup = EventCode::PAYOUTS_TO_PHONE_NUMBER_EVENT_VPA_TYPE_FUND_ACCOUNT_CREATED;
+                break;
+            case self::VPA_FETCH_TIME_TAKEN:
+                $eventDataGroup = EventCode::PAYOUTS_TO_PHONE_NUMBER_EVENT_VPA_FETCH_TIME_TAKEN;
                 break;
         }
 
@@ -189,6 +194,39 @@ class Events
                 'error_message'     => $e->getMessage(),
                 'merchant_id'       => $merchantId,
                 'context'           => self::PAYOUTS_TO_PHONE_NUMBER_VPA_NOT_FOUND
+            ]);
+        }
+    }
+
+    public function trackVPAFetchTimeTakenEvent(
+        float $startTimeMs,
+        string $vpaID,
+        string $linkedNumber,
+        string $merchantId
+    ){
+        try {
+            $endTimeMs = round(microtime(true) * 1000);
+            $timeTaken = $endTimeMs - $startTimeMs;
+
+            $sanitizedData = $this->sanitizeDataForTracking([
+                Constants::VPA      => $vpaID,
+                Constants::MOBILE   => $linkedNumber
+            ]);
+
+            $this->trackPhoneNumberPayoutEvents(
+                self::VPA_FETCH_TIME_TAKEN,
+                [
+                    Constants::MERCHANT_ID  => $merchantId,
+                    Constants::VPA          => $sanitizedData[Constants::VPA],
+                    Constants::MOBILE       => $sanitizedData[Constants::MOBILE],
+                    'time_taken'            => $timeTaken
+                ]
+            );
+        } catch (\Throwable $e) {
+            $this->trace->error(TraceCode::PAYOUT_TO_PHONE_NUMBER_EVENT_TRACKING_FAILED, [
+                'error_message'     => $e->getMessage(),
+                'merchant_id'       => $merchantId,
+                'context'           => self::VPA_FETCH_TIME_TAKEN
             ]);
         }
     }

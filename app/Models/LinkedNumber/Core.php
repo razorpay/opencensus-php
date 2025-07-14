@@ -35,7 +35,11 @@ class Core extends Base\Core
 
     public function FetchMappedVpaFromLinkedNumber(string $linkedNumber, string $accountHolderName, string $merchantId)
     {
+        $startTimeMs = round(microtime(true) * 1000);
+
         $mappedVpa = $this->mappedVpaFetchClient->fetchMappedVpaViaMicroservice($linkedNumber);
+
+        $this->payoutEvents->trackVPAFetchTimeTakenEvent($startTimeMs, $mappedVpa[FundAccount\Entity::VPA], $linkedNumber, $merchantId);
 
         if (empty($mappedVpa) ||
             empty($mappedVpa[FundAccount\Entity::VPA]) ||

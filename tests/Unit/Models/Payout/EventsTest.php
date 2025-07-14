@@ -316,6 +316,7 @@ class EventsTest extends TestCase
             Events::PAYOUTS_TO_PHONE_NUMBER_MOBILE_NUMBER_FORMAT_INVALID,
             Events::PAYOUTS_TO_PHONE_NUMBER_VPA_UPDATED,
             Events::VPA_TYPE_FUND_ACCOUNT_CREATED,
+            Events::VPA_FETCH_TIME_TAKEN, // Added new event type
         ];
 
         foreach ($eventTypes as $eventType) {
@@ -334,6 +335,93 @@ class EventsTest extends TestCase
 
         // Test passes if all event types are handled without errors
         $this->addToAssertionCount(count($eventTypes));
+    }
+
+    /**
+     * Test VPA Fetch Time Taken Event - Happy Path
+     */
+    public function testTrackVPAFetchTimeTakenEvent()
+    {
+        // Mock dependencies
+        $mockDiag = Mockery::mock();
+        $mockTrace = Mockery::mock();
+        $mockTrace->shouldIgnoreMissing();
+        $this->app->instance('diag', $mockDiag);
+        $this->app->instance('trace', $mockTrace);
+
+        // Track that the event method is called with correct properties
+        $eventCalled = false;
+        $mockDiag->shouldReceive('trackPhoneNumberPayoutEvents')
+            ->andReturnUsing(function($eventCode, $properties) use (&$eventCalled) {
+                $eventCalled = true;
+                // Verify the correct event properties are passed
+                $this->assertEquals('merchant_123', $properties[Constants::MERCHANT_ID]);
+                $this->assertEquals('xxxxxxxx@paytm', $properties[Constants::VPA]);
+                $this->assertEquals('xxxxx43210', $properties[Constants::MOBILE]);
+                $this->assertArrayHasKey('time_taken', $properties);
+                $this->assertIsNumeric($properties['time_taken']);
+                $this->assertGreaterThanOrEqual(0, $properties['time_taken']);
+                return true;
+            });
+
+        $mockTrace->shouldReceive('info')->atLeast()->once();
+
+        $events = new Events();
+        $startTime = round(microtime(true) * 1000);
+        
+        // Small delay to ensure time_taken > 0
+        usleep(1000); // 1ms delay
+        
+        $events->trackVPAFetchTimeTakenEvent(
+            $startTime,
+            'john.doe@paytm',
+            '9876543210',
+            'merchant_123'
+        );
+
+        $this->assertTrue($eventCalled, 'VPA Fetch Time Taken event should have been tracked');
+    }
+
+    /**
+     * Test VPA Fetch Time Taken Event - Error Handling
+     */
+    public function testTrackVPAFetchTimeTakenEventErrorHandling()
+    {
+        // Mock dependencies that will cause errors
+        $mockDiag = Mockery::mock();
+        $mockTrace = Mockery::mock();
+        $this->app->instance('diag', $mockDiag);
+        $this->app->instance('trace', $mockTrace);
+
+        // Make diag service throw an exception
+        $mockDiag->shouldReceive('trackPhoneNumberPayoutEvents')
+            ->andThrow(new \Exception('Tracking service unavailable'));
+
+        // Track that error logging happens
+        $errorLogged = false;
+        $mockTrace->shouldReceive('error')
+            ->andReturnUsing(function($traceCode, $data) use (&$errorLogged) {
+                $errorLogged = true;
+                // Verify error logging contains expected data
+                $this->assertEquals('Tracking service unavailable', $data['error_message']);
+                $this->assertEquals('merchant_123', $data['merchant_id']);
+                $this->assertEquals(Events::VPA_FETCH_TIME_TAKEN, $data['context']);
+                return true;
+            });
+
+        $events = new Events();
+        $startTime = round(microtime(true) * 1000);
+
+        // Should not throw exception - should handle gracefully
+        $events->trackVPAFetchTimeTakenEvent(
+            $startTime,
+            'john.doe@paytm',
+            '9876543210',
+            'merchant_123'
+        );
+
+        // Assert that error was properly logged
+        $this->assertTrue($errorLogged, 'Error should have been logged when VPA Fetch Time Taken event fails');
     }
 
     protected function tearDown(): void
