@@ -20,7 +20,16 @@ run_devrev_status_check()
       -H "Authorization: Bearer ${DEVREV_API_TOKEN}" \
       -H "Content-Type: application/json" \
       -d "{\"id\": \"${DEVREV_ISSUE_ID}\"}")
+
+    # Extract and check ticket subtype
+    devrev_issue_subtype=$(echo "${devrev_response}" | jq -r '.work.subtype' | awk '{print tolower($0)}')
     
+    if [ "${devrev_issue_subtype}" != "afd" ]
+    then
+      echo "DevRev issue ${DEVREV_ISSUE_ID} has invalid subtype: ${devrev_issue_subtype}. Only AFD subtype is allowed."
+      exit 1
+    fi
+    echo "DevRev issue ${DEVREV_ISSUE_ID} has valid AFD subtype"
     devrev_issue_status=$(echo "${devrev_response}" | jq .work.stage.name)
     devrev_issue_status_in_lower_case="$(echo "$devrev_issue_status" | awk '{print tolower($0)}')"
     
