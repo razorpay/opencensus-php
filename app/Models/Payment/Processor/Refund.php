@@ -4536,6 +4536,7 @@ trait Refund
         else if ($payment->getMethod() === Payment\Method::UPI)
         {
             $queryParams[RefundConstants::VPA] = $payment->getVpa();
+            $queryParams[RefundConstants::PAYER_ACCOUNT_TYPE] = $payment->getReference2();
         }
 
         $scroogeResponse = $this->app['scrooge']->fetchRefundCreateData($queryParams);

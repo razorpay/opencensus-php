@@ -291,4 +291,6 @@ class Constants
     const GATEWAY_CURRENCY_DENOMINATION         = 'gateway_currency_denomination';
 
     const NEW_REFUND_STATUS_FOR_CUSTOMER_REFUNDS_DETAILS             = 'new_refund_status';
+
+    const PAYER_ACCOUNT_TYPE = 'payer_account_type';
 }
