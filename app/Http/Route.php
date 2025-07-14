@@ -14442,6 +14442,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'is_admin_as_merchant',
             'fund_account_validate_bank_webhook_citi',
             'internal_create_international_virtual_accounts',
             'merchant_pos_activation_status',
