@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs;
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
 use RZP\Models\BankingAccount;
@@ -72,7 +73,7 @@ class ConnectedBankingAccountGatewayBalanceUpdate extends Job
         {
             $this->trace->traceException(
                 $exception,
-                TraceCode::ERROR_EXCEPTION,
+                Trace::ERROR,
                 TraceCode::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_FAILED,
                 [
                     'channel'     => $this->params[BankingAccount\Entity::CHANNEL],

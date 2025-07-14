@@ -35,20 +35,28 @@ class Processor extends BaseProcessor
 
     protected $merchantID;
 
+    protected bool $isFtxFlowEnabled;
+
     public function __construct(array $input = [])
     {
         parent::__construct();
 
         $this->setUpForBalanceFetch($input);
 
-        (new Validator)->setStrictFalse()->validateInput('yesbank_credentials', $this->basResponse);
+        $this->isFtxFlowEnabled = $this->getSplitzResponseForFtxFlow();
+
+        if(!$this->isFtxFlowEnabled) {
+            (new Validator)->setStrictFalse()->validateInput('yesbank_credentials', $this->basResponse);
+        } else {
+            (new Validator)->setStrictFalse()->validateInput('yesbank_ftx_credentials', $this->basResponse);
+        }
 
         $this->accountCredentials = $this->extractBankingAccountCredsFromBASResponse($this->basResponse);
     }
 
     public function fetchGatewayBalance(): int
     {
-        $isFtxFlowEnabled = $this->getSplitzResponseForFtxFlow();
+        $isFtxFlowEnabled = $this->isFtxFlowEnabled;
 
         $response = $this->verifyCredentials($isFtxFlowEnabled);
 

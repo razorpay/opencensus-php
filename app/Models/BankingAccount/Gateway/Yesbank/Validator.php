@@ -22,4 +22,15 @@ class Validator extends Base\Validator
         BaseFields::CREDENTIALS . '.' . Fields::AUTH_PASSWORD       => 'required|string',
         BaseFields::CREDENTIALS . '.' . Fields::GATEWAY_MERCHANT_ID => 'required|string',
     ];
+
+    protected static $yesbankFtxCredentialsRules = [
+        BaseFields::ID                                                      => 'required|string',
+        BaseFields::CREDENTIALS                                             => 'required|array',
+        BaseFields::CREDENTIALS . '.' . Fields::FTX_ID                      => 'required|string',
+        BaseFields::CREDENTIALS . '.' . Fields::CUST_ID                     => 'required|string',
+        BaseFields::CREDENTIALS . '.' . Fields::X_IBM_CLIENT_ID_TOKEN       => 'required|string',
+        BaseFields::CREDENTIALS . '.' . Fields::X_IBM_CLIENT_SECRET_TOKEN   => 'required|string',
+        BaseFields::CREDENTIALS . '.' . Fields::AUTHORIZATION_TOKEN         => 'required|string',
+        BaseFields::CREDENTIALS . '.' . Fields::VERSION                     => 'required|string',
+    ];
 }

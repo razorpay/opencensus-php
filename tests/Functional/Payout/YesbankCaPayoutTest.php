@@ -1809,6 +1809,48 @@ class YesbankCaPayoutTest extends TestCase
         $this->app->instance('banking_account_service', $basMock);
     }
 
+    protected function mockBASResponseForFtxCredentials($includeFtxCredentials = true): void
+    {
+        $basMock = $this->getMockBuilder(BankingAccountService::class)
+                        ->setConstructorArgs([$this->app])
+                        ->onlyMethods(['fetchBankingCredentials'])
+                        ->getMock();
+
+        $credentials = [
+            Yesbank\Fields::AES_KEY             => 'aes123',
+            Yesbank\Fields::CLIENT_SECRET       => 'client-secret',
+            Yesbank\Fields::CLIENT_ID           => 'client-id',
+            Yesbank\Fields::AUTH_USERNAME       => 'auth-user',
+            Yesbank\Fields::AUTH_PASSWORD       => 'auth-pass',
+            Yesbank\Fields::APP_ID              => 'app123',
+            Yesbank\Fields::CUSTOMER_ID         => 'cust123',
+            Yesbank\Fields::GATEWAY_MERCHANT_ID => 'gw-merchant-123',
+        ];
+
+        // Add FTX credentials if required
+        if ($includeFtxCredentials) {
+            $credentials = array_merge($credentials, [
+                Yesbank\Fields::FTX_ID                      => 'ftx-id-123',
+                Yesbank\Fields::CUST_ID                     => 'cust-id-123',
+                Yesbank\Fields::X_IBM_CLIENT_ID_TOKEN       => 'ibm-client-id-token',
+                Yesbank\Fields::X_IBM_CLIENT_SECRET_TOKEN   => 'ibm-client-secret-token',
+                Yesbank\Fields::AUTHORIZATION_TOKEN         => 'auth-token-123',
+                Yesbank\Fields::VERSION                     => 'v1.0',
+            ]);
+        }
+
+        $basMock->method('fetchBankingCredentials')
+                ->willReturn([
+                    'id' => 'test_banking_account_id',
+                    'corp_id' => null,
+                    'user_id' => null,
+                    'urn' => null,
+                    Fields::CREDENTIALS => $credentials,
+                ]);
+
+        $this->app->instance('banking_account_service', $basMock);
+    }
+
     public function testBasResponseForFetchingBankingAccountCredentials()
     {
         /** @var Details\Entity $basDetailsBeforeCronRuns */
@@ -2047,7 +2089,7 @@ class YesbankCaPayoutTest extends TestCase
             ->with(Mockery::on(function($arg) use ($expId) {
                 return isset($arg['experiment_id']) && $arg['experiment_id'] === $expId;
             }))
-            ->once()
+            ->atLeast()->once()
             ->andReturn([
                 "response" => [
                     "variant" => [
@@ -2090,6 +2132,7 @@ class YesbankCaPayoutTest extends TestCase
     public function testSplitzResponseForFtxFlowEnabled()
     {
         $this->setupMocks();
+        $this->mockBASResponseForFtxCredentials(true); // Enable FTX credentials
         $this->mockSplitzResponseForFtxFlow(true);
 
         $processor = $this->createProcessor();
@@ -2101,6 +2144,7 @@ class YesbankCaPayoutTest extends TestCase
     public function testSplitzResponseForFtxFlowDisabled()
     {
         $this->setupMocks();
+        $this->mockBASResponseForFtxCredentials(false); // Regular credentials without FTX
         $this->mockSplitzResponseForFtxFlow(false);
 
         $processor = $this->createProcessor();
@@ -2112,6 +2156,7 @@ class YesbankCaPayoutTest extends TestCase
     public function testSplitzResponseForFtxFlowException()
     {
         $this->setupMocks();
+        $this->mockBASResponseForFtxCredentials(false); // Regular credentials without FTX
 
         $expId = $this->app['config']->get('app.yesbank_ftx_balance_fetch_experiment_id');
 
@@ -2120,7 +2165,7 @@ class YesbankCaPayoutTest extends TestCase
             ->with(Mockery::on(function($arg) use ($expId) {
                 return isset($arg['experiment_id']) && $arg['experiment_id'] === $expId;
             }))
-            ->once()
+            ->atLeast()->once()
             ->andThrow(new \Exception('Splitz service error'));
 
         $processor = $this->createProcessor();
@@ -2132,6 +2177,7 @@ class YesbankCaPayoutTest extends TestCase
     public function testFetchGatewayBalanceWithFtxFlowEnabled()
     {
         $this->setupMocks();
+        $this->mockBASResponseForFtxCredentials(true); // Enable FTX credentials
         $this->mockSplitzResponseForFtxFlow(true);
         $this->mockMozartResponseForFtxFlowTests(true);
 
@@ -2144,6 +2190,7 @@ class YesbankCaPayoutTest extends TestCase
     public function testFetchGatewayBalanceWithFtxFlowDisabled()
     {
         $this->setupMocks();
+        $this->mockBASResponseForFtxCredentials(false); // Regular credentials without FTX
         $this->mockSplitzResponseForFtxFlow(false);
         $this->mockMozartResponseForFtxFlowTests(false);
 
