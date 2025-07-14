@@ -776,13 +776,7 @@ return array(
 
     'magic_apply_coupon_experiment_id' => env('MAGIC_APPLY_COUPON_EXPERIMENT_ID'),
 
-    'cross_border_dcc_rearch_experiment_id' => env('CROSS_BORDER_DCC_REARCH_EXPERIMENT_ID'),
-
-    'cross_border_s2s_dcc_rearch_experiment_id' => env('CROSS_BORDER_S2S_DCC_REARCH_EXPERIMENT_ID'),
-
     'cross_border_mcc_payment_via_rearch_experiment_id' => env('CROSS_BORDER_MCC_PAYMENT_VIA_REARCH_EXPERIMENT_ID'),
-
-    'cross_border_mcc_rearch_experiment_id' => env('CROSS_BORDER_MCC_REARCH_EXPERIMENT_ID'),
 
     'cross_border_flows_experiment_id' => env('CROSS_BORDER_FLOWS_EXPERIMENT_ID'),
 
@@ -790,21 +784,7 @@ return array(
 
     'cross_border_cfb_intl_cls_experiment_id' => env('CROSS_BORDER_CFB_INTL_CLS_EXPERIMENT_ID'),
 
-    'cross_border_dcc_mcc_rearch_experiment_id' => env('CROSS_BORDER_DCC_MCC_REARCH_EXPERIMENT_ID'),
-
-    'cross_border_s2s_dcc_mcc_rearch_experiment_id' => env('CROSS_BORDER_S2S_DCC_MCC_REARCH_EXPERIMENT_ID'),
-
     'cross_border_mcc_parity_check_experiment_id' => env('CROSS_BORDER_MCC_PARITY_CHECK_EXPERIMENT_ID'),
-
-    'cross_border_razorpayjs_rearch_experiment_id' => env('CROSS_BORDER_RAZORPAYJS_REARCH_EXPERIMENT_ID'),
-
-    'cross_border_other_libraries_rearch_experiment_id' => env('CROSS_BORDER_OTHER_LIBRARIES_REARCH_EXPERIMENT_ID'),
-
-    'cross_border_skip_address_check_experiment_id' => env('CROSS_BORDER_SKIP_ADDRESS_CHECK_EXPERIMENT_ID'),
-
-    'cross_border_cfb_inr_experiment_id' => env('CROSS_BORDER_CFB_INR_EXPERIMENT_ID'),
-
-    'cross_border_cfb_non_inr_experiment_id' => env('CROSS_BORDER_CFB_NON_INR_EXPERIMENT_ID'),
 
     'cross_border_dfb_inr_experiment_id' => env('CROSS_BORDER_DFB_INR_EXPERIMENT_ID'),
 
