@@ -264,6 +264,8 @@ class Core extends Base\Core
             $order->setAmount($payment->getAmount());
 
             $order->setAttribute(Order\Entity::CURRENCY,$payment->getCurrency());
+
+            $order->setId("");
         }
 
         return $order;

@@ -884,7 +884,7 @@ class OffersEngine extends Base\Core
         }
 
         // Extract offer metadata
-        $this->mapOfferMetadata($offersEngineResponse[Constants::OFFER][Constants::METADATA], $offer);
+        $this->mapOfferMetadata($offersEngineResponse[Constants::OFFER][Constants::METADATA], $offer, $offersEngineResponse[Constants::PUBLISH]);
 
         // Map offer channel properties
         $this->mapChannelProperties($offersEngineResponse[Constants::PUBLISH], $offer);
@@ -915,14 +915,27 @@ class OffersEngine extends Base\Core
         ];
     }
 
-    private function mapOfferMetadata(array $offerMetadata, Entity $offer)
+    private function mapOfferMetadata(array $offerMetadata, Entity $offer,array $offersPublishResponse = [])
     {
-
         $offer->setAttribute(Entity::ID, Entity::verifyIdAndStripSign($offerMetadata[Constants::OFFER_ID]));
         $offer->setAttribute(Entity::NAME, $offerMetadata[Constants::NAME]);
         $offer->setAttribute(Entity::DISPLAY_TEXT, $offerMetadata[Constants::DESCRIPTION]);
         $offer->setAttribute(Entity::TERMS, $offerMetadata[Constants::TERMS][Constants::TERMS_AND_CONDITIONS]);
-        $offer->setAttribute(Entity::MERCHANT_ID, str_replace('rzp.merchant.', '', $offerMetadata[Constants::ADVERTISER_ID]));
+
+        if (isset($offerMetadata[Constants::IS_PLATFORM_OFFER])) {
+            $offer->setAttribute(Constants::IS_PLATFORM_OFFER, $offerMetadata[Constants::IS_PLATFORM_OFFER]);
+        }
+
+        // removing both possible prefixes for backward compatibility, just being safe
+        if (empty($offersPublishResponse[Constants::PUBLISH]) === false) {
+            $publisherId = $offersPublishResponse[Constants::PUBLISH][Constants::PUBLISHER_ID];
+            $merchantId = str_replace([Constants::MERCHANT_PREFIX, Constants::PLATFORM_ADVERTISER_PREFIX], '', $publisherId);
+        } else {
+            $advertiserId = $offerMetadata[Constants::ADVERTISER_ID];
+            $merchantId = str_replace([Constants::MERCHANT_PREFIX, Constants::PLATFORM_ADVERTISER_PREFIX], '', $advertiserId);
+        }
+        $offer->setAttribute(Entity::MERCHANT_ID, $merchantId);
+
         $offer->setAttribute(Entity::STARTS_AT, $offerMetadata[Constants::SCHEDULES][Constants::STARTS_AT]);
         $offer->setAttribute(Entity::ENDS_AT, $offerMetadata[Constants::SCHEDULES][Constants::ENDS_AT]);
 
@@ -1465,6 +1478,7 @@ class OffersEngine extends Base\Core
             Constants::ORDER_TOTAL_AMOUNT => $this->order->getAmount(),
             Constants::ORDER_CURRENCY     => 'INR', // setting default INR as API offers does not have currency
             Constants::ORDER_CREATED_AT   => $this->order->getCreatedAt(),
+            Constants::ORDER_ID           => $this->order->getId(),
         ];
 
         $skuData = $this->getSKUDataFromOrder();

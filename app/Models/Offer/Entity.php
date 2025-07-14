@@ -320,6 +320,18 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT,
     ];
 
+    /**
+     * Fields that are part of the entity model but are not stored in the database.
+     * These fields are used for business logic and API responses but should be
+     * excluded from database operations.
+     */
+    const NON_DB_FIELDS = [
+        self::UPI,
+        self::INSTRUMENTS,
+        self::RULES,
+        Constants::IS_PLATFORM_OFFER,
+    ];
+
     protected $casts = [
         self::EMI_DURATIONS      => 'array',
         self::EMI_SUBVENTION     => 'boolean',
@@ -628,6 +640,11 @@ class Entity extends Base\PublicEntity
     }
     public function isPlatformOffer(): bool
     {
+        if (isset($this->attributes[Constants::IS_PLATFORM_OFFER])) {
+            return (bool) $this->attributes[Constants::IS_PLATFORM_OFFER];
+        }
+
+        // for backward compatibility, will be removed later
         if ($this->getMerchantId() ===  Constants::PLATFORM_AD_PUBLISHER)
         {
             return true;

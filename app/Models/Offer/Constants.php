@@ -69,8 +69,12 @@ final class Constants
 
     const OFFER_ID = 'offer_id';
 
+    const ORDER_ID = 'order_id';
+
     const ADVERTISER_ID = 'advertiser_id';
     const CREATED_BY_ID = 'created_by_id';
+
+    const PUBLISHER_ID = 'publisher_id';
 
     const STATE = 'state';
 
@@ -264,9 +268,15 @@ final class Constants
 
     const PLATFORM_AD_PUBLISHER = '100000razorpay';
 
+    const MERCHANT_PREFIX = 'rzp.merchant.';
+
+    const PLATFORM_ADVERTISER_PREFIX = 'rzp.advertiser.';
+
     const IS_CARD_SAVED = 'is_saved';
 
     const PRODUCT = "product";
 
     const ORDER_CREATED_AT = 'created_at';
+
+    const IS_PLATFORM_OFFER = 'is_platform_offer';
 }

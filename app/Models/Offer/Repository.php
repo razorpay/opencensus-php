@@ -61,27 +61,20 @@ class Repository extends Base\Repository
 
     public function saveOrFail($entity, array $options = array())
     {
-        // Unset all offers engine specific params here and set again after saving
-        if (empty($entity['upi']) === false)
-        {
-            $upi = $entity['upi'];
-            unset($entity['upi']);
+        $nonDbFieldValues = [];
+
+        foreach (Entity::NON_DB_FIELDS as $field) {
+            if (isset($entity[$field])) {
+                $nonDbFieldValues[$field] = $entity[$field];
+                unset($entity[$field]);
+            }
         }
-        if (empty($entity[Entity::INSTRUMENTS]) === false)
-        {
-            $instruments = $entity[Entity::INSTRUMENTS];
-            unset($entity[Entity::INSTRUMENTS]);
-        }
-        if (empty($entity[Entity::RULES]) === false)
-        {
-            $rules = $entity[Entity::RULES];
-            unset($entity[Entity::RULES]);
-        }
+
         parent::saveOrFail($entity, $options);
 
-        $entity['upi'] = $upi;
-        $entity[Entity::INSTRUMENTS] = $instruments;
-        $entity[Entity::RULES] = $rules;
+        foreach ($nonDbFieldValues as $field => $value) {
+            $entity[$field] = $value;
+        }
     }
 
     /**
