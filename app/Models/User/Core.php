@@ -2189,7 +2189,21 @@ class Core extends Base\Core
 
     public function loginWithOtp(array $input)
     {
-        $this->getUserEntity()->getValidator()->validateInput('loginOtp', $input);
+        $origin = $this->app['request']->header(RequestHeader::X_REQUEST_ORIGIN) ?? "";
+        $captchaMode = $this->app['request']->header(RequestHeader::X_RECAPTCHA_MODE) ?? "";
+
+        $this->trace->info(TraceCode::DEBUG_LOGIN_WITH_OTP_REQUEST_HEADERS, [
+            'origin'        => $origin,
+            'captch_mode'   => $captchaMode
+        ]);
+
+        //captcha header is being propagated from Dashboard BE
+        if ($this->isUnifiedRequest($origin) && isset($input['captcha']) === true  && $captchaMode != ""
+            && $captchaMode != "undefined") {
+            $this->getUserEntity()->getValidator()->validateInput('loginOtpWithCaptcha', $input);
+        } else {
+            $this->getUserEntity()->getValidator()->validateInput('loginOtp', $input);
+        }
 
         $isMockRaven = false;
 

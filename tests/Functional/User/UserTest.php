@@ -14605,6 +14605,27 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testLoginWithOtpWithUslOriginWithCaptcha()
+    {
+        $this->fixtures->create('user', [
+            'id'                      => '10000000000000',
+            'email'                   => 'user@domain.com',
+            'password'                => 'hello123',
+            'contact_mobile'          => '8766776665',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $this->ba->appAuth();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSendSmsRequest($storkMock, 'sms.user.login_otp_v2', '8766776665', []);
+
+        $this->startTest();
+    }
+
     public function testMobileVerifyOtpForLoginWithNewSmsTemplate()
     {
 

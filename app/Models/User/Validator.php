@@ -293,6 +293,16 @@ class Validator extends Base\Validator
         PartnerConstants::ONBOARDING_SIGNATURE => 'sometimes|string'
     ];
 
+    protected static $loginOtpWithCaptchaRules = [
+        Entity::CONTACT_MOBILE   => 'required_without:email|max:15|contact_syntax',
+        Entity::EMAIL            => 'required_without:contact_mobile|email',
+        Entity::CAPTCHA          => 'required_without_all:captcha_disable',
+        Entity::TOKEN            => 'sometimes|string',
+        Entity::SKIP_SMS_REQUEST => 'sometimes|boolean',
+        PartnerConstants::CLIENT_ID            => 'sometimes|string',
+        PartnerConstants::ONBOARDING_SIGNATURE => 'sometimes|string'
+    ];
+
     protected static $verifyLoginOtpRules = [
         Entity::CONTACT_MOBILE            => 'required_without:email|max:15|contact_syntax',
         Entity::EMAIL                     => 'required_without:contact_mobile|email',
@@ -710,6 +720,10 @@ class Validator extends Base\Validator
 
     protected static $signupOtpWithCaptchaValidators = [
         'country_code',
+        'captcha'
+    ];
+
+    protected static $loginOtpWithCaptchaValidators = [
         'captcha'
     ];
 

@@ -66,6 +66,8 @@ class RequestHeader
     // Request origin sent by the dashboard to determine if a request is from banking or dashboard.
     const X_REQUEST_ORIGIN              = 'X-Request-Origin';
 
+    const X_RECAPTCHA_MODE              = 'X-RECAPTCHA-MODE';
+
     const X_Batch_Id                    = 'x-batch-id';
 
     const X_Batch_Row_Id                = 'x-batch-row-id';

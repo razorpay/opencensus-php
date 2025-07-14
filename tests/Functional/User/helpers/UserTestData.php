@@ -2402,6 +2402,25 @@ return [
         ],
     ],
 
+    'testLoginWithOtpWithUslOriginWithCaptcha' => [
+        'request'  => [
+            'url'     => '/users/login/otp',
+            'method'  => 'POST',
+            'content' => [
+                'contact_mobile' => '8766776665',
+                'captcha'        => 'faked'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://accounts.razorpay.com',
+                'HTTP_X-RECAPTCHA-MODE' => 'v3',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testMobileVerifyOtpForLoginWithNewSmsTemplate' => [
         'request' => [
             'url'     => '/users/login/otp/verify',
