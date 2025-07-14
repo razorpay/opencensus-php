@@ -2867,6 +2867,7 @@ class Processor
                                     && $this->merchant->getCountry() == "IN"
                                 ){
                                     $cardInput += [
+                                        Card\Entity::CVV                    => $input['card']['cvv'] ?? "",
                                         "cryptogram_source" => "cps",
                                     ];
                                     $this->trace->info(TraceCode::TOKENISED_REARCH_STATUS,[
