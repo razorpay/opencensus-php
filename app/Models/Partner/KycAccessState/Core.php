@@ -203,6 +203,11 @@ class Core extends Base\Core
 
     protected function sendKycAccessRequestSms(Merchant\Entity $partner, Entity $kycAccess)
     {
+        // Skip sending SMS/WA for aggregators. This will be enabled once the SMS templates are ready.
+        if($partner->getPartnerType() === MerchantConstants::AGGREGATOR) {
+            return;
+        }
+
         $merchant = $this->repo->merchant->findOrFail($kycAccess->getEntityId());
 
         $websiteUrl = $this->app['config']->get('app.razorpay_website_url');
@@ -274,6 +279,10 @@ class Core extends Base\Core
      */
     protected function sendKycRequestConfirmedRejectedMessages(Merchant\Entity $subMerchant, Merchant\Entity $partner, bool $isConfirmed)
     {
+        // Skip sending SMS/WA for aggregators. This will be enabled once the SMS templates are ready.
+        if($partner->getPartnerType() === MerchantConstants::AGGREGATOR) {
+            return;
+        }
 
         // Note: setting partner in the args sends sms/wa notification exclusively to the passed $partner.
         $args = [
@@ -382,7 +391,7 @@ class Core extends Base\Core
             });
 
             $eventData['status'] = State::APPROVED;
-            (new Merchant\Core())->assignSubmerchantDashboardAccessIfApplicable($partner, $this->repo->merchant->findOrFail($input[Entity::ENTITY_ID]),  (new MerchantApplications\Core())->getDefaultAppTypeForPartner($partner), Role::OWNER);  
+            (new Merchant\Core())->assignSubmerchantDashboardAccessIfApplicable($partner, $this->repo->merchant->findOrFail($input[Entity::ENTITY_ID]),  (new MerchantApplications\Core())->getDefaultAppTypeForPartner($partner), Role::OWNER);
             $this->app['diag']->trackOnboardingEvent(EventCode::PARTNER_KYC_ACCESS_APPROVE, null, null, $eventData);
             $this->sendKycRequestConfirmedRejectedCommunication($subMerchantKycAccess, true);
         }

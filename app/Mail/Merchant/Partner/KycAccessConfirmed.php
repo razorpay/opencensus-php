@@ -4,10 +4,13 @@ namespace RZP\Mail\Merchant\Partner;
 
 use RZP\Mail\Base;
 use RZP\Mail\Base\Mailable;
+use RZP\Models\Merchant;
 
 class KycAccessConfirmed extends Mailable
 {
-    const SUBJECT = '[Request Approved] Now perform your affiliates’s Razorpay KYC';
+    const RESELLER_SUBJECT = '[Request Approved] Now perform your affiliates’s Razorpay KYC';
+    const AGGREGATOR_SUBJECT = '[Request Approved] Access Merchant Account for your affiliate';
+
     protected $data;
 
     public function __construct(array $data)
@@ -34,7 +37,11 @@ class KycAccessConfirmed extends Mailable
 
     protected function addSubject()
     {
-        $this->subject(self::SUBJECT);
+        $this->subject(self::RESELLER_SUBJECT);
+
+        if ($this->data['partner']['partner_type'] === Merchant\Constants::AGGREGATOR) {
+            $this->subject(self::AGGREGATOR_SUBJECT);
+        }
 
         return $this;
     }
@@ -54,10 +61,16 @@ class KycAccessConfirmed extends Mailable
 
     protected function getParamsForStork(): array
     {
+        $templateName = 'submerchant_kyc_access.approved';
+
+        if ($this->data['partner']['partner_type'] === Merchant\Constants::AGGREGATOR) {
+            $templateName = 'submerchant_account_access.approved';
+        }
+
         return [
             'template_namespace' => 'partnerships',
             'org_id'             => $this->data['merchant']['org_id'],
-            'template_name'      => 'submerchant_kyc_access.approved',
+            'template_name'      => $templateName,
             'params'  => [
                 'submerchant_id' => $this->data['merchant']['id'],
                 'submerchant_name' => $this->data['merchant']['name'],

@@ -4,10 +4,12 @@ namespace RZP\Mail\Merchant\Partner;
 
 use RZP\Mail\Base;
 use RZP\Mail\Base\Mailable;
+use RZP\Models\Merchant;
 
 class KycAccessRejected extends Mailable
 {
-    const SUBJECT = '[Request Rejected] Your Affiliate rejected the request to perform their KYC';
+    const RESELLER_SUBJECT = '[Request Rejected] Your Affiliate rejected the request to perform their KYC';
+    const AGGREGATOR_SUBJECT = '[Request Rejected] Your Affiliate rejected the request to access their account';
 
     protected $data;
 
@@ -35,7 +37,11 @@ class KycAccessRejected extends Mailable
 
     protected function addSubject()
     {
-        $this->subject(self::SUBJECT);
+        $this->subject(self::RESELLER_SUBJECT);
+
+        if ($this->data['partner']['partner_type'] == Merchant\Constants::AGGREGATOR) {
+            $this->subject(self::AGGREGATOR_SUBJECT);
+        }
 
         return $this;
     }
@@ -55,10 +61,16 @@ class KycAccessRejected extends Mailable
 
     protected function getParamsForStork(): array
     {
+        $templateName = 'submerchant_kyc_access.rejected';
+
+        if ($this->data['partner']['partner_type'] === Merchant\Constants::AGGREGATOR) {
+            $templateName = 'submerchant_account_access.rejected';
+        }
+
         return [
             'template_namespace' => 'partnerships',
             'org_id'             => $this->data['merchant']['org_id'],
-            'template_name'      => 'submerchant_kyc_access.rejected',
+            'template_name'      => $templateName,
             'params'  => [
                 'submerchant_id' => $this->data['merchant']['id'],
                 'submerchant_name' => $this->data['merchant']['name'],
