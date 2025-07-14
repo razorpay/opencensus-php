@@ -23,6 +23,7 @@ use RZP\Models\BankTransfer\Collectx\Processor\Factory;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\UpiTransfer\Entity as UpiTransferEntity;
 use RZP\Models\UpiTransfer\Service as UpiTransferService;
@@ -86,6 +87,8 @@ use RZP\Models\VirtualAccount\Processor as VirtualAccountProcessor;
 use RZP\Models\BankTransfer\Constants as BankTransferConstants;
 use RZP\Models\BankTransfer\Processor as BankTransferProcessor;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstants;
+use RZP\Models\Admin\Permission\Name as Permission;
+
 
 class Service extends Base\Service
 {
@@ -1654,10 +1657,23 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * @throws BadRequestException
+     */
+    public function createAccountForCurrencyCloudViaAdmin($input)
+    {
+        if(isset($input['merchant_id'])===false){
+            return;
+        }
+        $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+        $this->app['basicauth']->setMerchant($this->merchant);
+        unset($input['merchant_id']);
+        $this->createAccountForCurrencyCloud($input);
+    }
+
     public function createAccountForCurrencyCloud($input)
     {
         $merchantId = $this->merchant->getId();
-
         try {
 
             (new Validator)->validateInput('create_account_for_currency_cloud', $input);
@@ -1733,6 +1749,13 @@ class Service extends Base\Service
                     'merchant_id' => $merchantId,
                     't&c' => $input['accept_b2b_tnc'],
                 ]);
+            }
+
+            $isPACBPartnerSubmerchant = (new Merchant\AccessMap\Core())->isPACBPartnerSubMerchant($merchantId);
+
+            if($isPACBPartnerSubmerchant){
+                (new \RZP\Models\Merchant\Core)->addFeatureFlagForMerchant($this->merchant, Feature\Constants::CB_SKIP_B2B_EXPORT_INVOICE);
+                (new \RZP\Models\Merchant\Core)->addFeatureFlagForMerchant($this->merchant, Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B);
             }
 
             $mutex_key = "create_account_cc_" . $merchantId;
@@ -2719,7 +2742,6 @@ class Service extends Base\Service
             ['type' => Address\Type::BILLING_ADDRESS]);
 
         if ($addresses->isEmpty() === true) {
-
             $this->trace->info(TraceCode::B2B_TRANSFER_COMPLETED_NOTIFICATION_PROCESSING_FAILURE, [
                 'payment_id' => $payment_id,
             ]);
@@ -3079,6 +3101,14 @@ class Service extends Base\Service
             if ($payment->getBaseAmount() < 85000) {
                 continue;
             }
+
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::CB_SKIP_B2B_EXPORT_INVOICE) === true){
+                if((in_array($payment->getWallet(), [IntlBankTransfer::ACH, IntlBankTransfer::FPS, IntlBankTransfer::SEPA]) === true)){
+                    // no communication will be sent for ACH,FPS,SEPA where CB_SKIP_B2B_EXPORT_INVOICE Feature Flag is enabled
+                    continue;
+                }
+            }
+
             try {
                 $this->triggerEmail($payment, $event);
 

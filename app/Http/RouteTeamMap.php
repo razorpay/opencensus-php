@@ -568,6 +568,7 @@ class RouteTeamMap
         'merchant_vkyc_fetch_admin'                         => [self::TEAM_PAYMENTS_CROSS_BORDER],
         'merchant_edd_details_fetch_admin'                  => [self::TEAM_PAYMENTS_CROSS_BORDER],
         'merchant_edd_details_submit_admin'                 => [self::TEAM_PAYMENTS_CROSS_BORDER],
+        'internal_create_international_virtual_accounts'       => [self::TEAM_PAYMENTS_CROSS_BORDER],
 
 
         // Edge Owned Routes

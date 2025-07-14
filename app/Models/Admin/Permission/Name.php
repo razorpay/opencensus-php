@@ -1246,6 +1246,9 @@ class Name
     // this permissin allow admin to utilize custom merchant invite flow
     const CUSTOM_INVITE_MERCHANT_FLOW = 'custom_invite_merchant_flow';
 
+    // Permission to activate PACB money saver account
+    const PACB_ADMIN_MONEY_SAVER_ACTIVATE = 'pacb_admin_money_saver_activate';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

@@ -99,4 +99,7 @@ class Constants
     const GST_DETAILS = 'gst_details';
 
     const FINGERPRINT_REQUEST_ID = 'fingerprint_request_id';
+
+    const CROSS_BORDER_FREELANCER_URL = 'cross_border_freelancer_url';
+
 }

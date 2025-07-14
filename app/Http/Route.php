@@ -2846,6 +2846,7 @@ class Route
         'capture_pacb_bank_transfer_payments'  => ['post',     'pacb/bank-transfer/capture',                         'BankTransferController@captureCronForPACBBankTransferPayments'                   ],
         'toggle_international_virtual_account'              => ['post',     'international/virtual_account/toggle',   'BankTransferController@toggleInternationalVirtualAccountForMerchant'          ],
         'merchant_integration_get_by_param' => ['post',     'internal/merchant_integrations',                                          'BankTransferController@fetchMerchantIntegrationByParams'        ],
+        'internal_create_international_virtual_accounts' => ['post',     'internal/international/virtual_accounts',                                          'BankTransferController@createAccountForCurrencyCloudViaAdmin'        ],
 
         //Global Bank account solution
 
@@ -14442,6 +14443,7 @@ class Route
 
         'admin_dashboard' => [
             'fund_account_validate_bank_webhook_citi',
+            'internal_create_international_virtual_accounts',
             'merchant_pos_activation_status',
             'merchant_vkyc_submit',
             'merchant_edd_details_fetch',

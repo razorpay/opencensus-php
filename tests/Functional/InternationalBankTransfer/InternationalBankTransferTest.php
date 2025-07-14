@@ -251,7 +251,7 @@ class InternationalBankTransferTest extends TestCase
             ->withArgs(function ($route, $params){
                 $this->assertEquals($route, \RZP\Services\Stork::WHATSAPP_SEND_MSG_PATH);
                 $message = $params['message'];
-                $this->assertEquals('payments_onboarding_moneysaver', $message['context']->template);
+                $this->assertEquals('payments_onboarding_moneysaver_enabled', $message['context']->template);
                 $this->assertCount(1, $message['whatsapp_channels']);
                 $channel = $message['whatsapp_channels'][0];
                 $this->assertEquals(Events::WHATSAPP_TEMPLATES_CTA_TEMPLATE[Events::MONEYSAVER_PAYMENTS_ENABLED], $channel->button_url_param);
@@ -2555,5 +2555,250 @@ class InternationalBankTransferTest extends TestCase
         $this->assertNotNull($mii['notes']['status']);
 
         $this->assertEquals("activated", $mii['notes']['status']);
+    }
+
+    /**
+     * Test that B2B notification emails are skipped for ACH payments
+     * when CB_SKIP_B2B_EXPORT_INVOICE feature flag is enabled
+     */
+    public function testNotifyUploadInvoiceSkipsACHWithFeatureFlag()
+    {
+        Mail::fake();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        // Enable the CB_SKIP_B2B_EXPORT_INVOICE feature flag
+        $this->fixtures->merchant->addFeatures('skip_b2b_export_invoice', $merchantDetail['merchant_id']);
+
+        // Create a payment with ACH wallet
+        $payment = $this->fixtures->create('payment', [
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'status' => 'authorized',
+            'method' => 'intl_bank_transfer',
+            'gateway' => 'currency_cloud',
+            'wallet' => 'ach',
+            'base_amount' => 85000, // Above minimum threshold
+            'amount' => 85000,
+        ]);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+        $request['content']['payment_ids'] = [preg_replace('/^pay_/', '', $payment['id'])];
+        $request['content']['include_merchants'] = [$payment['merchant_id']];
+        $request['content']['exclude_merchants'] = [];
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response);
+        // Should show 0 emails sent since ACH is skipped
+        $this->assertEquals(0, $response['email_reports']['upload_invoice']['success_count']);
+
+        // Verify that no B2bUploadInvoice email was queued
+        Mail::assertNotQueued(B2bUploadInvoice::class);
+    }
+
+    /**
+     * Test that B2B notification emails are skipped for FPS payments
+     * when CB_SKIP_B2B_EXPORT_INVOICE feature flag is enabled
+     */
+    public function testNotifyUploadInvoiceSkipsFPSWithFeatureFlag()
+    {
+        Mail::fake();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        // Enable the CB_SKIP_B2B_EXPORT_INVOICE feature flag
+        $this->fixtures->merchant->addFeatures('skip_b2b_export_invoice', $merchantDetail['merchant_id']);
+
+        // Create a payment with FPS wallet
+        $payment = $this->fixtures->create('payment', [
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'status' => 'authorized',
+            'method' => 'intl_bank_transfer',
+            'gateway' => 'currency_cloud',
+            'wallet' => 'fps',
+            'base_amount' => 85000, // Above minimum threshold
+            'amount' => 85000,
+        ]);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+        $request['content']['payment_ids'] = [preg_replace('/^pay_/', '', $payment['id'])];
+        $request['content']['include_merchants'] = [$payment['merchant_id']];
+        $request['content']['exclude_merchants'] = [];
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response);
+        // Should show 0 emails sent since FPS is skipped
+        $this->assertEquals(0, $response['email_reports']['upload_invoice']['success_count']);
+
+        // Verify that no B2bUploadInvoice email was queued
+        Mail::assertNotQueued(B2bUploadInvoice::class);
+    }
+
+    /**
+     * Test that B2B notification emails are skipped for SEPA payments
+     * when CB_SKIP_B2B_EXPORT_INVOICE feature flag is enabled
+     */
+    public function testNotifyUploadInvoiceSkipsSEPAWithFeatureFlag()
+    {
+        Mail::fake();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        // Enable the CB_SKIP_B2B_EXPORT_INVOICE feature flag
+        $this->fixtures->merchant->addFeatures('skip_b2b_export_invoice', $merchantDetail['merchant_id']);
+
+        // Create a payment with SEPA wallet
+        $payment = $this->fixtures->create('payment', [
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'status' => 'authorized',
+            'method' => 'intl_bank_transfer',
+            'gateway' => 'currency_cloud',
+            'wallet' => 'sepa',
+            'base_amount' => 85000, // Above minimum threshold
+            'amount' => 85000,
+        ]);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+        $request['content']['payment_ids'] = [preg_replace('/^pay_/', '', $payment['id'])];
+        $request['content']['include_merchants'] = [$payment['merchant_id']];
+        $request['content']['exclude_merchants'] = [];
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response);
+        // Should show 0 emails sent since SEPA is skipped
+        $this->assertEquals(0, $response['email_reports']['upload_invoice']['success_count']);
+
+        // Verify that no B2bUploadInvoice email was queued
+        Mail::assertNotQueued(B2bUploadInvoice::class);
+    }
+
+    /**
+     * Test that B2B notification emails are NOT skipped for SWIFT payments
+     * even when CB_SKIP_B2B_EXPORT_INVOICE feature flag is enabled
+     */
+    public function testNotifyUploadInvoiceDoesNotSkipSWIFTWithFeatureFlag()
+    {
+        Mail::fake();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        // Enable the CB_SKIP_B2B_EXPORT_INVOICE feature flag
+        $this->fixtures->merchant->addFeatures('skip_b2b_export_invoice', $merchantDetail['merchant_id']);
+
+        // Create a payment with SWIFT wallet
+        $payment = $this->fixtures->create('payment', [
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'status' => 'authorized',
+            'method' => 'intl_bank_transfer',
+            'gateway' => 'currency_cloud',
+            'wallet' => 'swift',
+            'base_amount' => 85000, // Above minimum threshold
+            'amount' => 85000,
+        ]);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+        $request['content']['payment_ids'] = [preg_replace('/^pay_/', '', $payment['id'])];
+        $request['content']['include_merchants'] = [$payment['merchant_id']];
+        $request['content']['exclude_merchants'] = [];
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response);
+        // Should show 1 email sent since SWIFT is not skipped
+        $this->assertEquals(1, $response['email_reports']['upload_invoice']['success_count']);
+
+        // Verify that B2bUploadInvoice email was queued
+        Mail::assertQueued(B2bUploadInvoice::class);
+    }
+
+    /**
+     * Test that B2B notification emails are NOT skipped for ACH payments
+     * when CB_SKIP_B2B_EXPORT_INVOICE feature flag is disabled
+     */
+    public function testNotifyUploadInvoiceDoesNotSkipACHWithoutFeatureFlag()
+    {
+        Mail::fake();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        // DO NOT enable the CB_SKIP_B2B_EXPORT_INVOICE feature flag
+
+        // Create a payment with ACH wallet
+        $payment = $this->fixtures->create('payment', [
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'status' => 'authorized',
+            'method' => 'intl_bank_transfer',
+            'gateway' => 'currency_cloud',
+            'wallet' => 'ach',
+            'base_amount' => 85000, // Above minimum threshold
+            'amount' => 85000,
+        ]);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+        $request['content']['payment_ids'] = [preg_replace('/^pay_/', '', $payment['id'])];
+        $request['content']['include_merchants'] = [$payment['merchant_id']];
+        $request['content']['exclude_merchants'] = [];
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response);
+        // Should show 1 email sent since feature flag is disabled
+        $this->assertEquals(1, $response['email_reports']['upload_invoice']['success_count']);
+
+        // Verify that B2bUploadInvoice email was queued
+        Mail::assertQueued(B2bUploadInvoice::class);
+    }
+
+    /**
+     * Test that payments below the minimum threshold are always skipped
+     * regardless of feature flag status
+     */
+    public function testNotifyUploadInvoiceSkipsPaymentsBelowThreshold()
+    {
+        Mail::fake();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        // Enable the CB_SKIP_B2B_EXPORT_INVOICE feature flag
+        $this->fixtures->merchant->addFeatures('skip_b2b_export_invoice', $merchantDetail['merchant_id']);
+
+        // Create a payment with ACH wallet but below threshold
+        $payment = $this->fixtures->create('payment', [
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'status' => 'authorized',
+            'method' => 'intl_bank_transfer',
+            'gateway' => 'currency_cloud',
+            'wallet' => 'ach',
+            'base_amount' => 84000, // Below minimum threshold of 85000
+            'amount' => 84000,
+        ]);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+        $request['content']['payment_ids'] = [preg_replace('/^pay_/', '', $payment['id'])];
+        $request['content']['include_merchants'] = [$payment['merchant_id']];
+        $request['content']['exclude_merchants'] = [];
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response);
+        // Should show 0 emails sent since payment is below threshold
+        $this->assertEquals(0, $response['email_reports']['upload_invoice']['success_count']);
+
+        // Verify that no B2bUploadInvoice email was queued
+        Mail::assertNotQueued(B2bUploadInvoice::class);
     }
 }

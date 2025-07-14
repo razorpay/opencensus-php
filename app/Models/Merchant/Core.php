@@ -132,6 +132,8 @@ use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
 use Throwable;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
+use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
+
 
 class Core extends Base\Core
 {
@@ -7518,8 +7520,16 @@ class Core extends Base\Core
     {
         // If business_website is empty, then don't allow international by default
         $businessWebsite = $merchant->getWebsite() ?? $merchantDetails->getWebsite();
+       
+        $freelancerUrl = null;
+        $businessDetail = $merchantDetails->businessDetail;
 
-        if (empty($businessWebsite) === false)
+        if ($businessDetail !== null) {
+            $websiteDetails = $businessDetail->getWebsiteDetails();
+            $freelancerUrl = $websiteDetails[businessDetailConstants::CROSS_BORDER_FREELANCER_URL] ?? null;
+        }
+
+        if (empty($businessWebsite) === false || empty($freelancerUrl) === false)
         {
             return true;
         }

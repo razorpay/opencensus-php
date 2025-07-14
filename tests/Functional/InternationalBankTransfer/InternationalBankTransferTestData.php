@@ -632,4 +632,136 @@ return [
             ]
         ]
     ],
+
+    'testNotifyUploadInvoiceSkipsACHWithFeatureFlag' => [
+        'request' => [
+            'url' => '/v1/b2b-exports/notification',
+            'method' => 'post',
+            'content' => [
+                'limit' => 1,
+                'offset' => 0,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'email_reports' => [
+                    'upload_invoice' => [
+                        'success_count' => 0,
+                        'failure_count' => 0,
+                        'total_payments' => 1,
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testNotifyUploadInvoiceSkipsFPSWithFeatureFlag' => [
+        'request' => [
+            'url' => '/v1/b2b-exports/notification',
+            'method' => 'post',
+            'content' => [
+                'limit' => 1,
+                'offset' => 0,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'email_reports' => [
+                    'upload_invoice' => [
+                        'success_count' => 0,
+                        'failure_count' => 0,
+                        'total_payments' => 1,
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testNotifyUploadInvoiceSkipsSEPAWithFeatureFlag' => [
+        'request' => [
+            'url' => '/v1/b2b-exports/notification',
+            'method' => 'post',
+            'content' => [
+                'limit' => 1,
+                'offset' => 0,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'email_reports' => [
+                    'upload_invoice' => [
+                        'success_count' => 0,
+                        'failure_count' => 0,
+                        'total_payments' => 1,
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testNotifyUploadInvoiceDoesNotSkipSWIFTWithFeatureFlag' => [
+        'request' => [
+            'url' => '/v1/b2b-exports/notification',
+            'method' => 'post',
+            'content' => [
+                'limit' => 1,
+                'offset' => 0,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'email_reports' => [
+                    'upload_invoice' => [
+                        'success_count' => 1,
+                        'failure_count' => 0,
+                        'total_payments' => 1,
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testNotifyUploadInvoiceDoesNotSkipACHWithoutFeatureFlag' => [
+        'request' => [
+            'url' => '/v1/b2b-exports/notification',
+            'method' => 'post',
+            'content' => [
+                'limit' => 1,
+                'offset' => 0,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'email_reports' => [
+                    'upload_invoice' => [
+                        'success_count' => 1,
+                        'failure_count' => 0,
+                        'total_payments' => 1,
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testNotifyUploadInvoiceSkipsPaymentsBelowThreshold' => [
+        'request' => [
+            'url' => '/v1/b2b-exports/notification',
+            'method' => 'post',
+            'content' => [
+                'limit' => 1,
+                'offset' => 0,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'email_reports' => [
+                    'upload_invoice' => [
+                        'success_count' => 0,
+                        'failure_count' => 0,
+                        'total_payments' => 1,
+                    ]
+                ]
+            ]
+        ]
+    ],
 ];

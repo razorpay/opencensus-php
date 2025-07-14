@@ -87,4 +87,5 @@ class Category
     const BUDGET_GROUP                 = 'budget_group';
     const PETTY_CASH_GROUP             = 'petty_cash_group';
     const EXPENSE_CATEGORY_GROUP       = 'expense_category_group';
+    const PACB_B2B_EXPORT_GROUP        = 'pacb_b2b_export_group';
 }

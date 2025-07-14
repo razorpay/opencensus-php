@@ -1525,4 +1525,17 @@ class BankTransferController extends Controller
             );
         }
     }
+
+    public function createAccountForCurrencyCloudViaAdmin()
+    {
+        RuntimeManager::setTimeLimit(1800);
+        RuntimeManager::setMemoryLimit("1024M");
+
+        $input = Request::all();
+
+        $response = $this->service()->createAccountForCurrencyCloudViaAdmin($input);
+
+        return ApiResponse::json($response);
+
+    }
 }

@@ -15,6 +15,7 @@ use RZP\Trace\TraceCode;
 use RZP\Services\Reminders;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Merchant\InternationalEnablement as InternationalActivationMail;
+use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 
 class Service extends Base\Service
 {
@@ -180,6 +181,7 @@ class Service extends Base\Service
             // add international enablement link
             $workflowData['detail_url'] = sprintf(Constants::IEDetailDashboardLink, $mode, $detailId);
 
+            $this->addFreelancerUrlToWorkflowData($workflowData);
             // add corresponding document download links
 
             $documentsArr = (new Document\Core)->convertDocObjectsToExternalFormat($ieDetail->documents);
@@ -223,6 +225,41 @@ class Service extends Base\Service
 
         (new Typeform\Core)->processInHouseQuestionnaire($this->merchant, $workflowData, $input, $version);
     }
+
+
+        /**
+     * Add freelancer URL to workflow data if present in business details
+     * 
+     *
+     * @param array $workflowData
+     */
+    private function addFreelancerUrlToWorkflowData(array &$workflowData)
+    {
+            $merchantDetails = (new Merchant\Detail\Core)->getMerchantDetails($this->merchant);
+            
+            if ($merchantDetails !== null) {
+                $businessDetail = $merchantDetails->businessDetail;
+
+                $this->trace->info(TraceCode::INTERNATIONAL_ENABLEMENT_DATA, [
+                    'businessDetail'     => $businessDetail,
+                ]);
+                if ($businessDetail !== null) {
+                    $websiteDetails = $businessDetail->getWebsiteDetails();
+                    
+                    $freelancerUrl = $websiteDetails[businessDetailConstants::CROSS_BORDER_FREELANCER_URL] ?? null;
+                    
+                    if (empty($freelancerUrl) === false) {
+                        $workflowData['freelancer_url'] = $freelancerUrl;
+
+                        $this->trace->info(TraceCode::INTERNATIONAL_ENABLEMENT_DATA, [
+                            'updated_worflow_data'     => $workflowData,
+                        ]);
+        
+                    }
+                }
+            }
+    }
+
 
     private function sanitizeExternalPayload(array $input): ? array
     {

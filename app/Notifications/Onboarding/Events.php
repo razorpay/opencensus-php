@@ -271,7 +271,7 @@ class Events
         self::PARTNER_SUBMERCHANT_NC_COUNT_ONBOARDING_PAUSE                  => 'whatsapp_partnerships_partner_submerchant_nc_count_onboarding_pause',
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_LIVE_SETTLEMENTS_LIVE    => 'whatsapp_partnerships_partner_submerchant_nc_count_payments_live_settlements_live',
         self::PARTNER_SUBMERCHANT_NC_COUNT_PAYMENTS_NOT_LIVE                 => 'whatsapp_partnerships_partner_submerchant_nc_count_payments_not_live',
-        self::MONEYSAVER_PAYMENTS_ENABLED                                    => 'payments_onboarding_moneysaver',
+        self::MONEYSAVER_PAYMENTS_ENABLED                                    => 'payments_onboarding_moneysaver_enabled',
 
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITH_DEVICE       => 'in_person_under_review_with_device',
         self::IN_PERSON_MERCHANT_UNDER_REVIEW_WITHOUT_DEVICE    => 'in_person_under_review_without_device',
@@ -411,7 +411,7 @@ class Events
     ];
 
     const WHATSAPP_TEMPLATES_HEADER = [
-        self::MONEYSAVER_PAYMENTS_ENABLED             => 'Now live: Accept USD, EUR, GBP and more with your global account',
+        self::MONEYSAVER_PAYMENTS_ENABLED             => 'Now live: Accept USD, EUR, GBP and more with global accounts',
     ];
 
     // blade templates
@@ -689,7 +689,7 @@ class Events
         self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
         self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED
     ];
-    
+
     const EMAIL_TEMPLATES_CUSTOM_NAMESPACES = [
         self::MONEYSAVER_PAYMENTS_ENABLED             => 'payments_crossborder'
     ];

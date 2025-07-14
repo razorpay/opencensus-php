@@ -2572,6 +2572,13 @@ return [
                 'assignable'  => true,
             ],
         ],
+        PermissionCategory::PACB_B2B_EXPORT_GROUP => [
+            Permission::PACB_ADMIN_MONEY_SAVER_ACTIVATE => [
+                'description' => 'Permission to activate PACB money saver account' ,
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
+        ],
     ],
 
     'workflows' => [

@@ -67,6 +67,8 @@ class Role
     const IT_L1                 = 'it_l1';
     const IT_L2                 = 'it_l2';
 
+    const PACB_MONEY_SAVER_ADMIN = 'pacb_money_saver_admin';
+
     const ALL_ROLES = [
         self::ADMIN_READONLY,
 
