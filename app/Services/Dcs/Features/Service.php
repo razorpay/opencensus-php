@@ -315,6 +315,8 @@ class Service extends Base
         else
         {
             $this->trace->info(TraceCode::DCS_PROXY_EDIT_FAILURE, [
+                "request" => $req,
+                "response" => $proxyResponse->getResponse(),
                 'response_size' => sizeof($proxyResponse->getResponse())
             ]);
 
