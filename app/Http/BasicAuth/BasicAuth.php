@@ -2032,6 +2032,11 @@ class BasicAuth
         return (($this->getInternalApp() === 'admin-experience-service') || ($this->getInternalApp() === 'aes_service'));
     }
 
+    public function isAgentServiceApp()
+    {
+        return $this->internalApp === 'agent-service';
+    }
+
     public function isMobApp()
     {
         return $this->internalApp === 'master_onboarding';
@@ -2090,6 +2095,7 @@ class BasicAuth
                 ($this->isEzetapApiApp() === true) or
                 ($this->isReminderServiceAuth() === true) or
                 ($this->isXperienceApp() === true) or
+                ($this->isAgentServiceApp() === true) or
                 (($this->isBatchApp() === true) and
                  $this->request->headers->get(RequestHeader::X_Creator_Type) == 'user') or
                 (($this->isExpress() === true) and

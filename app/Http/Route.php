@@ -12725,6 +12725,10 @@ class Route
             'internal_merchant_details_fetch',
         ],
 
+        'agent-service' => [
+            'payment_fetch_multiple',
+        ],
+
         'metro' => [
             'payout_email_attachments',
             'account_service_handle_update_event',

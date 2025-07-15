@@ -70,6 +70,10 @@ return [
         'secret'    => env('CRON_PASSWORD'),
     ],
 
+    'agent-service' => [
+        'secret'    => env('AGENT_SERVICE_API_SECRET'),
+    ],
+
     'h2h' => [
         'secret'   => env('APP_H2H_SECRET'),
     ],
@@ -2279,5 +2283,6 @@ return [
     
     'user_service' => [
         'secret' => env('USER_SERVICE_SECRET'),
-    ]
+    ],
+
 ];
