@@ -2320,6 +2320,15 @@ class MerchantController extends Controller
         return $response;
     }
 
+    public function syncMerchantVerification($merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_VERIFICATION_DETAIL)->upsertMerchantVerification($merchantId, $input);
+
+        return $response;
+    }
+
     public function putPreSignupDetails()
     {
         $input = Request::all();

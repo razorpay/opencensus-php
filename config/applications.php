@@ -2206,6 +2206,13 @@ return [
         'secret'    => env('APP_RAZORASSIST_SECRET')
     ],
 
+    'mco' => [
+        'mock'      => env('MCO_SERVICE_MOCK', false),
+        'secret'    => env('MCO_SERVICE_SECRET'),
+        'username'  => env('MCO_SERVICE_KEY'),
+        'password'  => env('MCO_SERVICE_SECRET'),
+    ],
+
     'jpmc' => [
         'jpmc_pub_key'         => env('OPGSP_JPMC_PUB_KEY'),
         'jpmc_priv_key'        => env('OPGSP_JPMC_PRIV_KEY'),

@@ -151,4 +151,47 @@ class Service extends Base\Service
 
         return $verificationStatuses;
     }
+
+    public function upsertMerchantVerification(string $merchantId, array $input): array
+    {
+        $result = [
+            'success' => true
+        ];
+        try {
+            $verificationDetails = $input['merchant_verification'] ?? [];
+            $bvsValidationDetails = $input['bvs_validation'] ?? [];
+            $this->trace->info(TraceCode::UPSERT_MERCHANT_VERIFICATION, [
+                'merchant_id'            => $merchantId,
+                'verification_details'   => $verificationDetails,
+                'bvs_validation_details' => $bvsValidationDetails
+            ]);
+            if(!empty($verificationDetails))
+            {
+                foreach ($verificationDetails as $index => $verificationDetail)
+                {
+                    $this->core->savePGOSDataToAPI($verificationDetails);
+                }
+            }
+            if(!empty($bvsValidationDetails))
+            {
+                foreach($bvsValidationDetails as $index => $bvsValidationDetail)
+                {
+                    (new BvsCore())->savePGOSDataToAPI($bvsValidationDetails);
+                }
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+            $result = [
+                'success' => false,
+                'error'   => [
+                    'code'    => ErrorCode::SERVER_ERROR_MERCHANT_VERIFICATION_UPSERT_FAILED,
+                    'message' => $e->getMessage()
+                ]
+            ];
+        }
+
+        return $result;
+    }
 }

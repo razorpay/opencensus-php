@@ -956,6 +956,7 @@ class Route
         'merchant_activation_upload_file_admin'    => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'               => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
         'merchant_coupons_apply'                   => ['post',     'merchant/activation/coupons/apply',              'MerchantController@postApplyCoupon'                                ],
+        'merchant_verification_sync'               => ['post',     'merchant/{id}/verification',                     'MerchantController@syncMerchantVerifiication'                                ],
 
         //Digilocker redirect flow
         'merchant_identity_verification'           => ['post',     'merchant/identity/verification',                 'MerchantController@merchantIdentityVerification'                   ],
@@ -5866,6 +5867,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'merchant_verification_sync',
         'user_internal_fetch_by_email',
         'fetch_user_details',
         'upsert_user_details',
@@ -18605,7 +18607,10 @@ class Route
             'dispute_edit',
             'internal_create_workflow',
         ],
-
+        'mco' => [
+            'merchant_submit_internal',
+            'merchant_verification_sync',
+        ],
         'pgos' => [
             'user_fetch_manager_email_by_mid',
             'user_internal_fetch_by_email',

@@ -13232,7 +13232,16 @@ class Core extends Base\Core
                                 "url" => "https://sme-dashboard.dev.razorpay.in/terms",
                                 "system_approved" => true
                            ]
-                    ]
+                    ],
+                    "section_status" : 1
+                 ]
+            ]
+
+            [
+                "terms" => [
+                    "status"         => "submitted",
+                    "publish_url" => "https://sme-dashboard.dev.razorpay.in/terms"
+                    "section_status" => 3
                  ]
             ]
             */
