@@ -11266,7 +11266,7 @@ class Processor
         }
         else if ($this->isRoutedThroughNbPlusService($action, $gatewayData) === true)
         {
-            $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::NB_PLUS_SERVICE;
+            $gatewayData[Payment\Entity::CPS_ROUTE] = $gatewayData[E::PAYMENT][Payment\Entity::CPS_ROUTE];
 
             $gatewayData['callbackUrl'] = $this->getCallbackUrl();
 
@@ -11313,6 +11313,8 @@ class Processor
                     case Payment\Entity::CARD_PAYMENT_SERVICE:
                         return $this->callCpsAction($this->payment, $gateway, $action, $gatewayData);
                     case Payment\Entity::NB_PLUS_SERVICE:
+                        return $this->callNbPlusServiceAction($this->payment, $gateway, $action, $gatewayData);
+                    case Payment\Entity::NB_PLUS_SERVICE_PAYMENTS:
                         return $this->callNbPlusServiceAction($this->payment, $gateway, $action, $gatewayData);
                     case Payment\Entity::UPI_PAYMENT_SERVICE:
                         return $this->callUpiPaymentServiceAction($this->payment, $gateway, $action, $gatewayData);

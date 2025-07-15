@@ -74,7 +74,7 @@ trait Topup
         //
 
         if (($gateway !== Payment\Gateway::SHARP) and
-            (in_array($payment->getWallet(), [Wallet::MOBIKWIK, Wallet::BAJAJPAY, Wallet::PAYTM]) === false) and
+            (in_array($payment->getWallet(), [Wallet::MOBIKWIK, Wallet::BAJAJPAY, Wallet::PAYTM, Wallet::FREECHARGE]) === false) and
             ($payment->getGlobalCustomerId() === null))
         {
             throw new Exception\LogicException(
@@ -82,7 +82,7 @@ trait Topup
         }
 
         if (($gateway !== Payment\Gateway::SHARP) and
-            (in_array($payment->getWallet(), [Wallet::MOBIKWIK, Wallet::BAJAJPAY, Wallet::PAYTM]) === false) and
+            (in_array($payment->getWallet(), [Wallet::MOBIKWIK, Wallet::BAJAJPAY, Wallet::PAYTM, Wallet::FREECHARGE]) === false) and
             ($payment->getGlobalTokenId() === null))
         {
             throw new Exception\BadRequestException(

@@ -40,5 +40,6 @@ class Action
 
     const PAYMENTS_SUPPORTED_ACTIONS = [
         self::FORCE_AUTHORIZE_FAILED,
+        self::TOPUP,
     ];
 }
