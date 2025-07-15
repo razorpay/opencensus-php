@@ -3174,7 +3174,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CC_ROUTER_ROUTE_ERROR                                 = 'CC_ROUTER_ROUTE_ERROR';
     const CC_ROUTER_EXCEPTION                                   = 'CC_ROUTER_EXCEPTION';
     const CC_ROUTER_SPLITZ_ERROR                                = 'CC_ROUTER_SPLITZ_ERROR';
-
+    const CC_ROUTER_SHADOW_FALLBACK_SUCCESS                     = 'CC_ROUTER_SHADOW_FALLBACK_SUCCESS';
+    const CC_ROUTER_SHADOW_FALLBACK_FAILURE                     = 'CC_ROUTER_SHADOW_FALLBACK_FAILURE';
+    const CC_ROUTER_SHADOW_FALLBACK_INVALID_RESPONSE            = 'CC_ROUTER_SHADOW_FALLBACK_INVALID_RESPONSE';
+    
+    const CC_ROUTER_ADMIN_DASHBOARD_ROUTING                     = 'CC_ROUTER_ADMIN_DASHBOARD_ROUTING';
     const PRICING_PLAN_RULE_UPDATE_ATTEMPT                      = 'PRICING_PLAN_RULE_UPDATE_ATTEMPT';
     const PRICING_PLAN_RULE_ADD_SUCCESS                         = 'PRICING_PLAN_RULE_ADD_SUCCESS';
     const BUY_PRICING_PLAN_RULE_ADD_SUCCESS                     = 'BUY_PRICING_PLAN_RULE_ADD_SUCCESS';

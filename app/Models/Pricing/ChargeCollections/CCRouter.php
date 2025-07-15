@@ -17,6 +17,8 @@ use RZP\Constants\Environment;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Settlement\Channel;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+
 
 
 
@@ -45,6 +47,8 @@ class CCRouter
     const SPLITZ_RESPONSE_ERROR = 'splitz_response_error';
     const EXCEPTION = 'exception';
     const TRANSFORMATION_NOT_FOUND = 'transformation_not_found';
+    const SHADOW_FALLBACK_SUCCESS = 'shadow_fallback_success';
+    const SHADOW_FALLBACK_FAILURE = 'shadow_fallback_failure';
 
 
     private const ROUTE_MAP = array(
@@ -85,6 +89,8 @@ class CCRouter
         'RZP\\Models\\Pricing\\Repository\\getPlanRule' => true,
         'RZP\\Models\\Pricing\\Repository\\getPricingFromPricingId' => true,
         'RZP\\Models\\Pricing\\Repository\\getInstantRefundsDefaultPricingPlanForMethod' => true,
+        'RZP\\Models\\Pricing\\Repository\\findOrFailByPublicIdWithParams' => true,
+        'RZP\\Models\\Pricing\\Repository\\fetch' => true,
         'RZP\\Models\\Pricing\\Fee\\getPricingPlanForFeesCalculation' => true,
         'RZP\\Models\\Pricing\\PayoutFee\\getPricingPlanForFeesCalculation' => true,
     );
@@ -113,6 +119,8 @@ class CCRouter
         'RZP\\Models\\Pricing\\Repository\\getAppPayoutPricingRules' => ChargeCollections::GetPricingPlanURL,
         'RZP\\Models\\Pricing\\Repository\\getPlanRule' => ChargeCollections::GetPricingRuleURL,
         'RZP\\Models\\Pricing\\Repository\\getPricingFromPricingId' => ChargeCollections::GetPricingRuleURL,
+        'RZP\\Models\\Pricing\\Repository\\findOrFailByPublicIdWithParams' => ChargeCollections::GetPricingRuleURL,
+        'RZP\\Models\\Pricing\\Repository\\fetch' => ChargeCollections::GetPricingPlanURL,
         'RZP\\Models\\Pricing\\Fee\\getPricingPlanForFeesCalculation' => ChargeCollections::GetPricingPlansForFeesCalculationURL,
         'RZP\\Models\\Pricing\\PayoutFee\\getPricingPlanForFeesCalculation' => ChargeCollections::GetPricingPlansForFeesCalculationURL,
     );
@@ -155,8 +163,10 @@ class CCRouter
         $planId = $ccRequest['plan_id'] ?? $ccRequest['id'];
         if($planId == null) $planId = '';
         $startTimeMs = round(microtime(true) * 1000);
+        
         $rampPhase = $this->shouldRouteRequestToChargeCollections($fqcn, $planId);
-
+        
+        $isReadsRequest = isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn]);
         $methodName = Utils::extractMethodFromFunction($fqcn);
 
         // Modify the legacyCallable to pass rampPhase only if the legacy method accepts it
@@ -169,17 +179,44 @@ class CCRouter
         if ($rampPhase == CCRouter::DISABLE || $rampPhase == CCRouter::SHADOW) {
             // Legacy request
             $legacyStartTimeMs = round(microtime(true) * 1000);
-            $legacyResponse = call_user_func($legacyCallableWithPhase);
-            $legacyEndTimeMs = round(microtime(true) * 1000);
-            $this->trace->histogram(Metric::CC_ROUTER_PRICING_LEGACY_CALL_TIME, $legacyEndTimeMs- $legacyStartTimeMs, $metricDimensions);
+            $legacyResponse = null;
+            $cachedCCResponse = null;
+            
+            try {
+                $legacyResponse = call_user_func($legacyCallableWithPhase);      
+                
+                $legacyEndTimeMs = round(microtime(true) * 1000);
+                $this->trace->histogram(Metric::CC_ROUTER_PRICING_LEGACY_CALL_TIME, $legacyEndTimeMs- $legacyStartTimeMs, $metricDimensions);
+            } catch (\Throwable $e) {
+                if ($rampPhase == CCRouter::SHADOW && $isReadsRequest && $this->isNotFoundException($e)) {
+                    list($fallbackResponse, $ccResponse) = $this->attemptShadowFallback($fqcn, $ccRequest, $methodName, $rampPhase, 'exception', $e);
+                    if ($fallbackResponse !== null) {
+                        return $fallbackResponse;
+                    }else{
+                        $cachedCCResponse = $ccResponse;
+                    }
+                }
+                
+                throw $e;
+            }
+
+            if ($rampPhase == CCRouter::SHADOW && $isReadsRequest && $this->isEmptyLegacyResponse($legacyResponse, $fqcn)) {
+                list($fallbackResponse, $ccResponse) = $this->attemptShadowFallback($fqcn, $ccRequest, $methodName, $rampPhase, 'empty_response', null);
+                if ($fallbackResponse !== null) {
+                    return $fallbackResponse;
+                }else{
+                    $cachedCCResponse = $ccResponse;
+                }
+            }
 
             if ($methodName == 'postAddBulkPricingRules'){
                 list($legacyResponse, $ccRequest) = $this->modifyBulkRequestBasedOnLegacyResponse($legacyResponse, $ccRequest);
             }
 
             if ($rampPhase == CCRouter::SHADOW) {
-                $ccResponse = $this->sendChargeCollectionsRequest($fqcn, $ccRequest, $rampPhase);
-                if (!isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn])) {
+                $ccResponse = $cachedCCResponse ?: $this->sendChargeCollectionsRequest($fqcn, $ccRequest, $rampPhase);
+                
+                if (!$isReadsRequest) {
                     $this->trace->info(TraceCode::CC_ROUTER_SERVICE_RESPONSE, [
                         'method' => $methodName,
                         'ramp_phase' => CCRouter::SHADOW,
@@ -193,10 +230,8 @@ class CCRouter
             $this->trace->histogram(Metric::CC_ROUTER_TOTAL_TIME, $endTimeMs- $startTimeMs, $metricDimensions);
 
             return $legacyResponse;
-
         } else if ($rampPhase == CCRouter::REVERSE_SHADOW || $rampPhase == CCRouter::ENABLE) {
             // Route to ChargeCollections
-            $isReadsRequest = isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn]);
             $fallbackToLegacy = false;
             try {
                 $response = $this->sendChargeCollectionsRequest($fqcn, $ccRequest, $rampPhase);
@@ -215,6 +250,7 @@ class CCRouter
                     $legacyStartTimeMs = round(microtime(true) * 1000);
                     $legacyResponse = call_user_func($legacyCallableWithPhase);
                     $legacyEndTimeMs = round(microtime(true) * 1000);
+                    
                     $this->trace->histogram(Metric::CC_ROUTER_PRICING_LEGACY_CALL_TIME, $legacyEndTimeMs- $legacyStartTimeMs, $metricDimensions);
                     $this->trace->info(TraceCode::API_PRICING_LEGACY_RESPONSE, [
                         'method' => $methodName,
@@ -277,41 +313,11 @@ class CCRouter
                 'function' => $fqcn,
                 'ramp_phase' => $rampPhase,
                 ]);
-
-            if (isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn]) && self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlansSummaryURL) {
-                $response = $this->app->charge_collections->getPricingPlansSummary($input);
-                return $this->transformSummaryResponse($response);
-            }
-
-            if (isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn]) && self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlansForFeesCalculationURL) {
-                $response = $this->app->charge_collections->getPricingPlansForFeesCalculation($input);
-                return $this->transformPricingPlansForFeesCalculation($response, $input);
-            }
-
-            if (isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn]) && self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlanURL) {
-                $response = $this->app->charge_collections->getPricingPlan($input);
-                if(in_array($fqcn,["RZP\Models\Pricing\Repository\getPricingRuleByMultipleParams",
-                    "RZP\Models\Pricing\Repository\getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId",
-                    "RZP\Models\Pricing\Repository\getZeroPricingPlanRuleForMethod"])) {
-                    $modifiedResponse = [];
-                    if(isset($response['rules']) && count($response['rules']) > 0) {
-                        $modifiedResponse = ['rule' => $response['rules'][count($response['rules']) - 1]];
-                    }
-                    return $this->transformToPricingModel($modifiedResponse);
-                }
-                else if ($fqcn === "RZP\Models\Pricing\Repository\getPricingRuleIdsByMerchant") {
-                    $planModel = $this->transformToPlanModel($response);
-                    $ids = array_column($planModel->toArray(), 'id');
-                    return $ids;
-                }
-                else {
-                    return $this->transformToPlanModel($response);
-                }
-            }
-
-            if (isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn]) && self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingRuleURL) {
-                $response = $this->app->charge_collections->getPricingRule($input);
-                return $this->transformToPricingModel($response);
+            
+            $isReadsRequest = isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn]);
+            
+            if ($isReadsRequest) {
+                return $this->sendReadsCCRequestAndTransformCCResponse($fqcn, $input);
             }
 
             if ($methodName == 'createPlan'){
@@ -346,6 +352,8 @@ class CCRouter
             return $response;
         }catch (\Throwable $e){
             $this->trace->traceException($e, Trace::WARNING, TraceCode::CC_ROUTER_EXCEPTION);
+            
+            // TODO: change this to a metric monitorChargeCollectionsErrorResponseReturned
             $this->monitorChargeCollectionsRequestNotRouted($routeName, $fqcn ,self::EXCEPTION, $rampPhase);
 
             if ($rampPhase == self::REVERSE_SHADOW || $rampPhase == self::ENABLE){
@@ -383,9 +391,9 @@ class CCRouter
             }
 
             $experimentID = $this->splitzExperimentID;
-            // generate a random ID to randomly assign experiment variant
+            // if planID not present, keep in shadow mode
             if (empty($planID)) {
-                $planID = UniqueIdEntity::generateUniqueId();
+                return self::SHADOW;
             }
 
             $result = $this->checkSplitzExperiment($planID, $experimentID);
@@ -495,6 +503,45 @@ class CCRouter
         return isset(self::FUNCTION_MAP[$functionName]) && self::FUNCTION_MAP[$functionName] === true;
     }
 
+    private function sendReadsCCRequestAndTransformCCResponse($fqcn, $input) {
+       
+        if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlansSummaryURL) {
+            $response = $this->app->charge_collections->getPricingPlansSummary($input);
+            return $this->transformSummaryResponse($response);
+        }
+
+        if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlansForFeesCalculationURL) {
+            $response = $this->app->charge_collections->getPricingPlansForFeesCalculation($input);
+            return $this->transformPricingPlansForFeesCalculation($response, $input);
+        }
+
+        if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlanURL) {
+            $response = $this->app->charge_collections->getPricingPlan($input);
+            if(in_array($fqcn,["RZP\Models\Pricing\Repository\getPricingRuleByMultipleParams",
+                "RZP\Models\Pricing\Repository\getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId",
+                "RZP\Models\Pricing\Repository\getZeroPricingPlanRuleForMethod"])) {
+                $modifiedResponse = [];
+                if(isset($response['rules']) && count($response['rules']) > 0) {
+                    $modifiedResponse = ['rule' => $response['rules'][count($response['rules']) - 1]];
+                }
+                return $this->transformToPricingModel($modifiedResponse);
+            }
+            else if ($fqcn === "RZP\Models\Pricing\Repository\getPricingRuleIdsByMerchant") {
+                $planModel = $this->transformToPlanModel($response);
+                $ids = array_column($planModel->toArray(), 'id');
+                return $ids;
+            }
+            else {
+                return $this->transformToPlanModel($response);
+            }
+        }
+
+        if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingRuleURL) {
+            $response = $this->app->charge_collections->getPricingRule($input);
+            return $this->transformToPricingModel($response);
+        }
+    }
+
     private function transformSummaryResponse($response) {
         $responseForPlanMap = ['rules' => []];
         foreach ($response['plans'] as $planResponse) {
@@ -521,6 +568,55 @@ class CCRouter
         }
         $pricingPlan = $planMap[$planId];
         return $this->addFallbackPricingRules($pricingPlan, $input, $planMap);
+    }
+
+    // transforms to Pricing Model -> a single Pricing(rule)
+    private function transformToPricingModel($response)
+    {
+        $pricingEntity = new PricingEntity;
+        if(!isset($response['rule'])) {
+            return $pricingEntity;
+        } else {
+            try {
+                $entityClass = PricingEntity::class;
+                $entityClass::unguard();
+                $pricingEntity = new PricingEntity($response['rule']);
+                $pricingEntity->exists = true;
+            } catch (\Throwable $e) {
+                throw new \Exception('Could not map charge collections response to entity');
+            } finally {
+                $entityClass::reguard();
+            }
+        }
+        return $pricingEntity;
+    }
+
+    // transforms to Plan Model -> a collection of Pricing(rules)
+    public function transformToPlanModel($response)
+    {
+        if(!isset($response['rules']) || count($response['rules']) == 0) {
+            return new PlanCollection;
+        }
+        try {
+            $pricingEntities = array();
+            $entityClass = PricingEntity::class;
+            foreach($response['rules'] as $rule) {
+                try {
+                    $entityClass::unguard();
+                    $pricingEntity = new PricingEntity($rule);
+                    $pricingEntity->exists = true;
+                    $pricingEntities[] = $pricingEntity;
+                } catch (\Throwable $e) {
+                    throw new \Exception('Could not map charge collections response to entity');
+                } finally {
+                    $entityClass::reguard();
+                }
+            }
+            return new PlanCollection($pricingEntities);
+        } catch (\Throwable $e) {
+            throw new \Exception('Could not map charge collections response to entity');
+        }
+        return new PlanCollection;
     }
 
     private function addFallbackPricingRules(Plan $pricingPlan, $input, $planMap)
@@ -745,52 +841,6 @@ class CCRouter
         }
 
         return [$ccResponse, $legacyRequest];
-    }
-    private function transformToPricingModel($response)
-    {
-        $pricingEntity = new PricingEntity;
-        if(!isset($response['rule'])) {
-            return $pricingEntity;
-        } else {
-            try {
-                $entityClass = PricingEntity::class;
-                $entityClass::unguard();
-                $pricingEntity = new PricingEntity($response['rule']);
-                $pricingEntity->exists = true;
-            } catch (\Throwable $e) {
-                throw new \Exception('Could not map charge collections response to entity');
-            } finally {
-                $entityClass::reguard();
-            }
-        }
-        return $pricingEntity;
-    }
-
-    public function transformToPlanModel($response)
-    {
-        if(!isset($response['rules']) || count($response['rules']) == 0) {
-            return new PlanCollection;
-        }
-        try {
-            $pricingEntities = array();
-            $entityClass = PricingEntity::class;
-            foreach($response['rules'] as $rule) {
-                try {
-                    $entityClass::unguard();
-                    $pricingEntity = new PricingEntity($rule);
-                    $pricingEntity->exists = true;
-                    $pricingEntities[] = $pricingEntity;
-                } catch (\Throwable $e) {
-                    throw new \Exception('Could not map charge collections response to entity');
-                } finally {
-                    $entityClass::reguard();
-                }
-            }
-            return new PlanCollection($pricingEntities);
-        } catch (\Throwable $e) {
-            throw new \Exception('Could not map charge collections response to entity');
-        }
-        return new PlanCollection;
     }
 
     private function compareCCAndApiReponse($ccResponse, $legacyResponse, $fqcn, $rampPhase)
@@ -1027,5 +1077,156 @@ class CCRouter
                return;
            }
         }
+    }
+
+    /**
+     * Check if the exception indicates a "not found" scenario
+     * @param \Throwable $e
+     * @return bool
+     */
+    private function isNotFoundException(\Throwable $e): bool
+    {
+        // Check for specific exception types and error codes that indicate "not found"
+        if ($e instanceof \RZP\Exception\BadRequestException) {
+            $errorCode = $e->getError()->getInternalErrorCode();
+            return in_array($errorCode, [
+                \RZP\Error\ErrorCode::BAD_REQUEST_INVALID_ID,
+                \RZP\Error\ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+            ]);
+        }
+        
+        if ($e instanceof \RZP\Exception\LogicException) {
+            $message = $e->getMessage();
+            return strpos($message, 'No pricing plan found') !== false ||
+                   strpos($message, 'No appropriate pricing rule found') !== false ||
+                   strpos($message, 'pricing rule absent') !== false;
+        }
+        
+        if ($e instanceof ModelNotFoundException) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Check if the legacy response is empty/null indicating no data found
+     * @param mixed $response
+     * @param string $fqcn
+     * @return bool
+     */
+    private function isEmptyLegacyResponse($response, string $fqcn): bool
+    {
+        if ($response === null) {
+            return true;
+        }
+        
+        // Check if response is a collection and is empty
+        if (is_object($response) && method_exists($response, 'count') && $response->count() === 0) {
+            return true;
+        }
+        
+        // Check if response is an array and is empty
+        if (is_array($response) && empty($response)) {
+            return true;
+        }
+        
+        // For specific methods that return objects, check if they're empty
+        if (is_object($response) && method_exists($response, 'getId') && empty($response->getId())) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Check if CC response has valid data
+     * @param mixed $response
+     * @return bool
+     */
+    private function isValidCCResponse($response): bool
+    {
+        if ($response === null) {
+            return false;
+        }
+        
+        // Check if response is a collection and has data
+        if (is_object($response) && method_exists($response, 'count') && $response->count() > 0) {
+            return true;
+        }
+        
+        // Check if response is an array and has data
+        if (is_array($response) && !empty($response)) {
+            return true;
+        }
+        
+        // For specific objects, check if they have valid data
+        if (is_object($response) && method_exists($response, 'getId') && !empty($response->getId())) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    private function attemptShadowFallback($fqcn, $ccRequest, $methodName, $rampPhase, $reason, $exception = null)
+    {
+        try {
+            $ccResponse = $this->sendChargeCollectionsRequest($fqcn, $ccRequest, $rampPhase);
+            
+            if ($this->isValidCCResponse($ccResponse)) {
+                $this->logShadowFallback($methodName, $rampPhase, $reason, 'success', $exception);
+                return [$ccResponse, $ccResponse];
+            }else{
+                $this->logShadowFallback($methodName, $rampPhase, $reason, 'invalid_response', $exception, null, $ccResponse);
+                return [null, $ccResponse];
+            }
+        } catch (\Throwable $ccException) {
+            $this->logShadowFallback($methodName, $rampPhase, $reason, 'failure', $exception, $ccException);
+        }
+
+        return [null, null];
+    }
+
+    private function logShadowFallback($methodName, $rampPhase, $reason, $outcome, $exception = null, $ccException = null, $ccResponse = null)
+    {
+        $logData = [
+            'method' => $methodName,
+            'ramp_phase' => $rampPhase,
+            'fallback_reason' => $reason,
+            'shadow_fallback_success' => $outcome === 'success',
+            'cc_response_available' => $outcome !== 'failure',
+            'mode' => $this->mode,
+        ];
+
+        if ($exception) {
+            $logData['legacy_exception'] = $exception->getMessage();
+            $logData['legacy_exception_type'] = get_class($exception);
+        }
+
+        if ($reason === 'empty_response') {
+            $logData['legacy_response_empty'] = true;
+        }
+
+        if ($ccException) {
+            $logData['cc_exception'] = $ccException->getMessage();
+        }
+
+        if ($ccResponse) {
+            $logData['cc_response_invalid'] = true;
+        }
+
+        if ($outcome === 'success') {
+            $traceCode = TraceCode::CC_ROUTER_SHADOW_FALLBACK_SUCCESS;
+        } else{
+            $traceCode = TraceCode::CC_ROUTER_SHADOW_FALLBACK_FAILURE;
+        }
+        $this->trace->info($traceCode, $logData);
+        
+        $metricData = [
+            'method' => $methodName,
+            'ramp_phase' => $rampPhase,
+            'fallback_status' => $outcome === 'success' ? self::SHADOW_FALLBACK_SUCCESS : self::SHADOW_FALLBACK_FAILURE
+        ];        
+        $this->trace->count(Metric::CC_ROUTER_SHADOW_FALLBACK, $metricData);
     }
 }

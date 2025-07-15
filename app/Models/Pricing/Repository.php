@@ -1580,4 +1580,116 @@ class Repository extends Base\Repository
 
         return $entity;
     }
+
+    /**
+     * Override findOrFailByPublicIdWithParams to route through CC Router for admin dashboard calls
+     */
+    public function findOrFailByPublicIdWithParams(string $id, array $input = [], string $connectionType = null): Base\PublicEntity
+    {
+        $fqcn = get_class($this) . '\\' . __FUNCTION__;
+        
+        // Log admin dashboard routing through CC Router
+        $this->trace->info(TraceCode::CC_ROUTER_ADMIN_DASHBOARD_ROUTING, [
+            'method' => 'findOrFailByPublicIdWithParams',
+            'id' => $id,
+            'input' => $input,
+            'connection_type' => $connectionType,
+            'routing_source' => 'admin_dashboard_fetch_entity_by_name_and_id'
+        ]);
+        
+        $legacyCallable = function () use ($id, $input, $connectionType) {
+            return $this->findOrFailByPublicIdWithParamsLegacy($id, $input, $connectionType);
+        };
+        
+        $ccRequest = $this->transformFindByIdRequest($id, $input, $connectionType);
+        
+        $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING);
+        
+        if (empty($ccResponse->getId())) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+        
+        return $ccResponse;
+    }
+
+    public function findOrFailByPublicIdWithParamsLegacy(string $id, array $input = [], string $connectionType = null): Base\PublicEntity
+    {
+        return parent::findOrFailByPublicIdWithParams($id, $input, $connectionType);
+    }
+
+    private function transformFindByIdRequest(string $id, array $input, ?string $connectionType): array
+    {
+        $ccRequest = ['id' => $id];
+        
+        $orgId = $this->getOrgIdForQuery(null);
+        if (strlen($orgId) > 0) {
+            $ccRequest['org_id'] = $orgId;
+        }
+        
+        if (isset($input['plan_id'])) {
+            $ccRequest['plan_id'] = $input['plan_id'];
+        }
+    
+        return $ccRequest;
+    }
+
+    /**
+     * Override fetch method to route through CC Router when plan_id is provided
+     * This handles fetchMultipleEntities calls from Admin Service
+     */
+    public function fetch(array $params, string $merchantId = null, string $connectionType = null): Base\PublicCollection
+    {
+        // Only route through CC Router if plan_id is provided
+        if (isset($params['plan_id'])) {
+            $fqcn = get_class($this) . '\\' . __FUNCTION__;
+            
+            // Log admin dashboard routing through CC Router
+            $this->trace->info(TraceCode::CC_ROUTER_ADMIN_DASHBOARD_ROUTING, [
+                'method' => 'fetch',
+                'params' => $params,
+                'merchant_id' => $merchantId,
+                'connection_type' => $connectionType,
+                'routing_source' => 'admin_dashboard_fetch_multiple_entities'
+            ]);
+            
+            $legacyCallable = function () use ($params, $merchantId, $connectionType) {
+                return $this->fetchLegacy($params, $merchantId, $connectionType);
+            };
+            
+            $ccRequest = $this->transformFetchRequest($params, $merchantId, $connectionType);
+            
+            $ccResponse = $this->ccReadRouter->route($fqcn, $ccRequest, $legacyCallable, buyPricing: $this->buyPricingEnum != self::WITHOUT_BUY_PRICING);
+            
+            return $ccResponse;
+        }
+        
+        // Use legacy implementation when plan_id is not provided
+        return $this->fetchLegacy($params, $merchantId, $connectionType);
+    }
+
+    public function fetchLegacy(array $params, string $merchantId = null, string $connectionType = null): Base\PublicCollection
+    {
+        return parent::fetch($params, $merchantId, $connectionType);
+    }
+
+    private function transformFetchRequest(array $params, ?string $merchantId, ?string $connectionType): array
+    {
+        // TODO : add support for skip and count params from legacy request
+        $ccRequest = [];
+        
+        if (isset($params['plan_id'])) {
+            $ccRequest['id'] = $params['plan_id'];
+        }
+        
+        // Add type as PRICING to match getPricingPlan request format
+        $ccRequest['type'] = Pricing\Type::PRICING;
+        
+        // Add org_id context if available
+        $orgId = $this->getOrgIdForQuery(null);
+        if (strlen($orgId) > 0) {
+            $ccRequest['org_id'] = $orgId;
+        }
+        
+        return $ccRequest;
+    }
 }

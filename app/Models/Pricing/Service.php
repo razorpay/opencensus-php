@@ -985,9 +985,11 @@ class Service extends Base\Service
         // Get intended pricing plans org id
         $ruleOrgId = $plan->getOrgId();
 
+        $initialPlanId = $plan->getId();
+
         $this->trace->info(TraceCode::BATCH_PRICING_PLAN_REPLICATE_REQUEST,
                             [
-                                Entity::PLAN_ID => $plan->getId()
+                                Entity::PLAN_ID => $initialPlanId
                             ]);
 
         // make an array copy out of plan into array rules
@@ -1050,10 +1052,10 @@ class Service extends Base\Service
         // Create new plan with copied rules
         $newplan = (new Pricing\Core)->create([Entity::PLAN_NAME => $planName, Entity::RULES => $rules], $ruleOrgId);
 
-        // Check splitz experiment for the new pricing plan
+        // Check splitz experiment for the original pricing plan
         $rampPhase = $this->ccRouter->shouldRouteRequestToChargeCollections(
             'RZP\\Models\\Pricing\\Service\\replicatePlanAndAssign',
-            $newplan->getId()
+            $initialPlanId
         );
 
         // Only assign plan if not in ENABLE or REVERSE_SHADOW phase

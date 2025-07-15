@@ -249,6 +249,7 @@ class Metric
     const CC_ROUTER_PRICING_LEGACY_CALL_TIME                    = 'cc_router_pricing_legacy_call_time';
     const CC_ROUTER_SPLITZ_RESPONSE_TIME                        = 'cc_router_splitz_response_time';
     const CC_ROUTER_TOTAL_TIME                                  = 'cc_router_total_time';
+    const CC_ROUTER_SHADOW_FALLBACK                             = 'cc_router_shadow_fallback';
     const CHARGE_COLLECTIONS_RESPONSE_TIME                      = 'charge_collections_response_time';
 
 
