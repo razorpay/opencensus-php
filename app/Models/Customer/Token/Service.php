@@ -2657,7 +2657,14 @@ class Service extends Base\Service
             }
             else
             {
-                $token = (new Token\Core)->createWithoutCustomer($saveMethodInput, $payment->merchant, null, true);
+                //If parent_merchant_id is present in additional_details, use it to create token for Meta
+                $parentMerchant = $payment->merchant;
+                if(isset($input['additional_data']['parent_merchant_id']))
+                {
+                    $parentMerchantId = $input['additional_data']['parent_merchant_id'];
+                    $parentMerchant = $this->repo->merchant->findOrFail($parentMerchantId);
+                }
+                $token = (new Token\Core)->createWithoutCustomer($saveMethodInput, $parentMerchant, null, true);
             }
         }
         catch (\Exception $e)
