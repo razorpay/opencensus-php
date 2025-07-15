@@ -76,13 +76,13 @@ return [
         ],
 
         'query_cache_test' => [
-            'driver'     => 'redis',
+            'driver'     => 'redis_with_tag_ttl',
             'connection' => 'query_cache_redis',
             'prefix'     => 'test',
         ],
 
         'query_cache_live' => [
-            'driver'     => 'redis',
+            'driver'     => 'redis_with_tag_ttl',
             'connection' => 'query_cache_redis',
             'prefix'     => 'live',
         ],

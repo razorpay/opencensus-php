@@ -37,6 +37,8 @@ use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Services\RzpKms\KeyManagementService  as RzpKmsService;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
+use RZP\Models\Base\QueryCache\RedisStore;
+use Illuminate\Cache\Repository as CacheRepository;
 
 use RZP\Models\Vpa;
 use RZP\Modules\Acs;
@@ -645,7 +647,6 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new DualWriteEntitiesUsageMetric($app);
         });
 
-
         $this->registerShield();
 
         $this->registerShieldSlackClient();
@@ -1010,6 +1011,30 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->app->singleton('cache.psr6', function ($app) {
             return new Psr16Adapter($app['cache.store']);
+        });
+
+        $this->app->extend('cache', function ($cacheManager, $app)
+        {
+            // Register custom driver for issue https://github.com/laravel/framework/discussions/46175
+            $cacheManager->extend('redis_with_tag_ttl', function ($app, $config)
+            {
+                $redis = app('redis');
+                $connection = $config['connection'] ?? 'default';
+                $prefix = $config['prefix'] ?? '';
+
+                if (!empty($prefix))
+                {
+                    $prefix = $prefix . ':';
+                }
+
+                // Create our custom RedisStore
+                $store = new RedisStore($redis, $prefix, $connection);
+
+                // Return a Repository that wraps our custom store
+                return new CacheRepository($store);
+            });
+
+            return $cacheManager;
         });
     }
 

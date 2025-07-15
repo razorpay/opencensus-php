@@ -13265,6 +13265,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MODIFY_SMART_ROUTING_RULES_API_REQUEST                = 'MODIFY_SMART_ROUTING_RULES_API_REQUEST';
 
+    const REDIS_TAG_SET_EXPIRE_RESULT                           = 'REDIS_TAG_SET_EXPIRE_RESULT';
+
+    const REDIS_TAG_SET_TTL_ERROR                               = 'REDIS_TAG_SET_TTL_ERROR';
+    
+    const REDIS_TAG_SET_SKIP_TTL                                = 'REDIS_TAG_SET_SKIP_TTL';
+
     const MODIFY_SMART_ROUTING_RULES_FTS_REQUEST_FAILED         = 'MODIFY_SMART_ROUTING_RULES_FTS_REQUEST_FAILED';
 
     const MODIFY_SMART_ROUTING_RULES_FTS_RESPONSE               = 'MODIFY_SMART_ROUTING_RULES_FTS_RESPONSE';
