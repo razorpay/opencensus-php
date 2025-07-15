@@ -39,7 +39,11 @@ class Core extends Base\Core
 
         $mappedVpa = $this->mappedVpaFetchClient->fetchMappedVpaViaMicroservice($linkedNumber);
 
-        $this->payoutEvents->trackVPAFetchTimeTakenEvent($startTimeMs, $mappedVpa[FundAccount\Entity::VPA], $linkedNumber, $merchantId);
+        $this->payoutEvents->trackVPAFetchTimeTakenEvent(
+            $startTimeMs,
+            $mappedVpa[FundAccount\Entity::VPA] ?? '',
+            $linkedNumber,
+            $merchantId);
 
         if (empty($mappedVpa) ||
             empty($mappedVpa[FundAccount\Entity::VPA]) ||
