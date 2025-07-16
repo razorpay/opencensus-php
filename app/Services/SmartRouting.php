@@ -185,47 +185,6 @@ class SmartRouting
         $this->app->nonBlockingHttp->postRequest($url, $data, $headers, $username, $password);
     }
 
-    /**
-     * Extract canary context value for a specific service from X-Canary-Context header
-     * 
-     * @param array $headers Response headers
-     * @param string $serviceName Name of the service to extract canary context for
-     * @return bool Returns canary context value (defaults to false)
-     */
-    protected function extractCanaryContextForService($headers, $serviceName): bool
-    {
-        if (isset($headers['X-Canary-Context']) === false) {
-            return false;
-        }
-
-        try {
-            $canaryContext = json_decode($headers['X-Canary-Context'][0], true);
-            
-            if (is_array($canaryContext) && !empty($canaryContext)) {
-                foreach ($canaryContext as $contextArray) {
-                    if (is_array($contextArray)) {
-                        foreach ($contextArray as $context) {
-                            if (isset($context['service']) && 
-                                $context['service'] === $serviceName && 
-                                isset($context['canary'])) {
-                                return (bool) $context['canary'];
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (\Throwable $e) {
-            $this->trace->error(
-                TraceCode::SMART_ROUTING_SERVICE_ERROR,
-                [
-                    'error' => sprintf('Failed to parse canary context for service: %s', $serviceName),
-                    'message' => $e->getMessage()
-                ]
-            );
-        }
-
-        return false;
-    }
 
     public function sendRequest($action, $data = null, $id = null, $params = null, $timeout = null)
     {
@@ -274,18 +233,7 @@ class SmartRouting
 
             $this->checkErrors($response);
 
-            $responseData = json_decode($response->body, true);
-            
-            // Extract router canary context
-            $routerCanaryContext = $this->extractCanaryContextForService($response->headers, 'router');
-
-            // Store canary context in request context
-            $this->app['request.ctx.v2']->routerCanaryContext = $routerCanaryContext;
-
-            return [
-                'data' => $responseData,
-                'router_canary' => $routerCanaryContext
-            ];
+            return json_decode($response->body, true);
         }
         catch (\Throwable $e)
         {
@@ -412,17 +360,20 @@ class SmartRouting
 
     protected function checkErrors($response)
     {
+
         $responseBody = json_decode($response->body, true);
+
         $traceResponse = $responseBody;
 
         // checking whether its terminals selection related response or rule crud related response
-        if (($traceResponse !== null) && 
-            (array_key_exists('success', $traceResponse) === false) && 
-            (array_key_exists('scheduled', $traceResponse) === false)) {
+        if (( $traceResponse!= null ) and (array_key_exists('success', $traceResponse) === false) and (array_key_exists('scheduled',$traceResponse)==false))
+        {
             $newTraceResponse = [];
 
-            foreach ($traceResponse as $terminal) {
+            foreach ($traceResponse as $terminal)
+            {
                 unset($terminal['mc_mpan'], $terminal['visa_mpan'], $terminal['rupay_mpan'], $terminal['network_mpan']);
+
                 array_push($newTraceResponse, $terminal);
             }
 
@@ -430,18 +381,19 @@ class SmartRouting
                 TraceCode::SMART_ROUTING_RESPONSE,
                 [
                     'response' => $newTraceResponse
-                ]
-            );
-        } else {
+                ]);
+        }
+        else
+        {
             $this->trace->info(
                 TraceCode::SMART_ROUTING_RESPONSE,
                 [
                     'response' => $traceResponse
-                ]
-            );
+                ]);
         }
 
-        if ($response->status_code >= 400) {
+        if ($response->status_code >= 400)
+        {
             throw new Exception\RuntimeException('Smart routing request failed', $responseBody);
         }
     }
