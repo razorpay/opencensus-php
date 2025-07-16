@@ -40,6 +40,7 @@ class Repository extends Base\Repository
         Entity::SUBSCRIPTION_ID   => 'sometimes|string|min:14|max:18',
         Entity::TYPE              => 'sometimes|string|custom',
         Entity::STATUS            => 'sometimes|string',
+        Entity::ENTITY_ID                 => 'sometimes|string|custom',
     ];
 
     protected $entityFetchParamRules = [
@@ -48,6 +49,7 @@ class Repository extends Base\Repository
         Entity::RECEIPT           => 'sometimes|string|min:1|max:40',
         Entity::CUSTOMER_ID       => 'sometimes|string|min:14|max:19',
         Entity::SUBSCRIPTION_ID   => 'sometimes|string|min:14|max:18',
+        Entity::ENTITY_ID                 => 'sometimes|string|custom',
     ];
 
     protected $proxyFetchParamRules = [
@@ -64,6 +66,7 @@ class Repository extends Base\Repository
         EsRepository::SEARCH_HITS => 'sometimes|boolean',
         self::EXPAND . '.*'       => 'filled|string|in:payments,payments.card,user,invoice_reminder',
         Entity::IDEMPOTENCY_KEY   => 'sometimes|alpha_num',
+        Entity::ENTITY_ID                 => 'sometimes|string|custom',
     ];
 
     protected $appFetchParamRules = [

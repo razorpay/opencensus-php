@@ -5428,6 +5428,7 @@ class Route
 
 
     public static $private = [
+        'pxb_document_fetch',
         'internal_order_payments',
         'collect_info_merchant_details_patch',
         'payouts_merchant_smart_routing_summary',
@@ -5869,6 +5870,7 @@ class Route
     public static $internal = [
         'merchant_verification_sync',
         'user_internal_fetch_by_email',
+        'pxb_document_fetch',
         'fetch_user_details',
         'upsert_user_details',
         'delete_user_details',
@@ -12607,6 +12609,7 @@ class Route
             'internal_merchant_fetch',
             'internal_payment_update_b2b_invoice',
             'feature_get_multiple_internal',
+            'pxb_document_fetch',
         ],
 
         'cross_border_import_service' => [

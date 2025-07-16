@@ -251,6 +251,10 @@ class Service extends Base\Service
             $input[Entity::USER_ID] = $this->userId;
         }
 
+        if ($this->app['basicauth']->isCrossBorderApp() === true) {
+            $paymentEInvoices = $this->repo->invoice->fetchInvoicesByEntity($input[Entity::ENTITY_ID], E::PAYMENT);
+            return $paymentEInvoices->toArrayPublic();
+        }
         // fetching only those where entity_type is null
         // (invoices having entity_type not null will be fetched by respective entity apis)
         $invoices = $this->repo->invoice

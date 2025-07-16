@@ -101,6 +101,11 @@ class DocumentController extends Controller
     {
         $input = Request::all();
 
+        if ($this->app['basicauth']->isCrossBorderApp() === true) {
+            $invoices = $this->service(Entity::INVOICE)->fetchMultiple($input);
+            return ApiResponse::json($invoices);
+        }
+
         $response = $this->service(Entity::MERCHANT_DOCUMENT)->fetchPXBDocuments($input);
 
         return ApiResponse::json($response);

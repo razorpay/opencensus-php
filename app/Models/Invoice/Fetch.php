@@ -30,6 +30,7 @@ class Fetch extends BaseFetch
             Entity::STATUSES          => 'sometimes|sequential_array|min:1|max:6|custom',
             Entity::INTERNATIONAL     => 'filled|boolean',
             Entity::SUBSCRIPTIONS     => 'filled|boolean',
+            Entity::ENTITY_ID              => 'sometimes|string',
             self::EXPAND_EACH         => 'filled|string|in:payments,payments.card,user,reminder_status',
         ],
     ];
@@ -43,6 +44,7 @@ class Fetch extends BaseFetch
             Entity::ENTITY_TYPE,
             Entity::INTERNATIONAL,
             Entity::SUBSCRIPTION_ID,
+            Entity::ENTITY_ID
         ],
         AuthType::PROXY_AUTH => [
             Entity::BATCH_ID,
