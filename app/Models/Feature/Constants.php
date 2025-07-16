@@ -2463,6 +2463,11 @@ class Constants
 
     const ODS_MICROSERVICE = 'ods_microservice';
 
+    /**
+     * This feature flag disables customization of embedded checkout page for merchants
+     */
+    const DSBL_CHKOUTV2_HOSTED = 'disable_checkoutv2_hosted';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,

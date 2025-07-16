@@ -67,7 +67,6 @@ class HdfcCheckoutTest extends TestCase
 
         $this->startTest();
     }
-
     protected function generateViewMocks($customCode)
     {
         $arr = [
@@ -109,6 +108,45 @@ class HdfcCheckoutTest extends TestCase
 
         // For HDFC Checkout 2.0 case
         $arr['options'] = '{"receiver_types":"qr_code"}';
+        $resp = ['type' => 'not_hdfc'];
+
+        View::shouldReceive('make')
+            ->with('public.embedded', $arr)
+            ->andReturn($resp);
+    }
+    public function testHdfcCheckoutDisabledByFeatureFlag()
+    {
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000',
+            [
+                'org_id'      =>  $org->getId(),
+            ]
+        );
+
+        $this->generateViewMocksForDisabledCheckout($org->getCustomCode());
+
+        $this->ba->publicAuth();
+
+        // Enable HDFC Checkout 2 feature
+        $this->fixtures->merchant->addFeatures(['hdfc_checkout_2']);
+
+        // Enable the disable flag - this should prevent standard-vas.js from being used
+        $this->fixtures->merchant->addFeatures(['disable_checkoutv2_hosted']);
+
+        $this->startTest();
+    }
+
+    protected function generateViewMocksForDisabledCheckout($customCode)
+    {
+        // When DSBL_CHKOUTV2_HOSTED is enabled, it should use embedded-entry.js instead of standard-vas.js
+        $arr = [
+            'key' => 'rzp_test_TheTestAuthKey',
+            'options' => '{"receiver_types":"qr_code"}',
+            'meta' => '{"type":"hdfcvas","custom_code":"'.$customCode.'","checkout_logo_url":null,"custom_checkout_logo_enabled":false}',
+            'script' => 'https://cdn.razorpay.com/static/hosted/embedded-entry.js',
+            'urls' => '{}'
+        ];
         $resp = ['type' => 'not_hdfc'];
 
         View::shouldReceive('make')

@@ -164,9 +164,12 @@ class PublicController extends Controller
 
         $app = \App::getFacadeRoot();
 
-        if(((isset($meta['type']) === true) and
-                ($meta['type'] === 'hdfcvas') and
-                ($merchant->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2) === true)) or ($merchant->org->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2)))
+        if(
+            (((isset($meta['type']) === true) and
+                    ($meta['type'] === 'hdfcvas') and
+                    ($merchant->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2) === true)) or ($merchant->org->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2)))
+            and ($merchant->isFeatureEnabled(Feature\Constants::DSBL_CHKOUTV2_HOSTED) === false)
+        )
         {
             $script = $this->config->get('url.cdn.production') . '/static/hosted/standard-vas.js';
         }
@@ -175,6 +178,7 @@ class PublicController extends Controller
             'merchantID' => $merchant['id'],
             'merchantFeaturePresent'=> $merchant->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2),
             'merchantOrgFeaturePresent'=> $merchant->org->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2),
+            'disableCheckoutv2Hosted'=> $merchant->isFeatureEnabled(Feature\Constants::DSBL_CHKOUTV2_HOSTED),
             'script'        => $script
         ]);
 
