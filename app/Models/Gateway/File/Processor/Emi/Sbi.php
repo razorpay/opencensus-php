@@ -72,24 +72,24 @@ class Sbi extends Base
             self::AMOUNT => '0000',
         ],
         6  => [
-            self::AMOUNT => '9900',
-            self::MIN_AMOUNT => 1600000
+            self::AMOUNT => '6900',
+            self::MIN_AMOUNT => 2000000
         ],
         9  => [
             self::AMOUNT => '9900',
-            self::MIN_AMOUNT => 1100000
+            self::MIN_AMOUNT => 2000000
         ],
         12 => [
             self::AMOUNT => '9900',
-            self::MIN_AMOUNT => 850000
+            self::MIN_AMOUNT => 1100000
         ],
         18 => [
             self::AMOUNT => '19900',
-            self::MIN_AMOUNT => 1750000
+            self::MIN_AMOUNT => 1100000
         ],
         24 => [
-            self::AMOUNT => '19900',
-            self::MIN_AMOUNT => 1600000
+            self::AMOUNT => '26900',
+            self::MIN_AMOUNT => 1100000
         ],
     ];
 
