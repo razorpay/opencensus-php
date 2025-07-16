@@ -317,7 +317,7 @@ class CCRouter
             $isReadsRequest = isset(self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn]);
             
             if ($isReadsRequest) {
-                return $this->sendReadsCCRequestAndTransformCCResponse($fqcn, $input);
+                return $this->sendReadsCCRequestAndTransformCCResponse($fqcn, $input, $headers);
             }
 
             if ($methodName == 'createPlan'){
@@ -503,20 +503,20 @@ class CCRouter
         return isset(self::FUNCTION_MAP[$functionName]) && self::FUNCTION_MAP[$functionName] === true;
     }
 
-    private function sendReadsCCRequestAndTransformCCResponse($fqcn, $input) {
+    private function sendReadsCCRequestAndTransformCCResponse($fqcn, $input, $headers) {
        
         if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlansSummaryURL) {
-            $response = $this->app->charge_collections->getPricingPlansSummary($input);
+            $response = $this->app->charge_collections->getPricingPlansSummary($input, $headers);
             return $this->transformSummaryResponse($response);
         }
 
         if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlansForFeesCalculationURL) {
-            $response = $this->app->charge_collections->getPricingPlansForFeesCalculation($input);
+            $response = $this->app->charge_collections->getPricingPlansForFeesCalculation($input, $headers);
             return $this->transformPricingPlansForFeesCalculation($response, $input);
         }
 
         if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingPlanURL) {
-            $response = $this->app->charge_collections->getPricingPlan($input);
+            $response = $this->app->charge_collections->getPricingPlan($input, $headers);
             if(in_array($fqcn,["RZP\Models\Pricing\Repository\getPricingRuleByMultipleParams",
                 "RZP\Models\Pricing\Repository\getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId",
                 "RZP\Models\Pricing\Repository\getZeroPricingPlanRuleForMethod"])) {
@@ -537,7 +537,7 @@ class CCRouter
         }
 
         if (self::FUNCTION_TO_CC_ROUTE_MAP[$fqcn] == ChargeCollections::GetPricingRuleURL) {
-            $response = $this->app->charge_collections->getPricingRule($input);
+            $response = $this->app->charge_collections->getPricingRule($input, $headers);
             return $this->transformToPricingModel($response);
         }
     }
