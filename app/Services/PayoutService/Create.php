@@ -103,6 +103,12 @@ class Create extends Base
             $headers
         );
 
+        // explicitly handling this due to existing explicit handling for API payouts in Payout/Entity->toPublicErrorResponse
+        if (isset($response['error']) && empty($response['error']['metadata']))
+        {
+            $response['error']['metadata'] = (object)[];
+        }
+
         return $response;
     }
 
