@@ -13,6 +13,7 @@ use RZP\Models\Payment\UpiMetadata\Flow;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
+use RZP\Gateway\Upi\Mindgate\Gateway;
 
 class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
 {
@@ -1096,5 +1097,92 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
     protected function mockServerRequestFunction($closure)
     {
         $this->upiPaymentService->shouldReceive('request')->andReturnUsing($closure);
+    }
+
+    /**
+     * Test upiPaymentIdFromServerCallback with QRC pattern merchant references
+     */
+    public function testUpiPaymentIdFromServerCallbackWithQRCPattern()
+    {
+        // Test QRC pattern with exclamation delimiter
+        $input = [
+            'data' => [
+                'upi' => [
+                    'merchant_reference' => 'QRCabcdefghijk!extra_data_here'
+                ]
+            ]
+        ];
+
+        $upiMindgateGateway = new Gateway();
+        $result = $upiMindgateGateway->upiPaymentIdFromServerCallback($input);
+        $this->assertEquals('QRCabcdefghijk', $result);
+
+        // Test QRC pattern without delimiter
+        $input['data']['upi']['merchant_reference'] = 'QRCabcdefghijk';
+        $result = $upiMindgateGateway->upiPaymentIdFromServerCallback($input);
+        $this->assertEquals('QRCabcdefghijk', $result);
+
+        // Test lowercase qrc pattern
+        $input['data']['upi']['merchant_reference'] = 'qrcabcdefghijk!extra';
+        $result = $upiMindgateGateway->upiPaymentIdFromServerCallback($input);
+        $this->assertEquals('qrcabcdefghijk', $result);
+    }
+
+    /**
+     * Test upiPaymentIdFromServerCallback with STQ pattern merchant references
+     */
+    public function testUpiPaymentIdFromServerCallbackWithSTQPattern()
+    {
+        // Test STQ pattern with exclamation delimiter
+        $input = [
+            'data' => [
+                'upi' => [
+                    'merchant_reference' => 'STQabcdefghijk!84872094692'
+                ]
+            ]
+        ];
+
+        $upiMindgateGateway = new Gateway();
+        $result = $upiMindgateGateway->upiPaymentIdFromServerCallback($input);
+        $this->assertEquals('STQabcdefghijk', $result);
+
+        // Test STQ pattern without delimiter
+        $input['data']['upi']['merchant_reference'] = 'STQabcdefghijk';
+        $result = $upiMindgateGateway->upiPaymentIdFromServerCallback($input);
+        $this->assertEquals('STQabcdefghijk', $result);
+
+        // Test lowercase stq pattern
+        $input['data']['upi']['merchant_reference'] = 'stqabcdefghijk!extra';
+        $result = $upiMindgateGateway->upiPaymentIdFromServerCallback($input);
+        $this->assertEquals('stqabcdefghijk', $result);
+    }
+
+    /**
+     * Test upiPaymentIdFromServerCallback with BQR pattern merchant references
+     */
+    public function testUpiPaymentIdFromServerCallbackWithBQRPattern()
+    {
+        // Test BQR pattern with exclamation delimiter
+        $input = [
+            'data' => [
+                'upi' => [
+                    'merchant_reference' => 'BQRabcdefghijk!gateway_data'
+                ]
+            ]
+        ];
+
+        $upiMindgateGateway = new Gateway();
+        $result = $upiMindgateGateway->upiPaymentIdFromServerCallback($input);
+        $this->assertEquals('BQRabcdefghijk', $result);
+
+        // Test BQR pattern without delimiter
+        $input['data']['upi']['merchant_reference'] = 'BQRabcdefghijk';
+        $result = $upiMindgateGateway->upiPaymentIdFromServerCallback($input);
+        $this->assertEquals('BQRabcdefghijk', $result);
+
+        // Test lowercase bqr pattern
+        $input['data']['upi']['merchant_reference'] = 'bqrabcdefghijk!extra';
+        $result = $upiMindgateGateway->upiPaymentIdFromServerCallback($input);
+        $this->assertEquals('bqrabcdefghijk', $result);
     }
 }

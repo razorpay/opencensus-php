@@ -105,6 +105,8 @@ class Constants
 
     const QR_CODE_V2_HDFC_PREFIX    = 'STQ';
 
+    const QR_CODE_HDFC_MINDGATE_MERCHANT_REFERENCE_REGEX = '/^([Qq][Rr][Cc]|[Ss][Tt][Qq]|[Bb][Qq][Rr])[a-zA-Z0-9]{11}(!.*)?$/';
+
     const QR_VPA_FONT = 'Mulish-SemiBold.ttf';
 
     const POS_ACTIVATION_STATUS = 'pos_activation_status';

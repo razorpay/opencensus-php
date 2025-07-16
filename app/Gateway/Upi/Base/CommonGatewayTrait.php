@@ -297,6 +297,14 @@ trait CommonGatewayTrait
             $merchantReference = $merchantReferenceDetails[0];
         }
 
+        // Handle payment IDs starting with "QRC", "STQ", or "BQR" that contain "!" delimiter 
+        // These payments are treated as qr payments at bank's end
+        // Extract the 14-character payment ID part before the "!" symbol
+        if (preg_match(QrCode\Constants::QR_CODE_HDFC_MINDGATE_MERCHANT_REFERENCE_REGEX, $merchantReference))
+        {
+            return substr($merchantReference, 0, 14);
+        }
+
         if ((str_contains($merchantReference, 'create') === true) or
             (str_contains($merchantReference, 'execte') === true))
         {
