@@ -3247,6 +3247,7 @@ class Processor
     {
         try
         {
+
             if ($input[Payment\Entity::METHOD] !== Payment\METHOD::NETBANKING)
             {
                return false;
@@ -3267,6 +3268,23 @@ class Processor
                 ($this->mode === Mode::LIVE))
             {
                 return false;
+            }
+            // Have added this check to run e2e for netbanking rearch
+            if ($this->isRearchBVTRequest() === true || $this->isRearchDarkRequest() === true)
+            {
+                if ((empty($input[Payment\Entity::METHOD]) === true) or
+                ($input[Payment\Entity::METHOD] !== Payment\METHOD::NETBANKING))
+                {
+                    return false;
+                }
+                $this->trace->info(TraceCode::NBPLUS_E2E_PAYMENTS_ROUTING_VIA_REARCH,
+                [
+                    'merchant_id'       => $merchant->getId(),
+                    'bank'              => $input[Payment\Entity::BANK],
+                    'route'             => $currentRouteName,
+                ]
+            );
+                return true;
             }
             $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_ROUTING_VIA_REARCH,
             [
@@ -3297,10 +3315,10 @@ class Processor
 
         $isNbPlusDFB = $customCheckResults['is_dfb'] ?? false;
 
-        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_ROUTING_CRITERIA,
+        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_ROUTING_CRITERIA_CUSTOM_CHECK,
             [
                 'merchant_id'       => $merchant->getId(),
-                'dimensions'        => $customCheckResults['dimensions'],
+                'dimensions'        => implode(', ',$customCheckResults['dimensions']),
                 'route'             => $currentRouteName,
                 'route_via_nbplus'  => $customCheckResults['route_via_nbplus'],
                 'is_dfb'            => $isNbPlusDFB,
@@ -3313,8 +3331,20 @@ class Processor
 
         if (Processor::shouldRouteBanksThroughNbRearch($input[Payment\Entity::BANK]) !==true)
         {
+            $customCheckResults['dimensions']['25']=1;
+            $customCheckResults['dimensions']['26']= (string)$input[Payment\Entity::BANK];
             return false;
         }
+        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_ROUTING_CRITERIA_BANK_CHECK,
+            [
+                'merchant_id'       => $merchant->getId(),
+                'dimensions'        => implode(', ',$customCheckResults['dimensions']),
+                'route'             => $currentRouteName,
+                'route_via_nbplus'  => $customCheckResults['route_via_nbplus'],
+                'is_dfb'            => $isNbPlusDFB,
+            ]
+        );
+
         // add merchant in this experiment to disable merchant traffic on rearch
             $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_block_merchants';
 
@@ -3327,17 +3357,6 @@ class Processor
 
             $variant = $response['response']['variant']['name'] ?? 'control';
 
-            $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_MERCHANT_BLOCKED_ON_REARCH,
-            [
-                'merchant_id'       => $merchant->getId(),
-                'experiment'        => $featureFlag,
-                'bank'              => $input[Payment\Entity::BANK],
-                'route'             => $currentRouteName,
-                'variant'           => $variant,
-                'response'          => $response,
-            ]
-        );
-
             if ($variant === 'enabled') {
                 $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_MERCHANT_BLOCKED_ON_REARCH,
             [
@@ -3346,6 +3365,16 @@ class Processor
                 'bank'              => $input[Payment\Entity::BANK],
                 'route'             => $currentRouteName,
             ]);
+             $customCheckResults['dimensions']['27']=1;
+             $customCheckResults['dimensions']['28']=$merchant->getId();
+              $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_ROUTING_CRITERIA_MERCHANT_BLOCK_CHECK,
+            [
+                'merchant_id'       => $merchant->getId(),
+                'dimensions'        => implode(', ',$customCheckResults['dimensions']),
+                'route'             => $currentRouteName,
+                'route_via_nbplus'  => $customCheckResults['route_via_nbplus'],
+            ]
+        );
                 return false;
             }
 
@@ -3425,7 +3454,6 @@ class Processor
             {
                 return false;
             }
-
             $customCheckResults = $this->performCustomChecksToRouteViaUpsRearchFlow($input, $merchant, $currentRouteName);
 
             $isUpiDfb = $customCheckResults['is_dfb'] ?? false;
@@ -3865,7 +3893,7 @@ class Processor
                 $dimensions[1] = 1;
             }
         }
-        if ($this->checkFeeBearerRoutingOnNbPlusRearch($merchant) === false)
+        if ($this->checkFeeBearerRoutingOnNbPlusRearch($input,$merchant) === false)
             {
                 $routeViaReArch = false;
                 $dimensions[2] = 1;
@@ -4038,12 +4066,10 @@ class Processor
 
         $dimensions[24] = (string) $currentRouteName;
 
-        $dimensionsString = implode(', ', $dimensions);
-
         // if none of the condition evaluated as true, the request can be routed via NBPlus
         // after checking the razorx variant
         $response['route_via_nbplus'] = $routeViaReArch;
-        $response['dimensions'] = $dimensionsString;
+        $response['dimensions']=$dimensions;
 
         return $response;
     }
@@ -15240,16 +15266,42 @@ class Processor
      * @return bool
      */
 
-public function checkFeeBearerRoutingOnNbPlusRearch(Merchant\Entity $merchant): bool
+public function checkFeeBearerRoutingOnNbPlusRearch(array $input,Merchant\Entity $merchant): bool
 {
 
     // Get the feature variant for NbPlus fee bearer merchants
-    $fee=$merchant->getFeeBearer();
-    $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_allow_cfb_merchants';
+    $feeBearer=$merchant->getFeeBearer();
+    if ($feeBearer === 'platform'){
+        //returning true as fee bearer is ramped up to 100%
+        return true;
+    }
+    if ($feeBearer === 'customer'){
+
     $properties = [
-        'id'            => $fee,
-        'experiment_id' => $featureFlag,
-        'request_data'  => json_encode(['fee' => $fee]),
+        'id'            => $feeBearer,
+        'experiment_id' => $this->app['config']->get('app.netbanking_payments_via_pgrouter_customer_feeBearer'),
+        'request_data'  => json_encode(['fee' => $feeBearer]),
+    ];
+    $response = $this->app['splitzService']->evaluateRequest($properties);
+
+    $variant = $response['response']['variant']['name'] ?? 'control';
+
+    // Log the feature variant for debugging
+    $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_DFB_SPLITZ_VARIANT, [
+        'merchant_id' => $this->merchant->getMerchantId(),
+        'variant'     => $variant,
+        'mode'        => $this->mode,
+        'fee'       => $feeBearer,
+        'response' => $response,
+    ]);
+    return $variant === 'variant_on';
+    
+    }
+    if ($feeBearer==='dynamic'){
+    $properties = [
+        'id'            => $feeBearer,
+        'experiment_id' => $this->app['config']->get('app.netbanking_payments_via_pgrouter_dynamic_feeBearer'),
+        'request_data'  => json_encode(['fee' => $feeBearer]),
     ];
     $response = $this->app['splitzService']->evaluateRequest($properties);
 
@@ -15260,12 +15312,13 @@ public function checkFeeBearerRoutingOnNbPlusRearch(Merchant\Entity $merchant): 
         'merchant_id' => $this->merchant->getMerchantId(),
         'variant'     => $variant,
         'mode'        => $this->mode,
-        'feature'     => $featureFlag,
-        'fee'       => $fee,
+        'fee'       => $feeBearer,
+        'response' => $response,
     ]);
-
-    // Return true if the feature variant is 'on', otherwise return false
     return $variant === 'variant_on';
+
+    }
+    return false;
 }
 
 public function isNBPlusRearchMarketPlace($merchant): bool
@@ -15321,11 +15374,11 @@ public function isNBPlusRearchTpv($merchant): bool
 
 public function isLibrarySupportedForNbplusRearch($library): bool
 {
-    $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER .'_library';
+    $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER .'_'.$library.'_library';
 
     $properties = [
         'id'            => $library,
-        'experiment_id' => $featureFlag,
+        'experiment_id' => $this->app['config']->get('app.'.$featureFlag),
         'request_data'  => json_encode(['library' => $library, 'mode' => $this->mode]),
     ];
     $response = $this->app['splitzService']->evaluateRequest($properties);
@@ -15635,10 +15688,9 @@ public function isLibrarySupportedForNbplusRearch($library): bool
 
         } else {
             // for retail banks
-            $retailFeatureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_allow_retail_banks1';
             $properties = [
                 'id'            => $input,
-                'experiment_id' => $retailFeatureFlag,
+                'experiment_id' => $this->app['config']->get('app.netbanking_payments_via_pgrouter_block_retail_bank_exp'),
                 'request_data'  => json_encode(['bank_code' => $input]),
             ];
             $response = $this->app['splitzService']->evaluateRequest($properties);
@@ -15650,14 +15702,16 @@ public function isLibrarySupportedForNbplusRearch($library): bool
                 'merchant_id' => $this->merchant->getMerchantId(),
                 'mode'        => $this->mode,
                 'bank_code'   => $input,
-                'feature'     => $retailFeatureFlag,
                 'response'    => $response,
+                'request'     => $properties,
             ]);
-            return $variant === 'variant_on';
+            if ($variant === 'variant_on'){
+                return false;
+            }
         }
 
         // Default false if none of the conditions are met
-        return false;
+        return true;
     }
 
     // calculateAndAddConvenienceFeeForUpiIfApplicable is temporary function to calculate convenience fee for UPIPayments until this is moved to API By-pass
@@ -15741,26 +15795,6 @@ public function isLibrarySupportedForNbplusRearch($library): bool
     }
 
     /**
-     * shouldAllowDfbOnNbplus checks if DFB merchant is ramped
-     * @return bool
-     */
-    private function shouldAllowDfbOnNbplus(): bool
-    {
-        $featureFlag = self:: NETBANKING_PAYMENTS_VIA_PGROUTER . '_allow_dfb_merchants';
-        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(),$featureFlag, $this->mode);
-
-        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_DFB_RAZORX_VARIANT, [
-            'merchant_id'   => $this->merchant->getMerchantId(),
-            'variant'       => $variant,
-            'mode'          => $this->mode,
-            'feature'       => $featureFlag,
-        ]);
-
-        return str_starts_with($variant, 'on');
-    }
-
-
-    /**
      * shouldAllowDfbCfb checks if merchant is enabled for DFB flow with input fee
      * @param $fee
      * @return bool
@@ -15775,35 +15809,6 @@ public function isLibrarySupportedForNbplusRearch($library): bool
         }
 
         return true;
-    }
-
-    /**
-     * shouldAllowDfbCfbOnNbplus checks if merchant is enabled for DFB flow with input fee
-     * @param $fee
-     * @return bool
-     */
-    private function shouldAllowDfbCfbOnNbplus($fee): bool
-    {
-
-        // we don't need to evaluate if fee is not set
-        if (isset($fee) === false)
-        {
-            return true;
-        }
-
-        $featureFlag = self:: NETBANKING_PAYMENTS_VIA_PGROUTER . '_allow_dfb_fee_merchants';
-
-        $variant = $this->app->razorx->getTreatment($this->merchant->getMerchantId(),$featureFlag, $this->mode);
-
-        $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_DFB_FEE_RAZORX_VARIANT, [
-            'merchant_id' => $this->merchant->getMerchantId(),
-            'variant' => $variant,
-            'mode'    => $this->mode,
-            'feature' => $featureFlag,
-        ]);
-
-
-        return str_starts_with($variant, 'on');
     }
 
 

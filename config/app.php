@@ -1525,7 +1525,7 @@ return array(
     'block_competitor_application' => env('BLOCK_COMPETITOR_APPLICATION'),
 
     'workflow_segregation_store_user_signup_state' => env('WORKFLOW_SEGREGATION_STORE_USER_SIGNUP_STATE'),
-
+    
     'optimizer_bank_transfer_enable' => env('OPTIMIZER_BANK_TRANSFER_ENABLE_EXPERIMENT_ID'),
 
     'merchant_with_qr_expiry_gt_2_hours' => env('MERCHANT_WITH_QR_EXPIRY_GT_2_HOURS'),
@@ -1537,4 +1537,19 @@ return array(
     'mpgs_authorize_payload' => env('MPGS_AUTHORIZE_PAYLOAD'),
 
     'multi_account_email_update_workflow_experiment' => env('MULTI_ACCOUNT_EMAIL_UPDATE_WORKFLOW_EXPERIMENT'),
+
+    'netbanking_payments_via_pgrouter_block_retail_bank_exp' => env('NETBANKING_PAYMENTS_VIA_PGROUTER_BLOCK_RETAIL_BANK_EXP'),
+
+    'netbanking_payments_via_pgrouter_customer_feeBearer' => env('NETBANKING_PAYMENTS_VIA_PGROUTER_ALLOW_CUSTOMER_FEEBEARER'),
+
+    'netbanking_payments_via_pgrouter_dynamic_feeBearer' => env('NETBANKING_PAYMENTS_VIA_PGROUTER_ALLOW_DYNAMIC_FEEBEARER'),
+
+    'netbanking_payments_via_pg_router_s2s_library' => env('NETBANKING_PAYMENTS_VIA_PGROUTER_S2S_LIBRARY'),
+
+    'netbanking_payments_via_pg_router_razorpayjs_library' => env('NETBANKING_PAYMENTS_VIA_PGROUTER_RAZORPAYJS_LIBRARY'),
+
+    'netbanking_payments_via_pg_router_hosted_library' => env('NETBANKING_PAYMENTS_VIA_PGROUTER_HOSTED_LIBRARY'),
+
+    'netbanking_payments_via_pg_router_custom_library' => env('NETBANKING_PAYMENTS_VIA_PGROUTER_CUSTOM_LIBRARY'),
+
 );
