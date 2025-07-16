@@ -86,7 +86,11 @@ class Base extends BaseProcessor
             }
         }
 
-        $this->canRouteThroughEmandateService($payment, $content);
+        $isRearchPayment = $this->canRouteThroughEmandateService($payment, $content) === null? false : true;
+
+        if ($isRearchPayment) {
+            return;
+        }
     
         // Update gateway payment
         $this->updateGatewayPayment($content);
