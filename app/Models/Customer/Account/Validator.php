@@ -19,8 +19,9 @@ class Validator extends Base\Validator
      * - Must start with a-z/A-Z/0-9
      * - Must end with a-z/A-Z/0-9/./)
      * - Can have anything from a-z/A-Z/0-9/'/-/–/./_/(/)/@///space in between
+     * - Can have accented characters like é, è, ç, ñ, ü, etc.
      */
-    const NAME_REGEX = '/(^[a-zA-Z0-9][a-zA-Z0-9-&\'\/@._()\s–]+[a-zA-Z0-9.)]$)/';
+    const NAME_REGEX = '/^[\p{L}\p{N}][\p{L}\p{N}\'\-\–\._\(\)@\/\p{Zs}]*[\p{L}\p{N}\.\)]$/u';
 
     protected static $createRules = [
         Entity::CONTACT             => 'sometimes|nullable|contact_syntax',

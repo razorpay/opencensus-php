@@ -65,6 +65,7 @@ class CustomerTest extends TestCase
             'Underscore_ABC'     => 'test9@test.razorpay.com',
             'AB s/o BC'          => 'test10@test.razorpay.com',
             'BC A/P @ SName'     => 'test11@test.razorpay.com',
+            'José González'      => 'test12@test.razorpay.com',
         ];
 
         $testData = & $this->testData[__FUNCTION__];
