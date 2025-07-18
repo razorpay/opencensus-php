@@ -21,5 +21,9 @@ return [
 
     'IntlBankTransfer' => [
         'default_rule_id' => env('INTLTRANSFER_DEFAULT_RULE_ID','IntbnkTrnsfrId')
-    ]
+    ],
+
+    'settlement_ondemand' => [
+        'default_plan_id' => env('SETTLEMENT_ONDEMAND_DEFAULT_PLAN_ID', 'QrLI81edniaquh'),
+    ],
 ];

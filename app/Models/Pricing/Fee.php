@@ -18,6 +18,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Partner\Service as PartnerService;
 use RZP\Models\Payment;
+use RZP\Models\Payout;
 use RZP\Models\Pricing;
 use RZP\Models\Pricing\ChargeCollections\CCRouter;
 use RZP\Trace\TraceCode;
@@ -413,6 +414,11 @@ class Fee extends Base\Core
             $pricingPlan = $this->addDefaultIntlBankTransferPricingRules($pricingPlan);
         }
 
+        if ($pricingPlan->hasMethodForFeature(Payout\Method::FUND_TRANSFER, Pricing\Feature::SETTLEMENT_ONDEMAND, false) === false)
+        {
+            $pricingPlan = $this->addDefaultSettlementOndemandPricingRule($pricingPlan);
+        }
+
         $pricingPlan = $this->addBankingFallbackRulesIfApplicable($pricingPlan, $entity);
 
         return $pricingPlan;
@@ -480,6 +486,25 @@ class Fee extends Base\Core
             $pricingPlan = $pricingPlan->merge($intlBankTransferPricing);
         }
         return $pricingPlan;
+    }
+
+    protected function addDefaultSettlementOndemandPricingRule($pricingPlan)
+    {
+        $planId = $this->app['config']->get('pricing.settlement_ondemand.default_plan_id');
+
+        if (empty($planId) === true)
+        {
+            return $pricingPlan;
+        }
+
+        $odsPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy($planId);
+
+        if (empty($odsPricing->toArray()) === true)
+        {
+            return  $pricingPlan;
+        }
+
+        return $pricingPlan->merge($odsPricing);
     }
 
     protected function addNonAppBankingPayoutFallbackRules(Plan $pricingPlan, Merchant\Entity $merchant)

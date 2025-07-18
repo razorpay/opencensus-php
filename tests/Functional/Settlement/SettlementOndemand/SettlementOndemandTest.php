@@ -10,8 +10,11 @@ use Mockery;
 use DateTime;
 use Carbon\Carbon;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandFundAccount;
+use RZP\Models\Pricing\Fee;
 use RZP\Models\Settlement\OndemandFundAccount\Core;
 use RZP\Models\Settlement\OndemandFundAccount\Service;
+use RZP\Models\Settlement\OndemandPayout\Entity;
+use RZP\Models\Settlement\OndemandPayout\Status;
 use RZP\Services\Mock;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -6634,6 +6637,118 @@ class SettlementOndemandTest extends TestCase
         [,$payoutId,] = (new OndemandPayout\Core)->makePayoutRequest($odsPayout->getId(), "INR");
 
         $this->assertEquals('pout_1234567890', $payoutId);
+    }
+
+    public function testCalculateFeesWithoutDefaultPricingPlan()
+    {
+        // Create the settlement_ondemand_payout entity
+        $data = [
+            Entity::MERCHANT_ID            => $this->merchantDetail['merchant_id'],
+            Entity::SETTLEMENT_ONDEMAND_ID => '14characterId1',
+            Entity::MODE                   => \RZP\Models\Payout\Mode::IMPS,
+            Entity::AMOUNT                 => 10000,
+            Entity::STATUS                 => Status::CREATED,
+        ];
+
+        $settlementOndemandPayout = (new Entity)->build($data);
+
+        $settlementOndemandPayout->generateId();
+
+        $merchant = $this->getDbEntity('merchant', [   'id' => '10000000000000'], 'test');
+
+        $settlementOndemandPayout->merchant()->associate($merchant);
+
+        // There is no settlement_ondemand pricing rule for this merchant
+        // Also, there is no default pricing plan for settlement_ondemand
+        // We expect to face an error while calculating fees
+        try {
+            (new Fee)->calculateMerchantFees($settlementOndemandPayout);
+        } catch (\Exception $e) {
+            $this->assertStringContainsString('Only 1 pricing rule should have been present here. Found: 0', $e->getMessage());
+        }
+    }
+
+    public function testCalculateFeesWithDefaultPricingPlan()
+    {
+        // Create the settlement_ondemand_payout entity
+        $data = [
+            Entity::MERCHANT_ID            => $this->merchantDetail['merchant_id'],
+            Entity::SETTLEMENT_ONDEMAND_ID => '14characterId1',
+            Entity::MODE                   => \RZP\Models\Payout\Mode::IMPS,
+            Entity::AMOUNT                 => 10000,
+            Entity::STATUS                 => Status::CREATED,
+        ];
+
+        $settlementOndemandPayout = (new Entity)->build($data);
+
+        $settlementOndemandPayout->generateId();
+
+        $merchant = $this->getDbEntity('merchant', [   'id' => '10000000000000'], 'test');
+
+        $settlementOndemandPayout->merchant()->associate($merchant);
+
+        // We are adding the default pricing plan for settlement_ondemand
+        $rows = [
+            [
+                'id'                  => '1GuENK6Hl2BWGg',
+                'plan_id'             => 'QrLI81edniaquh',
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'settlement_ondemand',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 30, // 30 BPS
+                'org_id'              => '100000razorpay',
+            ],
+        ];
+        $this->fixtures->pricing->addPricingRulesToDb($rows);
+
+        // There is no custom settlement_ondemand pricing rule for this merchant
+        // While calculating fees, it should use the default pricing plan
+        $fees = (new Fee)->calculateMerchantFees($settlementOndemandPayout);
+        $this->assertEquals(36, $fees[0]);  // 30 BPS fees
+        $this->assertEquals(6, $fees[1]); // 18% GST on 30 fees (using ceil instead of round)
+    }
+
+    public function testCalculateFeesWithDefaultAndCustomPricingPlan()
+    {
+        // Create the settlement_ondemand_payout entity
+        $data = [
+            Entity::MERCHANT_ID            => $this->merchantDetail['merchant_id'],
+            Entity::SETTLEMENT_ONDEMAND_ID => '14characterId1',
+            Entity::MODE                   => \RZP\Models\Payout\Mode::IMPS,
+            Entity::AMOUNT                 => 10000,
+            Entity::STATUS                 => Status::CREATED,
+        ];
+
+        $settlementOndemandPayout = (new Entity)->build($data);
+
+        $settlementOndemandPayout->generateId();
+
+        $merchant = $this->getDbEntity('merchant', [   'id' => '10000000000000'], 'test');
+
+        $settlementOndemandPayout->merchant()->associate($merchant);
+
+        // Add the default pricing plan for settlement_ondemand
+        $rows = [
+            [
+                'id'                  => '1GuENK6Hl2BWGG',
+                'plan_id'             => 'QrLI81edniaquh',
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'settlement_ondemand',
+                'payment_method'      => 'fund_transfer',
+                'percent_rate'        => 30,
+                'org_id'              => '100000razorpay',
+            ],
+        ];
+        $this->fixtures->pricing->addPricingRulesToDb($rows);
+
+        // Add a custom pricing rule for settlement_ondemand to this merchant's pricing plan
+        // This will add a 200 BPS or 2% fee for settlement_ondemand
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        // Now, when calculating fees, it should use the custom pricing plan
+        $fees = (new Fee)->calculateMerchantFees($settlementOndemandPayout);
+        $this->assertEquals(236, $fees[0]);  // 2% fee on 10000 is 200
+        $this->assertEquals(36, $fees[1]); // 18% GST on 200 fees (using ceil instead of round)
     }
 
     private function mockGetFeatureConfigCallFromCapitalEs($enabled = true, $mockBalanceFetch = false, $balanceFetchResponse = null)

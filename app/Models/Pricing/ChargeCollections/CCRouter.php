@@ -6,6 +6,7 @@ use App;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Metric;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Payout;
 use RZP\Models\Pricing;
 use RZP\Models\Pricing\Plan;
 use RZP\Models\Pricing\Plan as PlanCollection;
@@ -474,7 +475,7 @@ class CCRouter
                 if (!$isCurlTimeout && $e->getPrevious() !== null) {
                     $isCurlTimeout = str_contains($e->getPrevious()->getMessage(), "cURL error 28");
                 }
-                
+
                 if ($isCurlTimeout && $attempt < $maxRetries - 1) {
                     usleep($retryDelayMs * 1000);
                     continue;
@@ -690,6 +691,11 @@ class CCRouter
             $pricingPlan = $this->addDefaultIntlBankTransferPricingRules($pricingPlan, $planMap);
         }
 
+        if ($pricingPlan->hasMethodForFeature(Payout\Method::FUND_TRANSFER, Pricing\Feature::SETTLEMENT_ONDEMAND, false) === false)
+        {
+            $pricingPlan = $this->addDefaultSettlementOndemandPricingRule($pricingPlan, $planMap);
+        }
+
         $pricingPlan = $this->addBankingFallbackRulesIfApplicable($pricingPlan, $input, $planMap);
 
         return $pricingPlan;
@@ -712,6 +718,25 @@ class CCRouter
         $pricingPlan = $pricingPlan->merge($codPricing);
 
         return $pricingPlan;
+    }
+
+    protected function addDefaultSettlementOndemandPricingRule($pricingPlan, $planMap)
+    {
+        $planId = $this->app['config']->get('pricing.settlement_ondemand.default_plan_id');
+
+        if (empty($planId) === true)
+        {
+            return $pricingPlan;
+        }
+
+        $odsPricing = $planMap[$planId] ?? null;
+
+        if (empty($odsPricing->toArray()) === true)
+        {
+            return  $pricingPlan;
+        }
+
+        return $pricingPlan->merge($odsPricing);
     }
 
     protected function addDefaultIntlBankTransferPricingRules(Plan $pricingPlan, $planMap)
