@@ -1102,7 +1102,6 @@ class Route
         'setl_ledger_inconsistency_debug_cron'     => ['post',     'settlements/ledger_inconsistency/debug/cron',    'SettlementController@settlementsLedgerInconsistencyDebug'          ],
         'setl_amount_check'                        => ['post',     'settlements/amount_check',                       'SettlementController@settlementsAmountCheck'                       ],
 
-        'create_cls_adjustment'                    => ['post',     'pg_ledger/adjustment/create',                    'LedgerOutboxController@createClsAdjustment'                        ],
 
         // following routes currently not being used need to deprecate all these routes
 //        'setl_edit'                                => ['put',      'settlements/{id}',                               'SettlementController@putEditSettlement'                            ],
@@ -6021,7 +6020,6 @@ class Route
         'merchant_autokyc_escalation',
         'partner_send_weekly_activation_summary_emails',
 
-        'create_cls_adjustment',
         'txn_reference3_update',
 
         //cron route for sending daily transacted submerchant events
@@ -17316,7 +17314,6 @@ class Route
             'banking_account_statement_async_insert_missing_cron',
             'banking_account_statement_detect_missing_cron',
 
-            'create_cls_adjustment',
             'txn_reference3_update',
 
             // Fund Management Payouts

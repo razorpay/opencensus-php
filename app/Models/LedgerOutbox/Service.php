@@ -261,18 +261,5 @@ class Service extends Base\Service
         }
     }
 
-    public function createClsAdjustment(array $input)
-    {
-        $this->increaseAllowedSystemLimits();
-
-        if (isset($input['journal_payload']) === true)
-        {
-            $journalPayload =$input['journal_payload'];
-
-            return (new Adjustments\Core())->createOnlyLedgerEntryInReverseShadow($journalPayload);
-        }
-
-        return ['error' => 'no input provided'];
-    }
 }
 
