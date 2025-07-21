@@ -125,11 +125,21 @@ class PaymentLinkServiceBase extends Mailable
         {
             if($this->data['view_extend_address'] == 'emails.invoice.notification')
             {
-                $this->view('emails.invoice.notification');
+                return [
+                    'template_name' => 'emails.invoice.notification',
+                    'template_namespace' => 'payments_payment_links',
+                    'org_id' => $this->data['org']['id'],
+                    'params' => $this->data
+                ];
             }
             else if($this->data['view_extend_address'] == 'emails.invoice.customer.notification_qr_pl_v2')
             {
-                $this->view('emails.invoice.customer.notification_qr_pl_v2');
+                return [
+                    'template_name' => 'emails.invoice.customer.notification_qr_pl_v2',
+                    'template_namespace' => 'payments_payment_links',
+                    'org_id' => $this->data['org']['id'],
+                    'params' => $this->data
+                ];
             }
         }
         return [
