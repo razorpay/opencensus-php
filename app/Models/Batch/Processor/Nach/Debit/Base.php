@@ -59,10 +59,36 @@ class Base extends BaseProcessor
 
     protected function updatePaymentEntities(array $content)
     {
-        $payment = $this->getPayment($content);
-    
-        $this->canRouteThroughEmandateService($payment, $content);
-    
+        $payment = null;
+        try {
+            // First attempt: Try to get payment from local database
+            $payment = $this->getPayment($content);
+
+        } catch (\Throwable $ex) {
+            try {
+                // Second attempt: Fallback to PG Router
+                $payment = $this->repo->payment->findByPublicId($content[self::PAYMENT_ID]);
+
+            } catch (\Throwable $fallbackEx) {
+                // Log the fallback failure and re-throw the original exception
+                $this->trace->traceException($fallbackEx, null, TraceCode::NACH_PAYMENT_FETCH_FAIL, [
+                    'payment_id' => $content[self::PAYMENT_ID],
+                    'fallback_used' => true,
+                    'error_message' => $fallbackEx->getMessage(),
+                ]);
+
+                // Re-throw the original exception since both methods failed
+                throw $ex;
+            }
+        }
+
+        $isRearchPayment = $this->canRouteThroughEmandateService($payment, $content) === null? false : true;
+
+        if ($isRearchPayment) {
+            return;
+        }
+
+
         $this->updateGatewayPaymentEntity($content, $payment);
 
         $this->assertAmount($payment, $content);
