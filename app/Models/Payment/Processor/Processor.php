@@ -4199,6 +4199,7 @@ class Processor
             }
             else
             {
+                unset($input[Constants::TOKEN_ENTITY]);
                 return false;
             }
         }
@@ -8217,6 +8218,10 @@ class Processor
         {
             $this->setPaymentService($payment, 'nbplusps');
 
+            return;
+        }
+        
+        if (Payment\Gateway::emandateCUGBankGatewayRouting($payment->getGateway(), $payment->getMethod()) === true){
             return;
         }
 

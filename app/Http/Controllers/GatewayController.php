@@ -1967,6 +1967,10 @@ class GatewayController extends Controller
         {
             $variant = 'nbplusps';
         }
+        else if (Gateway::emandateCUGBankGatewayRouting($gatewayName, $method) === true)
+        {
+            $variant = null;
+        }
         else if (Gateway::isNbPlusServiceGateway($gatewayName) === true)
         {
             // method is added as a part of feature flag because emandate and netbanking have same gateways.

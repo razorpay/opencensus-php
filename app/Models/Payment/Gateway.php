@@ -6529,6 +6529,25 @@ class Gateway
 
         return false;
     }
+    
+    public static function emandateCUGBankGatewayRouting($gateway, $method): bool
+    {
+        $gateways = [
+            Method::EMANDATE => [
+                self::NETBANKING_AXIS,
+                self::NETBANKING_SBI,
+                self::NETBANKING_HDFC
+            ]
+        ];
+
+        if ((isset($gateways[$method]) === true) and
+            (in_array($gateway, $gateways[$method], true) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
 
     public static function gatewaysPartiallyMigratedToNbPlusWithBankCode($gateway)
     {
