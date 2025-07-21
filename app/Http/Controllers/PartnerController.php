@@ -236,4 +236,12 @@ class PartnerController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function handleSubmerchantPlatformOnboarding()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->handleSubmerchantPlatformOnboarding($input);
+
+        return ApiResponse::json($data);
+    }
 }

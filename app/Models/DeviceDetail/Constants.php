@@ -61,6 +61,8 @@ class Constants
     const MOBILE = "mobile";
 
     const SIGNUP_SOURCE = "signup_source";
+    
+    const SIGNUP_CAMPAIGN = "signup_campaign";
 
     const MODULAR_ONBOARDING = 'MODULAR_ONBOARDING';
 

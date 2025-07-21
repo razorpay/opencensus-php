@@ -114,7 +114,6 @@ class MerchantOnboardingProxyController extends BaseProxyController
     const PGOS_SHADOW_MODE_EXPERIMENT_ID                = 'app.pgos_shadow_mode_experiment_id';
     const PGOS_LIVE_MODE_EXPERIMENT_ID                  = 'app.pgos_live_mode_experiment_id';
     const EASY_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID = 'app.easy_submerchant_pgos_live_mode_experiment_id';
-    const PHANTOM_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID = 'app.pgos_phantom_live_mode_experiment_id';
     CONST LINKED_ACCOUNT_MODULAR_ONBOARDING_ACTIVATE_EXPERIMENT_ID = "app.linked_account_modular_onboarding_activate_experiment_id";
 
     const ENABLE                         = 'enable';
@@ -607,13 +606,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     protected function isIndiaPgModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail): bool
     {
-        if (strtolower($merchant->getCountry()) !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
-        {
-            return false;
-        }
-
-        return $this->getProductSpecificWorkflowType($userDeviceDetail, DeviceDetailConstants::PRODUCT_PG_ONBOARDING)
-            === DeviceDetailConstants::MODULAR_ONBOARDING;
+        return $this->isModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail, DeviceDetailConstants::PRODUCT_PG_ONBOARDING);
     }
 
     protected function isIndiaConversationalModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail): bool
@@ -629,22 +622,17 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     protected function isCrossBorderModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail): bool
     {
-        if (strtolower($merchant->getCountry()) !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
-        {
-            return false;
-        }
-
-        return $this->getProductSpecificWorkflowType($userDeviceDetail, DeviceDetailConstants::CROSS_BORDER_ONBOARDING)
-            === DeviceDetailConstants::MODULAR_ONBOARDING;
+        return $this->isModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail, DeviceDetailConstants::CROSS_BORDER_ONBOARDING);
     }
-    protected function isSubmerchantOnboardingModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail): bool
+
+    protected function isModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail, $product): bool
     {
         if (strtolower($merchant->getCountry()) !== Country::IN || $merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
         {
             return false;
         }
 
-        return $this->getProductSpecificWorkflowType($userDeviceDetail, DeviceDetailConstants::SUBMERCHANT_ONBOARDING)
+        return $this->getProductSpecificWorkflowType($userDeviceDetail, $product)
             === DeviceDetailConstants::MODULAR_ONBOARDING;
     }
 
@@ -709,11 +697,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
             ];
         }
 
-        $subMOnboardingResult = $this->isSubmerchantOnboardingModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail);
+        $subMOnboardingResult = $this->isModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail, DeviceDetailConstants::SUBMERCHANT_ONBOARDING);
         if (!empty($subMOnboardingResult)) {
             return [
                 MerchantDetailConstants::IS_MODULAR_INDIA => true,
-                MerchantDetailConstants::MODULAR_PRODUCT_INDIA    => 'submerchant_onboarding',
+                MerchantDetailConstants::MODULAR_PRODUCT_INDIA    => DeviceDetailConstants::SUBMERCHANT_ONBOARDING,
             ];
         }
 
@@ -872,7 +860,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
         {
             $routeKey = self::SALES_ASSISTED_MERCHANT_SIGN_UP;
         }
-        return $this->handlePGOSProxyRequests($routeKey,$payload,$merchant,true);
+        return $this->handlePGOSProxyRequests($routeKey, $payload, $merchant, true);
 
     }
 
@@ -999,16 +987,6 @@ class MerchantOnboardingProxyController extends BaseProxyController
         $properties = [
             'id'            => $merchant->getId(),
             'experiment_id' => $this->app['config']->get(self::EASY_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID),
-        ];
-
-        return (new Core())->isSplitzExperimentEnable($properties, self::ENABLE);
-    }
-
-    public function isPGOSEnabledForPhantomSubmerchant(Merchant\Entity $merchant): bool
-    {
-        $properties = [
-            'id'            => $merchant->getId(),
-            'experiment_id' => $this->app['config']->get(self::PHANTOM_SUBMERCHANT_PGOS_LIVE_MODE_EXPERIMENT_ID),
         ];
 
         return (new Core())->isSplitzExperimentEnable($properties, self::ENABLE);

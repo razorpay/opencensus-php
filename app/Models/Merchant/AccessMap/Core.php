@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\AccessMap;
 use DB;
 use Config;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
@@ -21,6 +22,7 @@ use RZP\Constants\HyperTrace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\MerchantApplications;
+use RZP\Models\Partner\Metric as PartnerMetric;
 
 use Razorpay\OAuth\Token;
 use Razorpay\OAuth\Application;
@@ -28,6 +30,9 @@ use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {
+    const MERCHANT_ACCESS_MAP_MUTEX_TIMEOUT = 60; // in seconds
+    
+    const PRTS_ACCESS_MAP_DUAL_WRITE_MUTEX_KEY = 'prts_access_map_dual_write_mutex_key';
 
     /**
      * @var $enable_cassandra_outbox
@@ -746,4 +751,111 @@ class Core extends Base\Core
         return $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($merchantId, true)->toArray();
     }
 
+
+    public function upsertAccessMapFromPRTS(array $input): array
+    {
+        $this->trace->info(
+            TraceCode::PRTS_MERCHANT_ACCESS_MAP_UPSERT_REQUEST,
+            [
+                'input' => $input,
+            ]
+        );
+        try {
+            $mamPayload = $input['merchant_access_map'];
+            $entityId   = $mamPayload[Entity::ENTITY_ID];
+            $entityOwnerId = $mamPayload[Entity::ENTITY_OWNER_ID];
+            $resource = self::PRTS_ACCESS_MAP_DUAL_WRITE_MUTEX_KEY . '_' . $entityId.'.'.$entityOwnerId; 
+
+            $merchantAccessMap = $this->app['api.mutex']->acquireAndRelease(
+                $resource,
+                function () use ($input) {
+                    return $this->upsertAccessMap($input['merchant_access_map']);
+                },
+                self::MERCHANT_ACCESS_MAP_MUTEX_TIMEOUT,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+            );
+
+            $dimensions = $this->getDimensionsForMerchantAccessMapDualWriteMetrics(true);
+            $this->trace->count(PartnerMetric::MERCHANT_ACCESS_MAP_DUAL_WRITE_TOTAL, $dimensions);
+
+            return $this->buildAckResponse($merchantAccessMap, null);
+        } catch (\Throwable $e) {
+            return $this->handleExceptionForDualWriteFromPRTS($e, $input);
+        }
+    }
+
+    protected function upsertAccessMap(array $mam)
+    {
+        $mapping = DB::table(Table::MERCHANT_ACCESS_MAP)
+                       ->where(Entity::ENTITY_TYPE, $mam[Entity::ENTITY_TYPE])
+                       ->where(Entity::ENTITY_ID, $mam[Entity::ENTITY_ID])
+                       ->where(Entity::ENTITY_OWNER_ID, $mam[Entity::ENTITY_OWNER_ID])
+                       ->where(Entity::MERCHANT_ID, $mam[Entity::MERCHANT_ID])
+                       ->whereNull(Entity::DELETED_AT)
+                       ->first();
+
+        if (empty($mapping) === true)
+        {
+
+            $createdAt = Carbon::now()->getTimestamp();
+    
+            $id = (new Entity)->generateUniqueIdFromTimestamp($createdAt);
+            $mapping = [
+                Entity::ID              => $id,
+                Entity::ENTITY_TYPE     => $mam[Entity::ENTITY_TYPE],
+                Entity::ENTITY_ID       => $mam[Entity::ENTITY_ID],
+                Entity::MERCHANT_ID     => $mam[Entity::MERCHANT_ID],
+                Entity::ENTITY_OWNER_ID => $mam[Entity::ENTITY_OWNER_ID],
+                Entity::CREATED_AT      => $createdAt,
+                Entity::UPDATED_AT      => $createdAt,
+                Entity::HAS_KYC_ACCESS  => $mam[Entity::HAS_KYC_ACCESS]
+            ];
+        }
+        return $this->repo->transactionOnLiveAndTestAndAsv(function () use ($mapping) {
+            $this->repo->saveOrFail($mapping);
+            return $mapping;
+        });
+    }
+
+    private function handleExceptionForDualWriteFromPRTS(\Throwable $exception, array $input)
+    {
+        $this->trace->traceException(
+            $exception,
+            Trace::ERROR,
+            TraceCode::PRTS_MERCHANT_ACCESS_MAP_DUAL_WRITE_FAILED,
+            [
+                'input' => $input,
+            ]
+        );
+
+        $dimensions = $this->getDimensionsForMerchantAccessMapDualWriteMetrics(false);
+        $this->trace->count(PartnerMetric::PKAS_DUAL_WRITE_TOTAL, $dimensions);
+
+        return $this->buildAckResponse(null, $exception);
+    }
+
+    private function getDimensionsForMerchantAccessMapDualWriteMetrics(bool $success): array
+    {
+        $route = $this->app['worker.ctx']->getJobName() ?? $this->app['request.ctx']->getRoute();
+        return [
+            'route'   => $route,
+            'success' => $success,
+        ];
+    }
+
+    private function buildAckResponse(?array $merchantAccessMap = null, ?\Throwable $exception = null): array
+    {
+        return [
+            "merchant_access_map"   => $merchantAccessMap ?? null,
+            "error"      => is_null($exception) ? null : $this->buildError($exception->getCode(), $exception->getMessage()),
+        ];
+    }
+
+    private function buildError(string $code, string $message): array
+    {
+        return [
+            "code"    => $code,
+            "message" => $message,
+        ];
+    }
 }

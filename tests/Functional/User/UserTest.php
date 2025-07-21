@@ -15503,45 +15503,6 @@ class UserTest extends TestCase
         $this->assertNull($merchantAccessMap);
     }
 
-    public function testUserRegisterVerifySignupOtpSmsPhantomOnboardingAggregatorSplitzOff()
-    {
-        $this->ba->dashboardGuestAppAuth();
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'disable',
-                ]
-            ]
-        ];
-
-        $this->mockAllSplitzTreatment($output);
-
-        $this->app['config']['pgos.proxy.request.mock'] = true;
-
-        $this->createPartner('aggregator');
-
-        $testData = &$this->testData['testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOn'];
-
-        $testData['request']['content']['source_app_id']    = '8ckeirnw84ifke';
-        $testData['request']['content']['signup_campaign']  = 'phantom_onboarding';
-        $testData['request']['content']['source']           = 'phantom';
-
-        $testData['response']['content']['signup_campaign'] = 'phantom_onboarding';
-
-        Queue::fake();
-
-        $resp = $this->startTest($testData);
-
-        Queue::assertPushed(NotifyRas::class);
-
-        $userDeviceDetail = $this->getLastEntity('user_device_detail', true);
-        $merchantAccessMap = $this->getDbEntity('merchant_access_map', ['merchant_id' => $resp['merchants'][0]['id']]);
-
-        $this->assertEquals("api", $userDeviceDetail["metadata"]["service"]);
-        $this->assertNull($merchantAccessMap);
-    }
-
     public function testUserRegisterVerifySignupOtpSmsPhantomOnboardingPurePlatformSplitzOn()
     {
         $this->ba->dashboardGuestAppAuth();
@@ -15566,7 +15527,6 @@ class UserTest extends TestCase
         $testData['request']['content']['signup_campaign']  = 'phantom_onboarding';
         $testData['request']['content']['oauth_referral']   = true;
         $testData['request']['content']['source']           = 'phantom';
-
         $testData['response']['content']['signup_campaign'] = 'phantom_onboarding';
 
         Queue::fake();
@@ -15576,49 +15536,8 @@ class UserTest extends TestCase
         Queue::assertPushed(NotifyRas::class);
 
         $userDeviceDetail = $this->getLastEntity('user_device_detail', true);
-        $merchantAccessMap = $this->getDbEntity('merchant_access_map', ['merchant_id' => $resp['merchants'][0]['id']]);
-
         $this->assertEquals("pgos", $userDeviceDetail["metadata"]["service"]);
-        $this->assertNotNull($merchantAccessMap);
-    }
-
-    public function testUserRegisterVerifySignupOtpSmsPhantomOnboardingPurePlatformSplitzOff()
-    {
-        $this->ba->dashboardGuestAppAuth();
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'disable',
-                ]
-            ]
-        ];
-
-        $this->mockAllSplitzTreatment($output);
-
-        $this->app['config']['pgos.proxy.request.mock'] = true;
-
-        $this->createPartner('pure_platform');
-
-        $testData = &$this->testData['testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOn'];
-
-        $testData['request']['content']['source_app_id']    = '8ckeirnw84ifke';
-        $testData['request']['content']['signup_campaign']  = 'phantom_onboarding';
-        $testData['request']['content']['oauth_referral']   = true;
-        $testData['request']['content']['source']           = 'phantom';
-
-        $testData['response']['content']['signup_campaign'] = 'phantom_onboarding';
-
-        Queue::fake();
-
-        $resp = $this->startTest($testData);
-
-        Queue::assertPushed(NotifyRas::class);
-
-        $userDeviceDetail = $this->getLastEntity('user_device_detail', true);
         $merchantAccessMap = $this->getDbEntity('merchant_access_map', ['merchant_id' => $resp['merchants'][0]['id']]);
-
-        $this->assertEquals("api", $userDeviceDetail["metadata"]["service"]);
         $this->assertNotNull($merchantAccessMap);
     }
 
@@ -17099,113 +17018,6 @@ class UserTest extends TestCase
             'contact_mobile' => '9012345678',
             'captcha'        => 'faked',
             'onboarding_signature' => $invalidHexData,
-            'client_id' => $app->getClientDetailsAttribute()['dev']['id']
-        ];
-
-        $this->ba->dashboardGuestAppAuth();
-
-        $this->startTest($testData);
-
-        $userEntity = $this->getDbEntityById('user', $user->getId());
-
-        $this->assertFalse($userEntity->isContactMobileVerified());
-    }
-
-    public function testMobileOtpLoginForSubmerchantsWithOnboardingSignatureWithExpDisabled()
-    {
-        $smsPayload = [
-            'otp'        => '0007',
-            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
-            'context' => 'user_id:login_otp:token',
-        ];
-
-        $ravenMock = $this->getMockBuilder(Raven::class)
-            ->setConstructorArgs([$this->app])
-            ->onlyMethods(['generateOtp'])
-            ->getMock();
-
-        $this->app->instance('raven', $ravenMock);
-
-        $this->app['raven']->method('generateOtp')
-            ->willReturn($smsPayload);
-
-        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => false]);
-
-        [$app, $accessMap, $partner] = $this->createPurePlatFormMerchantAndSubMerchant();
-
-        $mappingData = [
-            'user_id'     => $user->getId(),
-            'merchant_id' => PartnerConstants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
-            'role'        => 'owner',
-            'product'     => 'primary',
-        ];
-
-        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
-
-        $this->mockAllSplitzTreatment([]);
-
-        $testData = $this->testData['testMobileLoginForSubmerchantsWithOnboardingSignature'];
-
-        $clientSecret = $app->getClientDetailsAttribute()['dev']['secret'];
-
-        $signature = $this->createOnboardingSignatureForSubmerchant( PartnerConstants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $clientSecret);
-
-        $content = [
-            'contact_mobile'        => '9012345678',
-            'onboarding_signature'  => $signature,
-            'client_id'             => $app->getClientDetailsAttribute()['dev']['id']
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $this->ba->dashboardGuestAppAuth();
-
-        $this->startTest($testData);
-
-        $userEntity = $this->getDbEntityById('user', $user->getId());
-
-        $this->assertFalse($userEntity->isContactMobileVerified());
-    }
-
-    public function testMobileVerifyOtpLoginForSubmerchantsWithOnboardingSignatureWithExpDisabled()
-    {
-        $ravenMock = $this->getMockBuilder(Raven::class)
-            ->setConstructorArgs([$this->app])
-            ->onlyMethods(['verifyOtp'])
-            ->getMock();
-
-        $this->app->instance('raven', $ravenMock);
-
-        $ravenMock->expects($this->exactly(0))->method('verifyOtp');
-
-        $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'contact_mobile_verified' => false]);
-
-        [$app, $accessMap, $partner] = $this->createPurePlatFormMerchantAndSubMerchant();
-
-        $mappingData = [
-            'user_id'     => $user->getId(),
-            'merchant_id' => PartnerConstants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
-            'role'        => 'owner',
-            'product'     => 'primary',
-        ];
-
-        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
-
-        $this->mockAllSplitzTreatment([]);
-
-        $testData = $this->testData['testMobileLoginForSubmerchantsWithOnboardingSignature'];
-
-        $clientSecret = $app->getClientDetailsAttribute()['dev']['secret'];
-
-        $signature = $this->createOnboardingSignatureForSubmerchant(PartnerConstants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $clientSecret);
-
-        $testData['request']['url'] = "/users/login/otp/verify";
-        $testData['request']['content'] = [
-            'otp'            => '0007',
-            'token'          => 'Gvt61zZ3Iwzcqy',
-            'contact_mobile' => '9012345678',
-            'captcha'        => 'faked',
-            'onboarding_signature' => $signature,
             'client_id' => $app->getClientDetailsAttribute()['dev']['id']
         ];
 

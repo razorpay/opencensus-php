@@ -893,4 +893,21 @@ class Service extends Base\Service
 
         return ['success' => true];
     }
+
+
+    public function handleSubmerchantPlatformOnboarding(array $input)
+    {
+        $merchantId = $this->app['basicauth']->getMerchantId();
+        $submerchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        // Note: this can be retrieved from the passport token in PRTS
+        $input['submerchant_id'] = $submerchant->getId();
+
+        $response = $this->app->partnerships->submerchantPlatformOnboarding($input);
+        // Note: since PRTS cannot update feature flag, we are disabling it here
+        // For intermediate decomp step, we will call disableNoCodeAppsPricingFeature from PRTS via api through a separate route
+        $merchantCore = new Merchant\Core;
+        $merchantCore->disableNoCodeAppsPricingFeature($submerchant);
+        return $response;
+    }
+
 }

@@ -3653,6 +3653,8 @@ class Route
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
         'merchants_access_map_update'              => ['put',      'merchants/{id}/access_maps',                     'MerchantController@updatePartnerAccessMap'                         ],
         'merchants_access_map_upsert_bulk'         => ['post',     'access_map/bulk',                                'MerchantController@postPartnerAccessMapBulk'                       ],
+        'internal_upsert_merchant_access_map'      => ['post',     'internal/merchant_access_map',                   'MerchantController@upsertAccessMapFromPRTS'                        ],
+
         'partner_submerchant_map'                  => ['post',     'partner_submerchant_map',                        'MerchantController@createPartnerSubmerchantMap'                    ],
         'fetch_partner_intent'                     => ['get',      'merchant/partner-intent',                        'MerchantController@fetchPartnerIntent'                             ],
         'update_partner_intent'                    => ['patch',    'merchant/partner-intent',                        'MerchantController@updatePartnerIntent'                            ],
@@ -3678,6 +3680,7 @@ class Route
         'fetch_partner_referral_batch'             => ['post',     'partner_referral/bulk',                          'MerchantController@fetchPartnerReferralViaBatch'                   ],
         'submerchant_partner_feature_check'        => ['get',      'submerchant/partner_feature_check/{featureName}', 'MerchantController@isFeatureEnabledForPartnerOfSubmerchant'       ],
         'partner_referral'                         => ['post',     'partner/referral',                                'PartnerController@processReferralCode'],
+        'submerchant_platform_onboarding'          => ['post',     'submerchant/platform/onboarding',                'PartnerController@handleSubmerchantPlatformOnboarding'       ],
 
         //Partner activation routes
         'partner_activation_status'                => ['patch',    'partner/activation/{id}/status',                 'PartnerController@updatePartnerActivationStatus'         ],
@@ -6931,6 +6934,7 @@ class Route
         'internal_entity_origin_fetch',
         'internal_process_commissions_invoice',
         'internal_upsert_partner_kyc_access',
+        'internal_upsert_merchant_access_map',
 
         'create_ledger_journal_batch',
 
@@ -7206,6 +7210,7 @@ class Route
 
     public static $proxy = [
         'partner_referral',
+        'submerchant_platform_onboarding',
         'add_sales_user_mapping',
         'merchant_activation_details_sales',
         'initiate_pos_onboarding',
@@ -12781,6 +12786,7 @@ class Route
 
         'merchant_dashboard' => [
             'partner_referral',
+            'submerchant_platform_onboarding',
             'add_sales_user_mapping',
             'merchant_activation_details_sales',
             'initiate_pos_onboarding',
@@ -18269,6 +18275,7 @@ class Route
             'internal_process_commissions_invoice',
             'payment_fetch_by_id_internal',
             'internal_upsert_partner_kyc_access',
+            'internal_upsert_merchant_access_map',
             'internal_clear_unsettled_txns'
         ],
 

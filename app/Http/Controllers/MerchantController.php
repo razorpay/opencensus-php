@@ -2386,6 +2386,15 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+    
+    public function upsertAccessMapFromPRTS()
+    {
+        $input = Request::all();
+
+        $response = (new AccessMap\Service)->upsertAccessMapFromPRTS($input);
+
+        return ApiResponse::json($response);
+    }
 
     public function enableEmiMerchantSubvention(string $id, string $emiPlanId)
     {

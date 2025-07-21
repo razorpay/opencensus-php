@@ -771,7 +771,7 @@ class Core extends Base\Core
      * @return void
      * @throws BadRequestException
      */
-    public function createSubMerchantOverridenConfigForApplication(Merchant\Entity $subMerchant, Merchant\Entity $partner, Application\Entity $application): void
+    public function createSubMerchantOverriddenConfigForApplication(Merchant\Entity $subMerchant, Merchant\Entity $partner, Application\Entity $application): void
     {
         $overridenConfig = $this->fetchConfigForPlatformPartner($partner,$subMerchant);
         if(empty($overridenConfig) == false)

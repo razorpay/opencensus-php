@@ -89,21 +89,6 @@ class PhantomUtility
         return (new Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 
-    public static function checkIfPhantomOnBoardingFlow(array &$input) : bool
-    {
-        if ((isset($input[Constants::SOURCE]) === false) or
-            (empty($input[Constants::SOURCE]) === true))
-        {
-            return false;
-        }
-
-        $isPhantomFlowEnabled = $input[Constants::SOURCE] == PartnerConstants::PHANTOM;
-
-        unset($input[Constants::SOURCE]);
-
-        return $isPhantomFlowEnabled;
-    }
-
     public static function checkAndSetContextForPhantomSource(array &$input) : void
     {
         if ((isset($input[Constants::SOURCE]) === false) or

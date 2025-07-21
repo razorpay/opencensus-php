@@ -32,6 +32,7 @@ class Service extends Base\Service
     /**
      * Maps the oauth application to the merchant when he
      * first gives access to his account to the app.
+     * Note: this function is (partially) migrated to PRTS for phantom signup use-case ($consent = false, dashboard_access = false)
      *
      * @param string $merchantId
      * @param array  $input
@@ -56,7 +57,7 @@ class Service extends Base\Service
         // if overriden sub merchant config is present at partner level cascade to application
         // when sub merchant authorizes the application
         $application = (new Application\Repository)->find($input[Entity::APPLICATION_ID]);
-        (new PartnerConfigCore)->createSubMerchantOverridenConfigForApplication($merchant,$entityOwner,$application);
+        (new PartnerConfigCore)->createSubMerchantOverriddenConfigForApplication($merchant,$entityOwner,$application);
 
         if ($consent === true and $input['env'] === 'prod')
         {
@@ -94,5 +95,12 @@ class Service extends Base\Service
     public function updateMapFromTokens()
     {
         return (new Core)->updateMapFromTokens();
+    }
+
+    public function upsertAccessMapFromPRTS(array $input): array
+    {
+        (new Validator())->validateInput('upsert_access_map_from_PRTS', $input);
+
+        return $this->core()->upsertAccessMapFromPRTS($input);
     }
 }

@@ -863,26 +863,24 @@ class Service extends Base\Service
         $this->trace->count(Merchant\Metric::SIGNUP_TOTAL);
 
         $m2mReferralInput = $this->m2mReferralService->extractFriendBuyParams($input);
-
         $signupCampaign = $input[DeviceDetail\Entity::SIGNUP_CAMPAIGN] ?? null;
+        $signupSource = $input[Merchant\Constants::SOURCE];
         unset($input[DeviceDetail\Entity::SIGNUP_CAMPAIGN]);
-
-        $isPhantomOnboardingFlow = Merchant\PhantomUtility::checkIfPhantomOnBoardingFlow($input);
-
-        $partnerReferralCode = $input['partner_referral_code'] ??'';
-        $sourceAppId         = $input['source_app_id'] ?? '';
-
-        $isOauthReferral      = $input['oauth_referral']?? false;
-
-        unset($input['partner_referral_code']);
-        unset($input['source_app_id']);
-        unset($input['oauth_referral']);
+        unset($input[Merchant\Constants::SOURCE]);
+        
+        $oauthReferral      = $input[Merchant\Constants::OAUTH_REFERRAL] ?? '';
+        $partnerReferralCode = $input[Merchant\Constants::PARTNER_REFERRAL_CODE] ?? '';
+        $sourceAppId         = $input[Merchant\Constants::SOURCE_APP_ID] ?? '';
+        unset($input[Merchant\Constants::OAUTH_REFERRAL]);
+        unset($input[Merchant\Constants::PARTNER_REFERRAL_CODE]);
+        unset($input[Merchant\Constants::SOURCE_APP_ID]);
 
         $this->trace->info(TraceCode::PARTNER_REFERRAL_VERIFY_OTP_REQUEST, [
             'partner_referral_code' => $partnerReferralCode,
             'source_app_id'         => $sourceAppId,
-            'oauth_referral'        => $isOauthReferral,
-            'is_phantom'            => $isPhantomOnboardingFlow
+            'oauth_referral'        => $oauthReferral,
+            'signup_campaign'       => $signupCampaign,
+            'signup_source'         => $signupSource
         ]);
 
         $verifySuccess = $this->core->verifySignupOtp($input);
@@ -923,7 +921,7 @@ class Service extends Base\Service
             }
         }
 
-        list($merchant, $countryCode, $user) = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input, $signupCampaign, $m2mReferralInput, $verifySuccess, $operation, $isPhantomOnboardingFlow, &$response, $partnerReferralCode, $sourceAppId, $isOauthReferral) {
+        list($merchant, $countryCode, $user) = $this->repo->transactionOnLiveAndTestAndAsv(function() use ($input, $signupCampaign, $m2mReferralInput, $verifySuccess, $operation, &$response, $partnerReferralCode, $sourceAppId, $oauthReferral) {
 
             if ($verifySuccess === true)
             {
@@ -1060,9 +1058,7 @@ class Service extends Base\Service
 
                     $signupMethod = Constants::OTP;
                     $this->signUpSuccess($user, $partnerIntent, $signupMethod, $m2mReferralInput);
-                    $this->processReferralCode($merchantData['id'], $partnerReferralCode);
-                    $this->linkSubMerchantToPlatformPartnerWithRetry($merchantData['id'], $sourceAppId, $isOauthReferral);
-                    $this->createSignupSourceForPhantom($isPhantomOnboardingFlow, $sourceAppId, $merchantData['id']);
+                    $this->postSignupSuccessPartnerships($merchantData, $partnerReferralCode, $sourceAppId, $oauthReferral);
                 }
 
                 $data = $this->get($user['id']);
@@ -1094,7 +1090,12 @@ class Service extends Base\Service
     // should be stored separately. as of now, this change is enforced only for one product but other products should also adopt this approach.
     public function shouldStoreProductSpecificWorkflowType($product): bool
     {
-        return in_array($product, [DeviceDetailConstants::PRODUCT_PG_ONBOARDING, DeviceDetailConstants::CROSS_BORDER_ONBOARDING, DeviceDetailConstants::SUBMERCHANT_ONBOARDING, DeviceDetailConstants::CONVERSATIONAL_ONBOARDING]);
+        return in_array($product, [
+            DeviceDetailConstants::PRODUCT_PG_ONBOARDING,
+            DeviceDetailConstants::CROSS_BORDER_ONBOARDING,
+            DeviceDetailConstants::SUBMERCHANT_ONBOARDING,
+            DeviceDetailConstants::CONVERSATIONAL_ONBOARDING
+        ]);
     }
 
     private function shouldOnboardViaPGOSForNonOAuthMerchants(MerchantEntity $merchant, $signupCampaign, $countryCode): bool
@@ -1142,7 +1143,7 @@ class Service extends Base\Service
         {
             if ($merchantCore->isRegularSubmerchant($merchant))
             {
-                $shouldOnboardViaPGOS = $this->pgosProxyController->isPGOSEnabledForPhantomSubmerchant($merchant);
+                $shouldOnboardViaPGOS = true;
 
                 $this->trace->info(TraceCode::PHANTOM_SUBMERCHANT_PGOS, [
                     'merchant_id'       => $merchant->getId(),
@@ -1284,7 +1285,11 @@ class Service extends Base\Service
                     if (empty($input[DeviceDetail\Constants::CROSS_BORDER_FLOW]) === false) {
                         $modularPayload['field_data']['cross_border_flow'] = $input[DeviceDetail\Constants::CROSS_BORDER_FLOW];
                     }
-
+                    // Checks if we should populate signup campaign
+                    if ($product == DeviceDetailConstants::SUBMERCHANT_ONBOARDING) {
+                        $modularPayload['field_data'][DeviceDetail\Entity::SIGNUP_CAMPAIGN] = $signupCampaign;
+                    }
+        
                     // this response is not used in this flow
                     $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
 
@@ -1554,6 +1559,12 @@ class Service extends Base\Service
                     if (empty($input[DeviceDetail\Constants::CROSS_BORDER_FLOW]) === false) {
                         $modularPayload['field_data']['cross_border_flow'] = $input[DeviceDetail\Constants::CROSS_BORDER_FLOW];
                     }
+
+                    // Checks if we should populate signup campaign
+                    if ($product == DeviceDetailConstants::SUBMERCHANT_ONBOARDING) {
+                        $modularPayload['field_data'][DeviceDetail\Entity::SIGNUP_CAMPAIGN] = $signupCampaign;
+                    }
+
                     // this response is not used in this flow
                     $response = $this->pgosProxyController->handlePGOSProxyRequests('onboarding_save', $modularPayload, $merchant, true);
 
@@ -1595,6 +1606,62 @@ class Service extends Base\Service
             }
         }
         return $existingDetails;
+    }
+
+    /**
+     * postSignupSuccessPartnerships is used to handle post signup success hooks for partnerships.
+     * It is used to process referral code and submerchant platform onboarding.
+     */
+    private function postSignupSuccessPartnerships($merchantData, $partnerReferralCode, $sourceAppId, $oauthReferral)
+    {
+        $submerchantId = $merchantData['id'];
+        try {
+            // Note: in case of USL flow(userOnly=true), this is done externally via the route partner_referral
+            $this->processReferralCode($submerchantId, $partnerReferralCode);
+
+            // Note: in case of USL flow(userOnly=true), this is done externally via the PRTS route submerchant_platform_onboarding 
+            if (empty($sourceAppId) === false) 
+            {
+                $this->postSubmerchantPlatformOnboarding($sourceAppId, $submerchantId, $oauthReferral);
+            }
+        } catch (\Exception $e) {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::POST_SIGNUP_PARTNERSHIPS_FAILURE,
+                [
+                    'merchant_id'  => $submerchantId,
+                    'referralCode' => $partnerReferralCode,
+                    'message'      => 'Error occurred while linking subM during signUp'
+                ]
+            );
+        }
+    }
+
+    /**
+     * postSubmerchantPlatformOnboarding is used to onboard a submerchant to a platform partner.
+     */
+    private function postSubmerchantPlatformOnboarding($sourceAppId, $submerchantId, $oauthReferral)
+    {
+        $merchantApp = (new MerchantAppRepo)->fetchMerchantApplication($sourceAppId, Merchant\Constants::APPLICATION_ID);
+        $partnerId = $merchantApp[0][Merchant\Constants::MERCHANT_ID];
+        if ($oauthReferral === "1" || $oauthReferral === "true") 
+        {
+            // Note: for an authenticated user with oauth_referral=1, during authorize flow it doesn't redirect to login/signup page.
+            // mapOAuthApplication will be called via auth service itself.
+            $this->linkSubMerchantToPlatformPartnerWithRetry($submerchantId, $partnerId, $sourceAppId);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::SUBM_SIGNUP_LINKING_PP_REFERRAL_SKIPPED, [
+                'submerchant_id' => $submerchantId,
+                'partner_id' => $partnerId,
+                'source_app_id' => $sourceAppId,
+                'is_oauth_referral' => $oauthReferral
+            ]);
+        }
+
+        $this->createSignupSourceForPhantom($partnerId, $sourceAppId, $submerchantId);
     }
 
     /**
@@ -1664,39 +1731,29 @@ class Service extends Base\Service
      * partner's application by first trying it synchronously.
      * If that fails then it queues a job to retry asynchronously.
      *
-     * @param string      $merchantId
-     * @param string|null $sourceAppId
-     * @param bool        $isOauthReferral
+     * @param string      $submerchantId
+     * @param string      $partnerId
+     * @param string      $sourceAppId
      *
      * @return void
      */
     private function linkSubMerchantToPlatformPartnerWithRetry(
-        string $merchantId,
-        string $sourceAppId = null,
-        bool $isOauthReferral = false,
+        string $submerchantId,
+        string $partnerId,
+        string $sourceAppId,
     ): void
     {
         try
         {
-            if ( $isOauthReferral === false || (empty($sourceAppId) === true) )
-            {
-                return;
-            }
-
-            $merchantApp = (new MerchantAppRepo)->fetchMerchantApplication(
-                $sourceAppId,
-                Merchant\Constants::APPLICATION_ID,
-            );
 
             $input = [
-                Merchant\Constants::PARTNER_ID       => $merchantApp[0][Merchant\Constants::MERCHANT_ID],
+                Merchant\Constants::PARTNER_ID       => $partnerId,
                 Merchant\Constants::APPLICATION_ID   => $sourceAppId,
             ];
 
             $accessMapService = new Merchant\AccessMap\Service();
 
-            $accessMapService->mapOAuthApplication($merchantId, $input);
-
+            $accessMapService->mapOAuthApplication($submerchantId, $input);
         }
         catch(\Exception $e)
         {
@@ -1704,26 +1761,22 @@ class Service extends Base\Service
                 Logger::ERROR,
                 TraceCode::SUBM_SIGNUP_LINKING_PP_REFERRAL_FAILURE,
                 [
-                    'merchant_id'  => $merchantId,
+                    'merchant_id'  => $submerchantId,
                     'message'      => 'Error occurred while linking subM during signUp for pp referral flow'
                 ]);
 
-            PartnerSubmerchantLinkingOauthJob::dispatch($this->mode, $merchantId, $sourceAppId);
+            PartnerSubmerchantLinkingOauthJob::dispatch($this->mode, $submerchantId, $sourceAppId);
         }
     }
 
-    private function createSignupSourceForPhantom(bool $isPhantomOnboardingFlow, string $sourceAppId, string $merchantId)
+    private function createSignupSourceForPhantom($partnerId, $sourceAppId, $submerchantId)
     {
         try
         {
-            if ($isPhantomOnboardingFlow && empty($sourceAppId) == false)
-            {
-                // dispatch create_signup_source
-                $merchantApp = (new MerchantAppRepo)->fetchMerchantApplication($sourceAppId, Merchant\Constants::APPLICATION_ID);
-                $product     = $this->auth->getRequestOriginProduct();
+            // dispatch create_signup_source
+            $product     = $this->auth->getRequestOriginProduct();
+            $this->app->partnerships->createSubMSignupSource($partnerId, $submerchantId, $product);
 
-                $this->app->partnerships->createSubMSignupSource($merchantApp[0][Merchant\Constants::MERCHANT_ID], $merchantId, $product);
-            }
         } catch(\Exception $e)
         {
             $this->trace->traceException($e,

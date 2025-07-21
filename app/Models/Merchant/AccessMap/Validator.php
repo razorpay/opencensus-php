@@ -24,4 +24,13 @@ class Validator extends Base\Validator
     protected static $connectedApplicationsRules = [
         'service' => 'sometimes|string',
     ];
+
+    protected static $upsertAccessMapFromPRTSRules  = [
+        'merchant_access_map'    => 'required|array',
+        'merchant_access_map.merchant_id' => 'required|string|size:14',
+        'merchant_access_map.entity_owner_id' => 'required|string|size:14',
+        'merchant_access_map.entity_id' => 'required|string|size:14',
+        'merchant_access_map.entity_type' => 'required|string',
+        'merchant_access_map.has_kyc_access' => 'sometimes|boolean',
+    ];
 }

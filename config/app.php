@@ -484,8 +484,6 @@ return array(
 
     'pgos_onboarding_upload_miq_experiment_id' => env('PGOS_ONBOARDING_UPLOAD_MIQ_EXPERIMENT_ID'),
 
-    'pgos_phantom_live_mode_experiment_id' => env('PGOS_PHANTOM_LIVE_MODE_EXPERIMENT_ID'),
-
     'others_m3_experiment_id' => env('OTHERS_M3_EXPERIMENT_ID'),
 
     'risk_tags_check_experiment_id' => env('RISK_TAGS_CHECK_EXPERIMENT_ID'),
@@ -1116,10 +1114,6 @@ return array(
     'add_new_business_types' => env('ADD_NEW_BUSINESS_TYPES'),
 
     'partnership_unblock_huf_business_type_experiment_id' => env('PARTNERSHIP_UNBLOCK_HUF_BUSINESS_TYPE_EXP_ID'),
-
-    'submerchant_prefill_login_exp_id' => env('SUBMERCHANT_PREFILL_LOGIN_EXP_ID'),
-
-    'phantom_prefill_contact_number_exp_id' => env('PHANTOM_PREFILL_CONTACT_NUMBER_EXP_ID'),
 
     'onboarding_api_upi_terminal_creation_disabled' => env('ONBOARDING_API_UPI_TERMINAL_CREATION_DISABLED'),
 

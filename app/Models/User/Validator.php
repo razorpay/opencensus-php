@@ -196,6 +196,8 @@ class Validator extends Base\Validator
         DeviceDetail\Constants::PRODUCT         => 'sometimes|string',
         DeviceDetail\Constants::PLATFORM        => 'sometimes|string',
         Entity::USER_ONLY                       => 'sometimes|boolean',
+        Merchant\Constants::SOURCE_APP_ID       => 'sometimes|string',
+        Merchant\Constants::OAUTH_REFERRAL      => 'sometimes|string',
     ];
 
     protected static $createOauthRules = [

@@ -2246,8 +2246,7 @@ class Core extends Detail\Core
         if (empty($input[Constants::APPLICATION_ID]) === true
             || empty($input[PartnerConstants::CLIENT_ID]) === true
             || empty($onboardingSignature) === true
-            || $this->app['request.ctx']->isDashboardGuest() === false
-            || $this->isContactMobilePrefillExpEnabled($input[Constants::APPLICATION_ID]) === false)
+            || $this->app['request.ctx']->isDashboardGuest() === false)
         {
             return null;
         }
@@ -2304,16 +2303,6 @@ class Core extends Detail\Core
         }
     }
 
-    private function isContactMobilePrefillExpEnabled(String $submerchantId) : bool
-    {
-        $properties = [
-            'id'            => $submerchantId,
-            'experiment_id' => $this->app['config']->get('app.phantom_prefill_contact_number_exp_id'),
-        ];
-
-        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
-    }
-
     public function getSubmerchantIdFromOnboardingSignature(string $clientSecret, string $onboardingSignature)
     {
         if (empty($onboardingSignature) || empty($clientSecret))
@@ -2335,11 +2324,6 @@ class Core extends Detail\Core
     {
         if (!isset($input[PartnerConstants::ONBOARDING_SIGNATURE]) || empty($input[PartnerConstants::ONBOARDING_SIGNATURE]) ||
             !isset($input[PartnerConstants::CLIENT_ID]) || empty($input[PartnerConstants::CLIENT_ID]))
-        {
-            return false;
-        }
-
-        if ($this->isLoginAllowedForUnverifiedPhoneNumbers($user->getId()) === false)
         {
             return false;
         }
@@ -2452,16 +2436,6 @@ class Core extends Detail\Core
         }
 
         return [];
-    }
-
-    private function isLoginAllowedForUnverifiedPhoneNumbers(String $userId) : bool
-    {
-        $properties = [
-            'id'            => $userId,
-            'experiment_id' => $this->app['config']->get('app.submerchant_prefill_login_exp_id'),
-        ];
-
-        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 
     public function autoApproveMerchantActivationCheckerFlow(array $input, array $splitzVariables): array

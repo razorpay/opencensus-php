@@ -6,13 +6,15 @@ namespace RZP\Services\Partnerships;
 use App;
 use Illuminate\Support\Facades\Cache;
 use Request;
+use ApiResponse;
+use RZP\Exception\IntegrationException;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Base\Core;
 use RZP\Models\Merchant\AccessMap\PartnershipsAccessMapDTO;
 use RZP\Models\Merchant\MerchantApplications\PartnershipsMerchantApplicationsDTO;
 use RZP\Models\Partner\Config\PartnershipsConfigDTO;
 use Throwable;
-use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -101,6 +103,8 @@ class PartnershipsService extends Base\Service
     const APPROVE_REJECT = '/twirp/rzp.partnerships.partner_kyc_access_state.v1.PartnerKycAccessStateAPI/ApproveOrReject';
 
     const CREATE_CONSENT = '/twirp/rzp.partnerships.merchant.v1.ConsentAPI/Create';
+    
+    const SUBMERCHANT_PLATFORM_ONBOARDING = '/twirp/rzp.partnerships.merchant.v1.MerchantAPI/SubmerchantPlatformOnboarding';
 
     CONST GET_MERCHANT_ACCESS_MAP_LIST   = '/twirp/rzp.commissions.merchant_access_map.v1.MerchantAccessMapAPI/List';
 
@@ -388,6 +392,12 @@ class PartnershipsService extends Base\Service
         ];
 
         return $this->sendRequest($parameters, self::CREATE_CONSENT, Requests::POST,null,$headers);
+    }
+
+    public function submerchantPlatformOnboarding($parameters)
+    {
+        $response = $this->sendRequest($parameters, self::SUBMERCHANT_PLATFORM_ONBOARDING, Requests::POST);
+        return $this->handlePRTSResponseWithErrors($response);
     }
 
     public function deletePartnerKycAccessState($parameters)
@@ -1211,6 +1221,7 @@ class PartnershipsService extends Base\Service
 
         return $partnershipsServiceResponse;
     }
+    
 
     /**
      * @throws ServerErrorException
@@ -1256,6 +1267,50 @@ class PartnershipsService extends Base\Service
         {
             return [];
         }
+        return $partnershipResponse;
+    }
+
+
+    private function handlePRTSResponseWithErrors(
+        array $response
+    ) {
+        $parsedResponse = is_array($response['response']) ? $response['response'] : [];
+        $parsedStatusCode = $response['response']['status_code'] ?? $response['status_code'] ?? null;
+
+        $partnershipResponse = [
+            'status_code' => $parsedStatusCode,
+            'response' => $parsedResponse,
+        ];
+
+
+        if ($parsedStatusCode === 404 && $parsedResponse['msg'] === "RECORD_NOT_FOUND") {
+            return ApiResponse::json([$parsedResponse['msg']], 404);
+        }
+
+        if ($parsedStatusCode > 400) {
+            throw new IntegrationException(
+                'partnerships_service request failed with status code: ' . $parsedStatusCode,
+                ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE
+            );
+        }
+
+        if ($parsedStatusCode == 400) {
+            $description = $parsedResponse['msg'] ?? '';
+            if (isset($parsedResponse['meta']) === true) {
+                if (isset($parsedResponse['meta']['code']) === true) {
+                    $description = $parsedResponse['meta']['code'].': '.$description;
+                }
+            }
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                $parsedResponse,
+                $description
+            );
+        }
+
+
         return $partnershipResponse;
     }
 

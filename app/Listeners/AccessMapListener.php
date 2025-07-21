@@ -20,6 +20,13 @@ use RZP\Models\Partner\Metric as PartnerMetric;
 class AccessMapListener extends BaseListener
 {
     const NON_PASSABLE_ENVIRONMENTS = [Environment::TESTING, Environment::BVT];
+    const ROUTE_BLACKLIST = [
+        'internal_upsert_merchant_access_map',
+    ];
+    private function isRouteBlackListed(): bool
+    {
+        return in_array($this->request->route()->getName(), self::ROUTE_BLACKLIST, true);
+    }
 
     public function onSaved(AccessMap\EventSaved $event)
     {
@@ -32,6 +39,20 @@ class AccessMapListener extends BaseListener
         (new Stork($entity->getConnectionName()))->invalidateAffectedOwnersCache($entity->getMerchantId());
         try
         {
+
+            $shouldSyncSkip = $this->isRouteBlackListed();
+
+            if ($shouldSyncSkip) {
+                $this->trace->info(TraceCode::ACCESS_MAP_EVENT_SAVED_SKIPPED, $this->getTraceInfo($entity));
+
+                $dimensions = [
+                    "action" => "upsert",
+                ];
+                $this->trace->count(PartnerMetric::MERCHANT_ACCESS_MAP_SYNC_SKIPPED, $dimensions);
+
+                return;
+            }
+
             if(
                 $entity->getConnectionName() === Mode::LIVE
                 && in_array(app('env'), self::NON_PASSABLE_ENVIRONMENTS, true) === false
@@ -70,6 +91,19 @@ class AccessMapListener extends BaseListener
 
         try
         {
+            $shouldSyncSkip = $this->isRouteBlackListed();
+
+            if ($shouldSyncSkip) {
+                $this->trace->info(TraceCode::ACCESS_MAP_EVENT_DELETED_SKIPPED, $this->getTraceInfo($entity));
+
+                $dimensions = [
+                    "action" => "delete",
+                ];
+                $this->trace->count(PartnerMetric::MERCHANT_ACCESS_MAP_SYNC_SKIPPED, $dimensions);
+
+                return;
+            }
+
             if(
             $entity->getConnectionName() === Mode::LIVE
             && in_array(app('env'), self::NON_PASSABLE_ENVIRONMENTS, true) === false

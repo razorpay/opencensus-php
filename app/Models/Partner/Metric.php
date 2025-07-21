@@ -72,6 +72,7 @@ final class Metric
     const PARTNER_CONFIG_ENTITY_SYNC_FAILED               = 'partner_config_entity_sync_failed';
     const MERCHANT_APPLICATION_SYNC_FAILED                = 'merchant_application_sync_failed';
     const MERCHANT_ACCESS_MAP_SYNC_FAILED                 = 'merchant_access_map_sync_failed';
+    const MERCHANT_ACCESS_MAP_SYNC_SKIPPED                = 'merchant_access_map_sync_skipped';
 
 
     const PARTNER_DOMAIN_BUILD_EVENT_PROPERTIES_FAILURE = 'partner_domain_build_event_properties_failure';
@@ -109,6 +110,8 @@ final class Metric
 
     const PKAS_DUAL_WRITE_TOTAL = 'pkas_dual_write_total';
     const PKAS_DUAL_WRITE_ACCESS_MAP_NOT_FOUND = 'pkas_dual_write_access_map_not_found';
+    
+    const MERCHANT_ACCESS_MAP_DUAL_WRITE_TOTAL = 'merchant_access_map_dual_write_total';
 
     const PARTNER_CALLBACK_EVENTS_RECEIVED_TOTAL = 'partner_callback_events_received_total';
     const PARTNER_CALLBACK_EVENTS_RECEIVED_FAILURE_TOTAL = 'partner_callback_events_received_failure_total';
