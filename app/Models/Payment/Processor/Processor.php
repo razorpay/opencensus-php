@@ -9005,14 +9005,6 @@ class Processor
                 Feature::MERCHANT,
             );
 
-            $this->trace->info(
-                TraceCode::DCS_FEATURE_FLAGS_FETCHED,
-                [
-                    'merchant_id' => $merchantId,
-                    'features' => $features
-                ]
-            );
-
             return $features;
         }
         catch (\Throwable $e)
@@ -9041,17 +9033,17 @@ class Processor
             }
             else
             {
+                $features =  $this->fetchOmniEnabledDcsFeatureFlag($merchant->getMerchantId());
+                $isOmniEnabled = in_array(Feature::OMNI_ENABLED, $features, true);
+
                 $this->trace->info(
                     TraceCode::OMNI_ENABLED_FEATURE_DISABLED,
                     [
                         'merchant_id' => $merchant->getMerchantId(),
-                        'features' => 'OmniEnabled',
-                        'message' => 'Checking DCS as feature is disabled on api'
+                        'isOmniEnabled' => $isOmniEnabled
                     ]
                 );
 
-                $features =  $this->fetchOmniEnabledDcsFeatureFlag($merchant->getMerchantId());
-                $isOmniEnabled = in_array(Feature::OMNI_ENABLED, $features, true);
                 return $isOmniEnabled;
             }
         }
@@ -15295,7 +15287,7 @@ public function checkFeeBearerRoutingOnNbPlusRearch(array $input,Merchant\Entity
         'response' => $response,
     ]);
     return $variant === 'variant_on';
-    
+
     }
     if ($feeBearer==='dynamic'){
     $properties = [
@@ -15927,7 +15919,8 @@ public function isLibrarySupportedForNbplusRearch($library): bool
         ($input[Payment\Entity::SOURCE_CHANNEL] === QrConstants::PAYMENT_TYPE_IN_PERSON))
         {
             // check pos_activation feature flag for in person payments
-            if($this->merchant->isOmniEnabled() === true)
+            $omniEnabled = $this->isOmniStackEnabled($this->merchant);
+            if($omniEnabled === true)
             {
                 $this->trace->info(
                     TraceCode::POS_ACTIVATION_VALIDATED_FOR_OFFLINE_PAYMENT,
