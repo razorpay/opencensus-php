@@ -1172,6 +1172,172 @@ return [
             ],
         ],
     ],
+    'testCreatePricingPlanForFavWithPaymentMethodType' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'FavPlan1',
+                'rules'     => [
+                    [
+                        'payment_method'        => 'bank_account',
+                        'feature'               => 'fund_account_validation',
+                        'payment_method_type'   => 'penniless',
+                        'percent_rate_scale_factor' => 100,
+                        'fixed_rate'            => 300,
+                        'international'         => '0',
+                        'amount_range_active'   => '0',
+                        'amount_range_min'      => null,
+                        'amount_range_max'      => null,
+                        'min_fee'               => null,
+                        'max_fee'               => null,
+                    ],
+                ],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'FavPlan1',
+                'entity' => 'pricing',
+                'count' => 1,
+                'rules' => [
+                    [
+                        'payment_method'        => 'bank_account',
+                        'feature'               => 'fund_account_validation',
+                        'payment_method_type'   => 'penniless',
+                        'percent_rate_scale_factor' => 100,
+                        'fixed_rate'            => 300,
+                        'international'         => false,
+                        'amount_range_active'   => false,
+                        'amount_range_min'      => null,
+                        'amount_range_max'      => null,
+                        //Defaults to 0
+                        'min_fee'               => 0,
+                        'max_fee'               => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+    'testCreatePricingPlanForFavWithPaymentMethodVpa' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'FavPlan1',
+                'rules'     => [
+                    [
+                        'payment_method'        => 'vpa',
+                        'feature'               => 'fund_account_validation',
+                        'payment_method_type'   => 'penniless',
+                        'percent_rate_scale_factor' => 100,
+                        'fixed_rate'            => 300,
+                        'international'         => '0',
+                        'amount_range_active'   => '0',
+                        'amount_range_min'      => null,
+                        'amount_range_max'      => null,
+                        'min_fee'               => null,
+                        'max_fee'               => null,
+                    ],
+                ],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'FavPlan1',
+                'entity' => 'pricing',
+                'count' => 1,
+                'rules' => [
+                    [
+                        'payment_method'        => 'vpa',
+                        'feature'               => 'fund_account_validation',
+                        'payment_method_type'   => 'penniless',
+                        'percent_rate_scale_factor' => 100,
+                        'fixed_rate'            => 300,
+                        'international'         => false,
+                        'amount_range_active'   => false,
+                        'amount_range_min'      => null,
+                        'amount_range_max'      => null,
+                        //Defaults to 0
+                        'min_fee'               => 0,
+                        'max_fee'               => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+    'testCreatePricingPlanForFavWithInvalidPaymentMethod' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'FavPlan1',
+                'rules'     => [
+                    [
+                        'payment_method'        => 'invalid_method',
+                        'feature'               => 'fund_account_validation',
+                        'payment_method_type'   => 'penniless',
+                        'percent_rate_scale_factor' => 100,
+                        'fixed_rate'            => 300,
+                        'international'         => '0',
+                        'amount_range_active'   => '0',
+                        'amount_range_min'      => null,
+                        'amount_range_max'      => null,
+                        'min_fee'               => null,
+                        'max_fee'               => null,
+                    ],
+                ],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Not a valid Fund Account Type: invalid_method'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testCreatePricingPlanForFavWithInvalidPaymentMethodType' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'FavPlan1',
+                'rules'     => [
+                    [
+                        'payment_method'        => 'bank_account',
+                        'feature'               => 'fund_account_validation',
+                        'payment_method_type'   => 'invalid_method',
+                        'percent_rate_scale_factor' => 100,
+                        'fixed_rate'            => 300,
+                        'international'         => '0',
+                        'amount_range_active'   => '0',
+                        'amount_range_min'      => null,
+                        'amount_range_max'      => null,
+                        'min_fee'               => null,
+                        'max_fee'               => null,
+                    ],
+                ],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'The payment method type field for fund account validation should be one of penniless/pennydrop/optimized'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
     'testCreatePricingPlanWithInvalidMinAndMaxFee' => [
         'request' => [
             'content' => [

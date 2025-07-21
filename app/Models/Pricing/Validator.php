@@ -408,6 +408,19 @@ class Validator extends Base\Validator
             Payout\Method::MOBILE,
         ];
 
+        // Add bank_account to valid pricing methods if feature is fund_account_validation
+        if (isset($input[Entity::FEATURE]) &&
+            $input[Entity::FEATURE] === Feature::FUND_ACCOUNT_VALIDATION) {
+            $validPricingMethods = array_merge($validPricingMethods,
+                FundAccount\Validation\FundAccountType::$allowedTypes);
+        }
+
+        $validFavPaymentMethodType = [
+            FundAccount\Validation\Constants::TYPE_PENNILESS,
+            FundAccount\Validation\Constants::TYPE_PENNYDROP,
+            FundAccount\Validation\Constants::TYPE_OPTIMIZED,
+        ];
+
         if ($input[Entity::FEATURE] === Feature::REFUND)
         {
             // Valid pricing methods for which payment method type can be added (in refunds case - mode)
@@ -437,6 +450,15 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException(
                     'The payment method type field may be sent only when payment method is ' .
                     implode('/', $validPricingMethods));
+            }
+
+            // Additional validation for fund account validation payment method type
+            if ($input[Entity::FEATURE] === Feature::FUND_ACCOUNT_VALIDATION &&
+                !in_array($input[Entity::PAYMENT_METHOD_TYPE], $validFavPaymentMethodType, true))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The payment method type field for fund account validation should be one of ' .
+                    implode('/', $validFavPaymentMethodType));
             }
 
             if (in_array($input[Entity::FEATURE], Feature::VAS_FEATURE_LIST))
@@ -475,11 +497,12 @@ class Validator extends Base\Validator
             $input[Entity::FEATURE] === Pricing\Feature::FUND_ACCOUNT_VALIDATION)
         {
             if ((isset($input[Entity::PAYMENT_METHOD]) === true) and
-                ($input[Entity::PAYMENT_METHOD] === FundAccount\Validation\FundAccountType::BANK_ACCOUNT) and
+                (in_array($input[Entity::PAYMENT_METHOD],
+                    FundAccount\Validation\FundAccountType::$allowedTypes)) and
                 (empty($input[Entity::PERCENT_RATE]) === false))
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Percentage rate pricing is not allowed for Bank Account Validation');
+                    'Percentage rate pricing is not allowed for Fund Account Validation');
             }
         }
     }
@@ -1376,7 +1399,7 @@ class Validator extends Base\Validator
 
             if (in_array($TokenType, $validTokenTypes, true) === false)
             {
-                throw new Exception\BadRequestValidationFailureException('Not a valid sub_type: ' . $subtype);
+                throw new Exception\BadRequestValidationFailureException('Not a valid sub_type: ' . $TokenType);
             }
         }
     }

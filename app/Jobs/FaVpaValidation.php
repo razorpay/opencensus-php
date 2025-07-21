@@ -17,12 +17,15 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\FundAccount\Validation\Entity;
+use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Payment\Service as PaymentService;
 use RZP\Models\FundAccount\Validation\Processor\Vpa;
 use RZP\Models\FundAccount\Validation\AccountStatus;
 use RZP\Models\FundAccount\Validation\Core as FAVCore;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
+use RZP\Models\FundAccount\Validation\Utils as FavUtils;
 use RZP\Models\FundAccount\Validation\Processor\Factory;
+use RZP\Models\FundAccount\Validation\Metric as FAVMetric;
 use RZP\Models\FundAccount\Validation\Constants as FavConstants;
 use RZP\Models\FundAccount\Validation\Processor\Vpa as VpaProcessor;
 
@@ -225,6 +228,12 @@ class FaVpaValidation extends Job
                         $this->handlePennilessVpaValidationFailure($faValidation, $traceable);
                     } else {
                         $vpaProcessor->markValidationAsFailed();
+
+                        // If we have deducted fee for vpa type fav, we have to refund it back
+                        if (FavUtils::isLedgerFeeDeductionForVpaTypeFavEnabled($faValidation->getMerchantId()) === true)
+                        {
+                            (new ReversalCore())->reverseForFundAccountValidation($faValidation);
+                        }
                     }
                 }
             }
@@ -461,6 +470,12 @@ class FaVpaValidation extends Job
 
     protected function handleFavException(Throwable $e, string $traceCode)
     {
+        $this->trace->count(FAVMetric::FAV_VALIDATION_FAILURE_COUNT,
+            [
+                'validation_method' => "penniless",
+                'error'             => $e->getMessage(),
+            ]);
+
         if (empty($this->vpaInput) === false)
         {
             $this->trace->traceException(

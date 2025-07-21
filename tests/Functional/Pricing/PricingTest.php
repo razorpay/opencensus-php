@@ -332,6 +332,26 @@ class PricingTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePricingPlanForFavWithPaymentMethodType()
+    {
+        $this->startTest();
+    }
+
+    public function testCreatePricingPlanForFavWithPaymentMethodVpa()
+    {
+        $this->startTest();
+    }
+
+    public function testCreatePricingPlanForFavWithInvalidPaymentMethod()
+    {
+        $this->startTest();
+    }
+
+    public function testCreatePricingPlanForFavWithInvalidPaymentMethodType()
+    {
+        $this->startTest();
+    }
+
     public function testCreatePricingPlanWithOptimizerConvenienceFeeFeature()
     {
         $this->startTest();

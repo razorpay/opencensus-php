@@ -42,6 +42,7 @@ use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Transaction\Core as TransactionCore;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Payment\Processor\Refund as RefundTrait;
+use RZP\Models\FundAccount\Validation\Utils as FavUtils;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
 use RZP\Models\Transaction\Processor\Ledger\Payout as PayoutLedger;
@@ -751,7 +752,8 @@ class Core extends Base\Core
         {
             // we still want to send a request to ledger even though a reversal was not created
             // This is to make sure that other chart of accounts get balanced
-            if (FundAccountValidation\Core::shouldFavGoThroughLedgerReverseShadowFlow($fav) === true)
+            if ((FundAccountValidation\Core::shouldFavGoThroughLedgerReverseShadowFlow($fav) === true) or
+                (FavUtils::shouldVpaFavGoThroughLedgerReverseShadowFlow($fav) === true))
             {
                 try
                 {
@@ -794,7 +796,8 @@ class Core extends Base\Core
 
         $reversal->balance()->associate($fav->balance);
 
-        if (FundAccountValidation\Core::shouldFavGoThroughLedgerReverseShadowFlow($fav) === true)
+        if ((FundAccountValidation\Core::shouldFavGoThroughLedgerReverseShadowFlow($fav) === true) or
+            (FavUtils::shouldVpaFavGoThroughLedgerReverseShadowFlow($fav) === true))
         {
             $this->repo->saveOrFail($reversal);
 

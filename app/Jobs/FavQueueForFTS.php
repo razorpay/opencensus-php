@@ -120,6 +120,11 @@ class FavQueueForFTS extends Job
 
             $this->trace->count(FAVMetric::FAV_QUEUE_FOR_FTS_JOB_FAILED_OR_RETRY_ATTEMPT_EXHAUSTED);
 
+            $this->trace->count(FAVMetric::FAV_VALIDATION_FAILURE_COUNT, [
+                'validation_method' => "pennydrop",
+                'exception' => $exception->getMessage(),
+            ]);
+
             Tracer::startSpanWithAttributes( HyperTrace::FAV_QUEUE_FOR_FTS_JOB_FAILED_OR_RETRY_ATTEMPT_EXHAUSTED);
 
             $this->checkRetry();

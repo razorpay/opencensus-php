@@ -3131,6 +3131,8 @@ class FundAccountValidationTest extends TestCase
 
         $this->createFAVBankingPricingPlan();
 
+        $this->createFAVBankingPricingPlansWithValidationMethods();
+
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
 
         // enabling the feature here for test merchant
@@ -3170,8 +3172,8 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('INR', $fav['currency']);
 
         // Fee and tax will be calculated at the time fund account validation is created.
-        $this->assertEquals(3, $fav['fees']);
-        $this->assertEquals(0, $fav['tax']);
+        $this->assertEquals(296, $fav['fees']);
+        $this->assertEquals(46, $fav['tax']);
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals('penny_testing', $fta['purpose']);
@@ -3185,12 +3187,12 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('platform', $txn['fee_bearer']);
         $this->assertEquals('prepaid', $txn['fee_model']);
         $this->assertEquals(false, $txn['settled']);
-        $this->assertEquals(3, $txn['fee']);
-        $this->assertEquals(3, $txn['mdr']);
-        $this->assertEquals(0, $txn['tax']);
-        $this->assertEquals(3, $txn['debit']);
+        $this->assertEquals(296, $txn['fee']);
+        $this->assertEquals(296, $txn['mdr']);
+        $this->assertEquals(46, $txn['tax']);
+        $this->assertEquals(296, $txn['debit']);
         $this->assertEquals($fav['amount'], $txn['amount']);
-        $this->assertEquals(9999997, $txn['balance']);
+        $this->assertEquals(9999704, $txn['balance']);
         $this->assertEquals(0, $txn['fee_credits']);
         $this->assertEquals('default', $txn['credit_type']);
 
@@ -6206,5 +6208,252 @@ class FundAccountValidationTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testNonCompositeVpaValidationSuccess_LedgerReverseShadowOff()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan(paymentMethod: "vpa", fixedRate: 200);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_LEDGER_FEE_DEDUCTION_FOR_VPA_ENABLE => 'enable']);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__] = $this->testData["testNonCompositeVpaValidationSuccess"];
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $txn = $this->getLastEntity('transaction', true);
+        $balance = $this->getLastEntity('balance', true);
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals(false, $txn['settled']);
+        $this->assertEquals(236, $txn['fee']);
+        $this->assertEquals(236, $txn['mdr']);
+        $this->assertEquals(36, $txn['tax']);
+        $this->assertEquals(236, $txn['debit']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+        // Note: because no fee credits are available
+        $this->assertEquals(9999764, $txn['balance']);
+        $this->assertEquals(0, $txn['fee_credits']);
+        $this->assertEquals('default', $txn['credit_type']);
+
+        $this->assertNotNull($txn['posted_at']);
+
+        // Fee and tax will be calculated at the time fund account validation is created.
+        $this->assertEquals(236, $fav['fees']);
+        $this->assertEquals(36, $fav['tax']);
+
+        // validate balance entry in database
+        $this->assertEquals(9999764, $balance['balance']);
+
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        // no fta
+        $this->assertNotEquals($fav['id'], $fta['source']);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+
+        $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals('Razorpay Customer', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+        $this->assertEquals(null, $favUpdated[Entity::ERROR_DESCRIPTION]);
+    }
+
+    public function testNonCompositeVpaValidationSuccess_LedgerReverseShadowOn()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->createFAVBankingPricingPlan(paymentMethod: "vpa", fixedRate: 200);
+
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_LEDGER_FEE_DEDUCTION_FOR_VPA_ENABLE => 'enable']);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__] = $this->testData["testNonCompositeVpaValidationSuccess"];
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $balance = $this->getLastEntity('balance', true);
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // Fee and tax will be calculated at the time fund account validation is created.
+        $this->assertEquals(236, $fav['fees']);
+        $this->assertEquals(36, $fav['tax']);
+
+        // validate fund account validation last entry
+        $this->assertEquals($balance['id'], $fav[Entity::BALANCE_ID]);
+        $this->assertEquals('10000000000000', $fav[Entity::MERCHANT_ID]);
+        $this->assertEquals(Entity::PUBLIC_ENTITY_NAME, $fav[Entity::ENTITY]);
+
+        // no fta
+        $this->assertNotEquals($fav['id'], $fta['source']);
+
+        Queue::assertPushed(FaVpaValidation::class);
+
+        // Test worker
+        $faVpaValidation = new FaVpaValidation('test', preg_replace('/^fav_/', '', $fav['id']));
+        $faVpaValidation->handle();
+
+        $favUpdated = $this->getDbEntityById('fund_account_validation', preg_replace('/^fav_/', '', $fav['id']));
+
+        $this->assertEquals('active', $favUpdated[Entity::ACCOUNT_STATUS]);
+        $this->assertEquals('Razorpay Customer', $favUpdated[Entity::REGISTERED_NAME]);
+        $this->assertEquals('completed', $favUpdated[Entity::STATUS]);
+        $this->assertEquals(null, $favUpdated[Entity::ERROR_DESCRIPTION]);
+    }
+
+    public function testNonCompositeVpaValidationFailure_LedgerReverseShadowOn()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_LEDGER_FEE_DEDUCTION_FOR_VPA_ENABLE => 'enable']);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountVpa();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+    }
+
+    public function testCompositeVpaValidationSuccess_LedgerReverseShadowOn_FallbackToDefault()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'enable']);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $pricingPlan = [
+            'plan_name'           => 'FAV Plan 2',
+            'percent_rate'        => 100,
+            'fixed_rate'          => 300,
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'product'             => 'banking',
+            'feature'             => 'fund_account_validation',
+            'payment_method'      => 'pennydrop',
+            'account_type'        => 'shared'
+        ];
+
+        $this->fixtures->create('pricing', $pricingPlan);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        // enabling the feature here for test merchant
+        $this->fixtures->merchant->addFeatures(['expose_fa_validation_utr']);
+
+        $response = $this->startTest();
+
+        $isEventValidated = false;
+
+        $expectedProperties = [
+            'fav'   => [
+                'merchant_id'     => '10000000000000',
+                'account_status'  => 'active',
+                'status'          => 'completed'
+            ]
+        ];
+
+        $this->verifyFAVStatusEvent('fund_account_validation.status', $expectedProperties, $isEventValidated);
+
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $this->assertEquals('new_fav_composite'."_".$fav->getId(), $fav['receipt']);
+
+        $this->triggerFlowToUpdateFavWithNewState($response['id'], 'COMPLETED');
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $fundAccount = $this->getLastEntity('fund_account', true);
+        $fav         = $this->getLastEntity('fund_account_validation', true);
+
+        $this->assertTrue($isEventValidated);
+
+        // Queue will be processed by now.
+        $this->assertEquals('completed', $fav['status']);
+        $this->assertEquals($fundAccount['id'], 'fa_'.$fav['fund_account_id']);
+        $this->assertEquals('active', $fav['results']['account_status']);
+        $this->assertNotNull($fav['results']['utr']);
+        $this->assertEquals('INR', $fav['currency']);
+
+        // Fee and tax will be calculated at the time fund account validation is created.
+        $this->assertEquals(3, $fav['fees']);
+        $this->assertEquals(0, $fav['tax']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('penny_testing', $fta['purpose']);
+        $this->assertEquals($fav['id'], $fta['source']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
+        $this->assertNotNull($fta['narration']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($fav['id'], $txn['entity_id']);
+        $this->assertEquals('fund_account_validation', $txn['type']);
+        $this->assertEquals('platform', $txn['fee_bearer']);
+        $this->assertEquals('prepaid', $txn['fee_model']);
+        $this->assertEquals(false, $txn['settled']);
+        $this->assertEquals(3, $txn['fee']);
+        $this->assertEquals(3, $txn['mdr']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(3, $txn['debit']);
+        $this->assertEquals($fav['amount'], $txn['amount']);
+        $this->assertEquals(9999997, $txn['balance']);
+        $this->assertEquals(0, $txn['fee_credits']);
+        $this->assertEquals('default', $txn['credit_type']);
+
+        $this->assertNotNull($txn['posted_at']);
+        return $response;
+    }
+
 }
 

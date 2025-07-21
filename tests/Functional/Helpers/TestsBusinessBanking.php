@@ -307,22 +307,69 @@ trait TestsBusinessBanking
         return $this->fixtures->fund_account->createVpa($attributes);
     }
 
-    protected function createFAVBankingPricingPlan($mode = 'test')
+    protected function createFAVBankingPricingPlan(
+        $mode = 'test',
+        $paymentMethod = 'bank_account',
+        $fixedRate = 0)
     {
         $pricingPlan = [
             'plan_name'           => 'FAV Plan',
             'percent_rate'        => 290,
-            'fixed_rate'          => 0,
+            'fixed_rate'          => $fixedRate,
             'org_id'              => '100000razorpay',
             'type'                => 'pricing',
             'plan_id'             => '1hDYlICobzOCYt',
             'product'             => 'banking',
             'feature'             => 'fund_account_validation',
-            'payment_method'      => 'bank_account',
+            'payment_method'      => $paymentMethod,
             'account_type'        => 'shared'
         ];
 
         $this->fixtures->on($mode)->create('pricing', $pricingPlan);
+    }
+
+    /**
+     * Create multiple FAV pricing plans with different validation method types
+     *
+     * @param string $mode
+     * @param string $planId
+     * @param array $customRates Optional custom rates for each validation method
+     */
+    protected function createFAVBankingPricingPlansWithValidationMethods(
+        $mode = 'test',
+        $planId = '1hDYlICobzOCYt',
+        $customRates = [],
+        $paymentMethod = 'bank_account',
+    ) {
+        $validationMethods = [
+            'penniless' => [
+                'fixed_rate'   => $customRates['penniless']['fixed_rate'] ?? 200,
+            ],
+            'pennydrop' => [
+                'fixed_rate'   => $customRates['pennydrop']['fixed_rate'] ?? 290,
+            ],
+            'optimized' => [
+                'fixed_rate'   => $customRates['optimized']['fixed_rate'] ?? 250,
+            ]
+        ];
+
+        foreach ($validationMethods as $validationMethod => $rates) {
+            $pricingPlan = [
+                'plan_name'           => "FAV Plan - {$validationMethod}",
+                'percent_rate'        => 0,
+                'fixed_rate'          => $rates['fixed_rate'],
+                'org_id'              => '100000razorpay',
+                'type'                => 'pricing',
+                'plan_id'             => $planId,
+                'product'             => 'banking',
+                'feature'             => 'fund_account_validation',
+                'payment_method'      => $paymentMethod,
+                'payment_method_type' => $validationMethod,
+                'account_type'        => 'shared'
+            ];
+
+            $this->fixtures->on($mode)->create('pricing', $pricingPlan);
+        }
     }
 
     // TODO: Remove all the params and take an array of key value pair of features and their expected values instead

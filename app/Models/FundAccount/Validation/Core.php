@@ -49,6 +49,7 @@ use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Services\FTS\Transfer\RequestFields as FtsRequestFields;
 use RZP\Models\Transaction\Processor\Ledger\FundAccountValidation as FavLedgerProcessor;
+use RZP\Models\FundAccount\Validation\Utils;
 
 class Core extends Base\Core
 {
@@ -186,6 +187,12 @@ class Core extends Base\Core
 
             $validationRequestType = $this->getValidationType($input);
 
+            // Push metric to track validation request type
+            $this->trace->count(Metric::FAV_VALIDATION_REQUEST_COUNT, [
+                'validation_type' => $validationRequestType,
+                'is_composite' => $isCompositeFavRequest ? 'true' : 'false'
+            ]);
+
             $this->trace->info(TraceCode::FAV_MERCHANT_FLAGS_STATUS, [
                 'merchant_id' => $merchant->getId(),
                 'isCompositeFavRequest' => $isCompositeFavRequest,
@@ -231,7 +238,7 @@ class Core extends Base\Core
                     ]);
             }
 
-            $fundAccountValidation = $this->createValidationEntity($input, $merchant);
+            $fundAccountValidation = $this->createValidationEntity($input, $merchant, $validationRequestType);
 
             // adding unique identifier to identify composite fav during webhook update
             if ($isCompositeFavRequest === true)
@@ -311,7 +318,7 @@ class Core extends Base\Core
      * @param Entity $validation
      * @return array
      */
-    protected function getFeesAndTaxForValidation(Merchant\Entity $merchant, array $input, Entity $validation): array
+    protected function getFeesAndTaxForValidation(Merchant\Entity $merchant, array $input, Entity $validation, $validationType): array
     {
         $requestPayload = [
             "id" =>  $validation->merchant->getId(),
@@ -340,8 +347,12 @@ class Core extends Base\Core
             $input[Entity::CURRENCY] = Constants::DEFAULT_PENNY_TESTING_CURRENCY;
         }
 
+        $validation->setValidationType($validationType);
+
         // Calculate fees and tax
         list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($validation);
+
+        unset($validation->validation_type);
 
         // Get pricing rule ID from fees split
         $feesSplitData = $feesSplit->toArray();
@@ -374,7 +385,7 @@ class Core extends Base\Core
         $validation->associateFundAccount($fundAccount);
 
         // Get fees and tax
-        $feesData = $this->getFeesAndTaxForValidation($merchant, $input, $validation);
+        $feesData = $this->getFeesAndTaxForValidation($merchant, $input, $validation, $validationType);
 
         // Update input with fees data
         $input[Entity::FEES] = $feesData[Entity::FEES];
@@ -777,7 +788,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    protected function createValidationEntity(array $input, Merchant\Entity $merchant): Entity
+    protected function createValidationEntity(array $input, Merchant\Entity $merchant, $validationRequestType): Entity
     {
         $validation = $this->buildValidationEntity($input, $merchant);
 
@@ -787,14 +798,15 @@ class Core extends Base\Core
 
         $input[Entity::FUND_ACCOUNT][Entity::ID] = $fundAccount->getId();
 
-        if (self::shouldFavGoThroughLedgerReverseShadowFlow($validation) === true)
+        if ((self::shouldFavGoThroughLedgerReverseShadowFlow($validation) === true) or
+            Utils::shouldVpaFavGoThroughLedgerReverseShadowFlow($validation) === true)
         {
-            $validation = $this->processFavThroughLedger($validation, $merchant, $input);
+            $validation = $this->processFavThroughLedger($validation, $merchant, $input, $validationRequestType);
 
             return $validation;
         }
 
-        $validation = $this->repo->transaction(function () use ($input, $validation, $merchant)
+        $validation = $this->repo->transaction(function () use ($input, $validation, $merchant, $validationRequestType)
         {
             $this->runInputValidations($validation, $input);
 
@@ -808,7 +820,11 @@ class Core extends Base\Core
             // it is assumed that source already exist.
             $this->repo->saveOrFail($validation);
 
+            $validation->setValidationType($validationRequestType);
+
             $txn = $this->createTransactionIfApplicable($validation, $merchant, $processor);
+
+            unset($validation->validation_type);
 
             if ($txn !== null)
             {
@@ -869,10 +885,10 @@ class Core extends Base\Core
         return $fundAccountResponse[Entity::FUND_ACCOUNT]->toArrayPublic();
     }
 
-    public function processFavThroughLedger(Entity $validation, Merchant\Entity $merchant, array $input): Entity
+    public function processFavThroughLedger(Entity $validation, Merchant\Entity $merchant, array $input, $validationRequestType): Entity
     {
         // Create the entity first, and calculate the pricing changes.
-        list($validation, $feesSplit) = $this->repo->transaction(function () use ($input, $validation, $merchant)
+        list($validation, $feesSplit) = $this->repo->transaction(function () use ($input, $validation, $merchant, $validationRequestType)
         {
             $this->runInputValidations($validation, $input);
 
@@ -882,7 +898,13 @@ class Core extends Base\Core
 
             $validation->setAttempts(1);
 
+            // setting validation request type (to be used during pricing rules filtering)
+            $validation->setValidationType($validationRequestType);
+
             list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($validation);
+
+            // Unset validation type after calculating fee since it is not present in db
+            unset($validation->validation_type);
 
             $validation->setFees($fee);
 
@@ -1016,7 +1038,7 @@ class Core extends Base\Core
                                                      Merchant\Entity $merchant,
                                                      Processor\Base $processor)
     {
-        if ($validation->getFundAccountType() === FundAccount\Type::VPA)
+        if (Utils::shouldVpaFavBypassTransactionCreation($validation) === true)
         {
             return null;
         }
@@ -2132,7 +2154,7 @@ class Core extends Base\Core
             ['merchant_id' => $fav->getMerchantId()]);
         }
 
-        if ($fav->getFundAccountType() === FundAccount\Type::VPA)
+        if (Utils::shouldVpaFavBypassTransactionCreation($fav) === true)
         {
             $this->trace->info(
                 TraceCode::LEDGER_TRANSACTIONS_QUEUE_VPA_BASED_FAV_NOT_ALLOWED,

@@ -252,6 +252,68 @@ return [
         ],
     ],
 
+    'testNonCompositeVpaValidationSuccess' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account.validation',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'contact_id'   => 'cont_1000000contact',
+                    'account_type' => 'vpa',
+                    'active'       => true,
+                    'details'      => [
+                        'address' => "withname@razorpay"
+                    ],
+                ],
+                'amount'       => 0,
+                'currency'     => "INR",
+                'status'       => 'created',
+                'notes'        => [],
+                'results'      => [
+                    'account_status'  => null,
+                    'registered_name' => null,
+                ],
+            ],
+        ],
+    ],
+
+    'testNonCompositeVpaValidationFailure_LedgerReverseShadowOn' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                FundAccount::ACCOUNT_NUMBER => '2224440041626905',
+                Validation::FUND_ACCOUNT => [
+                    FundAccount::ID => '',
+                ],
+                Validation::NOTES        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'We are facing some trouble completing your request at the moment. Please try again shortly.'
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\LogicException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
+        ],
+    ],
+
     'testPennilessVpaValidationWithInvalidAccountStatus' => [
         'request' => [
             'url'     => '/fund_accounts/validations',
@@ -384,6 +446,71 @@ return [
                     ],
                 'contact' => [
                     'name' => "customer"
+                    ]
+                ],
+                Validation::NOTES         => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'fund_account.validation',
+                'fund_account' => [
+                    'entity' => 'fund_account',
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'ifsc' => 'SBIN0010411',
+                        'bank_name' => 'State Bank of India',
+                        'name' => 'Rohit Keshwani',
+                        'notes' => [],
+                        'account_number' => '123456789'
+                    ],
+                    'batch_id' => null,
+                    'active' => true,
+                    'contact' => [
+                        'entity' => 'contact',
+                        'name' => 'customer',
+                        'contact' => null,
+                        'email' => null,
+                        'type' => null,
+                        'reference_id' => null,
+                        'batch_id' => null,
+                        'active' => true,
+                        'notes' => [],
+                    ]
+                ],
+                'status' => 'created',
+                'notes' => [],
+                'validation_results' => [
+                    'account_status' => null,
+                    'registered_name' => null,
+                    'name_match_score' => null,
+                    'details' => null
+                ],
+                'status_details' => [
+                    'description' => 'validation request is created',
+                    'source' => 'internal',
+                    'reason' => 'validation_request_created'
+                ]
+            ]
+        ],
+    ],
+
+    'testCompositeVpaValidationSuccess_LedgerReverseShadowOn_FallbackToDefault' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                Validation::SOURCE_ACCOUNT_NUMBER => '2224440041626905',
+                Validation::VALIDATION_TYPE => "penniless",
+                Validation::FUND_ACCOUNT  => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::BANK_ACCOUNT      => [
+                        BankAccount::ACCOUNT_NUMBER => '123456789',
+                        BankAccount::NAME           => 'Rohit Keshwani',
+                        BankAccount::IFSC           => 'SBIN0010411',
+                    ],
+                    'contact' => [
+                        'name' => "customer"
                     ]
                 ],
                 Validation::NOTES         => [],

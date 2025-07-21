@@ -415,6 +415,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::VALIDATION_METHOD, $validationMethod);
     }
 
+    public function setValidationType(string $validationType)
+    {
+        $this->setAttribute(self::VALIDATION_TYPE, $validationType);
+    }
+
     // -------------- Public Setters --------------
 
     public function setPublicEntityAttribute(array & $array)

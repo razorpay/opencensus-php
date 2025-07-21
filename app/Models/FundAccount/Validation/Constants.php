@@ -8,6 +8,7 @@ use RZP\Models\FundAccount\Type;
 class Constants
 {
     const DEFAULT_PENNY_TESTING_AMOUNT   = 100;
+    const DEFAULT_VPA_VALIDATION_AMOUNT  = 0;
     const DEFAULT_PENNY_TESTING_CURRENCY = 'INR';
     const IFSC_CODE                      = 'ifsc_code';
     const DEFAULT_INDIA_COUNTRY_CODE     = '+91';

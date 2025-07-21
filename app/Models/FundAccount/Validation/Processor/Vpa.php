@@ -16,6 +16,7 @@ use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\BankingAccount\AccountType;
+use RZP\Models\FundAccount\Validation\Utils;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankingAccountService\Channel;
 use RZP\Models\FundAccount\Validation\Metric;
@@ -451,6 +452,14 @@ class Vpa extends Base
 
     public function setDefaultValuesForValidation()
     {
-        return;
+        if (Utils::isLedgerFeeDeductionForVpaTypeFavEnabled($this->validation->getMerchantId())) {
+            if ($this->validation->getAmount() === null) {
+                $this->validation->setAmount(Constants::DEFAULT_VPA_VALIDATION_AMOUNT);
+            }
+
+            if ($this->validation->getCurrency() === null) {
+                $this->validation->setCurrency(Constants::DEFAULT_PENNY_TESTING_CURRENCY);
+            }
+        }
     }
 }
