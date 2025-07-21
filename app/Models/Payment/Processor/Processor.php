@@ -7581,7 +7581,8 @@ class Processor
         }
 
         // emandate rearch changes: need token to determine gateway
-        if($this->isEmandateRearchRoute($this->route->getCurrentRouteName()) === true)
+        $currentRoute = $this->route?->getCurrentRouteName();
+        if($currentRoute !== null && $this->isEmandateRearchRoute($currentRoute))
         {
             $input[Constants::TOKEN_ENTITY] = $token;
         }
