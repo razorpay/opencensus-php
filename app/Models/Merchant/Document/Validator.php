@@ -51,6 +51,7 @@ class Validator extends Base\Validator
         'is_partner_kyc'      => 'sometimes|boolean',
         'upload_only'         => 'sometimes|boolean',
         'product'             => 'sometimes|string',
+        'sync'                => 'sometimes|boolean',
     ];
 
     protected static $uploadDocumentWithoutFileTypeRules = [
@@ -59,6 +60,7 @@ class Validator extends Base\Validator
         'is_partner_kyc'      => 'sometimes|boolean',
         'upload_only'         => 'sometimes|boolean',
         'product'             => 'sometimes|string',
+        'sync'                => 'sometimes|boolean',
     ];
 
     protected static $aadharUploadRules = [

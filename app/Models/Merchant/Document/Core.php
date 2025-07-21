@@ -256,6 +256,11 @@ class Core extends Base\Core
         ]);
         if (isset($input["upload_only"]) === true and $input["upload_only"])
         {
+            if (isset($input['sync']) === true and $input['sync'])
+            {
+                $docInput = [$documentType => $fileAttributes[$documentType]];
+                $this->storeInMerchantDocument($merchant, $merchant, $docInput, $document);
+            }
             return $fileAttributes;
         }
         // route request to PGOS
@@ -890,9 +895,9 @@ class Core extends Base\Core
             DetailConstants::ENABLE
         );
         $isMkycMerchant = $this->pgosProxyController->isIndiaPgModularMerchant($merchant);
-        
+
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['isExperimentEnabled' => $isExperimentEnabled,"isMkycMerchant"=>$isMkycMerchant]);
-        
+
         return ($isExperimentEnabled and $isMkycMerchant);
     }
 }
