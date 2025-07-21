@@ -85,6 +85,7 @@ class Constants
     const DATA_UNAVAILABLE      = 'DATA_UNAVAILABLE';
     const RULE_EXECUTION_FAILED = 'RULE_EXECUTION_FAILED';
     const SPAM_DETECTED_ERROR   = 'SPAM_DETECTED_ERROR';
+    const NO_PROVIDER_ERROR     = 'NO_PROVIDER_ERROR';
 
     const ERROR_MAPPING = [
         self::FAILED            => [

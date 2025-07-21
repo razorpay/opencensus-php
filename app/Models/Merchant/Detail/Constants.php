@@ -729,6 +729,7 @@ class Constants
         BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::INPUT_DATA_ISSUE . 'KC40'                       => 'INVALID_BENEFICIARY_IFSC_CODE_OR_NBIN',
         BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::RULE_EXECUTION_FAILED                           => 'NOT_MATCHED',
         BVSConstants::GSTIN . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::RULE_EXECUTION_FAILED . 'inactive_gstin'               => 'INACTIVE_GSTIN',
+        BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::NO_PROVIDER_ERROR . 'KC21'                       => 'INVALID_TRANSACTION',
     ];
 
     const LINKED_ACCOUNT_VERIFICATION_RESPONSE_ERROR_CODES = [
