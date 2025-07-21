@@ -4422,6 +4422,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_CONTACT_MOBILE_UPDATE                            = 'USER_CONTACT_MOBILE_UPDATE';
     const USER_CHECK_HAS_PASSWORD_ACTION                        = 'USER_CHECK_HAS_PASSWORD_ACTION';
     const USER_LOGIN_2FA_SKIPPED                                =  'USER_LOGIN_2FA_SKIPPED';
+    const USER_LOGIN_VIA_SSO                                    = 'USER_LOGIN_VIA_SSO';
+    const USER_LOGIN_VIA_SSO_SPLITZ_ERROR                       = 'USER_LOGIN_VIA_SSO_SPLITZ_ERROR';
 
     const OTP_CONTEXT                                           = 'OTP_CONTEXT';
     const USER_SET_PASSWORD_ACTION                              = 'USER_SET_PASSWORD_ACTION';

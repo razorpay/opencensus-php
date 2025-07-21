@@ -1504,6 +1504,28 @@ class Core extends Base\Core
 
         unset($input[Constants::BROWSER_DETAILS]);
 
+        $origin = $this->app['request']->header('Origin');
+
+        try
+        {
+            $allowed = (new User\SplitzExperimentEvaluator())->isLoginViaSsoEnabled($input[Entity::EMAIL]);
+        }
+        catch(\Exception $e)
+        {
+            $allowed = "unknown";
+            $this->trace->traceException($e, null, TraceCode::USER_LOGIN_VIA_SSO_SPLITZ_ERROR);
+        }
+
+        $traceData = [
+            'mode' => $this->mode,
+            'internal_app_name' => app('request.ctx')->getInternalAppName(),
+            'origin' => $origin,
+            'input' => $input[Entity::EMAIL],
+            'experiment_status' => $allowed
+        ];
+
+        $this->trace->info(TraceCode::USER_LOGIN_VIA_SSO, $traceData);
+
         $user = $this->loginWithMobilePassword($input);
 
         if ($user !== null)
