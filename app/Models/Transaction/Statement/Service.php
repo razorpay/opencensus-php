@@ -293,6 +293,31 @@ class Service extends Transaction\Service
                 ]
             );
 
+            $isSearchReadCutoffMerchant = $this->isReadCutoffEnabledForSearch($this->merchant->getId());
+
+            if ($isSearchReadCutoffMerchant === true) {
+
+                $dimension = $this->getDimensions();
+
+                try {
+
+                    return $this->redirectSearchStatementToXperience($input, $dimension);
+
+                } catch (\Exception $e) {
+                    $this->trace->traceException($e, null,  TraceCode::XPERINCE_STATEMENT_SEARCH_FAILURE, [
+                        'input' => $input,
+                        'merchant_id' => $this->merchant->getId()
+                    ]);
+
+                    $this->trace->info(TraceCode::XPERIENCE_SEARCH_READ_CUTOFF_FALLBACK_FLOW, [
+                        'merchant_id' => $this->merchant->getId()
+                    ]);
+
+                    // Count fallback to BAS
+                    $this->trace->count(TxnMetric::READ_CUTOFF_XPERIENCE_FALLBACK_TOTAL, $dimension);
+                }
+            }
+
             $response = $this->repo->direct_account_statement
                 ->fetch($input, $this->merchant->getId(), ConnectionType::SLAVE, true)->toArrayPublic();
 
@@ -445,6 +470,50 @@ class Service extends Transaction\Service
 
         // Count all XAS success responses for account statements read cutoff
         $this->trace->count(TxnMetric::READ_CUTOFF_XAS_SUCCESS_TOTAL, $dimension);
+
+        return $transformedResponse;
+    }
+
+    private function redirectSearchStatementToXperience(array $input, $dimension): array
+    {
+        $this->trace->info(TraceCode::DEBUG_LOGGING, [
+            "account_statements_xperience_redirect" => true,
+            "input" => $input
+        ]);
+
+        $xperienceService = $this->app['xperience'];
+
+        $startTimeMs = round(microtime(true) * 1000);
+
+        // Count all Xperience attempts for account statements read cutoff
+        $this->trace->count(TxnMetric::READ_CUTOFF_XPERIENCE_REQUEST_TOTAL, $dimension);
+
+        $xperienceResponse = $xperienceService->statementSearch($input);
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        // Track latency for Xperience requests
+        $this->trace->histogram(
+            TxnMetric::READ_CUTOFF_XPERIENCE_REQUEST_LATENCY_MILLISECONDS,
+            $endTimeMs - $startTimeMs,
+            $dimension
+        );
+
+        // Transform Xperience response to maintain API response structure
+        $transformedResponse = $this->transformXperienceResponseForSearch($xperienceResponse);
+
+        $this->trace->info(
+            TraceCode::STATEMENT_SEARCH_XPERIENCE_SERVICE_SUCCESS,
+            [
+                'input' => $input,
+                'merchant_id' => $this->merchant->getId(),
+                'original_response_count' => count($xasResponse['statements'] ?? []),
+                'transformed_response_count' => isset($transformedResponse['count']) ? $transformedResponse['count'] : (isset($transformedResponse['id']) ? 1 : 0),
+            ]
+        );
+
+        // Count all Xperience success responses for account statements read cutoff
+        $this->trace->count(TxnMetric::READ_CUTOFF_XPERIENCE_SUCCESS_TOTAL, $dimension);
 
         return $transformedResponse;
     }
@@ -668,6 +737,16 @@ class Service extends Transaction\Service
         return (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,Merchant\RazorxTreatment::VARIANT_ENABLE);
     }
 
+    private function isReadCutoffEnabledForSearch(string $merchantID): bool{
+        $requestPayload = [
+            "id" =>  $merchantID,
+            "experiment_name" => Merchant\RazorxTreatment::ACCOUNT_STATEMENTS_READ_CUTOFF_FOR_SEARCH,
+            'request_data'  => json_encode(['id' =>  $merchantID])
+        ];
+
+        return (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,Merchant\RazorxTreatment::VARIANT_ENABLE);
+    }
+
     private function mapPublicID(string $entityType) : string {
         $publicIdMap = [
             'payout' => 'pout_',
@@ -678,5 +757,144 @@ class Service extends Transaction\Service
         ];
 
         return $publicIdMap[$entityType];
+    }
+
+    /**
+     * Transform XPerience service response to match the original API response format
+     */
+    public function transformXperienceResponseForSearch(array $xperienceResponse): array
+    {
+        $data = $xperienceResponse['data'] ?? [];
+
+        $transformedResponse = [
+            'entity' => $data['entity'] ?? 'collection',
+            'count' => $data['count'] ?? 0,
+            'has_more' => false,
+            'items' => []
+        ];
+
+        if (isset($data['items']) && is_array($data['items'])) {
+            foreach ($data['items'] as $item) {
+                $transformedResponse['items'][] = $this->transformTransactionItem($item);
+            }
+        }
+
+        return $transformedResponse;
+    }
+
+    private function transformTransactionItem(array $item): array
+    {
+        return [
+            'id' => $item['id'] ?? null,
+            'entity' => $item['entity'] ?? 'transaction',
+            'account_number' => $item['account_number'] ?? '',
+            'amount' => (int) ($item['amount'] ?? 0),
+            'currency' => $item['currency'] ?? 'INR',
+            'credit' => (int) ($item['credit'] ?? 0),
+            'debit' => (int) ($item['debit'] ?? 0),
+            'balance' => (int) ($item['balance'] ?? 0),
+            'created_at' => (int) ($item['created_at'] ?? 0),
+            'source' => isset($item['source']) ? $this->transformSourceItem($item['source']) : null
+        ];
+    }
+
+    private function transformSourceItem(array $source): array
+    {
+        return [
+            'id' => $source['id'] ?? null,
+            'entity' => $source['entity'] ?? 'payout',
+            'fund_account_id' => $source['fund_account_id'] ?? null,
+            'fund_account' => isset($source['fund_account']) ? $this->transformFundAccount($source['fund_account']) : null,
+            'amount' => (int) ($source['amount'] ?? 0),
+            'notes' => $this->transformNotes($source['notes'] ?? []),
+            'fees' => (int) ($source['fees'] ?? 0),
+            'tax' => (int) ($source['tax'] ?? 0),
+            'status' => $source['status'] ?? null,
+            'utr' => $source['utr'] ?? null,
+            'mode' => $source['mode'] ?? null,
+            'created_at' => (int) ($source['created_at'] ?? 0),
+            'fee_type' => $source['fee_type'] ?? null
+        ];
+    }
+
+    private function transformFundAccount(array $fundAccount): array
+    {
+        return [
+            'id' => $fundAccount['id'] ?? null,
+            'entity' => $fundAccount['entity'] ?? 'fund_account',
+            'contact_id' => $fundAccount['contact_id'] ?? null,
+            'contact' => isset($fundAccount['contact']) ? $this->transformContact($fundAccount['contact']) : null,
+            'account_type' => $fundAccount['account_type'] ?? null,
+            'merchant_disabled' => $fundAccount['merchant_disabled'] ?? false,
+            'bank_account' => isset($fundAccount['bank_account']) ? $this->transformBankAccount($fundAccount['bank_account']) : null,
+            'batch_id' => $fundAccount['batch_id'] ?? null,
+            'active' => $fundAccount['active'] ?? true,
+            'created_at' => (int) ($fundAccount['created_at'] ?? 0)
+        ];
+    }
+
+    private function transformContact(array $contact): array
+    {
+        return [
+            'id' => $contact['id'] ?? null,
+            'entity' => $contact['entity'] ?? 'contact',
+            'name' => $contact['name'] ?? null,
+            'contact' => $contact['contact'] ?? null,
+            'email' => $contact['email'] ?? null,
+            'type' => $contact['type'] ?? null,
+            'reference_id' => $contact['reference_id'] ?? null,
+            'batch_id' => $contact['batch_id'] ?? null,
+            'active' => $contact['active'] ?? true,
+            'notes' => $this->transformContactNotes($contact['notes'] ?? []),
+            'created_at' => (int) ($contact['created_at'] ?? 0),
+            'gstin' => $contact['gstin'] ?? null
+        ];
+    }
+
+    private function transformBankAccount(array $bankAccount): array
+    {
+        return [
+            'ifsc' => $bankAccount['ifsc'] ?? null,
+            'bank_name' => $bankAccount['bank_name'] ?? null,
+            'name' => $bankAccount['name'] ?? null,
+            'notes' => [],
+            'account_number' => $bankAccount['account_number'] ?? null
+        ];
+    }
+
+    private function transformNotes(array $notes): array
+    {
+        if ($this->isAssociativeArray($notes)) {
+            return $notes;
+        }
+        return [];
+    }
+
+    private function transformContactNotes(array $notes): array
+    {
+        if ($this->isAssociativeArray($notes)) {
+            return $notes;
+        }
+
+        $parsedNotes = [];
+        foreach ($notes as $noteString) {
+            if (is_string($noteString) && strpos($noteString, ':') !== false) {
+                $parts = explode(':', $noteString, 2);
+                if (count($parts) === 2) {
+                    $key = trim($parts[0]);
+                    $value = trim($parts[1]);
+                    $parsedNotes[$key] = $value;
+                }
+            }
+        }
+        return $parsedNotes;
+    }
+
+    private function isAssociativeArray(array $array): bool
+    {
+        if (empty($array)) {
+            return true;
+        }
+        return array_keys($array) !== range(0, count($array) - 1);
     }
 }

@@ -104,6 +104,8 @@ class Xperience
     const PENDING_ENTITIES_SUMMARY_EMAIL_PATH = 'v1/aggregator/send-pending-entities-email';
     const PETTY_CASH_PAYOUT_STATUS_CALLBACK_PATH = 'v1/petty-cash/callbacks/update-status';
 
+    const STATEMENT_SEARCH_PATH = 'v1/statements/search';
+
 
     // header constants
     const X_APP_MODE            = 'X-App-Mode';
@@ -1085,6 +1087,13 @@ class Xperience
         }
 
         return $this->makeRequest( $url, $input, []);
+    }
+
+    public function statementSearch(array $input)
+    {
+        $url = $this->getConstructedUrl(self::STATEMENT_SEARCH_PATH);
+
+        return $this->makeRequest($url, $input, [], self::GET);
     }
 }
 

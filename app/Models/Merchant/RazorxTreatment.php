@@ -1073,6 +1073,8 @@ final class RazorxTreatment
 
     const ACCOUNT_STATEMENTS_READ_CUTOFF = 'account_statements_read_cutoff';
 
+    const ACCOUNT_STATEMENTS_READ_CUTOFF_FOR_SEARCH = 'account_statements_search_cutoff';
+
     const Allowed_alt_id_experiments = [
         "non_rearch_alt__RUPAY_isg_kotak",
         "non_rearch_alt__RUPAY_cybersource_axis",

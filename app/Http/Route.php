@@ -12642,7 +12642,9 @@ class Route
             'xperience_invite_delete',
             'settings_fetch_by_key_internal',
             'composite_payout_internal',
-            'payout_bulk_update_attachments'
+            'payout_bulk_update_attachments',
+            'contact_get_internal',
+            'fund_account_get_internal'
         ],
 
         'abacus' => [
