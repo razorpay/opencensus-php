@@ -194,10 +194,9 @@ class Service extends Base\Service
                 $id .= Constant::AXIS_BANK_EMAIL_DOMAIN;
             }
 
-            // fetch admin meta by unique identifier
-            $adminsMeta = $this->repo->admins_meta->fetchByUniqueIdentifierOrFail($id);
+            $activeAdmins = $this->repo->admins_meta->fetchByUniqueIdentifierOrFail($id);
 
-            $adminId = $adminsMeta[AdminsMetaEntity::ADMIN_ID];
+            $adminId = $activeAdmins->admin_id;
 
             // fetch admin by id and org_id
             $admin = $this->repo->admin->findByIdAndOrgIdWithRelations(
@@ -210,7 +209,7 @@ class Service extends Base\Service
                 'route_name'        => $this->app['api.route']->getCurrentRouteName(),
             ]);
 
-            return $this->buildResponse($admin->toArrayPublic(), $adminsMeta->toArrayPublic());
+            return $this->buildResponse($admin->toArrayPublic(), (array) $activeAdmins);
         } catch (Throwable $e) {
 
             $this->trace->error(TraceCode::ORG_ADMIN_NOT_FOUND, [

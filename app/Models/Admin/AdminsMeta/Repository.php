@@ -22,10 +22,16 @@ class Repository extends Base\Repository
 
     public function fetchByUniqueIdentifierOrFail(string $id)
     {
-        return $this->newQuery()
-                    ->where(Entity::UNIQUE_IDENTIFIER, '=', $id)
-                    ->firstOrFailPublic();
+        return DB::table('admins_meta')
+            ->join('admins', 'admins_meta.admin_id', '=', 'admins.id')
+            ->where('admins_meta.unique_identifier', $id)
+            ->where('admins.disabled', 0)
+            ->whereNull('admins.deleted_at')
+            ->whereNull('admins_meta.user_disabled_at')
+            ->select('admins_meta.*')
+            ->first();
     }
+
     public function fetchAdminIDByUniqueIdentifier(string $uniqueIdentifier): ?object
     {
         return DB::table('admins_meta')
@@ -33,6 +39,7 @@ class Repository extends Base\Repository
             ->where('admins_meta.unique_identifier', $uniqueIdentifier)
             ->where('admins.disabled', 0)
             ->whereNull('admins.deleted_at')
+            ->whereNull('admins_meta.user_disabled_at')
             ->select('admins_meta.admin_id')
             ->first();
     }
