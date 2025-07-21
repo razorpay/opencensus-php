@@ -2268,27 +2268,26 @@ class Core extends Detail\Core
                 'step'           => 'Phantom prefill contact number'
             ]);
 
-            if($merchantId !== null)
+            if($merchantId === null)
             {
-                $isSubmerchant = (new Merchant\AccessMap\Core())->isMerchantMappedToApplication($merchantId, $input[Constants::APPLICATION_ID]);
+                return null;
+            }
+            $isSubmerchant = (new Merchant\AccessMap\Core())->isMerchantMappedToApplication($merchantId, $input[Constants::APPLICATION_ID]);
 
-                if ($isSubmerchant === true)
-                {
-                    $subMerchant = $this->repo->merchant->findOrFailPublic($merchantId);
+            if ($isSubmerchant === false)
+            {
+                return null;
+            }
+            $subMerchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-                    $merchantDetail = $subMerchant->merchantDetail;
+            $merchantDetail = $subMerchant->merchantDetail;
 
-                    $number = new PhoneBook($merchantDetail->getContactMobile());
+            $number = new PhoneBook($merchantDetail->getContactMobile());
 
-                    $phoneNumber = $number->format(PhoneBook::DOMESTIC);
-
-                    $subMerchantUser = $this->repo->user->findByMobile($phoneNumber)->first();
-
-                    if (!empty($subMerchantUser))
-                    {
-                        return $phoneNumber;
-                    }
-                }
+            if ($this->checkUserExists($number))
+            {
+                $phoneNumber = $number->format(PhoneBook::DOMESTIC);
+                return $phoneNumber;
             }
             return null;
         }
@@ -2301,6 +2300,16 @@ class Core extends Detail\Core
 
             return null;
         }
+    }
+    private function checkUserExists(PhoneBook $number) : bool
+    {
+        $subMerchantUser = $this->repo->user->getUserFromMobile($number->getMobileNumberFormats());
+        $userExists = !empty($subMerchantUser);
+        $this->trace->info(TraceCode::ONBOARDING_SIGNATURE_VALID_FOR_LOGIN, [
+            'user_exists'    => $userExists,
+            'step'           => 'Phantom prefill contact number'
+        ]);
+        return $userExists;
     }
 
     public function getSubmerchantIdFromOnboardingSignature(string $clientSecret, string $onboardingSignature)
