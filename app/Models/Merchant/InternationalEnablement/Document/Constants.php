@@ -48,6 +48,10 @@ class Constants
     const HALLMARK_GII                              = 'hallmark_gii';
     const BUSINESS_PROOF_URL                        = 'business_proof_url';
 
+    const BOARD_RESOLUTION                          = 'board_resolution';
+
+    const POWER_OF_ATTORNEY                         = 'power_of_attorney';
+
     const OTHERS = 'others';
 
     const MAX_DOCUMENTS_PER_TYPE = 3;
@@ -84,7 +88,9 @@ class Constants
         self::DARPAN_PORTAL,
         self::PROOF_OF_PROFESSION,
         self::TRADE_LICENSE,
-        self::BUSINESS_PROOF_URL
+        self::BUSINESS_PROOF_URL,
+        self::BOARD_RESOLUTION,
+        self::POWER_OF_ATTORNEY,
     ];
 
     const DOCUMENT_TYPE_VALIDATOR_CSV =
@@ -122,6 +128,8 @@ class Constants
         self::PROOF_OF_PROFESSION. ',' .
         self::TRADE_LICENSE. ',' .
         self::BUSINESS_PROOF_URL. ',' .
+        self::BOARD_RESOLUTION. ',' .
+        self::POWER_OF_ATTORNEY. ',' .
         self::OTHERS;
 
     const BUSINESS_CATEGORY_SUBCATEGORY_DOCUMENT_TYPE_MAP = [
@@ -193,29 +201,42 @@ class Constants
             self::MOA,
             self::AOA,
             self::UBO,
+            self::BOARD_RESOLUTION,
+            self::POWER_OF_ATTORNEY,
         ],
         BusinessType::PRIVATE_LIMITED => [
             self::MOA,
             self::AOA,
             self::UBO,
+            self::BOARD_RESOLUTION,
+            self::POWER_OF_ATTORNEY,
         ],
         BusinessType::LLP => [
             self::MOA,
             self::AOA,
             self::UBO,
+            self::POWER_OF_ATTORNEY,
         ],
         BusinessType::NGO => [
+            self::UBO,
             self::DARPAN_PORTAL,
             self::BUSINESS_PROOF_URL,
+            self::POWER_OF_ATTORNEY,
         ],
         BusinessType::TRUST => [
+            self::UBO,
             self::BUSINESS_PROOF_URL,
+            self::POWER_OF_ATTORNEY,
         ],
         BusinessType::PARTNERSHIP => [
+            self::UBO,
             self::BUSINESS_PROOF_URL,
+            self::POWER_OF_ATTORNEY,
         ],
         BusinessType::SOCIETY => [
+            self::UBO,
             self::BUSINESS_PROOF_URL,
+            self::POWER_OF_ATTORNEY,
         ],
     ];
 
