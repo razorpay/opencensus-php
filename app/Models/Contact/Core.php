@@ -21,6 +21,7 @@ use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\Contact\BatchHelper as ContactBatchHelper;
 use RZP\Services\VendorPayments\Service as VendorPaymentService;
+use RZP\Services\CFAService as CFAService;
 use RZP\Models\Payout\SourceRequestIDMapping\Core as SourceRequestIDMappingCore;
 
 /**
@@ -37,11 +38,17 @@ class Core extends Base\Core
      */
     protected $vendorPaymentService;
 
+    /**
+     * @var CFAService
+     */
+    protected $cfaService;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->vendorPaymentService = $this->app['vendor-payment'];
+        $this->cfaService = $this->app['cfa'];
     }
 
     public function create(
@@ -51,86 +58,140 @@ class Core extends Base\Core
         bool $createDuplicate = false,
         bool $allowRZPFeesContactCreation = false): Entity
     {
+        // Pre Processing
         $input = $this->trimSpaces($input);
 
         $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST, ['input' => $input]);
 
         (new Validator)->validateInput('create', $input);
+        
+        // Check if CFA service experiment is enabled
+        $isCFAExperimentEnabled = false;
 
-        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
+        if ($merchant != null && $merchant->getId() != null)
         {
-            $result = $this->repo->contact->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
-                                                                 $merchant->getId(),
-                                                                 $batchId);
-
-            if ($result !== null)
-            {
-                $this->trace->info(TraceCode::CONTACT_ALREADY_EXISTS_WITH_SAME_IDEMPOTENCY_KEY,
-                                   [
-                                       'input' => $result->toArrayPublic(),
-                                       Entity::IDEMPOTENCY_KEY => $input[Entity::IDEMPOTENCY_KEY]
-                                   ]);
-
-                return $result;
-            }
+            $properties = [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.cfa_service_create_control_experiment_id'),
+                'request_data' => json_encode(['merchant_id' => $merchant->getId()])
+            ];
+            $isCFAExperimentEnabled = $this->isSplitzExperimentEnabled($properties, 'enable', TraceCode::CONTACT_CFA_EXPERIMENT_CHECK);
         }
 
-        if ($createDuplicate === false)
-        {
-            $contact = $this->repo->contact->getContactWithSimilarDetails($input, $merchant);
+        if ($isCFAExperimentEnabled) {
+            // New flow of Contact creation
 
-            if ($contact !== null)
+            // Create a temporary contact entity for type validation
+            $tempContact = (new Entity)->build($input);
+            $tempContact->merchant()->associate($merchant);
+            
+            // Apply type validation logic before sending to CFA
+            if (($allowRZPFeesContactCreation === true) or
+                ((Contact\Type::isInInternalNonRZPFees($tempContact->getType()) === true) and
+                 Contact\Type::validateInternalAppAllowedContactType($tempContact->getType(),
+                     $this->app['basicauth']->getInternalApp()) === true))
             {
-                $this->trace->info(
-                    TraceCode::DUPLICATE_CONTACT_FOUND,
+                (new Type)->setTypeForInternalContact($tempContact, $input[Entity::TYPE]);
+            }
+            else
+            {
+                $this->setTypeIfApplicable($tempContact, $input);
+            }
+            
+            // Update input with validated type
+            $input[Entity::TYPE] = $tempContact->getType();
+
+            if($this->isContactCreateAndEditDisabledForSourceTypeVendor($tempContact) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_VENDOR_CONTACT_CREATION_NOT_PERMITTED,
+                    null,
                     [
-                        Entity::ID         => $contact->getId(),
-                        Entity::BATCH_ID   => $batchId,
+                        'merchant_id' => $tempContact->merchant->getId(),
+                        'input'       => $input
                     ]);
+            }
+            
+            $contact = $this->cfaService->createContact($input, $merchant);
+        } else {
+            // Old flow of Contact creation
+            if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
+            {
+                $result = $this->repo->contact->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
+                                                                     $merchant->getId(),
+                                                                     $batchId);
 
-                return $contact;
+                if ($result !== null)
+                {
+                    $this->trace->info(TraceCode::CONTACT_ALREADY_EXISTS_WITH_SAME_IDEMPOTENCY_KEY,
+                                       [
+                                           'input' => $result->toArrayPublic(),
+                                           Entity::IDEMPOTENCY_KEY => $input[Entity::IDEMPOTENCY_KEY]
+                                       ]);
+
+                    return $result;
+                }
+            }
+
+            if ($createDuplicate === false)
+            {
+                $contact = $this->repo->contact->getContactWithSimilarDetails($input, $merchant);
+
+                if ($contact !== null)
+                {
+                    $this->trace->info(
+                        TraceCode::DUPLICATE_CONTACT_FOUND,
+                        [
+                            Entity::ID         => $contact->getId(),
+                            Entity::BATCH_ID   => $batchId,
+                        ]);
+
+                    return $contact;
+                }
+            }
+
+            $contact = (new Entity)->build($input);
+
+            $contact->merchant()->associate($merchant);
+
+            // Contact of type rzp_fees can be created by all internal requests.
+            // So we approve it by simply looking at "$allowRZPFeesContactCreation".
+
+            // Here "isInInternalNonRZPFees" checks whether the type of contact is internal and
+            // if it is internal type, we check whether current app is allowed to create that type of contact.
+
+            if (($allowRZPFeesContactCreation === true) or
+                ((Contact\Type::isInInternalNonRZPFees($contact->getType()) === true) and
+                 Contact\Type::validateInternalAppAllowedContactType($contact->getType(),
+                     $this->app['basicauth']->getInternalApp()) === true))
+            {
+                (new Type)->setTypeForInternalContact($contact, $input[Entity::TYPE]);
+            }
+            else
+            {
+                $this->setTypeIfApplicable($contact, $input);
+            }
+
+            if (empty($batchId) === false)
+            {
+                $contact->setBatchId($batchId);
+            }
+
+            if($this->isContactCreateAndEditDisabledForSourceTypeVendor($contact) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_VENDOR_CONTACT_CREATION_NOT_PERMITTED,
+                    null,
+                    [
+                        'merchant_id' => $contact->merchant->getId(),
+                        'input'       => $input
+                    ]);
             }
         }
 
-        $contact = (new Entity)->build($input);
-
-        $contact->merchant()->associate($merchant);
-
-        if($this->isContactCreateAndEditDisabledForSourceTypeVendor($contact) === true)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_VENDOR_CONTACT_CREATION_NOT_PERMITTED,
-                null,
-                [
-                    'merchant_id' => $contact->merchant->getId(),
-                    'input'       => $input
-                ]);
+        if (!$isCFAExperimentEnabled) {
+            $this->repo->saveOrFail($contact);
         }
-
-        // Contact of type rzp_fees can be created by all internal requests.
-        // So we approve it by simply looking at "$allowRZPFeesContactCreation".
-
-        // Here "isInInternalNonRZPFees" checks whether the type of contact is internal and
-        // if it is internal type, we check whether current app is allowed to create that type of contact.
-
-        if (($allowRZPFeesContactCreation === true) or
-            ((Contact\Type::isInInternalNonRZPFees($contact->getType()) === true) and
-             Contact\Type::validateInternalAppAllowedContactType($contact->getType(),
-                 $this->app['basicauth']->getInternalApp()) === true))
-        {
-            (new Type)->setTypeForInternalContact($contact, $input[Entity::TYPE]);
-        }
-        else
-        {
-            $this->setTypeIfApplicable($contact, $input);
-        }
-
-        if (empty($batchId) === false)
-        {
-            $contact->setBatchId($batchId);
-        }
-
-        $this->repo->saveOrFail($contact);
 
         $this->trace->info(TraceCode::CONTACT_CREATED,
             [
@@ -435,7 +496,40 @@ class Core extends Base\Core
 
     public function fetch($id, $merchant, $input = [])
     {
-        $contact = $this->repo->contact->findByPublicIdAndMerchant($id, $merchant, $input);
+        // Check if CFA service experiment is enabled
+        $isCFAExperimentEnabled = false;
+
+        if ($merchant != null)
+        {
+            $properties = [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.cfa_service_get_control_experiment_id'),
+                'request_data' => json_encode(['merchant_id' => $merchant->getId()])
+            ];
+            $isCFAExperimentEnabled = $this->isSplitzExperimentEnabled($properties, 'enable', TraceCode::CONTACT_CFA_EXPERIMENT_CHECK);
+        }
+        
+        if ($isCFAExperimentEnabled && $input == []) {
+            // New flow: Use CFA service
+            $contact = $this->cfaService->getContact($id, $merchant);
+        } else {
+            // Old flow: Use repository
+            $this->trace->info(TraceCode::CONTACT_USING_OLD_FLOW, [
+                'contact_id' => $id,
+                'merchant_id' => $merchant->getId(),
+                'experiment_enabled' => false
+            ]);
+
+            if($isCFAExperimentEnabled) {
+                $this->trace->info(TraceCode::FALLBACK_TO_OLD_FLOW_FOR_CFA_MERCHANT, [
+                    'contact_id' => $id,
+                    'merchant_id' => $merchant->getId(),
+                    'input' => $input
+                ]);
+            }
+            
+            $contact = $this->repo->contact->findByPublicIdAndMerchant($id, $merchant, $input);
+        }
 
         return $this->getAppSpecificInformation($contact);
     }
@@ -828,7 +922,6 @@ class Core extends Base\Core
         $contact->setPaymentTerms($vendor[Entity::PAYMENT_TERMS]);
         $contact->setTdsCategory($vendor[Entity::TDS_CATEGORY]);
         $contact->setVendor($vendor);
-
 
         return $contact;
     }

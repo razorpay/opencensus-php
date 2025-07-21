@@ -95,6 +95,7 @@ use Swagger\Client\Api\EnforcerAPIApi;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Services\FreshdeskTicketClient;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Services\CFAService as CFAService;
 use RZP\Models\Gateway\File as GatewayFile;
 use RZP\Models\PaymentLink\PaymentPageItem;
 use RZP\Services\Beam\Service as BeamService;
@@ -967,6 +968,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerCredcaseService();
 
         $this->registerCMSService();
+
+        $this->registerCFAService();
 
         $this->registerCaseManagementService();
 
@@ -3072,6 +3075,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('cms', function($app)
         {
             return new CMS\Service($app);
+        });
+    }
+
+    protected function registerCFAService()
+    {
+        $this->app->singleton('cfa', function($app)
+        {
+            return new CFAService($app);
         });
     }
 

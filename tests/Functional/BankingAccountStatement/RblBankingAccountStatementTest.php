@@ -5713,10 +5713,23 @@ class RblBankingAccountStatementTest extends TestCase
             ]
         ];
 
+        // Disable CFA experiment, enable others
+        $cfaCreateExpId = $this->app['config']->get('app.cfa_service_create_control_experiment_id');
+        $cfaGetExpId = $this->app['config']->get('app.cfa_service_get_control_experiment_id');
+
         $splitzMock = $this->getSplitzMock();
         $expId = $this->app['config']->get('app.fee_recovery_queued_payout_flag_unset_id');
         $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
-            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+            ->with(Mockery::hasValue($expId))
+            ->andReturnUsing(function ($array) use ($cfaCreateExpId, $cfaGetExpId, $splitzResp) {
+                // Added to disable CFA experiment
+                if ($array['experiment_id'] == $cfaCreateExpId
+                    || $array['experiment_id'] == $cfaGetExpId)
+                {
+                    return ["response"=>["variant" => ["name" => 'disable']]];
+                }
+                 return $splitzResp;
+            });
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(50);
 
@@ -5769,10 +5782,23 @@ class RblBankingAccountStatementTest extends TestCase
             ]
         ];
 
+        // Disable CFA experiment, enable others
+        $cfaCreateExpId = $this->app['config']->get('app.cfa_service_create_control_experiment_id');
+        $cfaGetExpId = $this->app['config']->get('app.cfa_service_get_control_experiment_id');
+
         $splitzMock = $this->getSplitzMock();
         $expId = $this->app['config']->get('app.fee_recovery_queued_payout_flag_unset_id');
         $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
-            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+            ->with(Mockery::hasValue($expId))
+            ->andReturnUsing(function ($array) use ($cfaCreateExpId, $cfaGetExpId, $splitzResp) {
+                // Added to disable CFA experiment
+                if ($array['experiment_id'] == $cfaCreateExpId
+                    || $array['experiment_id'] == $cfaGetExpId)
+                {
+                    return ["response"=>["variant" => ["name" => 'disable']]];
+                }
+                return $splitzResp;
+            });
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(50);
 
@@ -5812,10 +5838,23 @@ class RblBankingAccountStatementTest extends TestCase
             ]
         ];
 
+        // Disable CFA experiment, enable others
+        $cfaCreateExpId = $this->app['config']->get('app.cfa_service_create_control_experiment_id');
+        $cfaGetExpId = $this->app['config']->get('app.cfa_service_get_control_experiment_id');
+
         $splitzMock = $this->getSplitzMock();
         $expId = $this->app['config']->get('app.fee_recovery_queued_payout_flag_unset_id');
         $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
-            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+            ->with(Mockery::hasValue($expId))
+            ->andReturnUsing(function ($array) use ($cfaCreateExpId, $cfaGetExpId, $splitzResp) {
+                // Added to disable CFA experiment
+                if ($array['experiment_id'] == $cfaCreateExpId
+                    || $array['experiment_id'] == $cfaGetExpId)
+                {
+                    return ["response"=>["variant" => ["name" => 'disable']]];
+                }
+                return $splitzResp;
+            });
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(50);
 

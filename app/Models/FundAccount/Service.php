@@ -20,6 +20,7 @@ use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Models\LinkedNumber;
+use RZP\Services\CFAService;
 use RZP\Exception\BaseException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Contact\Core as ContactCore;
@@ -76,6 +77,11 @@ class Service extends Base\Service
      */
     protected $payoutEvents;
 
+    /**
+     * @var CFAService
+     */
+    protected $cfaService;
+
     public function __construct()
     {
         parent::__construct();
@@ -93,6 +99,8 @@ class Service extends Base\Service
         $this->vpaCore = new Vpa\Core;
 
         $this->payoutEvents = new Payout\Events;
+
+        $this->cfaService = $this->app['cfa'];;
     }
 
     public function create(array $input): array
@@ -197,41 +205,75 @@ class Service extends Base\Service
 
     public function fetch(string $id, array $input): array
     {
-        $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
+        // Check if CFA service experiment is enabled
+        $isCFAExperimentEnabled = false;
 
-        $linkedNumber = $entity->getLinkedNumber();
+        if ($this->merchant != null)
+        {
+            $properties = [
+                'id'            => $this->merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.cfa_service_get_control_experiment_id'),
+                'request_data' => json_encode(['merchant_id' => $this->merchant->getId()])
+            ];
 
-        $fundAccountArray = $entity->toArrayPublic();
-
-        // We need to hide VPA for Linked Number Payouts
-        if (!empty($linkedNumber)) {
-            $accountHolderName = $entity->getAccountHolderName();
-
-            $this->sanitizeResponseForLinkedNumberPayout($fundAccountArray, $linkedNumber, $accountHolderName);
-            return $fundAccountArray;
+            $isCFAExperimentEnabled = $this->core->isSplitzExperimentEnabled($properties, 'enable', TraceCode::CONTACT_CFA_EXPERIMENT_CHECK);
         }
 
-        $app = App::getFacadeRoot();
-
-        if ($app['basicauth']->isPayoutService() === true)
-        {
-            $entity->load('contact');
-            $fundAccount = $entity->toArray();
-
-            if ($fundAccount[BankAccount\Entity::ACCOUNT_TYPE] == Entity::BANK_ACCOUNT)
-            {
-                $fundAccount[Entity::ACCOUNT]['virtual'] = $entity->account->isVirtual();
+        if ($isCFAExperimentEnabled && $input == []) {
+            // fetch the fund account from New Flow
+            $fundAccountArray = $this->cfaService->getFundAccount($id, $this->merchant->getId());
+            if($fundAccountArray === null) {
+                $data = [
+                    'attributes' => $id,
+                    'operation' => 'find'
+                ];
+    
+                throw new BadRequestValidationFailureException(
+                    ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+            }
+        } else {
+            if($isCFAExperimentEnabled) {
+                $this->trace->info(TraceCode::FALLBACK_TO_OLD_FLOW_FOR_CFA_MERCHANT, [
+                    'fund_account_id' => $id,
+                    'merchant_id' => $this->merchant->getId(),
+                    'input' => $input
+                ]);
             }
 
-            $psFundAccountResponse = (new \RZP\Services\PayoutService\Create())->generateFundAccountResponseForPayoutsService($fundAccount);
+            $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant, $input);
+            $linkedNumber = $entity->getLinkedNumber();
 
-            $this->trace->info(
-                TraceCode::MONOLITH_FUND_ACCOUNT_DETAILS_FOR_PAYOUT_SERVICE,
-                [
-                    'fund_account' => $psFundAccountResponse
-                ]);
-            return $psFundAccountResponse;
+            $fundAccountArray = $entity->toArrayPublic();
 
+            // We need to hide VPA for Linked Number Payouts
+            if (!empty($linkedNumber)) {
+                $accountHolderName = $entity->getAccountHolderName();
+
+                $this->sanitizeResponseForLinkedNumberPayout($fundAccountArray, $linkedNumber, $accountHolderName);
+                return $fundAccountArray;
+            }
+
+            $app = App::getFacadeRoot();
+
+            if ($app['basicauth']->isPayoutService() === true)
+            {
+                $entity->load('contact');
+                $fundAccount = $entity->toArray();
+
+                if ($fundAccount[BankAccount\Entity::ACCOUNT_TYPE] == Entity::BANK_ACCOUNT)
+                {
+                    $fundAccount[Entity::ACCOUNT]['virtual'] = $entity->account->isVirtual();
+                }
+
+                $psFundAccountResponse = (new \RZP\Services\PayoutService\Create())->generateFundAccountResponseForPayoutsService($fundAccount);
+
+                $this->trace->info(
+                    TraceCode::MONOLITH_FUND_ACCOUNT_DETAILS_FOR_PAYOUT_SERVICE,
+                    [
+                        'fund_account' => $psFundAccountResponse
+                    ]);
+                return $psFundAccountResponse;
+            }
         }
 
         return $fundAccountArray;
@@ -413,6 +455,19 @@ class Service extends Base\Service
      */
     protected function handleFundAccountCreationForContact(array $input)
     {
+         // Check if CFA service experiment is enabled
+        $isCFAExperimentEnabled = false;
+
+        if ($this->merchant != null)
+        {
+            $properties = [
+                'id'            => $this->merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.cfa_service_create_control_experiment_id'),
+                'request_data' => json_encode(['merchant_id' => $this->merchant->getId()])
+            ];
+            $isCFAExperimentEnabled = $this->core->isSplitzExperimentEnabled($properties, 'enable', TraceCode::CONTACT_CFA_EXPERIMENT_CHECK);
+        }
+
         if (isset($input[Entity::CONTACT_ENTITY]) === true)
         {
             $source = $input[Entity::CONTACT_ENTITY];
@@ -422,10 +477,16 @@ class Service extends Base\Service
         else
         {
             /** @var Contact\Entity $source */
-            $source = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
+            if (!$isCFAExperimentEnabled) {
+                $source = $this->repo->contact->findByPublicIdAndMerchant($input[Entity::CONTACT_ID], $this->merchant);
+            } else {
+                // For CFA enabled merchants, we don't fetch the contact entity here
+                // The core->create method will handle the CFA flow internally
+                $source = null;
+            }
         }
 
-        if ($source->isActive() === false)
+        if (!$isCFAExperimentEnabled && $source !== null && $source->isActive() === false)
         {
             throw new BadRequestValidationFailureException(
                 'Fund accounts cannot be created on an inactive ' . $source->getEntity());
@@ -449,7 +510,7 @@ class Service extends Base\Service
         ];
         $isMutexLockForFundAccountExperimentEnabled = $this->core->isSplitzExperimentEnabled($properties, 'variables', TraceCode::MUTEX_LOCK_FUND_ACCOUNT_SPLITZ_ERROR);
 
-        if ($isMutexLockForFundAccountExperimentEnabled) {
+        if ($isMutexLockForFundAccountExperimentEnabled && $source !== null) {
             $mutexResource = sprintf(self::FA_CONTACT_MUTEX_RESOURCE, $this->merchant->getId(), $source->getId());
 
             $entity = $this->mutex->acquireAndRelease(
@@ -640,4 +701,18 @@ class Service extends Base\Service
             $fundAccount->saveOrFail();
         }
     }
-}
+
+    public function sanitizeVpaFundAccountToMobile(array $fundAccountArray, Entity $fundAccount, array $input): array
+    {
+        if ($fundAccount->getLinkedNumber() !== null && $fundAccount->getCustomerName() !== null) {
+            $fundAccountArray[Entity::ACCOUNT_TYPE] = Entity::MOBILE;
+            $fundAccountArray[Entity::MOBILE] = [
+                Entity::NUMBER => $fundAccount->getLinkedNumber(),
+                Entity::ACCOUNT_HOLDER_NAME => $input[Entity::MOBILE][Entity::ACCOUNT_HOLDER_NAME],
+            ];
+            unset($fundAccountArray[Entity::VPA]);
+        }
+
+        return $fundAccountArray;
+    }
+}   

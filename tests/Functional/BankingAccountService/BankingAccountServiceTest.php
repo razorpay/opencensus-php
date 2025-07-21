@@ -82,7 +82,10 @@ class BankingAccountServiceTest extends TestCase
         $this->app->razorx->method('getTreatment')
             ->willReturn('control');
 
-        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable', ]]]);
+        // Disable CFA experiment, enable others
+        $cfaCreateExpId = $this->app['config']->get('app.cfa_service_create_control_experiment_id');
+        $cfaGetExpId = $this->app['config']->get('app.cfa_service_get_control_experiment_id');
+        $this->mockSplitzExperiment(['response' => ['variant' => ['name' => 'enable', ]]], [$cfaGetExpId, $cfaCreateExpId]);
 
         $this->mockLedgerSns(0);
 

@@ -673,6 +673,12 @@ trait TestsBusinessBanking
                     return ["response"=>["variant" => ["name" => $SplitzTreatment[$array['experiment_name']]]]];
                 }
 
+                 // Added to disable CFA experiment
+                 if (array_key_exists($array['experiment_id'], $SplitzTreatment) === true)
+                 {
+                     return ["response"=>["variant" => ["name" => $SplitzTreatment[$array['experiment_id']]]]];
+                 }
+
                 return ["response"=>["variant" => ["name" => $defaultBehaviour]]];
             });
     }

@@ -198,6 +198,12 @@ return [
       'secret'  => env('THIRDWATCH_COD_SCORE_SERVICE_SECRET')
     ],
 
+    'cfa_service' => [
+        'url'       => env('CFA_SERVICE_URL'),
+        'username'  => env('CFA_SERVICE_USERNAME'),
+        'password'  => env('CFA_SERVICE_PASSWORD'),
+    ],
+
     'xpayroll' => [
         // the secret used by the Opfin to call apis under internal auth
         // this same secret is used as the password to call APIs on the micro-service

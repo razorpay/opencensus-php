@@ -866,6 +866,10 @@ return array(
 
     'mutex_lock_fund_account_experiment_id' => env('MUTEX_LOCK_FUND_ACCOUNT_EXPERIMENT_ID'),
 
+    'cfa_service_get_control_experiment_id' => env('CFA_SERVICE_GET_CONTROL_EXPERIMENT_ID'),
+
+    'cfa_service_create_control_experiment_id' => env('CFA_SERVICE_CREATE_CONTROL_EXPERIMENT_ID'),
+
     '1cc_shipping_info_migration_splitz_experiment_id' => env('MAGIC_CHECKOUT_SHIPPING_INFO_MIGRATION_EXP_ID'),
 
     'magic_show_coupon_callout_experiment_id'  => env('MAGIC_SHOW_COUPON_CALLOUT_EXP_ID'),

@@ -840,7 +840,15 @@ trait PayoutTrait
 
     public function createSkipWorkflowForPayoutFeature()
     {
-        $this->setMockSplitzTreatmnt([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER =>'disable'],'enable');
+         // Disable CFA experiment, enable others
+         $cfaCreateExpId = $this->app['config']->get('app.cfa_service_create_control_experiment_id');
+         $cfaGetExpId = $this->app['config']->get('app.cfa_service_get_control_experiment_id');
+ 
+         $this->setMockSplitzTreatmnt([
+                                          RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'disable',
+                                          $cfaCreateExpId                          => 'disable',
+                                          $cfaGetExpId                             => 'disable',
+                                      ], 'enable');
         //
         // Here workflows are enabled for create payouts,
         // However user wants to disable the workflow for API request

@@ -3,12 +3,14 @@
 namespace RZP\Tests\Functional\Contacts;
 
 use Config;
+use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use PHPUnit\Framework\Assert;
 use RZP\Jobs\RxContactDualWrite;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Core;
 use RZP\Models\Feature;
@@ -24,6 +26,7 @@ use RZP\Services\Mock\KafkaProducerClient as KafkaProducerClientMock;
 
 class ContactsTest extends TestCase
 {
+    use MocksSplitz;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
@@ -1410,6 +1413,83 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchContactByIdWithCFAExperimentEnabled()
+    {
+        $this->fixtures->create('contact', ['id' => '1000002contact', 'email' => 'random@test.com', 'name' => 'Test Contact']);
+
+        // Mock Splitz service to return 'enable' for CFA experiment
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'enable'
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.cfa_service_get_control_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+                   ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        // Mock CFA service to return contact data
+        $cfaServiceMock = $this->getMockBuilder(\RZP\Services\CFAService::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['sendRequest'])
+            ->getMock();
+
+        $cfaServiceMock->expects($this->once())
+            ->method('sendRequest')
+            ->with('/v1/contacts/1000002contact', '10000000000000', 'GET', null, null, 'get_contact')
+            ->willReturn([
+                'id' => '1000002contact',
+                'entity' => 'contact',
+                'name' => 'Test Contact CFA',
+                'email' => 'random@test.com',
+                'contact' => '1234567890',
+                'type' => 'customer',
+                'reference_id' => 'ref123',
+                'batch_id' => null,
+                'active' => true,
+                'created_at' => time(),
+                'merchant_id' => '10000000000000'
+            ]);
+
+        $this->app->instance('cfa', $cfaServiceMock);
+
+        $this->startTest();
+    }
+
+    public function testFetchContactByIdWithCFAExperimentDisabled()
+    {
+        $this->fixtures->create('contact', ['id' => '1000002contact', 'email' => 'random@test.com', 'name' => 'Test Contact']);
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'disable'
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.cfa_service_get_control_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+                   ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        // CFA service should not be called when experiment is disabled
+        $cfaServiceMock = $this->getMockBuilder(\RZP\Services\CFAService::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getContact'])
+            ->getMock();
+
+        $cfaServiceMock->expects($this->never())
+            ->method('getContact');
+
+        $this->app->instance('cfa', $cfaServiceMock);
+
+        $this->startTest();
+    }
+
     public function testCreateContactWithCustomType()
     {
         $this->testAddCustomContactType();
@@ -1693,6 +1773,56 @@ class ContactsTest extends TestCase
         $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
 
         $this->fixtures->create('feature', ['name' => 'vendor_onboarding_enabled', 'entity_id' => '10000000000000', 'entity_type' => 'merchant']);
+
+        $this->startTest();
+    }
+
+    public function testCreateContactWithCFAExperimentEnabled()
+    {
+        // Mock Splitz service to return experiment enabled
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'enable'
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.cfa_service_create_control_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+                   ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        // Mock CFA service to return created contact data
+        $cfaServiceMock = $this->getMockBuilder(\RZP\Services\CFAService::class)
+                               ->setConstructorArgs([$this->app])
+                               ->onlyMethods(['sendRequest'])
+                               ->getMock();
+
+        $cfaServiceMock->expects($this->once())
+                       ->method('sendRequest')
+                       ->with('/v1/contacts', '10000000000000', 'POST', [
+                           "name"    => "Test Contact CFA",
+                           "email"   => "test@example.com",
+                           "contact" => "9123456789",
+                           "type"    => "customer",
+                           "notes"   => []
+                       ],     null, 'create_contact')
+                       ->willReturn([
+                                        'id'              => '1000000contact',
+                                        'entity'          => 'contacts',
+                                        'name'            => 'Test Contact CFA',
+                                        'email'           => 'test@example.com',
+                                        'contact'         => '9123456789',
+                                        'type'            => 'customer',
+                                        'reference_id'    => "",
+                                        'active'          => true,
+                                        'notes'           => [],
+                                        'created_at'      => time(),
+                                        "api_status_code" => 201,
+                                    ]);
+
+        $this->app->instance('cfa', $cfaServiceMock);
 
         $this->startTest();
     }

@@ -26,7 +26,8 @@ class Core
     const FUND_ACCOUNT_ID = 'fund_account_id';
 
     public static function dispatchToQueue(string $mode,
-                                           string $fundAccountId)
+                                           string $fundAccountId,
+                                           MerchantEntity $merchant)
     {
         $trace = App::getFacadeRoot()['trace'];
 
@@ -38,9 +39,10 @@ class Core
         try
         {
             FundAccountDetailsPropagatorJob::dispatch($mode,
-                $fundAccountId);
+                $fundAccountId,
+                $merchant);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
 
             $trace->traceException(

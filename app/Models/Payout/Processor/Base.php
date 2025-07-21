@@ -46,6 +46,7 @@ use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Metric;
 use RZP\Models\WalletAccount;
 use RZP\Models\Payout\Entity;
+use RZP\Services\CFAService;
 use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Payout\DualWrite;
@@ -210,6 +211,11 @@ class Base extends BaseCore
      */
     protected $payoutServiceMutexTTL = 120;
 
+    /**
+     * @var CFAService
+     */
+    protected $cfaService;
+
     // Payout Service Mutex Keys
     const FTA_CREATION_PAYOUT_SERVICE    = 'fta_creation_payout_service_';
     const LEDGER_CREATION_PAYOUT_SERVICE = 'ledger_creation_payout_service_';
@@ -260,6 +266,8 @@ class Base extends BaseCore
         $this->payoutShieldEvaluateServiceClient = $this->app[PayoutServiceShieldEvaluate::PAYOUT_SERVICE_SHIELD_EVALUATE];
 
         $this->duplicatePayoutEvaluateClient = $this->app[DuplicatePayoutEvaluate::DUPLICATE_PAYOUT_EVALUATE];
+
+        $this->cfaService = $this->app['cfa'];
     }
 
     /**
@@ -2567,7 +2575,39 @@ class Base extends BaseCore
         if ($this->fundAccount === null)
         {
             /** @var FundAccount\Entity $fundAccount */
-            $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
+            $isCFAExperimentEnabled = false;
+
+            if ($this->merchant != null)
+            {
+                $properties = [
+                    'id'            => $this->merchant->getId(),
+                    'experiment_id' => $this->app['config']->get('app.cfa_service_get_control_experiment_id'),
+                    'request_data' => json_encode(['merchant_id' => $this->merchant->getId()])
+                ];
+
+                $isCFAExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable', TraceCode::CONTACT_CFA_EXPERIMENT_CHECK);
+            }
+            
+            if ($isCFAExperimentEnabled === true) 
+            {
+                // fetch the fund account from New Flow
+                $fundAccountArray = $this->cfaService->getFundAccount($fundAccountId, $this->merchant->getId());
+                if($fundAccountArray === null) 
+                {
+                    $data = [
+                        'attributes' => $fundAccountId,
+                        'operation' => 'find'
+                    ];
+
+                    throw new BadRequestValidationFailureException(
+                        ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+                }
+                $fundAccount = $this->cfaService->convertCFAResponseToFundAccountEntity($fundAccountArray, $this->merchant);
+            } 
+            else 
+            {
+                $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
+            }
         }
         else
         {

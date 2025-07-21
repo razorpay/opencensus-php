@@ -7,7 +7,9 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
+use RZP\Services\CFAService;
 use RZP\Services\RazorXClient;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\FundAccount\DetailsPropagator\Core as DetailsPropagator;
 
 /***
@@ -25,11 +27,17 @@ class FundAccountDetailsPropagatorJob extends Job
 
     protected $fundAccountId;
 
-    public function __construct(string $mode, string $fundAccountId)
+    protected $merchant;
+
+    protected $cfaService;
+
+    public function __construct(string $mode, string $fundAccountId, MerchantEntity $merchant)
     {
         parent::__construct($mode);
 
         $this->fundAccountId = $fundAccountId;
+        $this->merchant = $merchant;
+        $this->cfaService = new CFAService();
     }
 
     public function handle()
@@ -42,9 +50,22 @@ class FundAccountDetailsPropagatorJob extends Job
 
         try
         {
-            $fundAccount = $this->repoManager
+            try {
+                $fundAccount = $this->repoManager
                 ->fund_account
                 ->findByPublicId($this->fundAccountId);
+            }
+            catch (\Throwable $e) {
+                $this->trace->info(TraceCode::FALLBACK_TO_OLD_FLOW_FOR_FUND_ACCOUNT_DETAILS_PROPAGATION, [
+                    'fund_account_id' => $this->fundAccountId,
+                    'error' => $e->getMessage()
+                ]);
+                
+                $cfaResponse = $this->cfaService->getFundAccount($this->fundAccountId, $this->merchant->getId());
+                if($cfaResponse) {
+                    $fundAccount = $this->cfaService->convertCFAResponseToFundAccountEntity($cfaResponse, $this->merchant);
+                }
+            }
 
             $this->trace->info(
                 TraceCode::FUND_ACCOUNT_DETAILS_PROPAGATOR_JOB,

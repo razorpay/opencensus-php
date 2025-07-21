@@ -4763,5 +4763,58 @@ return [
             ],
             'status_code' => 200
         ],
-    ]
+    ],
+
+    'testHandleFundAccountCreationForContactWithCFAExperimentEnabled' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account' => [
+                    'ifsc'           => 'SBIN0007106',
+                    'name'           => 'John Doe',
+                    'account_number' => '111000112',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'active' => true,
+                'bank_account' => [
+                    'ifsc'           => 'SBIN0007106',
+                    'name'           => 'John Doe',
+                    'account_number' => '111000112'
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testFetchFundAccountByIdWithCFAExperimentEnabled' => [
+        'request'  => [
+            'url'    => '/fund_accounts/fa_100fundAccount',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'id'           => 'fa_100fundAccount',
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'active'       => true,
+                'bank_account' => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111'
+                ],
+                'created_at'   => '1750758341'
+            ],
+        ],
+        'status_code' => '200'
+    ],
 ];

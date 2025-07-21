@@ -4324,6 +4324,142 @@ class FundAccountsTest extends TestCase
         $this->assertEquals($expectedHash, $uniqueHash);
     }
 
+    public function testHandleFundAccountCreationForContactWithCFAExperimentEnabled()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        // Mock Splitz service to return 'enable' for CFA experiment
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'enable'
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.cfa_service_create_control_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+                   ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $cfaServiceMock = $this->getMockBuilder(\RZP\Services\CFAService::class)
+                              ->setConstructorArgs([$this->app])
+                              ->onlyMethods(['sendRequest'])
+                              ->getMock();
+
+        $cfaServiceMock
+            ->method('sendRequest')
+            ->willReturnCallback(function ($url, $merchantId, $method, $data, $headers, $action) {
+                $this->assertEquals('10000000000000', $merchantId);
+                if ($url == '/v1/fund_accounts')
+                {
+                    $this->assertEquals('POST', $method);
+                    $this->assertEquals('create_fund_account', $action);
+                    $this->assertEquals([
+                        "account_type" => "bank_account",
+                        "contact_id"   => "cont_1000000contact",
+                        "bank_account" => [
+                            "ifsc"           => "SBIN0007106",
+                            "name"           => "John Doe",
+                            "account_number" => "111000112"
+                        ]
+                    ], $data);
+
+                    return [
+                        "id"              => "100fundAccount",
+                        "entity"          => "fund_accounts",
+                        "contact_id"      => "1000000contact",
+                        "account_type"    => "bank_account",
+                        "bank_account"    => [
+                            "ifsc"           => "SBIN0007106",
+                            "bank_name"      => "",
+                            "name"           => "John Doe",
+                            "account_number" => "111000112",
+                            "notes"          => []
+                        ],
+                        "active"          => true,
+                        "batch_id"        => "",
+                        "created_at"      => "1750758341",
+                        "is_created"      => true,
+                    ];
+                }
+
+                if ($url == '/v1/contacts/1000000contact')
+                {
+                    $this->assertEquals('GET', $method);
+                    $this->assertEquals('get_contact', $action);
+                    $this->assertEquals(null, $data);
+
+                    return [
+                        'id'           => '1000000contact',
+                        'entity'       => 'contact',
+                        'name'         => 'Test Contact CFA',
+                        'email'        => 'random@test.com',
+                        'contact'      => '1234567890',
+                        'type'         => 'customer',
+                        'reference_id' => 'ref123',
+                        'batch_id'     => null,
+                        'active'       => true,
+                        'created_at'   => time(),
+                        'merchant_id'  => '10000000000000'
+                    ];
+                }
+
+                return [];
+            });
+
+        $this->app->instance('cfa', $cfaServiceMock);
+
+        $this->startTest();
+    }
+
+    public function testFetchFundAccountByIdWithCFAExperimentEnabled()
+    {
+        $this->fixtures->create('contact', ['id' => '1000002contact', 'email' => 'random@test.com', 'name' => 'Test Contact']);
+
+        // Mock Splitz service to return 'enable' for CFA experiment
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'enable'
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.cfa_service_get_control_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+                   ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        // Mock CFA service to return contact data
+        $cfaServiceMock = $this->getMockBuilder(\RZP\Services\CFAService::class)
+                               ->setConstructorArgs([$this->app])
+                               ->onlyMethods(['sendRequest'])
+                               ->getMock();
+
+        $cfaServiceMock->expects($this->once())
+                       ->method('sendRequest')
+                       ->with('/v1/fund_accounts/100fundAccount', '10000000000000', 'GET', null, null, 'get_fund_account')
+                       ->willReturn([
+                                        "id"              => "100fundAccount",
+                                        "entity"          => "fund_account",
+                                        "contact_id"      => "1000000contact",
+                                        "account_type"    => "bank_account",
+                                        "bank_account"    => [
+                                            "ifsc"           => "SBIN0007105",
+                                            "bank_name"      => "",
+                                            "name"           => "Amit M",
+                                            "account_number" => "111000111",
+                                            "notes"          => []
+                                        ],
+                                        "active"          => true,
+                                        "created_at"      => "1750758341",
+                                    ]);
+
+        $this->app->instance('cfa', $cfaServiceMock);
+
+        $this->startTest();
+    }
     // helper Functions
 
     public function performFundAccountAssertions($expectedBankAccountOutput, $expectedFundAccountHash, $response)

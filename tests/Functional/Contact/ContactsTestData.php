@@ -2985,4 +2985,64 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VENDOR_CONTACT_CREATION_NOT_PERMITTED,
         ]
     ],
+
+    'testFetchContactByIdWithCFAExperimentEnabled' => [
+        'request'  => [
+            'url'    => '/contacts/cont_1000002contact',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'contact',
+                'id'     => 'cont_1000002contact',
+                'name'   => 'Test Contact CFA',
+                'email'  => 'random@test.com',
+                'type'   => 'customer',
+                'active' => true,
+            ],
+        ],
+        'status_code' => '200'
+    ],
+
+    'testFetchContactByIdWithCFAExperimentDisabled' => [
+        'request'  => [
+            'url'    => '/contacts/cont_1000002contact',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'contact',
+                'id'     => 'cont_1000002contact',
+                'name'   => 'Test Contact',
+                'email'  => 'random@test.com',
+            ],
+        ],
+        'status_code' => '200'
+    ],
+
+    'testCreateContactWithCFAExperimentEnabled' => [
+        'request'  => [
+            'url'    => '/contacts',
+            'method' => 'POST',
+            'content' => [
+                'name'         => 'Test Contact CFA',
+                'type'         => 'customer',
+                'email'        => 'test@example.com',
+                'contact'      => '9123456789',
+                'notes'        => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test Contact CFA',
+                'type'         => 'customer',
+                'email'        => 'test@example.com',
+                'contact'      => '9123456789',
+                'active'       => true,
+                'notes'        => [],
+            ],
+        ],
+        'status_code' => '201'
+    ],
 ];

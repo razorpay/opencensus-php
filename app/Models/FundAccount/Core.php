@@ -21,6 +21,7 @@ use RZP\Trace\TraceCode;
 use RZP\Traits\TrimSpace;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
+use RZP\Services\CFAService;
 use RZP\Models\LinkedNumber;
 use RZP\Models\WalletAccount;
 use RZP\Constants\HyperTrace;
@@ -74,6 +75,8 @@ class Core extends Base\Core
      */
     protected $payoutEvents;
 
+    protected $cfaService;
+
     public function __construct()
     {
         parent::__construct();
@@ -81,6 +84,8 @@ class Core extends Base\Core
         $this->vendorPaymentService = $this->app['vendor-payment'];
 
         $this->payoutEvents = new Payout\Events;
+        
+        $this->cfaService = $this->app['cfa'];
     }
 
     /**
@@ -108,68 +113,6 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $traceRequest);
 
-        $vendorId = ''; // This field will be present in input if fund_account_create request is coming from vendor_portal_v2
-
-        if(isset($input['vendor_id']) === true)
-        {
-            $updateFundAccountResponse = $this->updateFundAccountIfPresent($input, $merchant);
-
-            if ($updateFundAccountResponse !== null)
-            {
-                return $updateFundAccountResponse;
-            }
-
-            $vendorId = $input['vendor_id'];
-
-            unset($input['vendor_id']);
-            unset($input['id']);
-        }
-
-        if ((isset($input[Entity::ACCOUNT_TYPE]) === true) and
-            (strtolower($input[Entity::ACCOUNT_TYPE]) ===  Entity::WALLET))
-        {
-            $input = $this->constructWalletAccountFundAccountRequest($input);
-        }
-
-        if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
-        {
-            $result = $this->repo->fund_account->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
-                $merchant->getId(),
-                $batchId);
-
-            if ($result !== null)
-            {
-                return $result;
-            }
-        }
-
-        // allowRZPFeesFundAccountCreation is only set to true when fund account is created at merchant activation.
-        if ((empty($source) === false) and
-            ($source->getEntityName() === Entity::CONTACT))
-        {
-            if ($allowRZPFeesFundAccountCreation === false)
-            {
-                // If the corresponding contact is of type 'rzp_fees', we won't allow the merchant
-                // to create the fund account
-
-                $contactType = $source->getType();
-
-                if ((Contact\Type::isInInternal($contactType) === true) and
-                    ($contactType === Contact\Type::RZP_FEES))
-                {
-                    throw new BadRequestException(
-                        ErrorCode::BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED,
-                        null,
-                        [
-                            'contact_id' => $source->getId(),
-                            'input'      => $traceRequest
-                        ]);
-                }
-            }
-
-            $this->internalContactChecks($source, $traceRequest);
-        }
-
         if (($merchant->getId() === Merchant\Account::MEDLIFE) or
             ($merchant->getId() === Merchant\Account::OKCREDIT))
         {
@@ -180,87 +123,168 @@ class Core extends Base\Core
             $this->sanitizeAndCreateFundAccountInputForLinkedNumber($input, $merchant->getId());
         }
 
+        if ((isset($input[Entity::ACCOUNT_TYPE]) === true) and
+            (strtolower($input[Entity::ACCOUNT_TYPE]) ===  Entity::WALLET))
+        {
+            $input = $this->constructWalletAccountFundAccountRequest($input);
+        }
+
         (new Validator)->setStrictFalse()->validateInput('create', $input);
 
+        //@TODO: Migrate this to CFA service in Milestone 2
         if (in_array(strtolower($merchant->getCountry()), BankAccount\Entity::$IfscAllowedCountries) === true)
         {
             $this->useDefaultIfscCodeIfRequired($input, $merchant);
         }
 
-        $accountDetails = $this->getAccountDetailsForInput($input);
+        // Check if CFA service experiment is enabled
+        $isCFAExperimentEnabled = false;
 
-        $uniqueHash = null;
-
-        $uniqueConsistentHash = null;
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_CONTACT_DEDUP_FA_BA) === true)
+        if ($this->merchant != null)
         {
-            $uniqueConsistentHash = $this->generateUniqueHashForConsistentFundAccount($input[Entity::ACCOUNT_TYPE],
-                                                                                      $merchant,
-                                                                                      $accountDetails,
-                                                                                      $source);
+            $properties = [
+                'id'            => $this->merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.cfa_service_create_control_experiment_id'),
+                'request_data' => json_encode(['merchant_id' => $this->merchant->getId()])
+            ];
+            $isCFAExperimentEnabled = $this->isSplitzExperimentEnabled($properties, 'enable', TraceCode::CONTACT_CFA_EXPERIMENT_CHECK);
         }
-        $uniqueHash = $this->generateUniqueHashForFundAccount($input[Entity::ACCOUNT_TYPE],
-                                                              $merchant,
-                                                              $accountDetails,
-                                                              $source);
 
-        $hash = (empty($uniqueConsistentHash) === true)? $uniqueHash : $uniqueConsistentHash;
-
-        if (($source instanceof Contact\Entity) and
-            ($createDuplicate === false))
-        {
-            $fundAccount = $this->checkAndGetFundAccountUsingHashOrFallback($merchant,
-                                                                            $input,
-                                                                            $uniqueHash,
-                                                                            $uniqueConsistentHash,
-                                                                            $source,
-                                                                            $batchId);
-
-            if (empty($fundAccount) === false)
+        if ($this->cfaService->isCfaServiceEnabled($input, $isCFAExperimentEnabled)) {
+            // New flow of Fund Account creation
+            $fundAccount = $this->cfaService->createFundAccount($input, $merchant);
+        } else {
+            // Old flow of Fund Account creation
+            // allowRZPFeesFundAccountCreation is only set to true when fund account is created at merchant activation.
+            if ((empty($source) === false) and
+                ($source->getEntityName() === Entity::CONTACT))
             {
-                return $fundAccount;
+                if ($allowRZPFeesFundAccountCreation === false)
+                {
+                    // If the corresponding contact is of type 'rzp_fees', we won't allow the merchant
+                    // to create the fund account
+
+                    $contactType = $source->getType();
+
+                    if ((Contact\Type::isInInternal($contactType) === true) and
+                        ($contactType === Contact\Type::RZP_FEES))
+                    {
+                        throw new BadRequestException(
+                            ErrorCode::BAD_REQUEST_INTERNAL_FUND_ACCOUNT_CREATION_NOT_PERMITTED,
+                            null,
+                            [
+                                'contact_id' => $source->getId(),
+                                'input'      => $traceRequest
+                            ]);
+                    }
+                }
+
+                $this->internalContactChecks($source, $traceRequest);
             }
+
+            $vendorId = ''; // This field will be present in input if fund_account_create request is coming from vendor_portal_v2
+
+            if(isset($input['vendor_id']) === true)
+            {
+                $updateFundAccountResponse = $this->updateFundAccountIfPresent($input, $merchant);
+
+                if ($updateFundAccountResponse !== null)
+                {
+                    return $updateFundAccountResponse;
+                }
+
+                $vendorId = $input['vendor_id'];
+
+                unset($input['vendor_id']);
+                unset($input['id']);
+            }
+
+            if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
+            {
+                $result = $this->repo->fund_account->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY],
+                    $merchant->getId(),
+                    $batchId);
+
+                if ($result !== null)
+                {
+                    return $result;
+                }
+            }
+
+            $accountDetails = $this->getAccountDetailsForInput($input);
+
+            $uniqueHash = null;
+
+            $uniqueConsistentHash = null;
+
+            if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_CONTACT_DEDUP_FA_BA) === true)
+            {
+                $uniqueConsistentHash = $this->generateUniqueHashForConsistentFundAccount($input[Entity::ACCOUNT_TYPE],
+                                                                                          $merchant,
+                                                                                          $accountDetails,
+                                                                                          $source);
+            }
+            $uniqueHash = $this->generateUniqueHashForFundAccount($input[Entity::ACCOUNT_TYPE],
+                                                                  $merchant,
+                                                                  $accountDetails,
+                                                                  $source);
+
+            $hash = (empty($uniqueConsistentHash) === true)? $uniqueHash : $uniqueConsistentHash;
+
+            if (($source instanceof Contact\Entity) and
+                ($createDuplicate === false))
+            {
+                $fundAccount = $this->checkAndGetFundAccountUsingHashOrFallback($merchant,
+                                                                                $input,
+                                                                                $uniqueHash,
+                                                                                $uniqueConsistentHash,
+                                                                                $source,
+                                                                                $batchId);
+
+                if (empty($fundAccount) === false)
+                {
+                    return $fundAccount;
+                }
+            }
+
+            $fundAccount = (new Entity);
+
+            // This needs to be done before the build since validator
+            // uses the merchant association to check for a feature.
+            $fundAccount->merchant()->associate($merchant);
+
+            $fundAccount = $fundAccount->build($input);
+
+            $account = $this->createAccount($input, $merchant, $source);
+
+            if($vendorId !== '')
+            {
+                $fundAccount->setSourceType(self::SOURCE_TYPE_VENDOR);
+
+                $fundAccount->setSourceId($vendorId);
+            }
+            else
+            {
+                $fundAccount->source()->associate($source);
+            }
+            $fundAccount->account()->associate($account);
+
+            if (empty($batchId) === false)
+            {
+                $fundAccount->setBatchId($batchId);
+            }
+
+            if (empty($hash) === false)
+            {
+                $fundAccount->setUniqueHash($hash);
+            }
+
+            $this->repo->saveOrFail($fundAccount);
         }
-
-        $fundAccount = (new Entity);
-
-        // This needs to be done before the build since validator
-        // uses the merchant association to check for a feature.
-        $fundAccount->merchant()->associate($merchant);
-
-        $fundAccount = $fundAccount->build($input);
-
-        $account = $this->createAccount($input, $merchant, $source);
-
-        if($vendorId !== '')
-        {
-            $fundAccount->setSourceType(self::SOURCE_TYPE_VENDOR);
-
-            $fundAccount->setSourceId($vendorId);
-        }
-        else
-        {
-            $fundAccount->source()->associate($source);
-        }
-
-        $fundAccount->account()->associate($account);
-
-        if (empty($batchId) === false)
-        {
-            $fundAccount->setBatchId($batchId);
-        }
-
-        if (empty($hash) === false)
-        {
-            $fundAccount->setUniqueHash($hash);
-        }
-
-        $this->repo->saveOrFail($fundAccount);
 
         $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
 
-        DetailsPropagator::dispatchToQueue($mode, $fundAccount->getPublicId());
+        DetailsPropagator::dispatchToQueue($mode, $fundAccount->getPublicId(), $merchant);
 
         if ((empty($source) === false) and
             ($source->getEntityName() === Entity::CONTACT))

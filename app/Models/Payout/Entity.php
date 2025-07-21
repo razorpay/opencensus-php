@@ -976,6 +976,7 @@ class Entity extends Base\PublicEntity
         'destination',
         // Required as customer entity will be created via CMS and may not be present in API DB
         ConstantsEntity::CUSTOMER,
+        'fundAccount',
     ];
 
     public $payoutServiceResponse;

@@ -48,6 +48,8 @@ class FundAccountController extends Controller
 
         $fundAccountData = $fundAccount->toArrayPublic();
 
+        $fundAccountData = $this->service()->sanitizeVpaFundAccountToMobile($fundAccountData, $fundAccount, $input);
+
         //
         // fund account can be created for different sources like
         // contact and customer. The API response for fund account

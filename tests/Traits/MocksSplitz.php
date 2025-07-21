@@ -52,12 +52,20 @@ trait MocksSplitz
                     ->andReturn($output);
     }
 
-    protected function mockSplitzExperiment($output)
+    protected function mockSplitzExperiment($output, $experimentIdsToDisable = [])
     {
         $this->getSplitzMock()
-            ->shouldReceive('evaluateRequest')
-            ->byDefault()
-            ->andReturn($output);
+             ->shouldReceive('evaluateRequest')
+             ->byDefault()
+             ->andReturnUsing(function ($array) use ($output, $experimentIdsToDisable)
+             {
+                 if (in_array($array['experiment_id'], $experimentIdsToDisable) === true)
+                 {
+                     return ["response"=>["variant" => ["name" => 'disable']]];
+                 }
+
+                 return $output;
+             });
     }
 
     protected function mockAllSplitzResponseDisable($output = [
