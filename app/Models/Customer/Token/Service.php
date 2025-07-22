@@ -2577,7 +2577,7 @@ class Service extends Base\Service
 
         $payment = $this->repo->payment->findOrFail($input['payment_id']);
 
-        //If recurring initial payment was via saved card, clone the network token and store recurring details
+        //If recurring initial payment was via saved card, clone the network token and store recurring details.
         if(!empty($input['additional_data'])
             && !empty($input['additional_data']['card_mandate_id']) && !empty($input['additional_data']['token_id'])) {
             $core = (new Token\Core());
@@ -2651,12 +2651,7 @@ class Service extends Base\Service
 
         try
         {
-            if ($customer != null)
-            {
-                $token = (new Token\Core)->create($customer, $saveMethodInput, null, true);
-            }
-            else
-            {
+            if (isset($input['additional_data']['parent_merchant_id'])){
                 //If parent_merchant_id is present in additional_details, use it to create token for Meta
                 $parentMerchant = $payment->merchant;
                 if(isset($input['additional_data']['parent_merchant_id']))
@@ -2665,6 +2660,14 @@ class Service extends Base\Service
                     $parentMerchant = $this->repo->merchant->findOrFail($parentMerchantId);
                 }
                 $token = (new Token\Core)->createWithoutCustomer($saveMethodInput, $parentMerchant, null, true);
+            }
+            else if ($customer != null)
+            {
+                $token = (new Token\Core)->create($customer, $saveMethodInput, null, true);
+            }
+            else
+            {
+                $token = (new Token\Core)->createWithoutCustomer($saveMethodInput, $payment->merchant, null, true);
             }
         }
         catch (\Exception $e)

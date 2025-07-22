@@ -134,7 +134,6 @@ class PGRouter
     const MODE = 'mode';
 
     const PaymentsCreateUpiRoute = "payment_create_upi";
-
     const MERCHANT_BASED_ROUTES = [
         'order_fetch_by_id',
         'order_payments',
@@ -1415,7 +1414,7 @@ class PGRouter
 
         $partnerId = $this->app['basicauth']->getPartnerMerchantId();
 
-        if (!empty($partnerId) && $this->app['api.route']->getCurrentRouteName() === self::PaymentsCreateUpiRoute)
+        if (!empty($partnerId))
         {
             $headers['PARTNER_MERCHANT_ID'] = $partnerId;
         }

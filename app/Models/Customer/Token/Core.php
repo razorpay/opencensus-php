@@ -571,7 +571,7 @@ class Core extends Base\Core
      * for now.
      * @param $id
      * @param $merchant
-     * @return Token\Entity
+    * @return Token\Entity|bool
      */
     public function getByTokenIdAndMerchant($id, Merchant\Entity $merchant)
     {
@@ -594,6 +594,36 @@ class Core extends Base\Core
             $token = $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
         }
 
+        // Check if token is found by partner merchant ID if splitz experiment is enabled
+        if ($token === null)
+        {
+            $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
+            $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                'message' => 'Partner Merchant ID',
+                'partner_merchant_id' => $partnerMerchantId
+            ]);
+
+            if ($partnerMerchantId !== null)
+            {
+                $isPartnerTokenFetchEnabled = $this->checkPartnerTokenFetchSplitzExperiment($partnerMerchantId);
+
+                if ($isPartnerTokenFetchEnabled)
+                {
+                    $partnerMerchant = $this->repo->merchant->find($partnerMerchantId);
+
+                    if ($partnerMerchant !== null)
+                    {
+                        $partnerToken = $this->repo->token->findByPublicIdAndMerchant($id, $partnerMerchant);
+
+                        if ($partnerToken !== null)
+                        {
+                            return $partnerToken;
+                        }
+                    }
+                }
+            }
+        }
+
         if (($token->getMerchantId() !== $merchant->getId()))
         {
             throw new Exception\BadRequestException(
@@ -606,6 +636,44 @@ class Core extends Base\Core
         return $token;
     }
 
+    /**
+     * Check if partner token fetch splitz experiment is enabled
+     *
+     * @param string $partnerMerchantId
+     * @return bool
+     */
+    protected function checkPartnerTokenFetchSplitzExperiment(string $partnerMerchantId): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $partnerMerchantId,
+                'experiment_name' => 'partner_auth_token_fetch',
+                'request_data'  => json_encode(['merchant_id' => $partnerMerchantId]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'partner_merchant_id' => $partnerMerchantId,
+                'variant'             => $variant,
+                'context'             => 'partner_token_fetch'
+            ]);
+
+            return $variant === 'enable';
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'partner_merchant_id' => $partnerMerchantId,
+                'context'             => 'partner_token_fetch'
+            ]);
+
+            return false;
+        }
+    }
 
     public function getByTokenId($id)
     {
