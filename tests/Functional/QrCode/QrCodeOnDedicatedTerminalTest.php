@@ -107,12 +107,12 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
 
         $qrCode = $this->createQrCode(['usage'          => 'single_use',
-                                       'type'           => 'upi_qr',
-                                       'fixed_amount'   => true,
-                                       'payment_amount' => 10000
-                                      ],
-                                      'live',
-                                      'LiveAccountMer');
+            'type'           => 'upi_qr',
+            'fixed_amount'   => true,
+            'payment_amount' => 10000
+        ],
+            'live',
+            'LiveAccountMer');
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
@@ -123,8 +123,8 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
         $this->setMockSplitzTreatment([
-                                          'M25grFTOPZEGQS' => 'on'
-                                      ]);
+            'M25grFTOPZEGQS' => 'on'
+        ]);
 
         $response = $this->createQrCode(
             [
@@ -726,12 +726,12 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
 
         $this->createQrCode(['usage'          => 'multiple_use',
-                             'type'           => 'upi_qr',
-                             'fixed_amount'   => true,
-                             'payment_amount' => 4000
-                            ],
-                            'live',
-                            'LiveAccountMer');
+            'type'           => 'upi_qr',
+            'fixed_amount'   => true,
+            'payment_amount' => 4000
+        ],
+            'live',
+            'LiveAccountMer');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
 
@@ -796,7 +796,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 4000,
-             'name'  => 'Mitasha']
+                'name'  => 'Mitasha']
         );
 
         $qrCodeId = $qrCode['id'];
@@ -842,7 +842,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage' => 'multiple_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 4000,
-             'name'  => 'Mitasha']
+                'name'  => 'Mitasha']
         );
 
         $qrCodeId = $qrCode['id'];
@@ -917,7 +917,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $this->createQrCode(
             ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => false, 'payment_amount' => 100,
-             'name' => 'Mitasha']
+                'name' => 'Mitasha']
         );
     }
 
@@ -928,7 +928,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage' => 'multiple_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name' => 'Mitasha'],
+                'name' => 'Mitasha'],
             'live',
             'LiveAccountMer'
         );
@@ -947,7 +947,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $this->createQrCode(
             ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'close_by' => $closeBy, 'name' => 'Mitasha']
+                'close_by' => $closeBy, 'name' => 'Mitasha']
         );
     }
 
@@ -959,7 +959,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name' => 'Mitasha'],
+                'name' => 'Mitasha'],
             'live',
             'LiveAccountMer'
         );
@@ -977,7 +977,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage' => 'multiple_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name' => 'Mitasha'],
+                'name' => 'Mitasha'],
             'live',
             'LiveAccountMer'
         );
@@ -1141,10 +1141,10 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 //        $this->expectExceptionMessage('This feature is not available for your account. Contact support to get it enabled');
 
         $response = $this->createQrCode(['usage' => 'single_use',
-                                         'type' => 'upi_qr',
-                                         'fixed_amount' => true,
-                                         'payment_amount' => 100,
-                                         'request_source' => 'ezetap']
+                'type' => 'upi_qr',
+                'fixed_amount' => true,
+                'payment_amount' => 100,
+                'request_source' => 'ezetap']
         );
 
         $this->assertEquals(Status::ACTIVE, $response['status']);
@@ -1183,10 +1183,10 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 //        $this->expectExceptionMessage('This feature is not available for your account. Contact support to get it enabled');
 
         $response = $this->createQrCode(['usage' => 'single_use',
-                                         'type' => 'upi_qr',
-                                         'fixed_amount' => true,
-                                         'payment_amount' => 100,
-                                         'request_source' => 'ezetap']
+                'type' => 'upi_qr',
+                'fixed_amount' => true,
+                'payment_amount' => 100,
+                'request_source' => 'ezetap']
         );
 
         $response['qr_string'] = '05240130rzr.qrmoremegast00437171@abcabc27390240121RZPL2070"';
@@ -1211,7 +1211,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $this->createQrCode(
             ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'close_by' => $closeBy ,'name' => 'Mitasha'], 'live','LiveAccountMer');
+                'close_by' => $closeBy ,'name' => 'Mitasha'], 'live','LiveAccountMer');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
 
@@ -1254,7 +1254,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage'    => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'close_by' => $closeBy, 'name' => 'Mitasha'], 'live','LiveAccountMer');
+                'close_by' => $closeBy, 'name' => 'Mitasha'], 'live','LiveAccountMer');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
 
@@ -1285,7 +1285,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage'    => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'close_by' => $closeBy, 'name' => 'Mitasha'], 'live','LiveAccountMer');
+                'close_by' => $closeBy, 'name' => 'Mitasha'], 'live','LiveAccountMer');
 
 
         $vpa    = $this->getLastEntity('vpa', true,'live');
@@ -1311,7 +1311,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage'    => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'close_by' => $closeBy, 'name' => 'Mitasha'], 'live','LiveAccountMer');
+                'close_by' => $closeBy, 'name' => 'Mitasha'], 'live','LiveAccountMer');
 
 
         $vpa    = $this->getLastEntity('vpa', true,'live');
@@ -1331,7 +1331,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name'  => 'Mitasha'], 'live', 'LiveAccountMer'
+                'name'  => 'Mitasha'], 'live', 'LiveAccountMer'
         );
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
@@ -1353,7 +1353,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->expectExceptionCode('SERVER_ERROR_INVALID_ARGUMENT');
         $this->createQrCode(
             ['usage' => 'single_use', 'type' => 'bharat_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name' => 'Mitasha', 'request_source' => 'ezetap']
+                'name' => 'Mitasha', 'request_source' => 'ezetap']
         );
 
     }
@@ -1479,7 +1479,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage'    => 'multiple_use', 'type' => 'upi_qr',
-             'name' => 'Mitasha'], 'live','LiveAccountMer');
+                'name' => 'Mitasha'], 'live','LiveAccountMer');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
 
@@ -1515,7 +1515,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage'    => 'multiple_use', 'type' => 'upi_qr',
-             'name' => 'Mitasha'], 'live','LiveAccountMer');
+                'name' => 'Mitasha'], 'live','LiveAccountMer');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
 
@@ -1546,7 +1546,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage'    => 'multiple_use', 'type' => 'upi_qr',
-             'name' => 'Mitasha'], 'live','LiveAccountMer');
+                'name' => 'Mitasha'], 'live','LiveAccountMer');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
 
@@ -1599,7 +1599,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->createQrCode(
             ['usage'    => 'multiple_use', 'type' => 'upi_qr',
-             'name' => 'Mitasha'], 'live','LiveAccountMer');
+                'name' => 'Mitasha'], 'live','LiveAccountMer');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
 
@@ -1640,7 +1640,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->fixtures->on('live')->edit('terminal', $this->bqrTerminalLive->getId(), ['merchant_id' => 'LiveAccountMer']);
         $qrCode = $this->createQrCode(
             ['usage'    => 'multiple_use', 'type' => 'upi_qr',
-             'name' => 'Shah'], 'live','LiveAccountMer');
+                'name' => 'Shah'], 'live','LiveAccountMer');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true,'live');
 
@@ -1684,7 +1684,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $this->createQrCode(
             ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name' => 'testCreateSingleUseQrCodeWithErrorFromGateway'],
+                'name' => 'testCreateSingleUseQrCodeWithErrorFromGateway'],
             'live',
             'LiveAccountMer');
     }
@@ -1710,7 +1710,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $this->createQrCode(
             ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name' => 'testCreateSingleUseQrCodeWithErrorFromGateway'],
+                'name' => 'testCreateSingleUseQrCodeWithErrorFromGateway'],
             'live',
             'LiveAccountMer');
     }
@@ -1723,13 +1723,13 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
 
         $qrCode = $this->createQrCode([
-                                          'usage'          => 'single_use',
-                                          'type'           => 'upi_qr',
-                                          'fixed_amount'   => true,
-                                          'payment_amount' => 4000
-                                      ],
-                                      'live',
-                                      'LiveAccountMer'
+            'usage'          => 'single_use',
+            'type'           => 'upi_qr',
+            'fixed_amount'   => true,
+            'payment_amount' => 4000
+        ],
+            'live',
+            'LiveAccountMer'
         );
 
         $qrCodeId = $qrCode['id'];
@@ -1773,11 +1773,11 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         );
 
         $qrCode = $this->createQrCode([
-                                          'type'           => 'upi_qr',
-                                          'usage'          => 'single_use',
-                                          'fixed_amount'   => '1',
-                                          'payment_amount' => 100,
-                                      ]
+                'type'           => 'upi_qr',
+                'usage'          => 'single_use',
+                'fixed_amount'   => '1',
+                'payment_amount' => 100,
+            ]
         );
 
         $expectedEventData['event'] = 'qr_code.closed';
@@ -2205,36 +2205,36 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
 
         $qrCode = $this->createQrCode([
-                                          'usage'          => 'single_use',
-                                          'type'           => 'upi_qr',
-                                          'fixed_amount'   => true,
-                                          'payment_amount' => 10000,
-                                          'tax_invoice'    => [
-                                              'number'         => 'INV0001',
-                                              'date'           => 1725428530,
-                                              'customer_name'  => 'Gaurav Kumar',
-                                              'business_gstin' => '06AABCU9605R1ZR',
-                                              'gst_amount'     => 4000,
-                                              'cess_amount'    => 0,
-                                              'supply_type'    => 'interstate',
-                                       ],
-                                      ],
-                                      'live',
-                                      'LiveAccountMer');
+            'usage'          => 'single_use',
+            'type'           => 'upi_qr',
+            'fixed_amount'   => true,
+            'payment_amount' => 10000,
+            'tax_invoice'    => [
+                'number'         => 'INV0001',
+                'date'           => 1725428530,
+                'customer_name'  => 'Gaurav Kumar',
+                'business_gstin' => '06AABCU9605R1ZR',
+                'gst_amount'     => 4000,
+                'cess_amount'    => 0,
+                'supply_type'    => 'interstate',
+            ],
+        ],
+            'live',
+            'LiveAccountMer');
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
 
         $this->assertArraySelectiveEquals([
-                                              'number'         => 'INV0001',
-                                              'date'           => 1725428530,
-                                              'customer_name'  => 'Gaurav Kumar',
-                                              'business_gstin' => '06AABCU9605R1ZR',
-                                              'gst_amount'     => 4000,
-                                              'cess_amount'    => 0,
-                                              'supply_type'    => 'interstate',
-                                          ], $qrCodeEntity['tax_invoice']);
+            'number'         => 'INV0001',
+            'date'           => 1725428530,
+            'customer_name'  => 'Gaurav Kumar',
+            'business_gstin' => '06AABCU9605R1ZR',
+            'gst_amount'     => 4000,
+            'cess_amount'    => 0,
+            'supply_type'    => 'interstate',
+        ], $qrCodeEntity['tax_invoice']);
     }
 
     public function testCreateStaticQrWithDedicatedTerminalAndTaxInvoice()
@@ -2243,34 +2243,34 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
 
         $qrCode = $this->createQrCode([
-                                          'usage'          => 'multiple_use',
-                                          'type'           => 'upi_qr',
-                                          'tax_invoice'    => [
-                                              'number'         => 'INV0001',
-                                              'date'           => 1725428530,
-                                              'customer_name'  => 'Gaurav Kumar',
-                                              'business_gstin' => '06AABCU9605R1ZR',
-                                              'gst_amount'     => 4000,
-                                              'cess_amount'    => 0,
-                                              'supply_type'    => 'interstate',
-                                          ],
-                                      ],
-                                      'live',
-                                      'LiveAccountMer');
+            'usage'          => 'multiple_use',
+            'type'           => 'upi_qr',
+            'tax_invoice'    => [
+                'number'         => 'INV0001',
+                'date'           => 1725428530,
+                'customer_name'  => 'Gaurav Kumar',
+                'business_gstin' => '06AABCU9605R1ZR',
+                'gst_amount'     => 4000,
+                'cess_amount'    => 0,
+                'supply_type'    => 'interstate',
+            ],
+        ],
+            'live',
+            'LiveAccountMer');
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
 
         $this->assertArraySelectiveEquals([
-                                              'number'         => 'INV0001',
-                                              'date'           => 1725428530,
-                                              'customer_name'  => 'Gaurav Kumar',
-                                              'business_gstin' => '06AABCU9605R1ZR',
-                                              'gst_amount'     => 4000,
-                                              'cess_amount'    => 0,
-                                              'supply_type'    => 'interstate',
-                                          ], $qrCodeEntity['tax_invoice']);
+            'number'         => 'INV0001',
+            'date'           => 1725428530,
+            'customer_name'  => 'Gaurav Kumar',
+            'business_gstin' => '06AABCU9605R1ZR',
+            'gst_amount'     => 4000,
+            'cess_amount'    => 0,
+            'supply_type'    => 'interstate',
+        ], $qrCodeEntity['tax_invoice']);
     }
 
     public function testAddPosQRCodeFlags()
@@ -2395,19 +2395,19 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
             'content' => $attributes,
         ];
 
-       $response  = $this->makeRequestAndGetContent($request);
+        $response  = $this->makeRequestAndGetContent($request);
 
-       $this->assertEquals(true,empty($response['failed_jobs']));
-       $this->assertEquals(true,empty($response['failure_details']));
-       $this->assertEquals($total_count,$response['success']);
-       $this->assertEquals(0,$response['failure'],);
+        $this->assertEquals(true,empty($response['failed_jobs']));
+        $this->assertEquals(true,empty($response['failure_details']));
+        $this->assertEquals($total_count,$response['success']);
+        $this->assertEquals(0,$response['failure'],);
 
-       foreach($attributes['ids'] as $id)
-       {
+        foreach($attributes['ids'] as $id)
+        {
             $qrCode = $this->getDbEntityById('qr_code',$id,'test');
             $this->assertEquals('closed',$qrCode['status']);
             $this->assertEquals('compliance',$qrCode['close_reason'],);
-       }
+        }
     }
     public function testClosingMoreThan500MultipleUseQrCode()
     {
@@ -2456,12 +2456,12 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $response  = $this->makeRequestAndGetContent($request);
 
-       for($i = 0;$i < $total_count ; $i++)
-       {
+        for($i = 0;$i < $total_count ; $i++)
+        {
             $qrId = $attributes['ids'][$i];
             $this->assertEquals($qrId , $response['failed_ids'][$i]);
             $this->assertEquals("Single use QR code cannot be closed via this Admin route" , $response['failure_details'][$qrId]);
-       }
+        }
 
         $this->assertEquals(0,$response['success']);
         $this->assertEquals($total_count,$response['failure'],);
@@ -2509,12 +2509,12 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
                 ],
             ]);
         $terminal_ids = [
-                'terminal_ids' => [
-                    $terminal1['id'],
-                    $terminal2['id'],
-                    $terminal3['id']
-                ]
-            ];
+            'terminal_ids' => [
+                $terminal1['id'],
+                $terminal2['id'],
+                $terminal3['id']
+            ]
+        ];
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/terminal/enable_onlinetag/bulk',
@@ -2570,12 +2570,12 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
                 ],
             ]);
         $terminal_ids = [
-                'terminal_ids' => [
-                    $terminal1['id'],
-                    $terminal2['id'],
-                    $terminal3['id']
-                ]
-            ];
+            'terminal_ids' => [
+                $terminal1['id'],
+                $terminal2['id'],
+                $terminal3['id']
+            ]
+        ];
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/terminal/disable_onlinetag/bulk',
@@ -2837,6 +2837,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->getDbLastEntity('qr_code','live');
         $this->ba->appAuth();
+
         $response = $this->makeRequestAndGetContent([
             'method' => 'POST',
             'url' => '/payments/single_stack/device/update',
@@ -2872,12 +2873,452 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
     }
 
+    public function testUpdateSingleStackDeviceWithMapIdentifiers()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount = 0;
+        $eventList = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Mock pos.deviceservice
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andReturn([
+                'store_id' => 'store_123',
+                'device_id' => 'testDevice123',
+                'device_version' => 'Android 5.0',
+            ]);
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Create QR Code
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+        ], 'live', 'LiveAccountMer');
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        // Test mapping device to QR via UpdateSingleStackDevice controller
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'testDevice123',
+                'map_identifiers' => [
+                    'qr_string' => $qrCode->getQrString(),
+                ],
+            ]
+        ]);
+
+        // Verify successful mapping response
+        $this->assertEquals(true, $response['success']);
+        $this->assertEquals('qr_' . $qrCode['id'], $response['id']);
+        $this->assertEquals('testDevice123', $response['device_id']);
+
+        // Verify QR code entity is updated
+        $qrCode->reload();
+        $this->assertEquals('testDevice123', $qrCode->getDeviceId());
+    }
+
+    public function testUpdateSingleStackDeviceWithUnmapIdentifiers()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount = 0;
+        $eventList = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Mock pos.deviceservice
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andReturn([
+                'store_id' => 'store_456',
+                'device_id' => 'presetDevice456',
+                'device_version' => 'Android 6.0',
+            ]);
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Create QR Code with device already mapped
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+            'device_id' => 'presetDevice456',
+        ], 'live', 'LiveAccountMer');
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+        $this->assertEquals('presetDevice456', $qrCode->getDeviceId());
+
+        // Test unmapping device from QR via UpdateSingleStackDevice controller
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'presetDevice456',
+                'unmap_identifiers' => [
+                    'unmap_from_merchant' => true,
+                    'unmap_from_qr' => true
+                ],
+            ]
+        ]);
+
+        // Verify successful unmapping response
+        $this->assertEquals(true, $response['success']);
+        $this->assertEquals($qrCode['id'], $response['id']);
+
+        // Verify QR code entity is updated
+        $qrCode->reload();
+        $this->assertNull($qrCode->getDeviceId());
+    }
+
+    public function testUpdateSingleStackDeviceWithInvalidQrString()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount = 0;
+        $eventList = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Mock pos.deviceservice
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andReturn([
+                'store_id' => 'store_invalid',
+                'device_id' => 'testDevice123',
+                'device_version' => 'Android 8.0',
+            ]);
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Test with invalid QR string
+        $this->ba->appAuth();
+        $this->expectException('\TypeError');
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'testDevice123',
+                'map_identifiers' => [
+                    'qr_string' => 'invalid_qr_string_format',
+                ],
+            ]
+        ]);
+    }
+
+    public function testUpdateSingleStackDeviceWithDuplicateMapping()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount = 0;
+        $eventList = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Mock pos.deviceservice
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andReturn([
+                'store_id' => 'store_duplicate',
+                'device_id' => 'duplicateDevice123',
+                'device_version' => 'Android 10.0',
+            ]);
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Create QR Code with device already mapped
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+            'device_id' => 'duplicateDevice123',
+        ], 'live', 'LiveAccountMer');
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        // Test mapping same device to same QR code (duplicate request)
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'duplicateDevice123',
+                'map_identifiers' => [
+                    'qr_string' => $qrCode->getQrString(),
+                ],
+            ]
+        ]);
+
+        // Verify duplicate mapping error
+        $this->assertEquals(false, $response['success']);
+        $this->assertArrayHasKey('error_message', $response);
+    }
+
+    public function testUpdateSingleStackDeviceWithAlreadyMappedDevice()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount = 0;
+        $eventList = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Mock pos.deviceservice
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andReturn([
+                'store_id' => 'store_shared',
+                'device_id' => 'sharedDevice999',
+                'device_version' => 'Android 11.0',
+            ]);
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Create first QR Code with device mapped
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+            'device_id' => 'sharedDevice999',
+        ], 'live', 'LiveAccountMer');
+
+        // Create second QR Code without device
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+        ], 'live', 'LiveAccountMer');
+
+        $secondQrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        // Test mapping already-used device to second QR code
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'sharedDevice999',
+                'map_identifiers' => [
+                    'qr_string' => $secondQrCode->getQrString(),
+                ],
+            ]
+        ]);
+
+        // Verify device already mapped error
+        $this->assertEquals(false, $response['success']);
+        $this->assertArrayHasKey('error_message', $response);
+    }
+
+    public function testUpdateSingleStackDeviceUnmapWithMultipleQrCodes()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount = 0;
+        $eventList = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Mock pos.deviceservice
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andReturn([
+                'store_id' => 'store_multi',
+                'device_id' => 'multiQrDevice888',
+                'device_version' => 'Android 13.0',
+            ]);
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Create multiple QR Codes with same device (to test validation)
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+            'device_id' => 'multiQrDevice888',
+        ], 'live', 'LiveAccountMer');
+
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+            'device_id' => 'multiQrDevice888',
+        ], 'live', 'LiveAccountMer');
+
+        // Test unmapping device that's mapped to multiple QR codes
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'multiQrDevice888',
+                'unmap_identifiers' => [
+                    'unmap_from_merchant' => true,
+                    'unmap_from_qr' => true
+                ],
+            ]
+        ]);
+
+        // Verify multiple QR codes mapped error
+        $this->assertEquals(false, $response['success']);
+        $this->assertArrayHasKey('error_message', $response);
+    }
+
+    public function testUpdateSingleStackDeviceWithServiceException()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        // Create QR Code
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+        ], 'live', 'LiveAccountMer');
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        // Mock service to throw exception
+        $mockService = \Mockery::mock('RZP\Models\QrCode\NonVirtualAccountQrCode\Service');
+        $mockService->shouldReceive('UpdateSingleStackDevice')
+            ->andThrow(new \Exception('Service error', 500));
+
+        $this->app->instance('NonVAQrCodeService', $mockService);
+
+        // Test exception handling
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'exceptionDevice123',
+                'map_identifiers' => [
+                    'qr_string' => $qrCode->getQrString(),
+                ],
+            ]
+        ]);
+
+        // Verify error response structure
+        $this->assertEquals(false, $response['success']);
+        $this->assertArrayHasKey('error_code', $response);
+        $this->assertArrayHasKey('error_message', $response);
+        $this->assertEquals("SERVER_ERROR_EZETAP_INTEGRATION_ERROR", $response['error_code']);
+    }
+
+    public function testUpdateSingleStackDeviceWithAndroidPosDevice()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount = 0;
+        $eventList = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Mock pos.deviceservice to return Android POS device
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andReturn([
+                'store_id' => 'store_android_pos',
+                'device_id' => 'androidPosDevice',
+                'device_version' => 'A910', // Android POS device
+            ]);
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Create QR Code
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+        ], 'live', 'LiveAccountMer');
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        // Test mapping device with Android POS device
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'androidPosDevice',
+                'map_identifiers' => [
+                    'qr_string' => $qrCode->getQrString(),
+                ],
+            ]
+        ]);
+
+        // Verify successful mapping (Android POS devices have special validation logic)
+        $this->assertEquals(true, $response['success']);
+        $this->assertEquals('qr_' . $qrCode['id'], $response['id']);
+        $this->assertEquals('androidPosDevice', $response['device_id']);
+
+        // Verify QR code entity is updated
+        $qrCode->reload();
+        $this->assertEquals('androidPosDevice', $qrCode->getDeviceId());
+    }
+
+    public function testUpdateSingleStackDeviceWithDevice()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount = 0;
+        $eventList = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Mock pos.deviceservice
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andReturn([
+                'store_id' => 'store_shared',
+                'device_id' => 'sharedDevice999',
+                'device_version' => 'Android 11.0',
+            ]);
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Create first QR Code with device mapped
+        $this->createQrCode([
+            'usage' => 'single_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+            'device_id' => 'sharedDevice999',
+        ], 'live', 'LiveAccountMer');
+
+        // Create second QR Code without device
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+        ], 'live', 'LiveAccountMer');
+
+        $secondQrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        // Test mapping already-used device to second QR code
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'sharedDevice999',
+                'map_identifiers' => [
+                    'qr_string' => $secondQrCode->getQrString(),
+                ],
+            ]
+        ]);
+
+        // Verify device already mapped error
+        $this->assertEquals(true, $response['success']);
+
+        $secondQrCode->reload();
+        $this->assertEquals('sharedDevice999', $secondQrCode->getDeviceId());
+    }
+
     public function testQrCodeEditNotes()
     {
         $terminal = $this->fixtures->create('terminal:dedicated_sharp_terminal');
-        
+
         $qrCode = $this->createQrCode(
             [
+                'usage' => 'multiple_use',
                 'type' => 'upi_qr',
             ]);
 

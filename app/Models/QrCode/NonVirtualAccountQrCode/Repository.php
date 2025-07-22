@@ -94,6 +94,14 @@ class Repository extends QrCode\Repository
             ?->get();
     }
 
+    public function findByDeviceIdAndUsageType(string $deviceId, string $usageType)
+    {
+        return $this->newQuery()
+            ->where(Entity::DEVICE_ID, $deviceId)
+            ->where(Entity::USAGE_TYPE, $usageType)
+            ?->get();
+    }
+
     public function findByTrId(string $TrId)
     {
         return $this->newQuery()
