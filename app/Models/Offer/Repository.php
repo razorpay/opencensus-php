@@ -6,12 +6,14 @@ use Carbon\Carbon;
 use DB;
 use Illuminate\Database\Eloquent\Builder;
 use RZP\Constants\Table;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\Traits\ExternalOffersRepo;
 use RZP\Models\Base\Traits\ExternalCore;
+use RZP\Models\Offer\Constants;
 use RZP\Models\Offer\SubscriptionOffer\Entity as SubscriptionOfferEntity;
 use RZP\Models\Order\ProductType;
 
@@ -32,6 +34,25 @@ class Repository extends Base\Repository
         $this->offersEngine = new OffersEngine();
 
         $this->core = new Core();
+    }
+
+    private function handleApiFallbackSkip(string $merchantId, string $functionName): ?PublicCollection
+    {
+        $skipAPIFallback = $this->core->shouldRouteToOffersEngineForCreation(
+            $merchantId, Constants::SKIP_API_FALLBACK_FOR_OFFERS_EXP
+        );
+
+        if ($skipAPIFallback === true)
+        {
+            $this->trace->info(TraceCode::SKIPPING_API_FALLBACK_FOR_OFFERS, [
+                'merchant_id' => $merchantId,
+                'function' => $functionName,
+            ]);
+
+            return new PublicCollection();
+        }
+
+        return null;
     }
 
     protected $appFetchParamRules = [
@@ -94,6 +115,12 @@ class Repository extends Base\Repository
             return $oeResponse;
         }
 
+        $fallbackResponse = $this->handleApiFallbackSkip($merchantId, 'fetchAllActiveNonSubscriptionOffers');
+        if ($fallbackResponse !== null)
+        {
+            return $fallbackResponse;
+        }
+
         $now = Carbon::now()->getTimestamp();
 
         return $this->newQuery()
@@ -111,6 +138,13 @@ class Repository extends Base\Repository
     // NOTE - not picked as part of offers decomp
     public function fetchExistingOffers(Entity $newOffer, string $merchantId)
     {
+
+        $fallbackResponse = $this->handleApiFallbackSkip($merchantId, 'fetchExistingOffers');
+        if ($fallbackResponse !== null)
+        {
+            return $fallbackResponse;
+        }
+
         $query = $this->buildQuery($newOffer, $merchantId);
 
         $query->where(Entity::ACTIVE, '=', true)
@@ -146,6 +180,12 @@ class Repository extends Base\Repository
         if (($oeResponse !== null) and (count($oeResponse) > 0))
         {
             return $oeResponse ;
+        }
+
+        $fallbackResponse = $this->handleApiFallbackSkip($merchantId, 'fetchOffersSubscription');
+        if ($fallbackResponse !== null)
+        {
+            return $fallbackResponse;
         }
 
         $now = Carbon::now()->getTimestamp();
@@ -188,6 +228,12 @@ class Repository extends Base\Repository
         if (empty($oeResponse) === false)
         {
             return $oeResponse;
+        }
+
+        $fallbackResponse = $this->handleApiFallbackSkip($merchantId, 'fetchSubscriptionOfferById');
+        if ($fallbackResponse !== null)
+        {
+            return $fallbackResponse;
         }
 
         $now = Carbon::now()->getTimestamp();
@@ -240,6 +286,12 @@ class Repository extends Base\Repository
             return $oeResponse;
         }
 
+        $fallbackResponse = $this->handleApiFallbackSkip($merchantId, 'fetchAllDefaultOffersForMerchant');
+        if ($fallbackResponse !== null)
+        {
+            return $fallbackResponse;
+        }
+
         $isLowerEnvironment = ((app()->runningUnitTests() === true) or
                                (app()->isEnvironmentQA() === true));
 
@@ -289,6 +341,12 @@ class Repository extends Base\Repository
             $this->trace->traceException($e, Trace::ERROR, TraceCode::OFFERS_ENGINE_FETCH_MULTIPLE_FAILURE, [
                 "merchant_id" => $this->merchant->getId(),
             ]);
+        }
+
+        $fallbackResponse = $this->handleApiFallbackSkip($merchantId, 'fetch');
+        if ($fallbackResponse !== null)
+        {
+            return $fallbackResponse;
         }
 
         return parent::fetch($params, $merchantId, $connectionType);

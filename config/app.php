@@ -1011,6 +1011,8 @@ return array(
 
     'offers_engine_reverse_shadow_exp_id' => env('OFFERS_ENGINE_REVERSE_SHADOW_EXP'),
 
+    'skip_api_fallback_for_offers_exp_id' => env('SKIP_API_FALLBACK_FOR_OFFERS_EXP'),
+
     'oe_enable_cache_internal_merchant_get_exp' => env('OE_ENABLE_CACHE_INTERNAL_MERCHANT_GET_EXP'),
 
     'api_offers_repo_fallback_ignore_exp' => env('API_OFFERS_REPO_FALLBACK_IGNORE_EXP'),
