@@ -4705,7 +4705,7 @@ trait Refund
             return false;
         }
 
-        return ($this->isProdEnv());
+        return ($this->isProdEnv() || $this->isBetaEnv());
     }
 
     public function isBatchRefundRequestV1_1(Payment\Entity $payment): bool
@@ -4724,7 +4724,7 @@ trait Refund
             return false;
         }
 
-        return ($this->isProdEnv());
+        return ($this->isProdEnv() || $this->isBetaEnv());
     }
 
     public function isNonMerchantRefundRequestV1_1(Payment\Entity $payment): bool
@@ -4743,7 +4743,7 @@ trait Refund
             return false;
         }
 
-        return ($this->isProdEnv());
+        return ($this->isProdEnv() || $this->isBetaEnv());
     }
 
     public function isTransferCustomerRefundRequestV1_1(Payment\Entity $payment): bool
@@ -4757,7 +4757,7 @@ trait Refund
             return false;
         }
 
-        return ($this->isProdEnv());
+        return ($this->isProdEnv() || $this->isBetaEnv());
     }
 
     public function isProdEnv(): bool
@@ -4765,6 +4765,18 @@ trait Refund
         $env = $this->app->environment();
 
         if ($env === Environment::PRODUCTION)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isBetaEnv(): bool
+    {
+        $env = $this->app->environment();
+
+        if ($env === Environment::BETA)
         {
             return true;
         }

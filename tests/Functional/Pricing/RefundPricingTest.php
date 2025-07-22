@@ -6,6 +6,7 @@ use Event;
 
 use RZP\Exception;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -14,6 +15,7 @@ use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class RefundPricingTest extends TestCase
 {
+    use MocksSplitz;
     use PaymentTrait;
     use HeimdallTrait;
     use DbEntityFetchTrait;
@@ -1039,24 +1041,11 @@ class RefundPricingTest extends TestCase
         // Instant Refunds v2 pricing is now default - not behind a razorx anymore
         // Instant Refunds v1 Pricing is behind razorx for merchants in transition phase
         //
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->onlyMethods(['getTreatment'])
-            ->getMock();
 
-        $this->app->instance('razorx', $razorxMock);
+        $input = ["experiment_id" => "QplVHws5aw7OXk", "id" => '10000000000000'];
+        $output = ["response" => ["variant" => ["name" => 'enabled']]];
 
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === 'instant_refunds_default_pricing_v1')
-                    {
-                        return 'on';
-                    }
-
-                    return 'off';
-                }));
+        $this->mockSplitzTreatment($input, $output);
 
         $this->ba->proxyAuth();
 

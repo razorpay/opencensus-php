@@ -1245,6 +1245,8 @@ return array(
 
     'refund_source_fallback_enabled_exp_id' => env('REFUND_SOURCE_FALLBACK_ENABLED_EXP_ID'),
 
+    'instant_refunds_default_pricing_v1_exp_id' => env('INSTANT_REFUNDS_DEFAULT_PRICING_V1_EXP_ID'),
+
     'setl_fetch_by_id_from_nss_shadow_exp_id' => env('SETL_FETCH_BY_ID_FROM_NSS_SHADOW_EXP_ID'),
 
     'setl_get_details_from_nss_shadow_exp_id' => env('SETL_GET_DETAILS_FROM_NSS_SHADOW_EXP_ID'),

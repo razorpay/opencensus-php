@@ -5530,24 +5530,9 @@ class RefundTest extends TestCase
         $this->assertEquals(943, $refundFee['fee']);
         $this->assertEquals(144, $refundFee['tax']);
 
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->onlyMethods(['getTreatment'])
-                           ->getMock();
 
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                              function ($mid, $feature, $mode)
-                              {
-                                  if ($feature === 'instant_refunds_default_pricing_v1')
-                                  {
-                                      return 'on';
-                                  }
-
-                                  return 'off';
-                              }));
+        $output = ["response" => ["variant" => ["name" => 'enabled']]];
+        $this->mockSplitzTreatment($output);
 
         // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
         $refundFee = $this->paymentRefundFetchFee($payment['id'], 3471);

@@ -5433,17 +5433,13 @@ class Service extends Base\Service
 
             $merchantId = $this->merchant->getId();
 
-            $variant = $this->app->razorx->getTreatment(
-                $merchantId,
-                Merchant\RazorxTreatment::INSTANT_REFUNDS_DEFAULT_PRICING_V1,
-                $this->mode
-            );
+            $isInstantRefundsDefaultPricingV1Enabled = $this->isInstantRefundsDefaultPricingV1Enabled($merchantId);
 
             //
             // Instant Refunds v2 pricing is now default - not behind a razorx anymore
             // Instant Refunds v1 Pricing is behind razorx for merchants in transition phase
             //
-            if ($variant !== RefundConstants::RAZORX_VARIANT_ON)
+            if ($isInstantRefundsDefaultPricingV1Enabled === false)
             {
                 $planId = Pricing\Fee::DEFAULT_INSTANT_REFUNDS_PLAN_V2_ID;
             }
@@ -5488,6 +5484,38 @@ class Service extends Base\Service
 
         return $result;
     }
+
+    private function isInstantRefundsDefaultPricingV1Enabled($experimentVariable): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $experimentVariable,
+                'experiment_id' => $this->app['config']->get('app.instant_refunds_default_pricing_v1_exp_id')
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::INSTANT_REFUNDS_DEFAULT_PRICING_V1, [
+                'merchant_id'   => $experimentVariable,
+                'splitz_output' => $response,
+            ]);
+
+            return $variant === 'enabled';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::INSTANT_REFUNDS_DEFAULT_PRICING_V1_EXPERIMENT_FAILURE, [
+                'merchant_id'   => $experimentVariable,
+                'experiment_id' => $this->app['config']->get('app.instant_refunds_default_pricing_v1_exp_id') ?? null
+            ]);
+
+            return false;
+        }
+    }
+
 
     protected function getFormattedInstantRefundsPricingPlan($instantRefundsPricingRules): array
     {
