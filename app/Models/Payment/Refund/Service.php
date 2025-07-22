@@ -49,6 +49,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Mail\Base\OrgWiseConfig;
 use RZP\Jobs\ScroogeRefundUpdate;
 use RZP\Models\Payment\UpiMetadata;
+use RZP\Models\Payment\PaymentMeta;
 use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
@@ -874,7 +875,6 @@ class Service extends Base\Service
                 }
 
                 $response = [];
-
                 if ((isset($input[RefundConstants::ENTITIES]) === true) &&
                     (in_array(Constants\Entity::PAYMENT, $input[RefundConstants::ENTITIES]) === true))
                 {
@@ -895,6 +895,8 @@ class Service extends Base\Service
                         $data[RefundConstants::CURRENCY_CONVERSION_RATE] = $payment->getCurrencyConversionRate();
 
                         $data[RefundConstants::IS_UPI_OTM] = $payment->isUpiOtm();
+
+                        $data[RefundConstants::DCC] = $payment->isDCC();
 
                         $data[RefundConstants::IS_DCC] = $payment->isDCC();
 
@@ -917,6 +919,8 @@ class Service extends Base\Service
                         $data[Payment\Entity::GATEWAY_TXN_ID] = $payment->getGatewayTxnId();
 
                         $data[Payment\Entity::InternalStatus] = $payment->getInternalStatus();
+
+                        $this->populateDccDataIfApplicable($payment, $data);
 
                         $data[RefundConstants::SOURCE_CHANNEL] = $payment->getSourceChannel();
                     }
@@ -4458,6 +4462,66 @@ class Service extends Base\Service
             ]);
 
             return false;
+        }
+    }
+
+    /**
+     * Populates DCC-related data fields if the payment source channel is 'in_person' and method is 'card'
+     *
+     * @param Payment\Entity $payment
+     * @param array $data
+     * @return void
+     */
+    private function populateDccDataIfApplicable(Payment\Entity $payment, array &$data): void
+    {
+        try
+        {
+            $sourceChannel = $payment->getSourceChannel();
+            $method = $payment->getMethod();
+            $gateway = $payment->getGateway();
+            
+            // Log the values to check what's coming
+            $this->trace->info(TraceCode::REFUND_DCC_DATA_CHECK_VALUES, [
+                'payment_id' => $payment->getId(),
+                'source_channel' => $sourceChannel,
+                'method' => $method,
+                'gateway' => $gateway,
+            ]);
+            
+            if (!empty($sourceChannel) && $sourceChannel === 'in_person' &&
+                !empty($method) && $method === 'card' &&
+                !empty($gateway) && $gateway === 'planet_payment_pos')
+            {
+                $this->trace->info(TraceCode::REFUND_DCC_DATA_POPULATION_SUCCESS, [
+                    'payment_id' => $payment->getId(),
+                    'message' => 'DCC data conditions met, populating DCC fields',
+                ]);
+                
+                $data[Payment\Entity::ForexRate] = $payment->getDccForexRate();
+                $data[Payment\Entity::GatewayAmount] = $payment->getDccGatewayAmount();
+                $data[Payment\Entity::GatewayCurrency] = $payment->getDccGatewayCurrency();
+            }
+            else
+            {
+                $this->trace->info(TraceCode::REFUND_DCC_DATA_POPULATION_SKIPPED, [
+                    'payment_id' => $payment->getId(),
+                    'message' => 'DCC data conditions not met, skipping DCC population',
+                    'conditions' => [
+                        'source_channel_check' => (!empty($sourceChannel) && $sourceChannel === 'in_person'),
+                        'method_check' => (!empty($method) && $method === 'card'),
+                        'gateway_check' => (!empty($gateway) && $gateway === 'planet_payment_pos'),
+                    ],
+                ]);
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, null, TraceCode::REFUND_DCC_DATA_POPULATION_FAILED, [
+                'payment_id' => $payment->getId(),
+                'source_channel' => $payment->getSourceChannel(),
+                'method' => $payment->getMethod(),
+                'gateway' => $payment->getGateway(),
+            ]);
         }
     }
 

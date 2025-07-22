@@ -8,6 +8,7 @@ class Constants
     const MODE                                 = 'mode';
     const CODE                                 = 'code';
     const IS_FTA                               = 'is_fta';
+    const DCC                                  = 'dcc';
     const IS_DCC                               = 'is_dcc';
     const MOZART                               = 'mozart';
     const MESSAGE                              = 'message';

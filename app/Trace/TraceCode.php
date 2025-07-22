@@ -3340,6 +3340,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REFUND_EVENT_PAYLOAD                                  = 'REFUND_EVENT_PAYLOAD';
     const REFUND_PAYLOAD_DECODING_FAILED                        = 'REFUND_PAYLOAD_DECODING_FAILED';
     const REFUND_PAYLOAD_JSON_DECODING_FAILED                   = 'REFUND_PAYLOAD_JSON_DECODING_FAILED';
+    const REFUND_DCC_DATA_CHECK_VALUES                          = 'REFUND_DCC_DATA_CHECK_VALUES';
+    const REFUND_DCC_DATA_POPULATION_SUCCESS                    = 'REFUND_DCC_DATA_POPULATION_SUCCESS';
+    const REFUND_DCC_DATA_POPULATION_SKIPPED                    = 'REFUND_DCC_DATA_POPULATION_SKIPPED';
+    const REFUND_DCC_DATA_POPULATION_FAILED                     = 'REFUND_DCC_DATA_POPULATION_FAILED';
     const CAPTCHA_DISABLE                                       = 'CAPTCHA_DISABLE';
     const REFUND_TRANSACTION_FAILED                             = 'REFUND_TRANSACTION_FAILED';
     const CREDITS_TRANSACTION_FAILED                            = 'CREDITS_TRANSACTION_FAILED';

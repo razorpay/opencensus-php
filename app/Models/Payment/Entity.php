@@ -430,8 +430,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const GatewayMerchantId = 'gateway_merchant_id';
     const GatewayTerminalId = 'gateway_terminal_id';
     const DeviceId          = 'device_id';
-    const InternalStatus     = 'internal_status';
-
+    const InternalStatus    = 'internal_status';
+    const ForexRate         = 'forex_rate';
+    const GatewayCurrency   = 'gateway_currency';
+    const GatewayAmount     = 'gateway_amount';
     const STORE_ID          = 'store_id';
 
     const REFUND_UNEXPECTED_PAYMENT = 'refund_unexpected_payment';
@@ -2423,6 +2425,21 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getInternalStatus()
     {
         return $this->getAttribute(self::InternalStatus);
+    }
+
+    public function getDccForexRate()
+    {
+        return $this->getAttribute(self::ForexRate);
+    }
+
+    public function getDccGatewayAmount()
+    {
+        return $this->getAttribute(self::GatewayAmount);
+    }
+
+    public function getDccGatewayCurrency()
+    {
+        return $this->getAttribute(self::GatewayCurrency);
     }
 
     public function getDeviceId()
@@ -7497,6 +7514,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function isDCC()
     {
+        $sourceChannel = $this->getSourceChannel();
+        if (!empty($sourceChannel) && $sourceChannel === 'in_person')
+        {
+            return $this->getAttribute(self::DCC);
+        }
+
         $paymentMetaEntity = $this->paymentMeta;
 
         if ($paymentMetaEntity === null)
