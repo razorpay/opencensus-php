@@ -12737,6 +12737,7 @@ class Route
 
         'agent-service' => [
             'payment_fetch_multiple',
+            'payment_fetch_multiple_internal',
         ],
 
         'metro' => [
