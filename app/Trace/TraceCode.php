@@ -3180,7 +3180,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CC_ROUTER_SHADOW_FALLBACK_SUCCESS                     = 'CC_ROUTER_SHADOW_FALLBACK_SUCCESS';
     const CC_ROUTER_SHADOW_FALLBACK_FAILURE                     = 'CC_ROUTER_SHADOW_FALLBACK_FAILURE';
     const CC_ROUTER_SHADOW_FALLBACK_INVALID_RESPONSE            = 'CC_ROUTER_SHADOW_FALLBACK_INVALID_RESPONSE';
-    
+
     const CC_ROUTER_ADMIN_DASHBOARD_ROUTING                     = 'CC_ROUTER_ADMIN_DASHBOARD_ROUTING';
     const PRICING_PLAN_RULE_UPDATE_ATTEMPT                      = 'PRICING_PLAN_RULE_UPDATE_ATTEMPT';
     const PRICING_PLAN_RULE_ADD_SUCCESS                         = 'PRICING_PLAN_RULE_ADD_SUCCESS';
@@ -6205,6 +6205,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HANDLE_ICICI_2FA_PAYOUT_WEBHOOK                       = 'HANDLE_ICICI_2FA_PAYOUT_WEBHOOK';
     const PAYOUT_STATUS_AFTER_MASTER_FETCH                      = 'PAYOUT_STATUS_AFTER_MASTER_FETCH';
     const API_PAYOUTS_ARE_NOT_ALLOWED                           = 'API_PAYOUTS_ARE_NOT_ALLOWED';
+    const FETCHED_PAYOUT_AGE_BUCKET                             = 'FETCHED_PAYOUT_AGE_BUCKET';
+    const FETCHED_PAYOUT_AGE_PUSH_FAILURE                       = 'FETCHED_PAYOUT_AGE_PUSH_FAILURE';
 
     const VENDOR_PAYMENT_REQUEST                                = 'VENDOR_PAYMENT_REQUEST';
     const VENDOR_PAYMENT_RESPONSE                               = 'VENDOR_PAYMENT_RESPONSE';
@@ -13293,7 +13295,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REDIS_TAG_SET_EXPIRE_RESULT                           = 'REDIS_TAG_SET_EXPIRE_RESULT';
 
     const REDIS_TAG_SET_TTL_ERROR                               = 'REDIS_TAG_SET_TTL_ERROR';
-    
+
     const REDIS_TAG_SET_SKIP_TTL                                = 'REDIS_TAG_SET_SKIP_TTL';
 
     const MODIFY_SMART_ROUTING_RULES_FTS_REQUEST_FAILED         = 'MODIFY_SMART_ROUTING_RULES_FTS_REQUEST_FAILED';

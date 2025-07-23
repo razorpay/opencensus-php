@@ -2074,6 +2074,14 @@ class Service extends Base\Service
         // therefore we need to fetch and merge payouts from both systems
         $payoutsArr = $this->mergePendingPayoutsViaWorkflowService($input, $payouts);
 
+        if(empty($payoutsArr) === false)
+        {
+            foreach ($payouts as $payout)
+            {
+                $this->core->pushPayoutAgeMetric($payout->getCreatedAt());
+            }
+        }
+
         if (empty($payoutsArr) == true)
         {
             $this->trace->info(
@@ -7100,6 +7108,9 @@ class Service extends Base\Service
                     'id' => $id,
                     'payout' => $payout->toArrayPublic()
                 ]);
+
+                $this->core->pushPayoutAgeMetric($payout->getCreatedAt());
+
                 return $payout->toArrayPublic();
             }
         } catch (\Throwable $e) {
@@ -7120,6 +7131,13 @@ class Service extends Base\Service
         if ($this->isLiveTraffic()) {
             try {
                 $payout = $this->core->fetchByIdFromPayoutsService($id, $input);
+
+                if ((empty($payout) === false) and
+                    (isset($payout[Entity::CREATED_AT]) === true))
+                {
+                    $this->core->pushPayoutAgeMetric($payout[Entity::CREATED_AT]);
+                }
+
                 $this->trace->info(TraceCode::FETCH_PAYOUT_BY_ID, [
                     'message' => "Fetch Payout from PS",
                     'id' => $id,

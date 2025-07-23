@@ -12982,4 +12982,48 @@ class Core extends Base\Core
 
         return $response;
     }
+
+    public function pushPayoutAgeMetric(int $createdAt)
+    {
+        try {
+            $currentTime = Carbon::now()->getTimestamp();
+
+            $payoutAgeInMonths = Carbon::createFromTimestamp($createdAt)->diffInMonths(Carbon::createFromTimestamp($currentTime));
+
+            $bucket = ceil($payoutAgeInMonths/3) * 3;
+
+            $origin = '';
+            $auth = $this->app['basicauth'];
+            if (isset($this->app['api.route']) && $this->app['api.route']->getCurrentRouteName()) {
+                $origin = $this->app['api.route']->getCurrentRouteName();
+            } elseif (isset($this->app['request.ctx']) && $this->app['request.ctx']->getRoute()) {
+                $origin = $this->app['request.ctx']->getRoute();
+            } elseif (isset($this->app['worker.ctx']) && $this->app['worker.ctx']->getJobName()) {
+                $origin = $this->app['worker.ctx']->getJobName();
+            }
+
+            $internalApp = $auth->getInternalApp() ?? 'external';
+            $authType = $auth->getAuthType();
+
+            $this->trace->histogram(
+                Metric::PAYOUTS_FETCH_AGE_IN_MONTHS_HISTOGRAM,
+                $payoutAgeInMonths,
+                [
+                    Metric::LABEL_TIME_BUCKET => $bucket
+                ]
+            );
+
+            $this->trace->info(TraceCode::FETCHED_PAYOUT_AGE_BUCKET,[
+                'origin' => $origin,
+                'time_bucket' => $bucket,
+                'app_name' => $internalApp,
+                'auth' => $authType
+            ]);
+        } catch (\Throwable $e) {
+            $this->trace->error(TraceCode::FETCHED_PAYOUT_AGE_PUSH_FAILURE,[
+                'message' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
+        }
+    }
 }

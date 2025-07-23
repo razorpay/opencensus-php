@@ -170,6 +170,10 @@ final class Metric
     const BENE_BANK_UP_REDIS_KEY_UNSET = 'bene_bank_up_redis_key_unset';
     const BENE_BANK_DOWN_REDIS_KEY_SET = 'bene_bank_down_redis_key_set';
 
+    const PAYOUTS_FETCH_AGE_IN_MONTHS_HISTOGRAM     = 'payouts_fetch_age_in_months_histogram';
+
+    // Labels for payout fetch age metric
+    const LABEL_TIME_BUCKET = 'time_bucket';
 
     public static function pushStatusChangeMetrics(Entity $payout, string $previousStatus = null)
     {
