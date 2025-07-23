@@ -41,6 +41,7 @@ use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService\Client;
 use RZP\Http\Request\Requests;
 use RZP\Services\CMS as CMSService;
 use RZP\Models\Insurance\Entity as InsuranceEntity;
+use RZP\Models\Dispute\Constants as DisputeConstants;
 
 class Core extends Base\Core
 {
@@ -2038,6 +2039,7 @@ class Core extends Base\Core
         if (isset($payment->order)) {
             $formattedPaymentDetails['payment']['order_id'] = $payment->order->getPublicId();
         }
+        $formattedPaymentDetails['payment']['govt_payment'] = isset($payment->merchant) && in_array($payment->merchant->getCategory2(), DisputeConstants::CATEGORY2_TO_EXCLUDE_FROM_DEDUCT_AT_ONSET)  ;
 
         $formattedPaymentDetails['insurance'] = [];
         if (!empty($payment['insurance_status']))
