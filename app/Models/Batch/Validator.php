@@ -255,6 +255,17 @@ class Validator extends Base\Validator
         Entity::SCHEDULE                => 'sometimes|numeric',
     ];
 
+    protected static $submerchantPaymentLinkV2CreateRules = [
+        Entity::TYPE                    => 'required|in:submerchant_payment_link_v2',
+        Entity::NAME                    => 'filled|string|max:255',
+        Entity::FILE                    => 'required_without:file_id|file|max:60720' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID                 => 'required_without:file|public_id',
+        Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
+        Invoice\Entity::EMAIL_NOTIFY    => 'filled|in:0,1',
+        Entity::CONFIG                  => 'filled|array',
+        Entity::SCHEDULE                => 'sometimes|numeric',
+    ];
+
     protected static $linkedAccountReversalCreateRules = [
         Entity::TYPE                    => 'required|in:linked_account_reversal',
         Entity::NAME                    => 'filled|string|max:255',
@@ -2679,7 +2690,7 @@ class Validator extends Base\Validator
         {
             $giftCardId = trim($entry[Header::CANCEL_BULK_GIFT_CARD_ID] ?? '');
             $giftCardNumber = trim($entry[Header::CANCEL_BULK_GIFT_CARD_NUMBER] ?? '');
-            
+
             if (empty($giftCardId) && empty($giftCardNumber)) {
                 throw new BadRequestValidationFailureException(
                     'Either Gift Card ID or Gift Card Number must be provided'

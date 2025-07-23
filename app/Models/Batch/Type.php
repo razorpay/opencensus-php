@@ -112,6 +112,8 @@ class Type
 
     const PAYMENT_LINK_V2           = 'payment_link_v2';
 
+    const SUBMERCHANT_PAYMENT_LINK_V2 = 'submerchant_payment_link_v2';
+
     const UPDATE_MIQ                = 'update_miq';
 
     // Batch Terminal Creation
@@ -649,6 +651,7 @@ class Type
         self::ADJUSTMENT,
         self::VENDOR_ONBOARDING,
         self::PAYMENT_LINK_V2,
+        self::SUBMERCHANT_PAYMENT_LINK_V2,
         self::RECURRING_CHARGE_BSE,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
@@ -754,6 +757,7 @@ class Type
         self::EARLY_SETTLEMENT_TRIAL,
         self::MERCHANT_CAPITAL_TAGS,
         self::PAYMENT_LINK_V2,
+        self::SUBMERCHANT_PAYMENT_LINK_V2,
         self::RECURRING_CHARGE_BSE,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,

@@ -1281,6 +1281,7 @@ class Header
     const TYPE                      = 'Type';
     // PL Service
     const PL_V2_REFERENCE_ID        = 'Reference Id';
+    const PL_V2_SUBMERCHANT_ID      = 'SubMerchant Id';
     const PL_V2_UPI_LINK            = 'Upi Link';
     //this will store all the header names of format custom_field[key]
     public static array $plV2CustomFields = [];
@@ -3293,6 +3294,39 @@ class Header
 
             self::OUTPUT => [
                 self::PL_V2_REFERENCE_ID,
+                self::CUSTOMER_NAME,
+                self::CUSTOMER_EMAIL,
+                self::CUSTOMER_CONTACT,
+                self::AMOUNT,
+                self::DESCRIPTION,
+                self::EXPIRE_BY,
+                self::PARTIAL_PAYMENT,
+                self::NOTES,
+                self::STATUS,
+                self::PAYMENT_LINK_ID,
+                self::SHORT_URL,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::SUBMERCHANT_PAYMENT_LINK_V2 => [
+            self::INPUT => [
+                self::PL_V2_REFERENCE_ID,
+                self::PL_V2_SUBMERCHANT_ID,
+                self::CUSTOMER_NAME,
+                self::CUSTOMER_EMAIL,
+                self::CUSTOMER_CONTACT,
+                self::AMOUNT,
+                self::DESCRIPTION,
+                self::EXPIRE_BY,
+                self::PARTIAL_PAYMENT,
+                self::NOTES,
+            ],
+
+            self::OUTPUT => [
+                self::PL_V2_REFERENCE_ID,
+                self::PL_V2_SUBMERCHANT_ID,
                 self::CUSTOMER_NAME,
                 self::CUSTOMER_EMAIL,
                 self::CUSTOMER_CONTACT,
@@ -8307,7 +8341,7 @@ class Header
         // For PL batch, we want to optionally accept the FIRST_PAYMENT_MIN_AMOUNT
         // headers. This is temporary until we have support for optional headers.
         //
-        if (($type === Type::PAYMENT_LINK or $type === Type::PAYMENT_LINK_V2) and
+        if (($type === Type::PAYMENT_LINK or $type === Type::PAYMENT_LINK_V2 or $type === Type::SUBMERCHANT_PAYMENT_LINK_V2 ) and
             ((in_array(self::FIRST_PAYMENT_MIN_AMOUNT, $actualHeaders, true) === true)))
         {
             $expectedHeaders[] = self::FIRST_PAYMENT_MIN_AMOUNT;
@@ -8329,13 +8363,13 @@ class Header
             }
         }
 
-        if (($type === Type::PAYMENT_LINK or $type === Type::PAYMENT_LINK_V2) and
+        if (($type === Type::PAYMENT_LINK or $type === Type::PAYMENT_LINK_V2 or $type === Type::SUBMERCHANT_PAYMENT_LINK_V2) and
             ((in_array(self::CURRENCY, $actualHeaders, true) === true)))
         {
             $expectedHeaders[] = self::CURRENCY;
         }
 
-        if (($type === Type::PAYMENT_LINK_V2) and
+        if (($type === Type::PAYMENT_LINK_V2 or $type === Type::SUBMERCHANT_PAYMENT_LINK_V2) and
             ((in_array(self::PL_V2_UPI_LINK, $actualHeaders, true) === true)))
         {
             $expectedHeaders[] = self::PL_V2_UPI_LINK;
@@ -8345,7 +8379,7 @@ class Header
          * Checks for the custom field headers of format custom_field[key]
          * If they are present and correct then it will add it to expected headers array
          * */
-        if (($type === Type::PAYMENT_LINK_V2))
+        if (($type === Type::PAYMENT_LINK_V2 or $type === Type::SUBMERCHANT_PAYMENT_LINK_V2 ))
         {
             $isCustomFieldsPresent = self::getAndvalidateCustomFieldHeaders($actualHeaders);
             if($isCustomFieldsPresent === true) {
@@ -8534,7 +8568,7 @@ class Header
         }
 
         // Todo: Fix this hack!
-        if (($valid === false) and ($type === Type::PAYMENT_LINK or $type === Type::PAYMENT_LINK_V2))
+        if (($valid === false) and ($type === Type::PAYMENT_LINK or $type === Type::PAYMENT_LINK_V2 or $type === Type::SUBMERCHANT_PAYMENT_LINK_V2))
         {
             $expectedHeaders = array_replace($expectedHeaders, [4 => self::AMOUNT_IN_PAISE]);
 

@@ -17675,6 +17675,7 @@ class Route
 
         'payment_links' => [
             'internal_get_merchant_key',
+            'merchant_fetch_users',
             'internal_feature_get_all',
             'merchant_fetch_config_internal',
             'send_email_for_pl_service',

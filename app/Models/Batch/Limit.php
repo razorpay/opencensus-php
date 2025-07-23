@@ -66,6 +66,7 @@ class Limit
         TYPE::PRICING_RULE                          => 50000,
         Type::ADMIN_BATCH                           => 5000,
         Type::PAYMENT_LINK_V2                       => 500100,
+        Type::SUBMERCHANT_PAYMENT_LINK_V2           => 500100,
         Type::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG   => 20000,
         Type::ECOLLECT_ICICI                        => 100000,
         'nach_debit_nach_citi'                      => 350000,
