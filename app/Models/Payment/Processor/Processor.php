@@ -3345,6 +3345,40 @@ class Processor
             ]
         );
 
+        // experiment to allow tam merchants
+        // TAM merchants are not removed from the _block_merchants list
+        // scenario 1 -> TAM merchant allowed by tam experiment: return true
+        // scenario 2 -> TAM merchant not allowed by tam experiment: move on to _block_merchants check and return false from there
+        // scenario 3 -> Non-TAM merchant will definitely not be allowed by the tam experiment: rearch will then be decided by _block_merchants experiment
+        $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_allow_tam_merchants';
+        $properties = [
+            'id'            => $this->app['request']->getTaskId(),
+            'experiment_id' => $featureFlag,
+            'request_data'  => json_encode(['merchant_id' => $merchant->getId(), 'mode' => $this->mode]),
+        ];
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? 'control';
+
+        if ($variant === 'enabled') {
+            $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_TAM_MERCHANT_ALLOWED_ON_REARCH, [
+            'merchant_id'       => $merchant->getId(),
+            'experiment'        => $featureFlag,
+            'bank'              => $input[Payment\Entity::BANK],
+            'route'             => $currentRouteName,
+            ]);
+         $customCheckResults['dimensions']['27']=1;
+         $customCheckResults['dimensions']['28']=$merchant->getId();
+          $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_ROUTING_CRITERIA_TAM_MERCHANT_CHECK, [
+            'merchant_id'       => $merchant->getId(),
+            'dimensions'        => implode(', ',$customCheckResults['dimensions']),
+            'route'             => $currentRouteName,
+            'route_via_nbplus'  => $customCheckResults['route_via_nbplus'],
+        ]);
+            return true;
+        }
+
+
         // add merchant in this experiment to disable merchant traffic on rearch
             $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_block_merchants';
 
@@ -3365,8 +3399,8 @@ class Processor
                 'bank'              => $input[Payment\Entity::BANK],
                 'route'             => $currentRouteName,
             ]);
-             $customCheckResults['dimensions']['27']=1;
-             $customCheckResults['dimensions']['28']=$merchant->getId();
+             $customCheckResults['dimensions']['29']=1;
+             $customCheckResults['dimensions']['30']=$merchant->getId();
               $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_ROUTING_CRITERIA_MERCHANT_BLOCK_CHECK,
             [
                 'merchant_id'       => $merchant->getId(),
@@ -4539,12 +4573,12 @@ class Processor
         $customChecks = $this->performCustomChecksToRouteNbPlusINRWalletViaRearchFlow($input, $merchant, $currentRouteName);
         $isNbPlusDFB = $customCheckResults['is_dfb'] ?? false;
         $this->trace->info(TraceCode::NBPLUS_WALLET_ROUTING_DIMENSIONS, [
-                'wallet'            => $input[Payment\Entity::WALLET],
-                "merchant_id"       => $merchant->getId(),
-                "dimensions"        => $customChecks["dimensions"],
-                "route"             => $currentRouteName,
-                "route_via_nbplus"  => $customChecks["route_via_nbplus"],
-                "is_dfb"            => $isNbPlusDFB,
+                'wallet'                   => $input[Payment\Entity::WALLET],
+                "merchant_id"              => $merchant->getId(),
+                "dimensions"               => $customChecks["dimensions"],
+                "route"                    => $currentRouteName,
+                "route_wallet_via_nbplus"  => $customChecks["route_wallet_via_nbplus"],
+                "is_dfb"                   => $isNbPlusDFB,
         ]);
         if ($customChecks["route_wallet_via_nbplus"] === false) {
             return false;
@@ -4567,7 +4601,26 @@ class Processor
             return false;
         }
 
-        // 3. Experiment to block merchants
+        // 3. Experiment to ramp up TAM merchants
+        // the idea is that we will be ramping up TAM merchants without removing them from block merchants list
+        // scenario 1 -> TAM allowed via exp: will normally go via rearch due to _allow_tam_merchants returning variant_on
+        // scenario 2 -> TAM not allowed via exp: will not go via rearch due to _block_merchants returning variant_on
+        // scenario 3 -> Non-TAM: will not be affected by _allow_tam_merchants and will either route via rearch depending on _block_merchants exp
+        $isMerchantEnabled = $this->isWalletRearchVariantOn(
+            '_allow_tam_merchants',
+            TraceCode::NBPLUS_WALLET_ALLOW_TAM_MERCHANTS_SPLITZ_VARIANT,
+            ["merchant_id" => $merchant->getId()]
+        );
+        if ($isMerchantEnabled) {
+            $this->trace->info(TraceCode::NBPLUS_WALLET_TAM_MERCHANT_SUPPORTED_ON_REARCH, [
+                'merchant_id'       => $merchant->getId(),
+                'wallet'            => $input[Payment\Entity::WALLET],
+                'route'             => $currentRouteName,
+            ]);
+            return true;
+        }
+
+        // 4. Experiment to block merchants
         $isMerchantDisabled = $this->isWalletRearchVariantOn(
             '_block_merchants',
             TraceCode::NBPLUS_WALLET_BLOCK_MERCHANTS_SPLITZ_VARIANT,
