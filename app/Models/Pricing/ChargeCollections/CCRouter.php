@@ -731,7 +731,7 @@ class CCRouter
 
         $odsPricing = $planMap[$planId] ?? null;
 
-        if (empty($odsPricing->toArray()) === true)
+        if ($odsPricing === null || empty($odsPricing->toArray()) === true)
         {
             return  $pricingPlan;
         }

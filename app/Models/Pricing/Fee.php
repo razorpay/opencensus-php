@@ -499,7 +499,7 @@ class Fee extends Base\Core
 
         $odsPricing = $this->repo->getPricingPlanByIdWithoutOrgIdLegacy($planId);
 
-        if (empty($odsPricing->toArray()) === true)
+        if ($odsPricing === null || empty($odsPricing->toArray()) === true)
         {
             return  $pricingPlan;
         }
