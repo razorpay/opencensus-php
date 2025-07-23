@@ -562,7 +562,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
             return true;
         }
 
-        if ($this->isSubmerchantOnboardingModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail) === true)
+        
+        if ($this->isModularMerchantFromUserDeviceDetail($merchant, $userDeviceDetail, DeviceDetailConstants::SUBMERCHANT_ONBOARDING))
         {
             return true;
         }
