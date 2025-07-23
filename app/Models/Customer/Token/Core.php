@@ -10,6 +10,7 @@ use RZP\Constants\Environment;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
@@ -506,11 +507,14 @@ class Core extends Base\Core
                 $createInput[Token\Entity::FREQUENCY] = $tokenRegistration->getFrequency() ?? 'as_presented';
             }
         }
+        // Fetching customer from payment if token's customer is null to ensure compatibility between parent and child entities
+        $customer = $token->customer;
 
-
-        return $this->create($token->customer, $createInput, null, false);
+        if($customer === null){
+            $customer = $payment->customer;
+        }
+        return $this->create($customer, $createInput, null, false);
     }
-
     public function edit($token, $input)
     {
         $token->edit($input);
@@ -591,36 +595,33 @@ class Core extends Base\Core
 
         if ($token === null)
         {
-            $token = $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
-        }
+            try {
+                $token = $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
+            }catch (\Exception $e){
+                $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
+                $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                    'message' => 'Partner Merchant ID',
+                    'partner_merchant_id' => $partnerMerchantId
+                ]);
 
-        // Check if token is found by partner merchant ID if splitz experiment is enabled
-        if ($token === null)
-        {
-            $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
-            $this->trace->info(TraceCode::MISC_TRACE_CODE, [
-                'message' => 'Partner Merchant ID',
-                'partner_merchant_id' => $partnerMerchantId
-            ]);
-
-            if ($partnerMerchantId !== null)
-            {
-                $isPartnerTokenFetchEnabled = $this->checkPartnerTokenFetchSplitzExperiment($partnerMerchantId);
-
-                if ($isPartnerTokenFetchEnabled)
+                // Check if token is found by partner merchant ID if splitz experiment is enabled
+                if ($partnerMerchantId !== null)
                 {
-                    $partnerMerchant = $this->repo->merchant->find($partnerMerchantId);
-
-                    if ($partnerMerchant !== null)
+                    $isPartnerTokenFetchEnabled = $this->checkPartnerTokenFetchSplitzExperiment($partnerMerchantId);
+                    if ($isPartnerTokenFetchEnabled)
                     {
-                        $partnerToken = $this->repo->token->findByPublicIdAndMerchant($id, $partnerMerchant);
-
-                        if ($partnerToken !== null)
+                        $partnerMerchant = $this->repo->merchant->find($partnerMerchantId);
+                        if ($partnerMerchant !== null)
                         {
-                            return $partnerToken;
+                            $partnerToken = $this->repo->token->findByPublicIdAndMerchant($id, $partnerMerchant);
+                            if ($partnerToken !== null)
+                            {
+                                return $partnerToken;
+                            }
                         }
                     }
                 }
+                throw $e;
             }
         }
 
@@ -642,7 +643,7 @@ class Core extends Base\Core
      * @param string $partnerMerchantId
      * @return bool
      */
-    protected function checkPartnerTokenFetchSplitzExperiment(string $partnerMerchantId): bool
+    public function checkPartnerTokenFetchSplitzExperiment(string $partnerMerchantId): bool
     {
         try
         {
@@ -4063,5 +4064,50 @@ class Core extends Base\Core
 
             return false;
         })->values();
+    }
+
+
+    /**
+     * @param mixed $tokenId
+     * @param mixed $customerId
+     * @return bool|Token\Entity|null
+     * @throws BadRequestException
+     * @throws \Throwable
+     */
+
+    // Added try-catch to handle potential errors from getByTokenIdAndCustomerId.
+    // If the token is not found using customerId, implement parent-child token sharing logic
+    // to retrieve the token using the parent merchant ID, provided PartnerTokenFetchSplitz is enabled.
+    public function getToken(string $tokenId, string $customerId): bool|null|Token\Entity
+    {
+        $token = null;
+
+        try {
+            $token = $this->getByTokenIdAndCustomerId($tokenId, $customerId);
+        } catch (\Throwable $e) {
+            $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
+
+            if ($partnerMerchantId === null) {
+                throw $e;
+            }
+
+            if (!$this->checkPartnerTokenFetchSplitzExperiment($partnerMerchantId)) {
+                throw $e;
+            }
+
+            $partnerMerchant = $this->repo->merchant->find($partnerMerchantId);
+
+            $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                'message' => 'Partner Merchant ID',
+                'partner_merchant_id' => $partnerMerchantId
+            ]);
+
+            if ($partnerMerchant !== null) {
+                $token = $this->getByTokenIdAndMerchant($tokenId, $partnerMerchant);
+            } else {
+                throw $e;
+            }
+        }
+        return $token;
     }
 }

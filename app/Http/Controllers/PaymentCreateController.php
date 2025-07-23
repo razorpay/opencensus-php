@@ -2557,8 +2557,7 @@ class PaymentCreateController extends Controller
 
                 Customer\Entity::verifyIdAndStripSign($customerId);
 
-                $token = (new Customer\Token\Core)->getByTokenIdAndCustomerId($tokenId, $customerId);
-
+                $token = (new Customer\Token\Core)->getToken($tokenId, $customerId);
             } else {
 
                 $token = (new Customer\Token\Core)->getByTokenId($tokenId);

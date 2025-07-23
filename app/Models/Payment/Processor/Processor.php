@@ -7560,8 +7560,14 @@ class Processor
             // `token` attribute of the token entity or the
             //`gateway_token` attribute of the token entity.
             //
-            $token = (new Customer\Token\Core)->getByTokenIdAndCustomerId($tokenId, $customerId);
+            $isPartnerTokenFetchEnabled = false;
+            $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
 
+            if ($partnerMerchantId !== null)
+            {
+                $isPartnerTokenFetchEnabled = (new Customer\Token\Core)->checkPartnerTokenFetchSplitzExperiment($partnerMerchantId);
+            }
+            $token = (new Customer\Token\Core)->getToken($tokenId, $customerId);
             //
             // It cannot be global token because customer_id is also being sent.
             // If customer_id is being sent, it has to be local customer.
@@ -7578,7 +7584,7 @@ class Processor
                 $merchant = $merchant->getFullManagedPartnerWithTokenInteroperabilityFeatureIfApplicable($merchant);
             }
 
-            if ($token->getMerchantId() !== $merchant->getId() )
+            if (!$isPartnerTokenFetchEnabled && $token->getMerchantId() !== $merchant->getId())
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_ID,
@@ -7926,7 +7932,7 @@ class Processor
 
                     Customer\Entity::verifyIdAndStripSign($customerId);
 
-                    $token = (new Customer\Token\Core)->getByTokenIdAndCustomerId($tokenId, $customerId);
+                    $token = (new Customer\Token\Core)->getToken($tokenId, $customerId);
 
                     if ($this->isOptimizerMigratedToken($token))
                     {
@@ -8274,7 +8280,7 @@ class Processor
 
             return;
         }
-        
+
         if (Payment\Gateway::emandateCUGBankGatewayRouting($payment->getGateway(), $payment->getMethod()) === true){
             return;
         }
