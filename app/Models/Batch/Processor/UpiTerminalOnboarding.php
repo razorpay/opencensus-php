@@ -26,9 +26,9 @@ class UpiTerminalOnboarding extends Base
         $mcc                = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_MCC] ?? null;
         $category2          = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_CATEGORY2] ?? null;
         $merchantType       = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_MERCHANT_TYPE];
-        $allowCC            = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_ALLOW_CC];
+        $allowCC            = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_ALLOW_CC] ?? true;
         $allowWallet        = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_ALLOW_WALLET];
-        $allowCreditLine    = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_ALLOW_CREDIT_LINE];
+        $allowCreditLine    = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_ALLOW_CREDIT_LINE] ?? true;
         $directPush         = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_DIRECT_PUSH];
 
         $identifiers = [
