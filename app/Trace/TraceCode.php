@@ -13624,6 +13624,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ROUTING_THROUGH_REARCH_FOR_IN_MERCHANT_NON_IN_SAVED_CARD = 'ROUTING_THROUGH_REARCH_FOR_IN_MERCHANT_NON_IN_SAVED_CARD';
 
+    const EDIT_MERCHANT_USER_EMAIL = 'EDIT_MERCHANT_USER_EMAIL';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

@@ -780,6 +780,12 @@ class Validator extends Base\Validator
         'invitations.*.id' => 'required|int',
     ];
 
+    protected static $updatePasswordAndEmailRules = [
+        Entity::EMAIL                 => 'required|email',
+        Entity::PASSWORD              => 'required_with:email|between:8,50|confirmed|numbers|letters',
+        Entity::PASSWORD_CONFIRMATION => 'required_with:email|between:8,50',
+    ];
+
     /**
      * merchant can not edit or delete his own user id.
      * @param array $input

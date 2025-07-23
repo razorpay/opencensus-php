@@ -2105,6 +2105,19 @@ class Service extends Base\Service
 
         (new Validator())->validateUserIsOwnerForMerchant($currentOwnerUser->getId(), $input[Entity::MERCHANT_ID]);
 
+        $updateExistingUserExpResponse = $this->core()->getSplitzResponse($currentOwnerUser->getId() , 'update_existing_user_email_exp');
+
+        if($updateExistingUserExpResponse === 'enable')
+        {
+            $this->core()->updateCurrentOwnerUserData($input, $merchant, $currentOwnerUser);
+
+            $this->deleteMerchantEmailUpdateData($input[Entity::MERCHANT_ID]);
+
+            return [
+                Constants::LOGOUT_SESSIONS_FOR_USERS => [$currentOwnerUser->getId()]
+            ];
+        }
+
         $this->core()->createNewUserAndTransferOwnerShip($input, $merchant, $currentOwnerUser);
 
         $this->deleteMerchantEmailUpdateData($input[Entity::MERCHANT_ID]);

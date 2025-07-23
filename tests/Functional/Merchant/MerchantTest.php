@@ -22143,5 +22143,75 @@ The same has been enabled for the account.
         );
     }
 
+    public function testMerchantEmailForUpdateExistingUserEmailExperiment()
+    {
+        $splitzResponse = [
+            'response' => [
+                'variant' => [
+                    'variables' => [
+                        [
+                            'value' => 'enable',
+                            'key' => 'result'
+                        ]
+                    ],
+                    'name' => 'variant',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzResponse);
+
+        $merchant1 = $this->fixtures->create('merchant', [
+            'email' => 'myEmail@gmail.com'
+        ]);
+
+        $merchant2 = $this->fixtures->create('merchant', [
+            'email' => 'myEmail@gmail.com'
+        ]);
+
+        $merchant3 = $this->fixtures->create('merchant', [
+            'email' => 'adminEmail@gmail.com'
+        ]);
+
+        $user = $this->fixtures->create('user',[
+            'email' => 'myEmail@gmail.com'
+        ]);
+
+        $this->createMerchantUserMapping($user->getId(), $merchant1->getId(), 'owner');
+
+        $this->createMerchantUserMapping($user->getId(), $merchant2->getId(), 'owner');
+
+        $this->createMerchantUserMapping($user->getId(), $merchant3->getId(), 'admin');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant1['id'], $user['id']);
+
+        $cacheData = [
+            'current_owner_email'    => 'myEmail@gmail.com',
+            'email'                  => 'myNewEmail@gmail.com',
+            'merchant_id'            => $merchant1['id'],
+            'reattach_current_owner' => true,
+            'set_contact_email'      => true,
+        ];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData = array_merge($cacheData, $testData);
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $merchant1 = $this->getEntityById('merchant', $merchant1->getId());
+        $merchant2 = $this->getEntityById('merchant', $merchant2->getId());
+        $merchant3 = $this->getEntityById('merchant', $merchant3->getId());
+        $user = $this->getEntityById('user', $user->getId());
+
+        $this->assertEquals($merchant1->getEmail(), 'myNewEmail@gmail.com');
+        $this->assertEquals($merchant2->getEmail(), 'myEmail@gmail.com');
+        $this->assertEquals($merchant3->getEmail(), 'adminEmail@gmail.com');
+        $this->assertEquals($user->getEmail(), 'myNewEmail@gmail.com');
+
+    }
+
 
 }

@@ -639,4 +639,18 @@ class Repository extends Base\Repository
             ->where(Entity::PRODUCT, '=', $product)
             ->delete();
     }
+
+    public function fetchMerchantIdForUserIdAndRoleWithLimit(string $userId, string $role = Role::OWNER, $limit = 100)
+    {
+        return $this->newQuery()
+            ->select(Entity::MERCHANT_ID)
+            ->where(Entity::USER_ID, $userId)
+            ->where(Entity::ROLE, $role)
+            ->distinct()
+            ->limit($limit)
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
 }

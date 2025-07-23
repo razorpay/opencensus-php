@@ -1555,4 +1555,6 @@ return array(
     'netbanking_payments_via_pg_router_custom_library' => env('NETBANKING_PAYMENTS_VIA_PGROUTER_CUSTOM_LIBRARY'),
 
     'user_login_via_sso_experiment_id' => env('USER_LOGIN_VIA_SSO_EXPERIMENT_ID'),
+
+    'update_existing_user_email_exp' => env('UPDATE_EXISTING_USER_EMAIL_EXP'),
 );

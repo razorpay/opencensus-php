@@ -15586,7 +15586,25 @@ return [
             ],
             'status_code' => 400,
         ],
-    ]
+    ],
+
+    'testMerchantEmailForUpdateExistingUserEmailExperiment' => [
+        'request' => [
+            'content' => [
+                'token'                 => '',
+                'password'              => '123User123',
+                'password_confirmation' => '123User123',
+                'merchant_id'           => '',
+            ],
+            'url' => '/merchants/email/update/create_user',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'logout_sessions_for_users' => []
+            ],
+        ],
+    ],
 
 
 ];

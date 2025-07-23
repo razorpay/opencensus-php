@@ -11774,4 +11774,123 @@ class Core extends Base\Core
                 });
             });
     }
+
+    public function getSplitzResponse(string $merchantId, string $experimentName): string
+    {
+        $response = [];
+
+        try
+        {
+            $experimentId = $this->config->get('app.'.$experimentName);
+
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id'            => $merchantId,
+                'experiment_id' => $experimentId,
+            ]);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $experimentId,
+                'result'        => $response
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->config->get($experimentName) ?? null
+            ]);
+        }
+
+        return array_get($response, 'response.variant.variables.0.value', '');
+    }
+
+    public function editMerchantEmail($user, $merchant, $input)
+    {
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($user, $merchant, $input)
+        {
+            $updateContactEmail   = (bool) ($input[Constants::SET_CONTACT_EMAIL] ?? false);
+
+            if ($updateContactEmail === true)
+            {
+                $this->editEmail($merchant, [
+                    'email' => $input['email']
+                ], 'editEmailNonUnique');
+
+                $merchantDetail = $merchant->merchantDetail;
+
+                $merchantDetail->setContactEmail($input['email']);
+
+                $this->repo->saveOrFail($merchantDetail);
+            }
+
+            [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+            $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Login Details Updated';
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $segmentProperties, $segmentEventName
+            );
+
+            $this->trace->info(
+                TraceCode::EDIT_MERCHANT_USER_EMAIL,
+                [
+                    'user_id' => $user->getId(),
+                    'merchant_id' => $merchant->getId(),
+                    'merchant_email' => $merchant->getEmail(),
+                    'user_email' => $user->getEmail(),
+                ]
+            );
+
+            $orgId = $this->app['basicauth']->getOrgId();
+
+            //get Org and send it to mailer, deal with other orgs as well.
+            $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+
+            $emailChangedMail = new MerchantMail\OwnerEmailChange($user->toArrayPublic(),
+                $org,
+                $input['email'],
+                $merchant->getId(),
+                false
+            );
+
+            Mail::queue($emailChangedMail);
+        });
+    }
+
+    public function editCurrentOwnerPasswordAndEmail($input, $currentOwnerUser)
+    {
+        $input = array_only($input, [
+            User\Entity::PASSWORD,
+            User\Entity::PASSWORD_CONFIRMATION,
+            User\Entity::EMAIL]);
+
+        (new User\Core())->edit($currentOwnerUser,
+            [
+                User\Entity::EMAIL                  => $input[User\Entity::EMAIL],
+                User\Entity::PASSWORD               => $input[User\Entity::PASSWORD],
+                User\Entity::PASSWORD_CONFIRMATION  => $input[User\Entity::PASSWORD_CONFIRMATION],
+            ],'update_password_and_email');
+    }
+
+    public function updateCurrentOwnerUserData($input, $merchant, $currentOwnerUser)
+    {
+        $this->repo->transactionOnLiveAndTestAndAsv(function () use ($input, $merchant, $currentOwnerUser) {
+            (new User\Validator())->validatePasswordResetToken($currentOwnerUser, $input['token']);
+
+            // invalidate Token
+            (new User\Service())->setAndSaveResetPasswordToken($currentOwnerUser, null);
+
+            $this->editCurrentOwnerPasswordAndEmail($input, $currentOwnerUser);
+
+            // updating email for all merchant who are linked with owner role with currentOwnerUser
+            $merchantIds = (new MerchantUser\Repository())->fetchMerchantIdForUserIdAndRoleWithLimit($currentOwnerUser->getId());
+
+            $merchants = (new AsvSdkIntegration\Merchant())->fetchMerchantsByIds($merchantIds);
+
+            foreach ($merchants as $merchant) {
+                $this->editMerchantEmail($currentOwnerUser, $merchant, $input);
+            }
+        });
+    }
 }
