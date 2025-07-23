@@ -167,16 +167,16 @@ class Service extends Base\Service
             ]);
             if(!empty($verificationDetails))
             {
-                foreach ($verificationDetails as $index => $verificationDetail)
+                foreach ($verificationDetails as $verificationDetail)
                 {
-                    $this->core->savePGOSDataToAPI($verificationDetails);
+                    $this->core->savePGOSDataToAPI($verificationDetail);
                 }
             }
             if(!empty($bvsValidationDetails))
             {
-                foreach($bvsValidationDetails as $index => $bvsValidationDetail)
+                foreach($bvsValidationDetails as $bvsValidationDetail)
                 {
-                    (new BvsCore())->savePGOSDataToAPI($bvsValidationDetails);
+                    (new BvsCore())->savePGOSDataToAPI($bvsValidationDetail);
                 }
             }
         }

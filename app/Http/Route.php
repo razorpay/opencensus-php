@@ -956,7 +956,7 @@ class Route
         'merchant_activation_upload_file_admin'    => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'               => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
         'merchant_coupons_apply'                   => ['post',     'merchant/activation/coupons/apply',              'MerchantController@postApplyCoupon'                                ],
-        'merchant_verification_sync'               => ['post',     'merchant/{id}/verification',                     'MerchantController@syncMerchantVerifiication'                                ],
+        'merchant_verification_sync'               => ['post',     'merchant/{id}/verification',                     'MerchantController@syncMerchantVerification'                                ],
 
         //Digilocker redirect flow
         'merchant_identity_verification'           => ['post',     'merchant/identity/verification',                 'MerchantController@merchantIdentityVerification'                   ],
