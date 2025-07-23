@@ -268,11 +268,6 @@ class SbiNce extends Base
 
                 $card = $emiPayment->card;
 
-                if (isset($emiPayment->card->trivia) && isset($emiPayment->token))
-                {
-                    $card = $emiPayment->token->card;
-                }
-
                 $body[] =
                     'DD' .    // record type always DD
                     'R' . $this->numpad($uniqueReferenceNum, 14) .

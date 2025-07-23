@@ -331,11 +331,6 @@ class Sbi extends Base
 
                     $card = $emiPayment->card;
 
-                    if (isset($emiPayment->card->trivia) && isset($emiPayment->token))
-                    {
-                        $card = $emiPayment->token->card;
-                    }
-
                     $skuPrefix = self::SKU_PREFIX_V1;
 
                     if ($this->isTerminalWhitelisted($terminal[Terminal\Entity::ID]) or

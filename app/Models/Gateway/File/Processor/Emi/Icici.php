@@ -149,11 +149,6 @@ class Icici extends Base
 
                 $card = $emiPayment->card;
 
-                if (isset($emiPayment->card->trivia) && isset($emiPayment->token))
-                {
-                    $card = $emiPayment->token->card;
-                }
-
                 $gateway = $emiPayment->getGateway();
 
                 $tid = $emiPayment->terminal->getGatewayTerminalId();
