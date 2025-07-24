@@ -2888,7 +2888,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
             ->andReturn([
                 'store_id' => 'store_123',
                 'device_id' => 'testDevice123',
-                'device_version' => 'Android 5.0',
+                'device_version' => 'PAX A910S',
             ]);
         $this->app->instance('pos.deviceservice', $mockDeviceService);
 
@@ -2924,7 +2924,7 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals('testDevice123', $qrCode->getDeviceId());
     }
 
-    public function testUpdateSingleStackDeviceWithUnmapIdentifiers()
+    public function testUpdateSingleStackDeviceWithMapIdentifiersWithA920ProDevice()
     {
         $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
@@ -2937,237 +2937,11 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $mockDeviceService->shouldReceive('fetchDevice')
             ->withAnyArgs()
             ->andReturn([
-                'store_id' => 'store_456',
-                'device_id' => 'presetDevice456',
-                'device_version' => 'Android 6.0',
-            ]);
-        $this->app->instance('pos.deviceservice', $mockDeviceService);
-
-        // Create QR Code with device already mapped
-        $this->createQrCode([
-            'usage' => 'multiple_use',
-            'type' => 'upi_qr',
-            'request_source' => 'ezetap',
-            'device_id' => 'presetDevice456',
-        ], 'live', 'LiveAccountMer');
-
-        $qrCode = $this->getDbLastEntity('qr_code', 'live');
-        $this->assertEquals('presetDevice456', $qrCode->getDeviceId());
-
-        // Test unmapping device from QR via UpdateSingleStackDevice controller
-        $this->ba->appAuth();
-        $response = $this->makeRequestAndGetContent([
-            'method' => 'POST',
-            'url' => '/payments/single_stack/device/update',
-            'content' => [
-                'device_id' => 'presetDevice456',
-                'unmap_identifiers' => [
-                    'unmap_from_merchant' => true,
-                    'unmap_from_qr' => true
-                ],
-            ]
-        ]);
-
-        // Verify successful unmapping response
-        $this->assertEquals(true, $response['success']);
-        $this->assertEquals($qrCode['id'], $response['id']);
-
-        // Verify QR code entity is updated
-        $qrCode->reload();
-        $this->assertNull($qrCode->getDeviceId());
-    }
-
-    public function testUpdateSingleStackDeviceWithInvalidQrString()
-    {
-        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-        $actualEzetapNotificationCallCount = 0;
-        $eventList = [];
-        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
-
-        // Mock pos.deviceservice
-        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
-        $mockDeviceService->shouldReceive('fetchDevice')
-            ->withAnyArgs()
-            ->andReturn([
-                'store_id' => 'store_invalid',
+                'store_id' => 'store_123',
                 'device_id' => 'testDevice123',
-                'device_version' => 'Android 8.0',
+                'device_version' => 'PAX A920_PRO',
             ]);
         $this->app->instance('pos.deviceservice', $mockDeviceService);
-
-        // Test with invalid QR string
-        $this->ba->appAuth();
-        $this->expectException('\TypeError');
-        $response = $this->makeRequestAndGetContent([
-            'method' => 'POST',
-            'url' => '/payments/single_stack/device/update',
-            'content' => [
-                'device_id' => 'testDevice123',
-                'map_identifiers' => [
-                    'qr_string' => 'invalid_qr_string_format',
-                ],
-            ]
-        ]);
-    }
-
-    public function testUpdateSingleStackDeviceWithDuplicateMapping()
-    {
-        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-        $actualEzetapNotificationCallCount = 0;
-        $eventList = [];
-        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
-
-        // Mock pos.deviceservice
-        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
-        $mockDeviceService->shouldReceive('fetchDevice')
-            ->withAnyArgs()
-            ->andReturn([
-                'store_id' => 'store_duplicate',
-                'device_id' => 'duplicateDevice123',
-                'device_version' => 'Android 10.0',
-            ]);
-        $this->app->instance('pos.deviceservice', $mockDeviceService);
-
-        // Create QR Code with device already mapped
-        $this->createQrCode([
-            'usage' => 'multiple_use',
-            'type' => 'upi_qr',
-            'request_source' => 'ezetap',
-            'device_id' => 'duplicateDevice123',
-        ], 'live', 'LiveAccountMer');
-
-        $qrCode = $this->getDbLastEntity('qr_code', 'live');
-
-        // Test mapping same device to same QR code (duplicate request)
-        $this->ba->appAuth();
-        $response = $this->makeRequestAndGetContent([
-            'method' => 'POST',
-            'url' => '/payments/single_stack/device/update',
-            'content' => [
-                'device_id' => 'duplicateDevice123',
-                'map_identifiers' => [
-                    'qr_string' => $qrCode->getQrString(),
-                ],
-            ]
-        ]);
-
-        // Verify duplicate mapping error
-        $this->assertEquals(false, $response['success']);
-        $this->assertArrayHasKey('error_message', $response);
-    }
-
-    public function testUpdateSingleStackDeviceWithAlreadyMappedDevice()
-    {
-        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-        $actualEzetapNotificationCallCount = 0;
-        $eventList = [];
-        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
-
-        // Mock pos.deviceservice
-        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
-        $mockDeviceService->shouldReceive('fetchDevice')
-            ->withAnyArgs()
-            ->andReturn([
-                'store_id' => 'store_shared',
-                'device_id' => 'sharedDevice999',
-                'device_version' => 'Android 11.0',
-            ]);
-        $this->app->instance('pos.deviceservice', $mockDeviceService);
-
-        // Create first QR Code with device mapped
-        $this->createQrCode([
-            'usage' => 'multiple_use',
-            'type' => 'upi_qr',
-            'request_source' => 'ezetap',
-            'device_id' => 'sharedDevice999',
-        ], 'live', 'LiveAccountMer');
-
-        // Create second QR Code without device
-        $this->createQrCode([
-            'usage' => 'multiple_use',
-            'type' => 'upi_qr',
-            'request_source' => 'ezetap',
-        ], 'live', 'LiveAccountMer');
-
-        $secondQrCode = $this->getDbLastEntity('qr_code', 'live');
-
-        // Test mapping already-used device to second QR code
-        $this->ba->appAuth();
-        $response = $this->makeRequestAndGetContent([
-            'method' => 'POST',
-            'url' => '/payments/single_stack/device/update',
-            'content' => [
-                'device_id' => 'sharedDevice999',
-                'map_identifiers' => [
-                    'qr_string' => $secondQrCode->getQrString(),
-                ],
-            ]
-        ]);
-
-        // Verify device already mapped error
-        $this->assertEquals(false, $response['success']);
-        $this->assertArrayHasKey('error_message', $response);
-    }
-
-    public function testUpdateSingleStackDeviceUnmapWithMultipleQrCodes()
-    {
-        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
-
-        $actualEzetapNotificationCallCount = 0;
-        $eventList = [];
-        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
-
-        // Mock pos.deviceservice
-        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
-        $mockDeviceService->shouldReceive('fetchDevice')
-            ->withAnyArgs()
-            ->andReturn([
-                'store_id' => 'store_multi',
-                'device_id' => 'multiQrDevice888',
-                'device_version' => 'Android 13.0',
-            ]);
-        $this->app->instance('pos.deviceservice', $mockDeviceService);
-
-        // Create multiple QR Codes with same device (to test validation)
-        $this->createQrCode([
-            'usage' => 'multiple_use',
-            'type' => 'upi_qr',
-            'request_source' => 'ezetap',
-            'device_id' => 'multiQrDevice888',
-        ], 'live', 'LiveAccountMer');
-
-        $this->createQrCode([
-            'usage' => 'multiple_use',
-            'type' => 'upi_qr',
-            'request_source' => 'ezetap',
-            'device_id' => 'multiQrDevice888',
-        ], 'live', 'LiveAccountMer');
-
-        // Test unmapping device that's mapped to multiple QR codes
-        $this->ba->appAuth();
-        $response = $this->makeRequestAndGetContent([
-            'method' => 'POST',
-            'url' => '/payments/single_stack/device/update',
-            'content' => [
-                'device_id' => 'multiQrDevice888',
-                'unmap_identifiers' => [
-                    'unmap_from_merchant' => true,
-                    'unmap_from_qr' => true
-                ],
-            ]
-        ]);
-
-        // Verify multiple QR codes mapped error
-        $this->assertEquals(false, $response['success']);
-        $this->assertArrayHasKey('error_message', $response);
-    }
-
-    public function testUpdateSingleStackDeviceWithServiceException()
-    {
-        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
         // Create QR Code
         $this->createQrCode([
@@ -3178,31 +2952,129 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $qrCode = $this->getDbLastEntity('qr_code', 'live');
 
-        // Mock service to throw exception
-        $mockService = \Mockery::mock('RZP\Models\QrCode\NonVirtualAccountQrCode\Service');
-        $mockService->shouldReceive('UpdateSingleStackDevice')
-            ->andThrow(new \Exception('Service error', 500));
-
-        $this->app->instance('NonVAQrCodeService', $mockService);
-
-        // Test exception handling
+        // Test mapping device to QR via UpdateSingleStackDevice controller
         $this->ba->appAuth();
         $response = $this->makeRequestAndGetContent([
             'method' => 'POST',
             'url' => '/payments/single_stack/device/update',
             'content' => [
-                'device_id' => 'exceptionDevice123',
+                'device_id' => 'testDevice123',
                 'map_identifiers' => [
                     'qr_string' => $qrCode->getQrString(),
                 ],
             ]
         ]);
 
-        // Verify error response structure
-        $this->assertEquals(false, $response['success']);
-        $this->assertArrayHasKey('error_code', $response);
-        $this->assertArrayHasKey('error_message', $response);
-        $this->assertEquals("SERVER_ERROR_EZETAP_INTEGRATION_ERROR", $response['error_code']);
+        // Verify successful mapping response
+        $this->assertEquals(true, $response['success']);
+        $this->assertEquals('qr_' . $qrCode['id'], $response['id']);
+        $this->assertEquals('testDevice123', $response['device_id']);
+
+        // Verify QR code entity is updated
+        $qrCode->reload();
+        $this->assertEquals('testDevice123', $qrCode->getDeviceId());
+    }
+
+    public function testUpdateSingleStackDeviceWithMapIdentifiersWithA920Device()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount = 0;
+        $eventList = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Mock pos.deviceservice
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andReturn([
+                'store_id' => 'store_123',
+                'device_id' => 'testDevice123',
+                'device_version' => 'PAX A920',
+            ]);
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Create QR Code
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+        ], 'live', 'LiveAccountMer');
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        // Test mapping device to QR via UpdateSingleStackDevice controller
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'testDevice123',
+                'map_identifiers' => [
+                    'qr_string' => $qrCode->getQrString(),
+                ],
+            ]
+        ]);
+
+        // Verify successful mapping response
+        $this->assertEquals(true, $response['success']);
+        $this->assertEquals('qr_' . $qrCode['id'], $response['id']);
+        $this->assertEquals('testDevice123', $response['device_id']);
+
+        // Verify QR code entity is updated
+        $qrCode->reload();
+        $this->assertEquals('testDevice123', $qrCode->getDeviceId());
+    }
+
+    public function testUpdateSingleStackDeviceWithMapIdentifiersWithA99Device()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount = 0;
+        $eventList = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Mock pos.deviceservice
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andReturn([
+                'store_id' => 'store_123',
+                'device_id' => 'testDevice123',
+                'device_version' => 'PAX A99',
+            ]);
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Create QR Code
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+        ], 'live', 'LiveAccountMer');
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        // Test mapping device to QR via UpdateSingleStackDevice controller
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'testDevice123',
+                'map_identifiers' => [
+                    'qr_string' => $qrCode->getQrString(),
+                ],
+            ]
+        ]);
+
+        // Verify successful mapping response
+        $this->assertEquals(true, $response['success']);
+        $this->assertEquals('qr_' . $qrCode['id'], $response['id']);
+        $this->assertEquals('testDevice123', $response['device_id']);
+
+        // Verify QR code entity is updated
+        $qrCode->reload();
+        $this->assertEquals('testDevice123', $qrCode->getDeviceId());
     }
 
     public function testUpdateSingleStackDeviceWithAndroidPosDevice()
@@ -3256,7 +3128,346 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
         $this->assertEquals('androidPosDevice', $qrCode->getDeviceId());
     }
 
-    public function testUpdateSingleStackDeviceWithDevice()
+    public function testUpdateSingleStackDeviceWithUnmapIdentifiers()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount = 0;
+        $eventList = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Mock pos.deviceservice
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andReturn([
+                'store_id' => 'store_456',
+                'device_id' => 'presetDevice456',
+                'device_version' => 'PAX A910S',
+            ]);
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Create QR Code with device already mapped
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+            'device_id' => 'presetDevice456',
+        ], 'live', 'LiveAccountMer');
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+        $this->assertEquals('presetDevice456', $qrCode->getDeviceId());
+
+        // Test unmapping device from QR via UpdateSingleStackDevice controller
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'presetDevice456',
+                'unmap_identifiers' => [
+                    'unmap_from_merchant' => true,
+                    'unmap_from_qr' => true
+                ],
+            ]
+        ]);
+
+        // Verify successful unmapping response
+        $this->assertEquals(true, $response['success']);
+        $this->assertEquals($qrCode['id'], $response['id']);
+
+        // Verify QR code entity is updated
+        $qrCode->reload();
+        $this->assertNull($qrCode->getDeviceId());
+    }
+
+    public function testUpdateSingleStackDeviceWithInvalidQrString()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount = 0;
+        $eventList = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Mock pos.deviceservice
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andReturn([
+                'store_id' => 'store_invalid',
+                'device_id' => 'testDevice123',
+                'device_version' => 'PAX A910S',
+            ]);
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Test with invalid QR string
+        $this->ba->appAuth();
+        $this->expectException('\TypeError');
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'testDevice123',
+                'map_identifiers' => [
+                    'qr_string' => 'invalid_qr_string_format',
+                ],
+            ]
+        ]);
+    }
+
+    public function testUpdateSingleStackDeviceWithDuplicateMapping()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount = 0;
+        $eventList = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Mock pos.deviceservice
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andReturn([
+                'store_id' => 'store_duplicate',
+                'device_id' => 'duplicateDevice123',
+                'device_version' => 'PAX A910S',
+            ]);
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Create QR Code with device already mapped
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+            'device_id' => 'duplicateDevice123',
+        ], 'live', 'LiveAccountMer');
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        // Test mapping same device to same QR code (duplicate request)
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'duplicateDevice123',
+                'map_identifiers' => [
+                    'qr_string' => $qrCode->getQrString(),
+                ],
+            ]
+        ]);
+
+        // Verify duplicate mapping error
+        $this->assertEquals(false, $response['success']);
+        $this->assertArrayHasKey('error_message', $response);
+    }
+
+    public function testUpdateSingleStackDeviceWithAlreadyMappedDevice()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount = 0;
+        $eventList = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Mock pos.deviceservice
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andReturn([
+                'store_id' => 'store_shared',
+                'device_id' => 'sharedDevice999',
+                'device_version' => 'PAX A910S',
+            ]);
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Create first QR Code with device mapped
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+            'device_id' => 'sharedDevice999',
+        ], 'live', 'LiveAccountMer');
+
+        // Create second QR Code without device
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+        ], 'live', 'LiveAccountMer');
+
+        $secondQrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        // Test mapping already-used device to second QR code
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'sharedDevice999',
+                'map_identifiers' => [
+                    'qr_string' => $secondQrCode->getQrString(),
+                ],
+            ]
+        ]);
+
+        // Verify device already mapped error
+        $this->assertEquals(false, $response['success']);
+        $this->assertArrayHasKey('error_message', $response);
+    }
+
+    public function testUpdateSingleStackDeviceUnmapWithMultipleQrCodes()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount = 0;
+        $eventList = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Mock pos.deviceservice
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andReturn([
+                'store_id' => 'store_multi',
+                'device_id' => 'multiQrDevice888',
+                'device_version' => 'PAX A910S',
+            ]);
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Create multiple QR Codes with same device (to test validation)
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+            'device_id' => 'multiQrDevice888',
+        ], 'live', 'LiveAccountMer');
+
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+            'device_id' => 'multiQrDevice888',
+        ], 'live', 'LiveAccountMer');
+
+        // Test unmapping device that's mapped to multiple QR codes
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'multiQrDevice888',
+                'unmap_identifiers' => [
+                    'unmap_from_merchant' => true,
+                    'unmap_from_qr' => true
+                ],
+            ]
+        ]);
+
+        // Verify multiple QR codes mapped error
+        $this->assertEquals(false, $response['success']);
+        $this->assertArrayHasKey('error_message', $response);
+        $this->assertEquals("Android POS device mapped to multiple multiple_use QR codes. Unmapping cannot be performed.", $response['error_message']);
+    }
+
+    public function testUpdateSingleStackDeviceWithServiceException()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Create QR Code
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+        ], 'live', 'LiveAccountMer');
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        // Mock service to throw exception
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andThrow(new \Exception('Mocked fetchDevice error'));
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Test exception handling
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'exceptionDevice123',
+                'map_identifiers' => [
+                    'qr_string' => $qrCode->getQrString(),
+                ],
+            ]
+        ]);
+
+        // Verify error response structure
+        $this->assertEquals(false, $response['success']);
+        $this->assertArrayHasKey('error_code', $response);
+        $this->assertArrayHasKey('error_message', $response);
+    }
+
+    public function testUpdateSingleStackDeviceWithDeviceAndDQRIsAlreadyMappedWithDevice()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $actualEzetapNotificationCallCount = 0;
+        $eventList = [];
+        $this->mockEzetapNotification($actualEzetapNotificationCallCount, $eventList);
+
+        // Mock pos.deviceservice to return Android POS device
+        $mockDeviceService = \Mockery::mock('RZP\Services\Device\Api');
+        $mockDeviceService->shouldReceive('fetchDevice')
+            ->withAnyArgs()
+            ->andReturn([
+                'store_id' => 'store_android_pos',
+                'device_id' => 'androidPosDevice',
+                'device_version' => 'PAX A910S', // Android POS device
+            ]);
+        $this->app->instance('pos.deviceservice', $mockDeviceService);
+
+        // Create QR Code
+        $this->createQrCode([
+            'usage' => 'single_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+            'device_id' => 'sharedDevice999',
+        ], 'live', 'LiveAccountMer');
+
+        $this->createQrCode([
+            'usage' => 'multiple_use',
+            'type' => 'upi_qr',
+            'request_source' => 'ezetap',
+        ], 'live', 'LiveAccountMer');
+
+        $secondQrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        // Test mapping device with Android POS device
+        $this->ba->appAuth();
+        $response = $this->makeRequestAndGetContent([
+            'method' => 'POST',
+            'url' => '/payments/single_stack/device/update',
+            'content' => [
+                'device_id' => 'sharedDevice999',
+                'map_identifiers' => [
+                    'qr_string' => $secondQrCode->getQrString(),
+                ],
+            ]
+        ]);
+
+        // Verify Device Mapped
+        $this->assertEquals(true, $response['success']);
+        $this->assertEquals('qr_' . $secondQrCode['id'], $response['id']);
+        // Verify QR code entity is updated
+        $secondQrCode->reload();
+        $this->assertEquals('sharedDevice999', $secondQrCode->getDeviceId());
+    }
+
+    public function testUpdateSingleStackDeviceWithDeviceWithRandomDevice()
     {
         $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
@@ -3274,14 +3485,6 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
                 'device_version' => 'Android 11.0',
             ]);
         $this->app->instance('pos.deviceservice', $mockDeviceService);
-
-        // Create first QR Code with device mapped
-        $this->createQrCode([
-            'usage' => 'single_use',
-            'type' => 'upi_qr',
-            'request_source' => 'ezetap',
-            'device_id' => 'sharedDevice999',
-        ], 'live', 'LiveAccountMer');
 
         // Create second QR Code without device
         $this->createQrCode([

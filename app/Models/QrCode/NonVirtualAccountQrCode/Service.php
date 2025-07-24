@@ -27,6 +27,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Constants\Entity as ConstantEntity;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\QrPayment\Service as QrPaymentService;
+use RZP\Services\Device\Constants as DeviceConstants;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVAQrCodeEntity;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\UsageType;
 use RZP\Trace\Tracer;
@@ -672,10 +673,14 @@ class Service extends QrCode\Service
 
             $deviceInfo = $this->app['pos.deviceservice']->fetchDevice($input['device_id']);
 
+            $this->trace->info(TraceCode::DEVICE_INFO_FETCHED, [
+                'device_id' => $input['device_id'],
+                'device_version' => $deviceInfo['device_version'],
+                'message' => 'Device info fetched successfully in Unmap Flow'
+            ]);
+
             // Check if device type is Android POS (e.g., A910)
-            if (isset($deviceInfo['device_version']) &&
-                (strpos($deviceInfo['device_version'], 'A910') !== false ||
-                    strpos($deviceInfo['device_version'], 'Android') !== false)) {
+            if ($this->isAndroidPosDevice($deviceInfo) === true) {
 
                 $this->trace->info(TraceCode::QR_CODE_FETCH_FROM_DEVICE_REQUEST, [
                     'device_id' => $input['device_id'],
@@ -842,10 +847,14 @@ class Service extends QrCode\Service
         try {
             $deviceInfo = $this->app['pos.deviceservice']->fetchDevice($deviceId);
 
+            $this->trace->info(TraceCode::DEVICE_INFO_FETCHED, [
+                'device_id' => $deviceId,
+                'device_version' => $deviceInfo['device_version'],
+                'message' => 'Device info fetched successfully for Map Flow'
+            ]);
+
             // Check if device type is Android POS (e.g., A910)
-            if (isset($deviceInfo['device_version']) &&
-                (strpos($deviceInfo['device_version'], 'A910') !== false ||
-                    strpos($deviceInfo['device_version'], 'Android') !== false)) {
+            if ($this->isAndroidPosDevice($deviceInfo) === true) {
 
                 $this->trace->info(TraceCode::QR_CODE_FETCH_FROM_DEVICE_REQUEST, [
                     'device_id' => $deviceId,
@@ -1018,6 +1027,24 @@ class Service extends QrCode\Service
         }
 
         return null;
+    }
+
+    private function isAndroidPosDevice($deviceInfo) : bool
+    {
+        if (isset($deviceInfo) === false && isset($deviceInfo['device_version']) === false)
+        {
+            return false;
+        }
+
+        foreach (DeviceConstants::ANDROID_POS_DEVICES as $needle)
+        {
+            if (strpos($deviceInfo['device_version'], $needle) !== false)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 
