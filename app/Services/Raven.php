@@ -437,12 +437,27 @@ class Raven
         }
 
         $orgId = $basicAuth->getOrgId() ?? '';
-
+        $isCurlecMerchant = false;
+        if (empty($orgId) || $orgId === '10000000000000') {
+            $merchantId = $input['stork']['owner_id'] ?? '';
+            if ($this->isCurlecMerchant($merchantId)) {
+                $orgId = $this->getCurlecOrgId();
+                $isCurlecMerchant = true;
+            }
+        }
         if (empty($orgId) === false)
         {
-            // check if RazorX experiment is turned on then only pass orgId in sms request raven
-            if (strtolower(app('razorx')->getTreatment($orgId, self::RavenOrgIdSmsRequest, $this->mode ?? Mode::LIVE)) === 'on')
-            {
+            $shouldPassOrgId = false;
+
+            if ($isCurlecMerchant) {
+                $shouldPassOrgId = true;
+            } else {
+                if (strtolower(app('razorx')->getTreatment($orgId, self::RavenOrgIdSmsRequest, $this->mode ?? Mode::LIVE)) === 'on') {
+                    $shouldPassOrgId = true;
+                }
+            }
+
+            if ($shouldPassOrgId) {
                 // By default app is appending org_ as prefix but stork service expecting without prefix so trimming
                 $trimmedOrgId = str_replace('org_', '', $orgId);
 
@@ -471,4 +486,60 @@ class Raven
         return $input;
 
     }
+
+    /**
+     * Check if the given merchant ID belongs to a Curlec merchant
+     *
+     * @param string $merchantId
+     * @return bool
+     */
+    private function isCurlecMerchant($merchantId)
+    {
+        if (empty($merchantId)) {
+            return false;
+        }
+
+        try {
+            $app = App::getFacadeRoot();
+
+            $merchant = $app['repo']->merchant->findOrFail($merchantId);
+            $curlecOrgIds = $this->getCurlecOrgIds();
+
+            return in_array($merchant->getOrgId(), $curlecOrgIds);
+        } catch (\Exception $e) {
+            $app['trace']->error(TraceCode::RAVEN_CURLEC_MERCHANT_CHECK_ERROR, [
+                'merchant_id' => $merchantId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Get the appropriate Curlec org ID based on environment
+     *
+     * @return string
+     */
+    private function getCurlecOrgId()
+    {
+        $app = App::getFacadeRoot();
+        return $app['config']->get('app.curlec_org_id');
+    }
+
+    /**
+     * Get all Curlec org IDs (both production and stage)
+     *
+     * @return array
+     */
+    private function getCurlecOrgIds()
+    {
+        $app = App::getFacadeRoot();
+        $curlecOrgId = $app['config']->get('app.curlec_org_id');
+
+        return [
+            $curlecOrgId,
+        ];
+    }
+
 }
