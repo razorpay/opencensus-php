@@ -79,6 +79,10 @@ class Constants
 
     const UPI_OPTIMIZER_AUDIT_VERIFY = "upi_optimizer_audit_verify";
 
+    // UPI Autopay Kafka Topics and Event Types
+    const UPI_AUTOPAY_MANDATE_REGISTRATION_PRICING_TOPIC = 'upi_autopay_mandate_registration_pricing_';
+    const UPI_AUTOPAY_MANDATE_REGISTRATION_PRICING_EVENT_TYPE = 'upi_autopay_mandate_registration_pricing';
+
     //Auto Refund Reasons
     const MERCHANT_AUTO_REFUND_DELAY            = 'Merchants auto_refund_delay %s has been set as refund_at value';
     const REFUND_AT_FOR_EMANDATE_PAYMENT        = 'Merchants default value %s for emandate payments has been set as refund_at value';

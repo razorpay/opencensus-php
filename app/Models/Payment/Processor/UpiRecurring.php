@@ -23,6 +23,7 @@ use RZP\Models\Order\Status;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
+use RZP\Services\KafkaProducer;
 use RZP\Models\UpiMandate\Metrics;
 use RZP\Models\Payment\UpiMetadata;
 use Razorpay\Trace\Logger as Trace;
@@ -1783,6 +1784,13 @@ trait UpiRecurring
                 $upiMandate->setVpa($vpa);
                 $upiMandate->setLateConfirmed($wasFailed);
                 $confirmed = true;
+
+                // Push Kafka event for mandate registration pricing
+                if (($payment->isRecurringTypeInitial() === true) and
+                    ($this->fetchAutopayPricingVersion($payment->getMerchantId()) === 'pricing_v3'))
+                {
+                    $this->pushMandateRegistrationPricingEvent($payment, $upiMandate);
+                }
             }
             // When the mandate was in created status and now it was reject by user
             else if (($prevStatus === UpiMandate\Status::CREATED) and
@@ -2099,6 +2107,99 @@ trait UpiRecurring
             (isset($gatewayData[UpiMandate\Entity::FLOW]) === false))
         {
             $upiMandate->setFlow($flow);
+        }
+    }
+
+    public function fetchAutopayPricingVersion(string $merchantId)
+    {
+        try {
+            $properties = [
+                'id' => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.upi_autopay_pricing_version'),
+                'request_data' => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::UPI_AUTOPAY_PRICING_VERSION, [
+                'merchant_id' => $merchantId,
+                'pricing_version' => $variant
+            ]);
+
+            return $variant;
+
+        } catch (\Exception $e) {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::UPI_AUTOPAY_PRICING_VERSION_FETCH_ERROR
+            );
+        }
+
+        return null;
+    }
+
+    protected function buildMandateRegistrationPricingPayload(Payment\Entity $payment, UpiMandate\Entity $upiMandate): array
+    {
+        return [
+            'specversion' => '1.0',
+            'type' => 'upi_autopay_mandate_registration_pricing',
+            'id' => $upiMandate->getTokenId(),
+            'time' => Carbon::now(Timezone::IST)->getTimestamp(),
+            'source' => 'api',
+            'subject' => $payment->getMerchantId(),
+            'data' => [
+                'max_amount' => $upiMandate->getMaxAmount(),
+                'frequency' => $upiMandate->getFrequency(),
+            ]
+        ];
+    }
+
+    protected function pushMandateRegistrationPricingEvent(Payment\Entity $payment, UpiMandate\Entity $upiMandate)
+    {
+        try
+        {
+            $pricingPayload = $this->buildMandateRegistrationPricingPayload($payment, $upiMandate);
+            // Determine the Kafka topic based on the mode (test or live)
+            $topic = Constants::UPI_AUTOPAY_MANDATE_REGISTRATION_PRICING_TOPIC . $this->mode;
+
+            // Push serialized protobuf data to Kafka
+            (new KafkaProducer($topic, stringify($pricingPayload)))->Produce();
+
+            $this->trace->info(
+                TraceCode::UPI_MANDATE_REGISTRATION_PRICING_EVENT_PUSHED,
+                [
+                    'payment_id' => $payment->getId(),
+                    'mandate_id'   => $upiMandate->getId(),
+                    'topic'      => $topic,
+                    'payload' => $pricingPayload,
+                ]
+            );
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::UPI_MANDATE_REGISTRATION_PRICING_EVENT_PUSH_FAILED,
+                [
+                    'payment_id' => $payment->getId(),
+                    'mandate_id'   => $upiMandate->getId(),
+                    'error'      => $e->getMessage(),
+                ]
+            );
+
+            $metricData = [
+                'merchant_id' => $payment->getMerchantId(),
+                'token_id'    => $payment->getTokenId(),
+            ];
+
+            $this->trace->count(UpiMandate\Metrics::UPI_AUTOPAY_MANDATE_REGISTRATION_PRICING_EVENT_PUSH_FAILED, $metricData);
         }
     }
 }

@@ -24,6 +24,9 @@ class Metrics
     const UPI_AUTOPAY_MANDATE_PAUSED    = 'upi_autopay_mandate_paused';
     const UPI_AUTOPAY_MANDATE_EXPIRED   = 'upi_autopay_mandate_expired';
 
+    // UPI Mandate Pricing Metrics
+    const UPI_AUTOPAY_MANDATE_REGISTRATION_PRICING_EVENT_PUSH_FAILED = 'upi_autopay_mandate_registration_pricing_event_push_failed';
+
     //Token Metrics
     const UPI_AUTOPAY_TOKEN_INITIATED              = 'upi_autopay_token_initiated';
     const UPI_AUTOPAY_TOKEN_CONFIRMED              = 'upi_autopay_token_confirmed';

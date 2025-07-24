@@ -9,6 +9,7 @@ class RecurringType
     const INITIAL       = 'initial';
     const AUTO          = 'auto';
     const CARD_CHANGE   = 'card_change';
+    const DEBIT         = 'debit';
 
     public static function isRecurringTypeValid($type)
     {

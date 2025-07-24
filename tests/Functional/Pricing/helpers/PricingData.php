@@ -5954,7 +5954,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Only null (one-time payments) or initial or auto value is allowed for sub type field in UPI.'
+                    'description' => 'Only null (one-time payments) or initial or auto or debit value is allowed for sub type field in UPI.'
                 ],
             ],
             'status_code' => 400,

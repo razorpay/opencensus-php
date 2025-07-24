@@ -36,6 +36,12 @@ class Validator extends Base\Validator
 {
     const ALLOWED_AUTH_TYPE_FOR_BANKING_PRODUCT = [BasicAuth\Type::PRIVATE_AUTH, BasicAuth\Type::PROXY_AUTH];
 
+    const UPI_PRICING_SUB_TYPES = [
+        Payment\RecurringType::INITIAL,
+        Payment\RecurringType::AUTO,
+        Payment\RecurringType::DEBIT
+    ];
+
     protected static $addPlanRuleRules = [
         Entity::ID                      => 'sometimes|string',
         Entity::PLAN_ID                 => 'sometimes|string',
@@ -271,7 +277,7 @@ class Validator extends Base\Validator
             ($input[Entity::PAYMENT_METHOD] === Payment\Method::UPI) and
             (empty(($input[Entity::PAYMENT_METHOD_SUBTYPE])) === false))
         {
-            if ((in_array($input[Entity::PAYMENT_METHOD_SUBTYPE], [Payment\RecurringType::INITIAL, Payment\RecurringType::AUTO])) === false)
+            if ((in_array($input[Entity::PAYMENT_METHOD_SUBTYPE], self::UPI_PRICING_SUB_TYPES) === false))
             {
                 app('trace')->info(
                     TraceCode::UPI_RECURRING_PRICING_RULE_ERROR,
@@ -282,7 +288,7 @@ class Validator extends Base\Validator
                 );
 
                 throw new Exception\BadRequestValidationFailureException(
-                        'Only null (one-time payments) or initial or auto value is allowed for sub type field in UPI.');
+                        'Only null (one-time payments) or initial or auto or debit value is allowed for sub type field in UPI.');
             }
         }
     }

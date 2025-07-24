@@ -682,6 +682,8 @@ return array(
 
     'upi_autopay_rearch_upi_mindgate_v1_exp_id'   => env('UPI_AUTOPAY_REARCH_UPI_MINDGATE_V1_EXP_ID'),
 
+    'upi_autopay_pricing_version' => env('UPI_AUTOPAY_PRICING_VERSION'),
+
     'cc_on_upi_pricing_splitz_experiment_id' => env('CC_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),
 
     'credit_line_on_upi_pricing_splitz_experiment_id' => env('CREDIT_LINE_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),

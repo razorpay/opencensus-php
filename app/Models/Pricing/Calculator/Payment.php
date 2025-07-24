@@ -26,7 +26,7 @@ use RZP\Models\Payment as PaymentModel;
 use RZP\Constants\Entity ;
 use RZP\Models\Merchant;
 use RZP\Models\Feature;
-
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 // Terminal Calculator extends Payment Calculator.
 // Take extra care while modifying existing logic.
@@ -734,12 +734,8 @@ class Payment extends Base
                 $recurringType = PaymentModel\RecurringType::INITIAL;
             }
 
-            $upiAutopayPricingVariant = $this->evaluateSplitzExperimentForUpiAutopayPricingBlacklist($payment->getMerchantId());
+            $recurringType = $this->fetchRecurringPaymentSubType($recurringType, $payment->getMerchantId());
 
-            if($upiAutopayPricingVariant === true)
-            {
-                $recurringType = null;
-            }
         }
 
         // this is to filter upi recurring (initial/auto) or onetime upi pricing rule
@@ -792,6 +788,41 @@ class Payment extends Base
         }
 
         return false;
+    }
+
+    /**
+     * Fetches the payment subtype for recurring payments based on pricing logic.
+     *
+     * This method determines the payment subtype for recurring payments based on:
+     * 1. If merchant belongs to pricing blacklist -> returns null
+     * 2. If pricing version is v3 -> returns DEBIT
+     * 3. Otherwise -> returns the original recurring type (INITIAL or AUTO)
+     *
+     * @param string $recurringType The original recurring type (INITIAL, AUTO, etc.)
+     * @param int $merchantId The merchant ID to check for pricing blacklist
+     * @return string|null Returns the determined payment subtype or null
+     */
+    protected function fetchRecurringPaymentSubType($recurringType, $merchantId)
+    {
+        // Check if merchant belongs to pricing blacklist
+        $upiAutopayPricingVariant = $this->evaluateSplitzExperimentForUpiAutopayPricingBlacklist($merchantId);
+
+        if ($upiAutopayPricingVariant === true)
+        {
+            return null;
+        }
+
+        // Check for autopay v3 pricing
+        $processor = new PaymentProcessor($this->entity->merchant);
+        $autopayPricingVersion = $processor->fetchAutopayPricingVersion($this->entity->getMerchantId());
+
+        if ($autopayPricingVersion === 'pricing_v3')
+        {
+            return PaymentModel\RecurringType::DEBIT;
+        }
+
+        // Return the original recurring type
+        return $recurringType;
     }
 
     protected function getRelevantPricingRuleForAeps($rules)
