@@ -102,6 +102,8 @@ class Processor
 
                     (new IdempotencyKey)->dualWritePSPayoutIdempotencyKey($payoutId);
 
+                    (new TransferAttemptEntity)->dualWriteFundTransferEntity($payoutId);
+
                     $this->makeFeeRecoveryIfApplicableForPSCAPayout($payoutId, $previousStatus);
 
                 });

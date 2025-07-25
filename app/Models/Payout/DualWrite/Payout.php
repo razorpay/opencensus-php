@@ -13,6 +13,11 @@ use RZP\Exception\BadRequestException;
 
 class Payout extends Base
 {
+    protected $columnsToUnset = [
+        'gateway_ref_no',
+        'destination_id',
+        'destination_type',
+    ];
     public function dualWritePSPayout(string $id)
     {
         $this->trace->info(
@@ -116,5 +121,29 @@ class Payout extends Base
         $payout->timestamps = false;
 
         return $payout;
+    }
+
+    public function getPayoutFromPayoutServiceWithoutModifications(string $id, bool $sync = false)
+    {
+        $payoutServicePayouts = $this->repo->payout->getPayoutServicePayout($id);
+
+        if (count($payoutServicePayouts) === 0)
+        {
+            $this->trace->error(
+                TraceCode::PAYOUT_SERVICE_DUAL_WRITE_PAYOUT_NOT_FOUND,
+                [Entity::PAYOUT_ID => $id]
+            );
+
+            throw new BadRequestException(
+                TraceCode::PAYOUT_SERVICE_DUAL_WRITE_PAYOUT_NOT_FOUND,
+                Entity::PAYOUT_ID,
+                [Entity::PAYOUT_ID => $id]
+            );
+        }
+
+        return $payoutServicePayouts[0];
+
+
+
     }
 }

@@ -138,6 +138,16 @@ class CreatePsPayouts extends Migration
             $table->integer(Payout::CREATED_AT);
 
             $table->integer(Payout::UPDATED_AT);
+
+            $table->char(Payout::DESTINATION_ID, Payout::ID_LENGTH)
+                ->nullable();
+
+            $table->string(Payout::DESTINATION_TYPE, 255)
+                ->nullable();
+
+            $table->string('gateway_ref_no', 255)
+                ->nullable()
+                ->unique();
         });
     }
 

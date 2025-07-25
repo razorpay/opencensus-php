@@ -84,7 +84,7 @@ class Core extends Base\Core
         $this->vendorPaymentService = $this->app['vendor-payment'];
 
         $this->payoutEvents = new Payout\Events;
-        
+
         $this->cfaService = $this->app['cfa'];
     }
 

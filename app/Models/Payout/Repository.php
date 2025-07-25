@@ -3177,6 +3177,19 @@ class Repository extends Base\Repository
                   ->select("select * from $tableName where payout_id = '$payoutId' and meta_name = '$metaName'");
     }
 
+    public function getPayoutServicePayoutMetaPermanent(string $payoutId, string $metaName )
+    {
+        $tableName = 'payout_meta_permanent';
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_' . $tableName;
+        }
+
+        return \DB::connection($this->getPayoutsServiceConnection())
+            ->select("select * from $tableName where payout_id = '$payoutId' and meta_name = '$metaName'");
+    }
+
     public function getPayoutServicePayoutLogs(string $payoutId)
     {
         $tableName = 'payout_logs';
