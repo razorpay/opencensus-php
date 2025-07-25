@@ -622,8 +622,41 @@ trait ExternalRepo
                 }
             }
             catch (\Throwable $innerEx) {}
+            
+            // Check splitz experiment for skipping exception for card fetch
+            if ( $this->entity === Entity::CARD && $this->checkSplitzExperimentForInvalidCard() === true) {
+                $this->trace->info(TraceCode::HANDLE_INVALID_CARD_FETCH_EXCEPTION_GRACEFULLY, [
+                    'msg' => "Invalid card fetch exception handled gracefully",
+                    'entity' => $this->entity,
+                    'id' => $id
+                ]);
+                return null;
+            }
+
 
             throw $outerEx;
+        }
+    }
+
+    /**
+     * Check splitz experiment for gracefully handling invalid card fetch exception
+     * @return bool
+     */
+    private function checkSplitzExperimentForInvalidCard(): bool
+    {
+        try {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.skip_exception_for_card_fetch')
+            ];  
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? 'control';
+
+            return $variant === 'variant_on';
+        } catch (\Exception $e) {
+            return false;
         }
     }
 

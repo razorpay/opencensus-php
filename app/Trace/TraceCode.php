@@ -1925,6 +1925,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ALT_ID_TOKEN_MIGRATION_CARD_VAULT_TOKEN_SET           = 'ALT_ID_TOKEN_MIGRATION_CARD_VAULT_TOKEN_SET';
     const DUAL_TOKENISATION_REARCH                              = 'DUAL_TOKENISATION_REARCH';
     const ALT_ID_FETCH_ERROR                                    = 'ALT_ID_FETCH_ERROR';
+    const HANDLE_INVALID_CARD_FETCH_EXCEPTION_GRACEFULLY        = 'HANDLE_INVALID_CARD_FETCH_EXCEPTION_GRACEFULLY';
 
     //Pricing
     const PRICING_RULE_SELECTION                                = 'PRICING_RULE_SELECTION';

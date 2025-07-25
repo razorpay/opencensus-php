@@ -666,6 +666,8 @@ return array(
 
     'nocodeapps_payment_callback_experiment_id' => env('NOCODEAPPS_PAYMENT_CALLBACK_EXPERIMENT_ID'),
 
+    'skip_exception_for_card_fetch' => env('SKIP_EXCEPTION_FOR_CARD_FETCH'),
+
     'send_submerchant_first_transaction_segment_event' => env('SEND_SUBMERCHANT_FIRST_TRANSACTION_SEGMENT_EVENT'),
 
     'dcc_recurring_on_auto_direct_experiment_id' => env('DCC_RECURRING_ON_AUTO_DIRECT_EXPERIMENT_ID'),
