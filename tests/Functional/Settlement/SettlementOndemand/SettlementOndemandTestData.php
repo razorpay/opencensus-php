@@ -2531,4 +2531,28 @@ return [
             ]
         ]
     ],
+
+    'testCreateOndemandForMaxBalanceWhenB2BExportEnabled' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'settle_full_balance' => true,
+                'description' => 'Demo Narration - optional',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'BAD_REQUEST_ES_ON_DEMAND_DISABLED_FOR_B2B_EXPORT',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
 ];

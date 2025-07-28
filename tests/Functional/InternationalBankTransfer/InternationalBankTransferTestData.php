@@ -633,6 +633,36 @@ return [
         ]
     ],
 
+    'testToggleInternationalVirtualAccountActivateEnablesFeatureFlag' => [
+        'request' => [
+            'url' => '/international/virtual_account/toggle',
+            'method' => 'post',
+            'content' => [
+                'action' => 'activate',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ]
+    ],
+
+    'testToggleInternationalVirtualAccountDeactivateDisablesFeatureFlag' => [
+        'request' => [
+            'url' => '/international/virtual_account/toggle',
+            'method' => 'post',
+            'content' => [
+                'action' => 'deactivate',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ]
+    ],
+
     'testNotifyUploadInvoiceSkipsACHWithFeatureFlag' => [
         'request' => [
             'url' => '/v1/b2b-exports/notification',

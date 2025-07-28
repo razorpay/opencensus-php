@@ -3344,7 +3344,41 @@ class Service extends Base\Service
             $action = $inputAction === 'activate' ? "activated" : "deactivated";
 
             if ($action === "deactivated" && $mii->isInternationalVirtualAccountDisabled() === true) {
+
                 return ['success' => true];
+            }
+
+            // Toggle the enable_b2b_export feature flag based on the action
+            if ($inputAction === 'activate') {
+                // Add the enable_b2b_export feature flag using Merchant\Service->addFeatureFlag
+                    (new Merchant\Service)->addFeatureFlag(
+                        [
+                            Feature\Constants::ENABLE_B2B_EXPORT
+                        ], true
+                    );
+                    
+                    $this->trace->info(TraceCode::MERCHANT_INTERNATIONAL_VA_FEATURE_ADDED, [
+                        'merchant_id' => $merchantId,
+                        'feature' => Feature\Constants::ENABLE_B2B_EXPORT,
+                        'action' => $inputAction
+                    ]); 
+            } else {
+                // Remove the enable_b2b_export feature flag
+                    $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+                        'merchant',
+                        $merchantId,
+                        Feature\Constants::ENABLE_B2B_EXPORT
+                    );
+                    
+                    if ($feature !== null) {
+                        (new Feature\Core)->delete($feature, true);
+                        
+                        $this->trace->info(TraceCode::MERCHANT_INTERNATIONAL_VA_FEATURE_REMOVED, [
+                            'merchant_id' => $merchantId,
+                            'feature' => Feature\Constants::ENABLE_B2B_EXPORT,
+                            'action' => $inputAction
+                        ]);
+                    }
             }
 
             $notes = $mii->getNotes();

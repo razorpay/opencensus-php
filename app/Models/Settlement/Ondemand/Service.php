@@ -149,6 +149,8 @@ class Service extends Base\Service
 
                 $this->validateIfOndemandMerchant();
 
+                $this->validateIfB2BExportEnabled();
+
                 $this->validateIfOndemandBlocked();
 
                 $this->validateIfODSCappingBreached($this->merchant->getId());
@@ -230,6 +232,15 @@ class Service extends Base\Service
         });
 
     }
+
+    public function validateIfB2BExportEnabled()
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_B2B_EXPORT) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_ES_ON_DEMAND_DISABLED_FOR_B2B_EXPORT);
+        }
+    }
+
 
     public function handleJobPushPostTransactionCreation($settlementOndemand, $settlementOndemandPayouts, $mode, $merchantId)
     {

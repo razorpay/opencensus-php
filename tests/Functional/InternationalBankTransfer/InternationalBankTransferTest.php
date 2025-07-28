@@ -2801,4 +2801,111 @@ class InternationalBankTransferTest extends TestCase
         // Verify that no B2bUploadInvoice email was queued
         Mail::assertNotQueued(B2bUploadInvoice::class);
     }
+
+    /**
+     * Test that activate action enables the enable_b2b_export feature flag for merchant
+     */
+    public function testToggleInternationalVirtualAccountActivateEnablesFeatureFlag()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchantID = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        // Create merchant international integration in both test and live mode
+        $mii = $this->fixtures->create('merchant_international_integrations',[
+            'id' => 'MHynufm7g6paGc',
+            'merchant_id' => $merchantID,
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'reference_id' => '67df28b4-766a-405d-b6ad-2972fd50be18',
+            'notes' => [],
+        ]);
+
+        $mii2 = $this->fixtures->on('live')->create('merchant_international_integrations',[
+            'id' => 'MHynufm7g6paGc',
+            'merchant_id' => $merchantID,
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'reference_id' => '67df28b4-766a-405d-b6ad-2972fd50be18',
+            'notes' => [],
+        ]);
+
+        // Verify feature flag is not enabled initially
+        $isEnabled = $this->fixtures->merchant->isFeatureEnabled(['enable_b2b_export'], $merchantID);
+        $this->assertFalse($isEnabled);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantID, $merchantUser['id']);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->sendRequest($request);
+
+        // Verify the response is successful
+        $content = $this->getJsonContentFromResponse($response);
+        $this->assertEquals(true, $content['success']);
+
+        // Verify the feature flag is now enabled
+        $isEnabled = $this->fixtures->merchant->isFeatureEnabled(['enable_b2b_export'], $merchantID);
+        $this->assertTrue($isEnabled);
+
+        // Verify the MII status is updated
+        $mii = $this->getLastEntity('merchant_international_integrations', true);
+        $this->assertEquals("activated", $mii['notes']['status']);
+    }
+
+    /**
+     * Test that deactivate action disables the enable_b2b_export feature flag for merchant
+     */
+    public function testToggleInternationalVirtualAccountDeactivateDisablesFeatureFlag()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchantID = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        // Enable the feature flag initially
+        $this->fixtures->merchant->addFeatures(['enable_b2b_export'], $merchantID);
+
+        // Create merchant international integration in both test and live mode
+        $mii = $this->fixtures->create('merchant_international_integrations',[
+            'id' => 'MHynufm7g6paGc',
+            'merchant_id' => $merchantID,
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'reference_id' => '67df28b4-766a-405d-b6ad-2972fd50be18',
+            'notes' => ['status' => 'activated'],
+        ]);
+
+        $mii2 = $this->fixtures->on('live')->create('merchant_international_integrations',[
+            'id' => 'MHynufm7g6paGc',
+            'merchant_id' => $merchantID,
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'reference_id' => '67df28b4-766a-405d-b6ad-2972fd50be18',
+            'notes' => ['status' => 'activated'],
+        ]);
+
+        // Verify feature flag is enabled initially
+        $isEnabled = $this->fixtures->merchant->isFeatureEnabled(['enable_b2b_export'], $merchantID);
+        $this->assertTrue($isEnabled);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantID, $merchantUser['id']);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->sendRequest($request);
+
+        // Verify the response is successful
+        $content = $this->getJsonContentFromResponse($response);
+        $this->assertEquals(true, $content['success']);
+
+        // Verify the feature flag is now disabled
+        $isEnabled = $this->fixtures->merchant->isFeatureEnabled(['enable_b2b_export'], $merchantID);
+        $this->assertFalse($isEnabled);
+
+        // Verify the MII status is updated
+        $mii = $this->getLastEntity('merchant_international_integrations', true);
+        $this->assertEquals("deactivated", $mii['notes']['status']);
+    }
 }

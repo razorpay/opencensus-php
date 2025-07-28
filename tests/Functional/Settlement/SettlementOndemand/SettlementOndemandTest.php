@@ -7036,4 +7036,36 @@ class SettlementOndemandTest extends TestCase
             "_record_source"=> "debezium_postgres"
         ];
     }
+
+      //merchant request with max_balance as 1
+      public function testCreateOndemandForMaxBalanceWhenB2BExportEnabled()
+      {
+          $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+          $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
+
+          $this->fixtures->feature->create([
+              'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+          $this->fixtures->feature->create([
+              'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'enable_b2b_export']);
+
+          $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 20030000]);
+
+          $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+  
+          $this->app['config']->set('applications.razorpayx_client.test.mock_webhook', false);
+  
+          $this->app['config']->set('applications.razorpayx_client.live.mock_webhook', false);
+
+          //set time as banking hour for testing
+          $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+
+          Carbon::setTestNow($bankingHour);
+
+          $this->mockGetFeatureConfigCallFromCapitalEs(false);
+
+          $response = $this->startTest();
+      }
+
 }

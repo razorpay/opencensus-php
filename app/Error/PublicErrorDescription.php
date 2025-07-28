@@ -1905,4 +1905,5 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_NOT_COLLECTX = "Reference14 is not collectx";
 
     const BAD_REQUEST_MERCHANT_USER_DOES_NOT_EXISTS  = 'Merchant User does not exits';
+    const BAD_REQUEST_ES_ON_DEMAND_DISABLED_FOR_B2B_EXPORT  = "Your Instant Settlements is disabled for using Money Saver";
 }
