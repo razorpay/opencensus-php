@@ -1561,4 +1561,6 @@ return array(
     'user_login_via_sso_experiment_id' => env('USER_LOGIN_VIA_SSO_EXPERIMENT_ID'),
 
     'update_existing_user_email_exp' => env('UPDATE_EXISTING_USER_EMAIL_EXP'),
+
+    'merchant_id_in_udd_query' => env('MERCHANT_ID_IN_UDD_QUERY'),
 );

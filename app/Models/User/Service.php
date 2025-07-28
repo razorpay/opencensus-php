@@ -2894,7 +2894,7 @@ class Service extends Base\Service
 
             if (empty($ownerUserId) === false)
             {
-                if ($shouldGetMerchantSignupCampaign) {
+                if ($shouldGetMerchantSignupCampaign || $this->isIncludeMerchantIDInUDDQueryExpEnabled($merchantId) === true) {
                     $deviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserId($merchantId, $ownerUserId);
                 } else {
                     $deviceDetail = $this->repo->user_device_detail->fetchByUserId($ownerUserId);
@@ -2920,6 +2920,13 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    public function isIncludeMerchantIDInUDDQueryExpEnabled($merchantID): bool
+    {
+        $result = (new \RZP\Models\Merchant\Core())->getSplitzResponse($merchantID, 'merchant_id_in_udd_query');
+
+        return $result === 'enable';
     }
 
     /**
