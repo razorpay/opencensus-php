@@ -5917,7 +5917,6 @@ class Core extends Base\Core
 
     public function getNCAdditionalDocuments() : array
     {
-
         $merchantId = $this->app['request']->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
         $merchant = $this->repo->merchant->find($merchantId);
         if($merchant !== null and $this->pgosProxyController->isCurlecModularMerchant($merchant)){
@@ -5925,18 +5924,30 @@ class Core extends Base\Core
             return $pgosResponse['data'];
         }
 
-        $response = [];
+        if ($merchant == null){
+            $merchant = $this->app['basicauth']->getMerchant();
+        }
 
-        foreach (DocumentType::NC_ADDITIONAL_DOCUMENTS as $DOCUMENT_NAME)
-        {
-            if (isset(DocumentType::DOCUMENT_DESCRIPTION_MAP[$DOCUMENT_NAME]) === true)
-            {
-                $response[$DOCUMENT_NAME] = DocumentType::DOCUMENT_DESCRIPTION_MAP[$DOCUMENT_NAME];
+        $response = [];
+        $countryCode = 'IN'; // Default to IN
+
+        if ($merchant != null) {
+            $countryCode = $merchant->getCountry();
+        }
+
+        $additionalDocType = isset(DocumentType::NC_ADDITIONAL_DOCUMENTS[$countryCode]) ? DocumentType::NC_ADDITIONAL_DOCUMENTS[$countryCode] : [];
+
+        if (is_array($additionalDocType)) {
+            foreach ($additionalDocType as $DOCUMENT_NAME) {
+                if (isset(DocumentType::DOCUMENT_DESCRIPTION_MAP[$DOCUMENT_NAME]) === true) {
+                    $response[$DOCUMENT_NAME] = DocumentType::DOCUMENT_DESCRIPTION_MAP[$DOCUMENT_NAME];
+                }
             }
         }
 
         $this->trace->info(TraceCode::NC_ADDITIONAL_DOCUMENTS,[
-            'DocumentList' => $response
+            'DocumentList' => $response,
+            'CountryCode' => $countryCode
         ]);
         return $response;
     }
