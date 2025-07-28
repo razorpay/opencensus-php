@@ -1453,6 +1453,10 @@ class Payment extends Base
                 $amount = $amount - $fee;
             }
         }
+        if ($this->entity->merchant->isTcsEnabled())
+        {
+            $amount = $this->entity->getGatewayAmount();
+        }
 
         $this->amount = $amount;
     }

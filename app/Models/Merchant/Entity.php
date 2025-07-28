@@ -1338,6 +1338,11 @@ class Entity extends Base\PublicEntity
         return $this->isLRSEducationFlowEnabled() || $this->isLRSTravelFlowEnabled();
     }
 
+    public function isTcsEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::TCS_ENABLED) === true);
+    }
+
     public function isImportFlowEnabled(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::ENABLE_IMPORT_FLOW) === true);

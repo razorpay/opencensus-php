@@ -176,7 +176,13 @@ class Validator extends Base\Validator
         //
         if (isset($input[Entity::AMOUNT]) === true)
         {
-            if ($payment->getAmount() < $input[Entity::AMOUNT])
+            $amount = $payment->getAmount();
+
+            if($payment->merchant->isTcsEnabled())
+            {
+                $amount = $payment->getGatewayAmount();
+            }
+            if ($amount < $input[Entity::AMOUNT])
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT,
@@ -562,7 +568,11 @@ class Validator extends Base\Validator
 
     public function validateGatewayAmount(Entity $dispute)
     {
-        if (($dispute->payment->isInternational() === false) and
+        $isTcsEnabled = $dispute->payment->merchant->isTcsEnabled();
+        $amount = $isTcsEnabled ? $dispute->payment->getGatewayAmount() : $dispute->payment->getAmount();
+
+        if (($isTcsEnabled === false) and
+            ($dispute->payment->isInternational() === false) and
             ($dispute->payment->getCurrency() === Currency::INR))
         {
             if (($dispute->payment->getCurrency() === $dispute->getGatewayCurrency()) and
@@ -578,7 +588,7 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Failed due to currency mismatch');
         }
-        elseif ($dispute->getGatewayAmount() > $dispute->payment->getAmount())
+        elseif ($dispute->getGatewayAmount() > $amount)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Dispute gateway amount cannot exceed payment amount');

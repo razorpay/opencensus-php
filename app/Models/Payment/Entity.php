@@ -5685,6 +5685,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data['currency'] = $this->getGatewayCurrency();
         }
 
+        if ($this->merchant->isTcsEnabled())
+        {
+            $data['amount'] = $this->getGatewayAmount();
+        }
+
         if(($this->getGateway() === Gateway::WALLET_PAYPAL) or
             ($this->isWalletPaypal() === true))
         {
@@ -7488,6 +7493,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function getGatewayAmount()
     {
         $paymentMetaEntity = $this->paymentMeta;
+
+        if ($this->merchant->isTcsEnabled())
+        {
+            $app = \App::getFacadeRoot();
+
+            $tcsData = $app['cross_border_import_service']->fetchTcsData([
+                'payment_id' => $this->getId(),
+            ]);
+
+            return $tcsData['total_amount'];
+        }
 
         // If the entity has a reward we should deduct the reward amount
         // from the payment amount

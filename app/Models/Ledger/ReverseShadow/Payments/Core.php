@@ -587,6 +587,11 @@ class Core extends Base\Core
         $gateway = $payment->terminal ? $payment->terminal->getGateway() : "not found";
 
         $additionalParams = $this->getAdditionalGmvAccountingParams($payment);
+        $baseAmount = $payment->getBaseAmount();
+        if($payment->merchant->isTcsEnabled())
+        {
+            $baseAmount = $payment->getGatewayAmount();
+        }
 
         $journalPayload = array(
             Constants::TRANSACTOR_ID                => $transactorId,
@@ -600,15 +605,15 @@ class Core extends Base\Core
                 Constants::GATEWAY          => $gateway,
             ],
             Constants::MONEY_PARAMS                 => [
-                Constants::AMOUNT           => strval($payment->getBaseAmount()),
-                Constants::BASE_AMOUNT      => strval($payment->getBaseAmount()),
+                Constants::AMOUNT           => strval($baseAmount),
+                Constants::BASE_AMOUNT      => strval($baseAmount),
             ],
             Constants::LEDGER_INTEGRATION_MODE      => Constants::REVERSE_SHADOW,
             Constants::IDEMPOTENCY_KEY              => Uuid::uuid1(),
             Constants::TENANT                       => Constants::TENANT_PG,
             Constants::NOTES                        => [
                 Constants::API_TXN_ID    => $apiTransactionId,
-                Constants::TRANSACTOR_AMOUNT => $payment->getBaseAmount(),
+                Constants::TRANSACTOR_AMOUNT => $baseAmount,
             ]
         );
 

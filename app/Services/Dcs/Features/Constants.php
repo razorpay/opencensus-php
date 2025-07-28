@@ -294,6 +294,8 @@ class Constants
 
     const VendorExperienceEnabled = 'vendor_experience_enabled';
 
+    const TCSEnabled = 'tcs_enabled';
+
     public static $validDcsKeys = [];
 
     /**
@@ -551,6 +553,7 @@ class Constants
         self::VendorOnboardingEnabled                     => "rzp/x/merchant/vendor_experience/VendorExperience",
         self::VendorExperienceEnabled                     => "rzp/x/merchant/vendor_experience/VendorExperience",
         self::BlockSelfCreditServe                        => "rzp/pg/merchant/ledger/Features",
+        self::TCSEnabled                                  => "rzp/pg/merchant/cross_border/india/ImportFlowFeatures",
 
     ];
 
@@ -821,6 +824,7 @@ class Constants
         APIFeaturesConstants::VENDOR_ONBOARDING_ENABLED                    => self::VendorOnboardingEnabled,
         APIFeaturesConstants::VENDOR_EXPERIENCE_ENABLED                    => self::VendorExperienceEnabled,
         APIFeaturesConstants::BLOCK_CREDIT_SELF_SERVE                      => self::BlockSelfCreditServe,
+        APIFeaturesConstants::TCS_ENABLED                                  => self::TCSEnabled,
 
     ];
 
@@ -879,6 +883,7 @@ class Constants
         self::BuyerProtectionSignedUp                 => 'direct',
         self::VendorExperienceEnabled                 => 'client',
         self::BlockSelfCreditServe                    => 'direct',
+        self::TCSEnabled                              => 'direct',
     ];
 
     /**
@@ -935,6 +940,7 @@ class Constants
             "affordability_widget_discount_whisperer_enabled" => 'client',
             "affordability_widget_checkout_enabled"           => 'client',
             "affordability_widget_v3_design_disabled"         => 'client',
+            "tcs_enabled"                                     => 'direct',
         ],
         "org"      => [
             "disable_free_credit_unreg"   => "client",

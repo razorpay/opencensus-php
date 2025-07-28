@@ -2393,6 +2393,8 @@ class Constants
     */
     const ENABLE_IMPORT_FLOW = 'enable_import_flow';
 
+    const TCS_ENABLED = 'tcs_enabled';
+
 
     /**
      * Feature flag will be enabled on
@@ -3413,6 +3415,7 @@ class Constants
         self::AUTO_CLOSURE_CBK_MF_MX       => true,
         self::HIDE_RX_PAYROLL_PAYOUTS   => true,
         self::ODS_MICROSERVICE => true,
+        self::TCS_ENABLED => true,
     ];
 
     // Entity type constants
@@ -4987,6 +4990,11 @@ class Constants
         self::ODS_MICROSERVICE => [
             'feature' => self::ODS_MICROSERVICE,
             'display_name' => 'Feature flag to indicate that the merchant has been migrated to the microservice for ondemand settlements',
+            'documentation' => ''
+        ],
+        self::TCS_ENABLED => [
+            'feature' => self::TCS_ENABLED,
+            'display_name' => 'Feature flag to indicate merchant is on tax collected at source (tcs) flow',
             'documentation' => ''
         ]
     ];

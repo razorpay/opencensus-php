@@ -34,6 +34,9 @@ class CrossBorderImportServiceClient
     // Update Payout Status
     const STATUS_UPDATE_PAYOUT = 'twirp/rzp.cross_border_import.internal_transfer.v1.InternalTransferService/StatusUpdatePayout';
 
+    // Fetch TCS Data
+    const FETCH_TCS_DATA = 'twirp/rzp.cross_border_import.tcs.v1.TcsService/GetTcs';
+
     const GET = 'GET';
     const POST = 'POST';
 
@@ -330,6 +333,75 @@ class CrossBorderImportServiceClient
     public function sendStatusUpdate(array $input) : array
     {
         return $this->makeRequest(self::STATUS_UPDATE_PAYOUT, Requests::POST, $input, []);
+    }
+
+    /**
+     * Fetch TCS data for payment
+     * @param array $input
+     *
+     * @return array|null
+     * @throws \Throwable
+     */
+    public function fetchTcsData(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $cacheKey = 'xbi_tcs_data_' . $paymentId;
+        $cacheTtl = 30;
+
+        // Check if data exists in cache
+        $cachedData = $this->app['cache']->get($cacheKey);
+        if ($cachedData !== null) {
+            $this->trace->info(TraceCode::TCS_DATA_FETCHED_FROM_CACHE, [
+                'payment_id' => $paymentId,
+                'cache_key' => $cacheKey,
+                'response'=>$cachedData
+            ]);
+            return $cachedData;
+        }
+
+        $url = self::FETCH_TCS_DATA;
+
+        $params = [
+            'payment_id' => $paymentId,
+        ];
+        $this->trace->info(TraceCode::TCS_DATA_FETCH_REQUEST, [
+            'params' => $params,
+        ]);
+
+        try {
+            $response = $this->makeRequest($url, self::POST, $params);
+
+            if (empty($response) === false && isset($response['total_amount']) && $response['total_amount'] > 0) {
+                $tcsData = [
+                    'tcs_percent' => $response['tax_percentage'] ?? null,
+                    'tcs_amount' => isset($response['tax_amount']) ? (int)$response['tax_amount'] : null,
+                    'tcs_applicable' => $response['is_applied'] ?? false,
+                    'total_amount' => isset($response['total_amount']) ? (int)$response['total_amount'] : null,
+                    'currency' => isset($response['currency']) ? $response['currency'] : null
+                ];
+                // Cache the response
+                $this->app['cache']->put($cacheKey, $tcsData, $cacheTtl);
+
+                return $tcsData;
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_REQUEST,
+                    null,
+                    [
+                        'response' => $response,
+                        'payment_id' => $paymentId,
+                    ]
+                );
+            }
+        } catch (\Throwable $e) {
+            $this->trace->info(TraceCode::TCS_DATA_FETCH_ERROR, [
+                'error' => $e,
+                'payment_id' => $paymentId,
+            ]);
+            throw $e;
+        }
     }
 
 }

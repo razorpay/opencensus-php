@@ -3355,6 +3355,7 @@ class ErrorCode
 
     const BAD_REQUEST_PAYMENT_NOT_COLLECTX = 'BAD_REQUEST_PAYMENT_NOT_COLLECTX';
 
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

@@ -5352,6 +5352,8 @@ trait Authorize
                 ]
             );
 
+            $this->handleTcsDataFromResponse($payment, $response);
+
         } catch (\Throwable $e) {
             $this->trace->traceException(
                 $e,
@@ -14788,7 +14790,7 @@ trait Authorize
         int $amountAuthorized): bool
     {
         $paymentAmount = $payment->getAmount();
-        if ($payment->merchant->isLRSFlowEnabled())
+        if ($payment->merchant->isLRSFlowEnabled() || $payment->merchant->isTcsEnabled())
         {
             $paymentAmount = $payment->getGatewayAmount();
         }
@@ -16089,5 +16091,72 @@ trait Authorize
             ]);
         }
 
+    }
+
+    /**
+     * Handle TCS (Tax Collected at Source) data from gateway response
+     * Extract TCS amount and percentage from response and store in payment notes
+     *
+     * @param Payment\Entity $payment
+     * @param array|null $response
+     */
+    protected function handleTcsDataFromResponse(Payment\Entity $payment, $response)
+    {
+        try {
+
+            if($payment->merchant->isTcsEnabled() === false)
+            {
+                return;
+            }
+
+            if(empty($response) === true || empty($response['tcs']) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_REQUEST,
+                    null,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'response' => $response,
+                    ]
+                );
+            }
+
+            $tcsData = $response['tcs'];
+
+            $tcsAmount = isset($tcsData['tax_amount']) === true ? $tcsData['tax_amount'] : 0;
+
+            $tcsPercentage = isset($tcsData['tax_percentage']) === true ? $tcsData['tax_percentage'] : 0;
+
+            // Since we get tax_percentages in minors from xbi service
+            $tcsPercentage = $tcsPercentage / 100;
+
+            // Update payment notes with TCS data
+            $this->updatePaymentNotesWithTcsData($payment, $tcsAmount, $tcsPercentage);
+
+        } catch (\Exception $e) {
+            $this->trace->error(TraceCode::FAILED_TO_HANDLE_TCS_DATA_FROM_RESPONSE, [
+                'payment_id' => $payment->getId(),
+                'error' => $e->getMessage(),
+                'response' => $response
+            ]);
+        }
+    }
+
+    /**
+     * Update payment notes with TCS data
+     *
+     * @param Payment\Entity $payment
+     * @param float|null $tcsAmount
+     * @param float|null $tcsPercentage
+     */
+    private function updatePaymentNotesWithTcsData(Payment\Entity $payment, int $tcsAmount, int $tcsPercentage): void
+    {
+        $newNotes = [];
+
+        $newNotes['tcs_amount'] = $tcsAmount;
+
+        $newNotes['tcs_percentage'] = $tcsPercentage;
+
+        $payment->appendNotes($newNotes);
     }
 }

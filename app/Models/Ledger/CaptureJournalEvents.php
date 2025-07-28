@@ -56,6 +56,18 @@ class CaptureJournalEvents
 
         $gateway = $payment->terminal ? $payment->terminal->getGateway() : "not found";
 
+        $baseAmount = $payment->getBaseAmount();
+
+        if($payment->merchant->isTcsEnabled())
+        {
+            $gatewayAmount = $payment->getGatewayAmount();
+            if($gatewayAmount > 0)
+            {
+                $baseAmount = $gatewayAmount;
+            }
+        }
+
+
         // api transaction id is assigned to transaction id if it is present in payment entity else payment id is passed as api transaction id
         $message = array(
             Constants::TRANSACTOR_ID                => $payment->getPublicId(),
@@ -68,8 +80,8 @@ class CaptureJournalEvents
                 Constants::GATEWAY          => $gateway,
             ],
             Constants::MONEY_PARAMS                 => [
-                Constants::AMOUNT           => strval($payment->getBaseAmount()),
-                Constants::BASE_AMOUNT      => strval($payment->getBaseAmount()),
+                Constants::AMOUNT           => strval($baseAmount),
+                Constants::BASE_AMOUNT      => strval($baseAmount),
             ]
         );
 

@@ -21,5 +21,15 @@ class CrossBorderImportServiceClient
         return null;
     }
 
+    public function fetchTcsData($input)
+    {
+        // Mock TCS data response
+        return [
+            'tcs_percent' => 5.0,
+            'tcs_amount' => 500,
+            'tcs_applicable' => true,
+            'total_amount' => 10500
+        ];
+    }
 
 }
