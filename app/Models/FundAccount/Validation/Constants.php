@@ -63,6 +63,10 @@ class Constants
 
     const COMPOSITE                 = 'composite';
 
+    const DEFAULT_POLLING_INTERVAL = [5,3,3,2,2];
+
+    const EntityWhilePollingMessage = "Entity Not Found In Completed or Failed State";
+
     const ALLOWED_VALIDATION_TYPE = [
         self::TYPE_PENNILESS,
         self::TYPE_PENNYDROP,

@@ -193,4 +193,19 @@ class Repository extends Base\Repository
                     ->whereIn($favIdColumn, $ids)
                     ->get();
     }
+
+
+    /**
+     * Find FAV by ID with specific status filter for polling
+     * @param string $id
+     * @param array $statuses
+     * @return Entity|null
+     */
+    public function findByIdWithStatusFilter(string $id, array $statuses)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::ID, $id)
+            ->whereIn(Entity::STATUS, $statuses)
+            ->first();
+    }
 }

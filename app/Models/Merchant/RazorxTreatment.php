@@ -1074,6 +1074,8 @@ final class RazorxTreatment
     const COLLECTIONS_RBL_MERCHANTS_VA_ADD_TPV_BLOCK = "collections_rbl_merchants_va_add_tpv_block";
     const PS_API_MERCHANT_MIGRATION_ON_ID = 'ps_api_merchant_migration_on_id';
 
+    const FAV_SYNC_FLOW_ENABLED = 'fav_sync_flow_enabled';
+
     const FAV_POSTPAID_DISABLE = 'fav_postpaid_disable';
 
     const ACCOUNT_STATEMENTS_READ_CUTOFF = 'account_statements_read_cutoff';

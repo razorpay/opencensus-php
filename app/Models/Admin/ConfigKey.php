@@ -501,6 +501,8 @@ class ConfigKey
 
     CONST ODS_CAPPED_MID_LIST                       = self::PREFIX . 'ods_capped_mid_list';
 
+    CONST FAV_SYNC_POLLING_INTERVAL            = self::PREFIX. 'fav_sync_polling_interval';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,
@@ -698,6 +700,7 @@ class ConfigKey
         self::ODS_CAPPED_MID_LIST,
         self::ROUTE_SERVICE_ENABLED,
         self::ROUTE_SERVICE_CONFIG,
+        self::FAV_SYNC_POLLING_INTERVAL,
     ];
 
     const REDIS_CONFIG_MAP = [

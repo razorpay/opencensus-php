@@ -6,6 +6,7 @@ namespace RZP\Models\FundAccount\Validation;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\Error;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\Traits;
@@ -94,6 +95,10 @@ class Service extends Base\Service
         return $fav->toArrayPublic();
     }
 
+    /**
+     * @throws \Throwable
+     * @throws BadRequestException
+     */
     public function create(array $input): array
     {
         $accountNumber = null;
@@ -117,7 +122,22 @@ class Service extends Base\Service
 
         $input[Balance\Entity::ACCOUNT_NUMBER] = $accountNumber;
 
-        $entity = $this->core->create($input, $this->merchant);
+        // Check If Splitz Experiment Enabled For Sync Flow
+        $requestPayload = [
+            "id" => $this->merchant->getId(),
+            "experiment_name" => RazorxTreatment::FAV_SYNC_FLOW_ENABLED,
+            'request_data' => json_encode(['id' => $this->merchant->getId()])
+        ];
+
+        $isSyncFlowExperimentEnabled = (new \RZP\Models\Merchant\Core())->isSplitzExperimentEnable($requestPayload, RazorxTreatment::VARIANT_ENABLE);
+
+        if ($isSyncFlowExperimentEnabled)
+        {
+            $entity = $this->core->createSync($input, $this->merchant);
+        }
+        else {
+            $entity = $this->core->create($input, $this->merchant);
+        }
 
         return $entity->toArrayPublic();
     }

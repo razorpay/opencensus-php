@@ -602,17 +602,7 @@ class Core extends Base\Core
                 $traceable
             );
 
-            $payload = [
-                'mode' => $this->mode,
-                'id' => $input['id'],
-                'is_validx' => true,
-                'merchant_id' => $input['merchant_id'],
-                'fund_account_id' => $input['fund_account']['id'],
-                'amount' => $input['amount'],
-                'status' => $input['status'],
-            ];
-
-            FavQueueForFTS::dispatch($payload);
+            FavQueueForFTS::dispatch($input);
 
             $this->trace->info(
                 TraceCode::FAV_QUEUE_FOR_BANK_ACCOUNT_VALIDATE_JOB_REQUEST_DISPATCHED,
@@ -2416,5 +2406,119 @@ class Core extends Base\Core
 
             return [];
         }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function createSync(array $input, Merchant\Entity $merchant): Entity
+    {
+        try {
+
+            $this->trace->info(TraceCode::FAV_SYNC_FLOW_STARTED, [
+                'merchant_id' => $merchant->getId(),
+            ]);
+
+            $favInCreatedState = $this->create($input, $merchant);
+
+            $favSyncResponse = $this->getSyncResponseForFav($favInCreatedState->getId(), $merchant);
+
+            if (empty($favSyncResponse) === false)
+            {
+                $this->setAdditionalFieldsForCompositeResponse($favSyncResponse);
+
+                return $favSyncResponse;
+            }
+        }
+         catch (\Throwable $e)
+        {
+            (new Metric)->pushExceptionMetrics($e, Metric::FUND_ACCOUNT_VALIDATION_FAILED);
+
+            throw $e;
+        }
+
+
+
+        return $favInCreatedState;
+    }
+
+    public function getSyncResponseForFav(string $favId, Merchant\Entity $merchant): ?Entity
+    {
+        $this->trace->info(TraceCode::FAV_POLLING_STARTED, [
+            'fav_id' => $favId,
+            'merchant_id' => $merchant->getId(),
+        ]);
+
+        $polledEntity = null;
+
+        $pollingInterval = $this->getMaxAttemptsAndIntervalFromRedis();
+
+        for ($attempt = 0; $attempt < count($pollingInterval); $attempt++)
+        {
+            sleep($pollingInterval[$attempt]);
+
+            try {
+                // Try to find the entity by its ID with status filter (completed or failed)
+                $polledEntity =  $this->repo->fund_account_validation
+                    ->findByIdWithStatusFilter( $favId, [Status::COMPLETED, Status::FAILED]);
+
+                if (!empty($polledEntity)) {
+
+                    $this->trace->info(TraceCode::FAV_POLLING_SUCCESS, [
+                        'fav_id' => $favId,
+                        'merchant_id' => $merchant->getId(),
+                        'attempt' => $attempt,
+                        'status' => $polledEntity->getStatus()
+                    ]);
+
+                    break;
+                } else {
+                    // Entity not found or status not final yet, continue polling
+                    $this->trace->info(TraceCode::FAV_POLLING_ATTEMPT, [
+                        'fav_id' => $favId,
+                        'merchant_id' => $merchant->getId(),
+                        'attempt' => $attempt,
+                        'message' => Constants::EntityWhilePollingMessage,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                // Error occurred during polling
+                $this->trace->error(TraceCode::FAV_POLLING_FAILED, [
+                    'fav_id' => $favId,
+                    'merchant_id' => $merchant->getId(),
+                    'attempt' => $attempt,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+
+        if (empty($polledEntity) === true) {
+            $this->trace->error(TraceCode::FAV_POLLING_FAILED, [
+                'fav_id' => $favId,
+                'merchant_id' => $merchant->getId(),
+                'polling_interval' => $pollingInterval
+            ]);
+
+            return null;
+        }
+
+        return $polledEntity;
+    }
+
+    public function getMaxAttemptsAndIntervalFromRedis(): array
+    {
+        $pollingInterval = (new Admin\Service)->getConfigKey([
+                'key' => Admin\ConfigKey::FAV_SYNC_POLLING_INTERVAL
+        ]);
+
+        if(empty($pollingInterval) === true) {
+            $pollingInterval = CONSTANTS::DEFAULT_POLLING_INTERVAL;
+        }
+
+        $this->trace->info(TraceCode::FAV_POLLING_PARAMETERS, [
+            'polling_interval' => $pollingInterval
+        ]);
+
+        return  $pollingInterval;
     }
 }

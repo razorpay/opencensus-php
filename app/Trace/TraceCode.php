@@ -13655,6 +13655,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const EDIT_MERCHANT_USER_EMAIL = 'EDIT_MERCHANT_USER_EMAIL';
 
+    const FAV_POLLING_PARAMETERS = 'FAV_POLLING_PARAMETERS';
+    const FAV_SYNC_FLOW_STARTED  = 'FAV_SYNC_FLOW_STARTED';
+    const FAV_POLLING_STARTED = 'FAV_POLLING_STARTED';
+    const FAV_POLLING_SUCCESS = 'FAV_POLLING_SUCCESS';
+    const FAV_POLLING_ATTEMPT = 'FAV_POLLING_ATTEMPT';
+    const FAV_POLLING_FAILED = 'FAV_POLLING_FAILED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

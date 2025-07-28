@@ -8,6 +8,7 @@ use \RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Models\FundAccount\Validation\Entity as Validation;
 use RZP\Services\Mozart;
 use RZP\Jobs\Transactions;
 use RZP\Models\Admin\Admin;
@@ -42,7 +43,6 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Services\FavService\Create as FavServiceCreate;
 use RZP\Services\FavService\Update as FavServiceUpdate;
 use RZP\Services\FavService\Fetch as FavServiceFetch;
-use RZP\Models\FundAccount\Validation\Entity as Validation;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
@@ -6455,5 +6455,254 @@ class FundAccountValidationTest extends TestCase
         return $response;
     }
 
+    public function testCreateSyncWithConfigurablePollingInterval()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'enable']);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        // Get the merchant entity
+        $merchant =  $this->getDbEntityById('merchant', '10000000000000');
+
+        // Create a completed entity that will be returned after polling
+        $completedEntity = new \RZP\Models\FundAccount\Validation\Entity();
+        $completedEntity->setId('test123qqwert1');
+        $completedEntity->setStatus(\RZP\Models\FundAccount\Validation\Status::COMPLETED);
+        $completedEntity->setAccountStatus(\RZP\Models\FundAccount\Validation\AccountStatus::ACTIVE);
+        $completedEntity->setRegisteredName('Test Name');
+
+        // Mock config for polling intervals (array of intervals instead of max attempts)
+        (new \RZP\Models\Admin\Service())->setConfigKeys([\RZP\Models\Admin\ConfigKey::FAV_SYNC_POLLING_INTERVAL => [1, 1, 1]]);
+
+        // Mock the repository for sync polling
+        $repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app])->makePartial();
+        $favRepoMock = Mockery::mock('\RZP\Models\FundAccount\Validation\Repository', [$this->app])->makePartial();
+
+        // Mock the repository method to return completed entity on third attempt
+        $favRepoMock->shouldReceive('findByIdWithStatusFilter')
+            ->times(3)
+            ->andReturnValues([null, null, $completedEntity]);
+
+        $repoMock->shouldReceive('driver')
+            ->with('fund_account_validation')
+            ->andReturn($favRepoMock);
+
+        // Inject mocks into app
+        $this->app->instance('repo', $repoMock);
+
+        // Create Core instance
+        $core = new \RZP\Models\FundAccount\Validation\Core();
+
+        $input = [
+            Validation::FUND_ACCOUNT => [
+                FundAccount::ID => $fundAccountResponse['id'],
+            ],
+            Validation::NOTES        => [],
+            Validation::RECEIPT      => '12345667',
+            Validation::AMOUNT   => 100
+        ];
+
+        // Call the method under test - now testing createSync instead of getSyncResponseForFav
+        $result = $core->createSync($input, $merchant);
+
+        // Assertions
+        $this->assertInstanceOf(\RZP\Models\FundAccount\Validation\Entity::class, $result);
+        $this->assertEquals(\RZP\Models\FundAccount\Validation\Status::COMPLETED, $result->getStatus());
+        $this->assertEquals(\RZP\Models\FundAccount\Validation\AccountStatus::ACTIVE, $result->getAccountStatus());
+    }
+
+    public function testCreateSyncFlowNonComposite()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'enable']);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        // Get the merchant entity
+        $merchant =  $this->getDbEntityById('merchant', '10000000000000');
+
+        // Create a completed entity that will be returned after polling
+        $completedEntity = new \RZP\Models\FundAccount\Validation\Entity();
+        $completedEntity->setId('test123noncomp');
+        $completedEntity->setStatus(\RZP\Models\FundAccount\Validation\Status::COMPLETED);
+        $completedEntity->setAccountStatus(\RZP\Models\FundAccount\Validation\AccountStatus::ACTIVE);
+        $completedEntity->setRegisteredName('Test User Non-Composite');
+
+        // Mock config for polling intervals (array of intervals instead of max attempts)
+        (new \RZP\Models\Admin\Service())->setConfigKeys([\RZP\Models\Admin\ConfigKey::FAV_SYNC_POLLING_INTERVAL => [1, 2, 1]]);
+
+        // Mock the repository for sync polling
+        $repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app])->makePartial();
+        $favRepoMock = Mockery::mock('\RZP\Models\FundAccount\Validation\Repository', [$this->app])->makePartial();
+
+        // Mock the repository method to return completed entity on third attempt
+        $favRepoMock->shouldReceive('findByIdWithStatusFilter')
+            ->times(3)
+            ->andReturnValues([null, null, $completedEntity]);
+
+        $repoMock->shouldReceive('driver')
+            ->with('fund_account_validation')
+            ->andReturn($favRepoMock);
+
+        // Inject mocks into app
+        $this->app->instance('repo', $repoMock);
+
+        // Create Core instance
+        $core = new \RZP\Models\FundAccount\Validation\Core();
+
+        // Non-composite input with existing fund account ID
+        $input = [
+            Validation::FUND_ACCOUNT => [
+                FundAccount::ID => $fundAccountResponse['id'],
+            ],
+            Validation::NOTES        => ['test' => 'non-composite'],
+            Validation::RECEIPT      => 'nc_12345',
+            Validation::AMOUNT   => 100,
+            Validation::CURRENCY => 'INR'
+        ];
+
+        // Call the method under test - testing createSync for non-composite flow
+        $result = $core->createSync($input, $merchant);
+
+        // Assertions
+        $this->assertInstanceOf(\RZP\Models\FundAccount\Validation\Entity::class, $result);
+        $this->assertEquals(\RZP\Models\FundAccount\Validation\Status::COMPLETED, $result->getStatus());
+        $this->assertEquals(\RZP\Models\FundAccount\Validation\AccountStatus::ACTIVE, $result->getAccountStatus());
+    }
+
+    public function testCreateSyncFlowComposite()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'enable']);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        // Get the merchant entity
+        $merchant =  $this->getDbEntityById('merchant', '10000000000000');
+
+        // Create a completed entity that will be returned after polling
+        $completedEntity = new \RZP\Models\FundAccount\Validation\Entity();
+        $completedEntity->setId('test123noncomp');
+        $completedEntity->setStatus(\RZP\Models\FundAccount\Validation\Status::COMPLETED);
+        $completedEntity->setAccountStatus(\RZP\Models\FundAccount\Validation\AccountStatus::ACTIVE);
+        $completedEntity->setRegisteredName('Test User Non-Composite');
+        $completedEntity->setReceipt('new_fav_composite');
+
+        // Mock config for polling intervals (array of intervals instead of max attempts)
+        (new \RZP\Models\Admin\Service())->setConfigKeys([\RZP\Models\Admin\ConfigKey::FAV_SYNC_POLLING_INTERVAL => [1, 2, 1]]);
+
+        // Mock the repository for sync polling
+        $repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app])->makePartial();
+        $favRepoMock = Mockery::mock('\RZP\Models\FundAccount\Validation\Repository', [$this->app])->makePartial();
+
+        // Mock the repository method to return completed entity on third attempt
+        $favRepoMock->shouldReceive('findByIdWithStatusFilter')
+            ->times(3)
+            ->andReturnValues([null, null, $completedEntity]);
+
+        $repoMock->shouldReceive('driver')
+            ->with('fund_account_validation')
+            ->andReturn($favRepoMock);
+
+        // Inject mocks into app
+        $this->app->instance('repo', $repoMock);
+
+        // Create Core instance
+        $core = new \RZP\Models\FundAccount\Validation\Core();
+
+        // Non-composite input with existing fund account ID
+        $input = [
+            Validation::FUND_ACCOUNT => [
+                FundAccount::ID => $fundAccountResponse['id'],
+            ],
+            Validation::NOTES        => ['test' => 'non-composite'],
+            Validation::RECEIPT      => 'nc_12345',
+            Validation::AMOUNT   => 100,
+            Validation::CURRENCY => 'INR'
+        ];
+
+        // Call the method under test - testing createSync for non-composite flow
+        $result = $core->createSync($input, $merchant);
+
+        // Assertions
+        $this->assertInstanceOf(\RZP\Models\FundAccount\Validation\Entity::class, $result);
+        $this->assertEquals(\RZP\Models\FundAccount\Validation\Status::COMPLETED, $result->getStatus());
+        $this->assertEquals(\RZP\Models\FundAccount\Validation\AccountStatus::ACTIVE, $result->getAccountStatus());
+
+    }
+
+    public function testCreateSyncPollingTimeoutReturnsCreatedRecord()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->setMockSplitzTreatmnt([RazorxTreatment::FAV_PG_LEDGER_CUTOFF => 'enable', RazorxTreatment::FAV_SYNC_FLOW_ENABLED => 'enable']);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        // Set polling intervals - will attempt 3 times with intervals [1, 1, 2]
+        (new AdminService())->setConfigKeys([ConfigKey::FAV_SYNC_POLLING_INTERVAL => [1, 1, 2]]);
+
+        $input = [
+            'fund_account' => [
+                'id' => $fundAccountResponse['id']
+            ],
+            'amount' => 100,
+            'currency' => 'INR'
+        ];
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        // Mock the repository to always return null (record not found even after polling)
+        $repoMock = Mockery::mock('RZP\\Base\\RepositoryManager', [$this->app])->makePartial();
+        $favRepoMock = Mockery::mock('RZP\\Models\\FundAccount\\Validation\\Repository', [$this->app])->makePartial();
+
+        // Mock findByIdWithStatusFilter to always return null (timeout scenario)
+        $favRepoMock->shouldReceive('findByIdWithStatusFilter')
+            ->times(3) // Will be called 3 times based on polling intervals
+            ->andReturn(null);
+
+        $repoMock->shouldReceive('driver')
+            ->with('fund_account_validation')
+            ->andReturn($favRepoMock);
+
+        // Inject mocks into app
+        $this->app->instance('repo', $repoMock);
+
+        // Create Core instance
+        $core = new \RZP\Models\FundAccount\Validation\Core();
+
+        // Call createSync method
+        $result = $core->createSync($input, $merchant);
+
+        // Assertions: Since polling failed to find completed record, should return original created record
+        $this->assertEquals('created', $result->getStatus());
+        $this->assertNotNull($result->getId());
+
+        // Verify the entity was created with correct basic details
+        $this->assertEquals($merchant->getId(), $result->getMerchantId());
+        $this->assertEquals(100, $result->getAmount());
+        $this->assertEquals('INR', $result->getCurrency());
+        $this->assertEquals('created', $result->getStatus());
+    }
 }
 
