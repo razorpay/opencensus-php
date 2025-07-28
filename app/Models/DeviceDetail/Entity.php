@@ -97,7 +97,7 @@ class Entity extends Base\PublicEntity
     {
         $app = App::getFacadeRoot();
 
-        $metaData = $this->getAttribute(self::METADATA);
+        $metaData = $this->getAttribute(self::METADATA) ?? [];
 
         $readingWorkflowDetailsFromCache = false;
         $readingWorkflowDetailsFromContext = false;
