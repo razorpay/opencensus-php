@@ -1504,7 +1504,7 @@ class Core extends Base\Core
 
         unset($input[Constants::BROWSER_DETAILS]);
 
-        $origin = $this->app['request']->header('Origin');
+        $origin = $this->app['request']->header(RequestHeader::X_REQUEST_ORIGIN) ?? "";
 
         try
         {
@@ -1517,9 +1517,9 @@ class Core extends Base\Core
         }
 
         $traceData = [
+            'origin' => $origin,
             'mode' => $this->mode,
             'internal_app_name' => app('request.ctx')->getInternalAppName(),
-            'origin' => $origin,
             'input' => $input[Entity::EMAIL],
             'experiment_status' => $allowed
         ];
