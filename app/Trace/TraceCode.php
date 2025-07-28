@@ -7949,6 +7949,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREDCASE_READ_COUNT_MISMATCH                          = 'CREDCASE_READ_COUNT_MISMATCH';
     const CREDCASE_READ_RESPONSE_MISMATCH                       = 'CREDCASE_READ_RESPONSE_MISMATCH';
     const KEY_DUAL_WRITE_SPLITZ_FAILED                          = 'KEY_DUAL_WRITE_SPLITZ_FAILED';
+    const KEY_DUAL_WRITE_KEY_NOT_FOUND                          = 'KEY_DUAL_WRITE_KEY_NOT_FOUND';
+    const KEY_DUAL_WRITE_FAILED                                 = 'KEY_DUAL_WRITE_FAILED';
+    const KEY_DUAL_WRITE_VALIDATION_FAILED                      = 'KEY_DUAL_WRITE_VALIDATION_FAILED';
 
     // See RZP/Modules/Migrate.
     const MIGRATE_ASYNC_REQUEST                                 = 'MIGRATE_ASYNC_REQUEST';

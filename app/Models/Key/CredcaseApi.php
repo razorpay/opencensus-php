@@ -9,13 +9,17 @@ use Razorpay\Trace\Logger;
 use Rzp\Credcase\Apikey\V1\ApiKeyAPIClient;
 use Rzp\Common\Mode\V1\Mode;
 use Rzp\Credcase\Apikey\V1\ApiKeyGetRequest;
+use Rzp\Credcase\Apikey\V1\ApiKeyAPIJsonClient;
+use Rzp\Credcase\Apikey\V1\ApiKeyCreateRequest;
 use Rzp\Credcase\Apikey\V1\ApiKeyListRequest;
 use Rzp\Credcase\Apikey\V1\ConsumerApiKeyAPIClient;
 use Rzp\Credcase\Apikey\V1\ConsumerApiKeyGetRequest;
 use Rzp\Credcase\Apikey\V1\ConsumerApiKeyListRequest;
 use Rzp\Credcase\Apikey\V1\TwirpError;
+use Rzp\Credcase\Apikey\V1\ApiKeyRotateRequest;
 use RZP\Error\ErrorCode;
 use RZP\Exception\ServerErrorException;
+use RZP\Http\RequestHeader;
 use RZP\Trace\TraceCode;
 use Throwable;
 use Twirp\Context;
@@ -24,6 +28,8 @@ class CredcaseApi
 {
     const OWNER_TYPE = 'merchant';
     const DOMAIN = 'razorpay';
+    const DEFAULT_KEY_EXPIRY_TIME_ON_ROLL_SECS = 86400;
+
     protected $app;
     private $context;
 
@@ -46,6 +52,8 @@ class CredcaseApi
     private $adminReadKeySplitzExperiment;
     private $findKeySplitzExperiment;
     private $findKeyV2SplitzExperiment;
+    private $createKeySplitzExperiment;
+    private $rotateKeySplitzExperiment;
 
     public function __construct($app)
     {
@@ -59,9 +67,16 @@ class CredcaseApi
         $this->adminReadKeySplitzExperiment = $config['admin_read_key_splitz'];
         $this->findKeySplitzExperiment = $config['find_key_splitz'];
         $this->findKeyV2SplitzExperiment = $config['find_key_splitz_v2'];
+        $this->createKeySplitzExperiment = $config['create_key_splitz'];
+        $this->rotateKeySplitzExperiment = $config['rotate_key_splitz'];
+
         // Set default headers twirp context.
         $auth          = 'Basic ' . base64_encode($config['user'] . ':' . $config['password']);
         $headers       = ['Authorization' => $auth, 'X-Request-ID' => Request::getTaskId()];
+        if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
+            $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        }
+
         $this->context = Context::withHttpRequestHeaders([], $headers);
     }
 
@@ -86,7 +101,67 @@ class CredcaseApi
             $response = $this->client->List($this->context, $apiKeyListRequest);
             return $response;
         } catch (Throwable $e) {
-            $routeName = $this->app['request.ctx']->getRoute() ?? null;
+            $routeName = Utils::getRoute() ?? null;
+            $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [
+                'route_name' => $routeName,
+                'error_message' => $e->getMessage()
+            ]);
+            throw new ServerErrorException('failed to complete request',
+                ErrorCode::SERVER_ERROR_CREDCASE_REQUEST_FAILED, $debug, $e);
+        }
+    }
+
+    /**
+     * @param string $mode
+     * @param string $ownerId
+     *
+     * @throws ServerErrorException
+     * @throws Exception
+     */
+    public function create($mode, string $ownerId): \Rzp\Credcase\Apikey\V1\ApiKeyCreateResponse
+    {
+        $apiKeyCreateRequest = new ApiKeyCreateRequest;
+        $apiKeyCreateRequest->setOwnerId($ownerId);
+        $apiKeyCreateRequest->setOwnerType(static::OWNER_TYPE);
+        $apiKeyCreateRequest->setDomain(static::DOMAIN);
+        $apiKeyCreateRequest->setMode($this->convertModeToEnum($mode));
+
+        $debug = ["owner_id" => $ownerId, "owner_type" => static::OWNER_TYPE, "domain" => static::DOMAIN];
+        try {
+            $response = $this->client->Create($this->context, $apiKeyCreateRequest);
+            return $response;
+        } catch (Throwable $e) {
+            $routeName = Utils::getRoute() ?? null;
+            $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [
+                'route_name' => $routeName,
+                'error_message' => $e->getMessage()
+            ]);
+            throw new ServerErrorException('failed to complete request',
+                ErrorCode::SERVER_ERROR_CREDCASE_REQUEST_FAILED, $debug, $e);
+        }
+    }
+
+    /**
+     * @param string $merchantId
+     * @param string $keyId
+     * @param boolean $delay
+     *
+     * @throws ServerErrorException
+     * @throws Exception
+     */
+    public function rotate($merchantId, $keyId, $delay): \Rzp\Credcase\Apikey\V1\ApiKeyRotateResponse
+    {
+        $apiKeyRotateRequest = new ApiKeyRotateRequest;
+        $apiKeyRotateRequest->setId($keyId);
+                    $expiredAt = $delay ? time() + self::DEFAULT_KEY_EXPIRY_TIME_ON_ROLL_SECS : time();
+        $apiKeyRotateRequest->setExpireAt($expiredAt);
+
+        $debug = ["owner_id" => $merchantId, "owner_type" => static::OWNER_TYPE, "domain" => static::DOMAIN];
+        try {
+            $response = $this->client->Rotate($this->context, $apiKeyRotateRequest);
+            return $response;
+        } catch (Throwable $e) {
+            $routeName = Utils::getRoute() ?? null;
             $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [
                 'route_name' => $routeName,
                 'error_message' => $e->getMessage()
@@ -113,7 +188,7 @@ class CredcaseApi
             if($e instanceof TwirpError && $e->getErrorCode() == 'not_found'){
                 return null;
             }
-            $routeName = $this->app['request.ctx']->getRoute() ?? null;
+            $routeName = Utils::getRoute() ?? null;
             $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [
                 'route_name' => $routeName,
                 'error_message' => $e->getMessage()
@@ -138,7 +213,7 @@ class CredcaseApi
             if($e instanceof TwirpError && $e->getErrorCode() == 'not_found'){
                 return null;
             }
-            $routeName = $this->app['request.ctx']->getRoute() ?? null;
+            $routeName = Utils::getRoute() ?? null;
             $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [
                 'route_name' => $routeName,
                 'error_message' => $e->getMessage()
@@ -165,7 +240,7 @@ class CredcaseApi
             $response = $this->consumerClient->GetKeys($this->context, $consumerApiKeyListRequest);
             return $response;
         } catch (Throwable $e) {
-            $routeName = $this->app['request.ctx']->getRoute() ?? null;
+            $routeName = Utils::getRoute() ?? null;
             $this->trace->info(TraceCode::CREDCASE_REQUEST_FAILED, [
                 'route_name' => $routeName,
                 'error_message' => $e->getMessage()
@@ -239,6 +314,8 @@ class CredcaseApi
             "admin_read" => $this->adminReadKeySplitzExperiment,
             "find_read" => $this->findKeySplitzExperiment,
             "find_read_v2" => $this->findKeyV2SplitzExperiment,
+            "create" => $this->createKeySplitzExperiment,
+            "rotate" => $this->rotateKeySplitzExperiment,
             default => "",
         };
     }

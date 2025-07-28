@@ -36,6 +36,33 @@ return [
         ],
     ],
 
+    'testCreateFirstKey' => [
+        'request' => [
+            'url' => '/keys',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'key'
+            ],
+        ],
+    ],
+
+    'testRotateKey' => [
+        'request' => [
+            'url' => '/keys/rzp_test_AltTestAuthKey',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'old' => [
+                ],
+                'new' => [
+                ]
+            ],
+        ],
+    ],
+
     'testNewKeyWithOtp' => [
         'request' => [
             'url' => '/keys/otp/rzp_test_AltTestAuthKey',

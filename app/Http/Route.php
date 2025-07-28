@@ -913,6 +913,7 @@ class Route
         'merchant_replace_key_with_otp'            => ['put',      'keys/otp/{id}',                                  'KeyController@putKeysWithOtp'                                      ],
         'admin_key_migrate_to_credcase'            => ['post',     'admin/keys/migrate_to_credcase',                 'KeyController@migratetoCredcase'                                   ],
         'bulk_regenerate_api_keys'                 => ['post',     'regenerate-api-key/bulk',                        'KeyController@bulkRegenerateApiKey'                                ],
+        'expire_keys'                              => ['post',     'keys/expire',                                    'KeyController@expireKeys'                                          ],
         'admin_key_migrate_impersonation_grants'   => ['post',     'admin/keys/migrate_impersonation_grants',        'MerchantController@migrateImpersonationGrants'                     ],
         'admin_consumer_migrate_apps_to_credcase'  => ['post',     'admin/consumers/migrate_apps_to_credcase',       'ConsumerController@migrateInternalApplicationsToCredcase'          ],
         'merchant_gst_fetch'                       => ['get',      'merchant/gst',                                   'MerchantController@getGSTDetails'                                  ],
@@ -5185,7 +5186,6 @@ class Route
 
         // internal API for business website update
         'internal_post_website_update'  => ['post', 'internal/website/update/merchants/{id}', 'MerchantController@internalUpdateWebsite'],
-        'expire_keys'                   => ['post', 'keys/expire', 'KeyController@expireKeys'],
     ];
 
     public static $public = [
@@ -18916,7 +18916,9 @@ class Route
         'edge' => [
             'third_party_authenticate'
         ],
-        'credcase' => ['expire_keys'],
+        'credcase' => [
+            'expire_keys',
+        ],
 
         'razorassist' => [
             'action_comment_create',

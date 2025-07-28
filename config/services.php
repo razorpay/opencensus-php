@@ -82,7 +82,9 @@ return [
         'read_key_splitz'    => env('CREDCASE_READ_KEY_SPLITZ', ''),
         'admin_read_key_splitz' => env('CREDCASE_ADMIN_READ_KEY_SPLITZ', ''),
         'find_key_splitz'     => env('CREDCASE_FIND_KEY_SPLITZ',''),
-        'find_key_splitz_v2'  => env('CREDCASE_FIND_KEY_SPLITZ_V2', '')
+        'find_key_splitz_v2'  => env('CREDCASE_FIND_KEY_SPLITZ_V2', ''),
+        'create_key_splitz'   => env('CREDCASE_CREATE_KEY_SPLITZ', ''),
+        'rotate_key_splitz'  => env('CREDCASE_ROTATE_KEY_SPLITZ',''),
     ],
 
     // Ref \RZP\Services\CredcaseSigner.php.

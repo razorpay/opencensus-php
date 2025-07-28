@@ -58,7 +58,7 @@ class Entity extends Base\PublicEntity
      * When a key is rolled over, by default
      * the old key remains valid for 24 hours.
      */
-    const DEFAULT_KEY_EXPIRY_TIME_ON_ROLL = 86400;
+    const DEFAULT_KEY_EXPIRY_TIME_ON_ROLL_SECS = 86400;
 
     protected $hidden = [
         self::SECRET
@@ -210,11 +210,11 @@ class Entity extends Base\PublicEntity
 
         if ($delay === true) {
             // Delay by pre-specified time
-            $delaySeconds = self::DEFAULT_KEY_EXPIRY_TIME_ON_ROLL;
+            $delaySeconds = self::DEFAULT_KEY_EXPIRY_TIME_ON_ROLL_SECS;
         }
 
         $expiredAt = time() + $delaySeconds;
-        $this->setAttribute(self::EXPIRED_AT, $expiredAt);
+        $this->setExpiredAt($expiredAt);
     }
 
     public function getExpiredAt()

@@ -22,4 +22,8 @@ final class Metric
     const ENTITY_ORIGIN_OWNER_CACHE_MISS_TOTAL = 'entity_origin_owner_cache_miss_total';
 
     const ENTITY_ORIGIN_OWNER_MASTER_QUERY_TOTAL = 'entity_origin_owner_master_query_total';
+
+    const KEY_DUAL_WRITE_VALIDATION_FAIL_COUNT = 'key_dual_write_validation_fail_count';
+    const KEY_DUAL_WRITE_SUCCESS_COUNT = 'key_dual_write_success_count';
+    const KEY_DUAL_WRITE_FAILURE_COUNT = 'key_dual_write_failure_count';
 }

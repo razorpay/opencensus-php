@@ -33,4 +33,8 @@ class Constants
     const CREDCASE_SERVICE = 'credcaseService';
 
     const ROUTE = "route";
+
+    const REQUEST_CTX = 'request.ctx';
+
+    const DELAY_ROLL = 'delay_roll';
 }

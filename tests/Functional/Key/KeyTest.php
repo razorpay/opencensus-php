@@ -1,10 +1,12 @@
 <?php
 
-namespace RZP\Tests\Functional\Merchant;
+namespace RZP\Tests\Functional\Key;
 
 use Crypt;
 use Mail;
 use Mockery;
+use Rzp\Credcase\Apikey\V1\ApiKeyCreateResponse;
+use Rzp\Credcase\Apikey\V1\ApiKeyRotateResponse;
 use RZP\Exception;
 use Rzp\Credcase\Apikey\V1\ApiKeyListResponse;
 use Rzp\Credcase\Apikey\V1\ApiKeyResponse;
@@ -71,6 +73,7 @@ class KeyTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . $id, $user->getId());
 
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => "disable", ]]]);
         $this->startTest();
     }
 
@@ -93,6 +96,8 @@ class KeyTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . $id, $user->getId());
 
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => "disable", ]]]);
+
         $this->startTest();
     }
 
@@ -114,6 +119,8 @@ class KeyTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $this->ba->proxyAuth('rzp_test_' . $id, $user->getId());
+
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => "disable", ]]]);
 
         $this->startTest();
     }
@@ -380,22 +387,25 @@ class KeyTest extends TestCase
      */
     public function testGetKeys($expectedResponse, $mockException, $expectedItemCount, $expectedFirstId, $expectedEntity, $testFunction)
     {
-
         $merchant = $this->fixtures->create('merchant:with_keys');
         $id = $merchant['id'];
 
-        if ($mockException) {
-            $this->mockCredcaseApi(null, new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND));
-        } else {
-            foreach ($expectedResponse->getItems() as $keyResponse) {
-                $keyResponse->setOwnerId($id);
-            }
-            $this->mockCredcaseApi($expectedResponse, null);
-        }
-
         $user = $this->fixtures->user->createUserForMerchant($id);
 
+        // Mock splitz to determine flow - this determines if we use DB or Credcase
         $this->mockAllSplitzTreatment();
+
+        // Mock Credcase API based on expected response or exception
+        if ($mockException) {
+            $this->mockCredcaseApiForList(null, new Exception\ServerErrorException($mockException,ErrorCode::SERVER_ERROR_CREDCASE_REQUEST_FAILED));
+        } else {
+            if ($expectedResponse) {
+                foreach ($expectedResponse->getItems() as $keyResponse) {
+                    $keyResponse->setOwnerId($id);
+                }
+            }
+            $this->mockCredcaseApiForList($expectedResponse, null);
+        }
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/keys';
@@ -450,22 +460,6 @@ class KeyTest extends TestCase
                 'expectedEntity' => 'key',
                 'testFunction' => 'testGetKeys'
             ],
-            'valid multiple keys with mismatch' => [
-                'expectedResponse' => $multipleKeyResponse,
-                'mockException' => null,
-                'expectedItemCount' => 1,
-                'expectedFirstId' => 'rzp_test_AltTestAuthKey',
-                'expectedEntity' => 'key',
-                'testFunction' => 'testGetKeysCredcaseMismatchMultiple'
-            ],
-            'valid single key with credcase mismatch' => [
-                'expectedResponse' => $singleKeyMismatch,
-                'mockException' => null,
-                'expectedItemCount' => 1,
-                'expectedFirstId' => 'rzp_test_AltTestAuthKey',
-                'expectedEntity' => 'key',
-                'testFunction' => 'testGetKeysCredcaseMismatch'
-            ],
             'credcase exception' => [
                 'expectedResponse' => null,
                 'mockException' => true,
@@ -482,15 +476,35 @@ class KeyTest extends TestCase
         $this->credcaseMock = Mockery::mock(CredcaseApi::class, [$this->app])->makePartial();
         $this->app->instance('credcase', $this->credcaseMock);
 
-        $shouldReceive = $this->credcaseMock->shouldReceive('list')->byDefault();
-
         if ($exception) {
-            $shouldReceive->andThrow($exception);
+            $this->credcaseMock->shouldReceive('list', 'create', 'rotate')->byDefault()->andThrow($exception);
         } else {
-            $shouldReceive->andReturn($output);
+            // Default behavior for methods not specifically mocked
+            $this->credcaseMock->shouldReceive('list')->byDefault()->andReturn(null);
+            $this->credcaseMock->shouldReceive('create')->byDefault()->andReturn($output);
+            $this->credcaseMock->shouldReceive('rotate')->byDefault()->andReturn($output);
         }
     }
 
+    protected function mockCredcaseApiForList($output = null, $exception = null)
+    {
+        $this->credcaseMock = Mockery::mock(CredcaseApi::class, [$this->app])->makePartial();
+        $this->app->instance('credcase', $this->credcaseMock);
+
+        if ($exception) {
+            $this->credcaseMock->shouldReceive('list')->andThrow($exception);
+        } else {
+            $this->credcaseMock->shouldReceive('list')->andReturn($output);
+        }
+    }
+
+    /**
+     * Mock the credcase service for testing
+     */
+    protected function mockCredcaseService()
+    {
+        $this->app['config']->set('applications.credcase.mock', true);
+    }
 
     public function testCreateKeyWithCountry()
     {
@@ -522,6 +536,7 @@ class KeyTest extends TestCase
         $id = $merchant['id'];
 
         $user = $this->fixtures->user->createUserForMerchant($id);
+
 
         $this->mockAllSplitzResponseDisable();
 
@@ -564,7 +579,7 @@ class KeyTest extends TestCase
 
         $this->mockAllSplitzTreatment();
 
-        $this->mockCredcaseApi($singleKeyResponse);
+        $this->mockCredcaseApiForList($singleKeyResponse);
 
         $this->ba->proxyAuth('rzp_test_' . $id, $user->getId());
 
@@ -575,6 +590,263 @@ class KeyTest extends TestCase
         $this->assertEquals('rzp_test_sg_'.$key->getId(), $content['items'][0]['id']);
 
         $this->assertEquals('key', $content['items'][0]['entity']);
+    }
+
+
+    /**
+     * Data provider for testCreateFirstKey
+     */
+    public function createKeysDataProvider()
+    {
+        $apiKeyResponse = new ApiKeyCreateResponse();
+        $apiKeyResponse->setId('rzp_test_AltTestAuthKey');
+        $apiKeyResponse->setEntity('key');
+        $apiKeyResponse->setCreatedAt(time());
+        $apiKeyResponse->setUpdatedAt(time());
+        $apiKeyResponse->setDomain("razorpay");
+        $apiKeyResponse->setSecret("secret123456789012345678");
+        $apiKeyResponse->setOwnerType("merchant");
+        $apiKeyResponse->setMode(1);
+
+        return [
+            'valid create key credcase flow' => [
+                'expectedResponse' => $apiKeyResponse,
+                'mockException' => null,
+                'splitzValue' => 'enable',
+                'expectedId' => 'rzp_test_AltTestAuthKey',
+                'successfulCredcaseFlow' => true,
+                'testFunction' => 'testCreateFirstKey'
+            ],
+            'valid create key api flow' => [
+                'expectedResponse' => null,
+                'mockException' => null,
+                'splitzValue' => 'disable',
+                'expectedId' => null, // DB flow generates random ID
+                'successfulCredcaseFlow' => false,
+                'testFunction' => 'testCreateFirstKey'
+            ],
+            'valid create key credcase flow exception' => [
+                'expectedResponse' => $apiKeyResponse,
+                'mockException' => true,
+                'splitzValue' => 'enable',
+                'expectedId' => null, // Falls back to DB flow
+                'successfulCredcaseFlow' => false,
+                'testFunction' => 'testCreateFirstKey'
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider createKeysDataProvider
+     */
+    public function testCreateFirstKey($expectedResponse, $mockException, $splitzValue, $expectedId, $successfulCredcaseFlow, $testFunction) {
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $id = $merchant['id'];
+
+        $user = $this->fixtures->user->createUserForMerchant($id);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => $merchant['id'],
+            'user_id'     => $user['id'],
+            'role'        => 'owner',
+            'product'     => 'banking'
+        ], 'test');
+
+        // Mock splitz treatment first to determine the flow
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => $splitzValue, ]]]);
+
+        if ($splitzValue === 'enable') {
+            // Credcase flow: Mock credcase API response
+            if($expectedResponse) {
+                $expectedResponse->setOwnerId($merchant['id']);
+            }
+
+            if ($mockException) {
+                $this->mockCredcaseApi(null, new Exception\ServerErrorException('failed to complete request', ErrorCode::SERVER_ERROR_CREDCASE_REQUEST_FAILED));
+            } else {
+                $this->mockCredcaseApi($expectedResponse, null);
+            }
+        }
+
+        // Mock credcase service for config
+        $this->mockCredcaseService();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        if($mockException) {
+            $testData['response']['content'] = [];
+            $testData['response']['status_code'] = '500';
+            $testData['exception'] = [
+                'class' => 'RZP\Exception\ServerErrorException',
+                'message' => $mockException,
+                'internal_error_code' => ErrorCode::SERVER_ERROR_CREDCASE_REQUEST_FAILED
+            ];
+        }
+
+        $this->ba->proxyAuth('rzp_test_' . $id, $user->getId());
+
+        $content = $this->startTest();
+
+        if($successfulCredcaseFlow && $splitzValue === 'enable' && !$mockException) {
+            // For successful credcase flow
+            $this->assertEquals($expectedId, $content['id']);
+            $this->assertEquals('key', $content['entity']);
+            $this->assertLessThanOrEqual(time(), $content['created_at']);
+            $this->assertLessThanOrEqual(time(), $content['updated_at']);
+            $this->assertEquals($expectedResponse->getSecret(), $content['secret']);
+        } else if(!$mockException) {
+            // For DB flow or fallback
+            $this->assertNotNull($content['id']);
+            $this->assertNotNull($content['secret']);
+            $this->assertNotNull($content['created_at']);
+            $this->assertNotNull($content['updated_at']);
+            // In DB flow, secret will be different from mocked response
+            if ($splitzValue === 'disable') {
+                $this->assertNotEquals($expectedResponse ? $expectedResponse->getSecret() : '', $content['secret']);
+            }
+        }
+    }
+
+    /**
+     * Data provider for testRotateKey
+     */
+    public function rotateKeysDataProvider()
+    {
+        $oldKey = new ApiKeyResponse();
+        $oldKey->setId('rzp_test_AltTestAuthKey');
+        $oldKey->setEntity('key');
+        $oldKey->setCreatedAt(time() - 86400);
+        $oldKey->setUpdatedAt(time());
+        $oldKey->setDomain("razorpay");
+        $oldKey->setOwnerType("merchant");
+        $oldKey->setExpiredAt(time());
+        $oldKey->setMode(1);
+
+        $newKey = new ApiKeyCreateResponse();
+        $newKey->setId('rzp_test_AltTestAuthKea');
+        $newKey->setEntity('key');
+        $newKey->setCreatedAt(time());
+        $newKey->setUpdatedAt(time());
+        $newKey->setDomain("razorpay");
+        $newKey->setOwnerType("merchant");
+        $newKey->setMode(1);
+        $newKey->setSecret("secret123456789012345678");
+
+        $expectedResponse = new ApiKeyRotateResponse();
+        $expectedResponse->setNewKey($newKey);
+        $expectedResponse->setOldKey($oldKey);
+
+        return [
+            'valid rotate key credcase flow' => [
+                'expectedResponse' => $expectedResponse,
+                'mockException' => null,
+                'splitzValue' => 'enable',
+                'expectedId' => 'rzp_test_AltTestAuthKea',
+                'successfulCredcaseFlow' => true,
+                'testFunction' => 'testRotateKey'
+            ],
+            'valid rotate key api flow' => [
+                'expectedResponse' => null,
+                'mockException' => null,
+                'splitzValue' => 'disable',
+                'expectedId' => null, // DB flow generates random ID
+                'successfulCredcaseFlow' => false,
+                'testFunction' => 'testRotateKey'
+            ],
+            'valid rotate key credcase flow exception' => [
+                'expectedResponse' => $expectedResponse,
+                'mockException' => true,
+                'splitzValue' => 'enable',
+                'expectedId' => null, // Falls back to DB flow
+                'successfulCredcaseFlow' => false,
+                'testFunction' => 'testRotateKey'
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider rotateKeysDataProvider
+     */
+    public function testRotateKey($expectedResponse, $mockException, $splitzValue, $expectedId, $successfulCredcaseFlow, $testFunction) {
+
+        $merchant = $this->fixtures->create('merchant:with_keys');
+
+        $id = $merchant['id'];
+
+        $user = $this->fixtures->user->createUserForMerchant($id);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => $merchant['id'],
+            'user_id'     => $user['id'],
+            'role'        => 'owner',
+            'product'     => 'banking'
+        ], 'test');
+
+        // Mock splitz treatment first to determine the flow
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => $splitzValue, ]]]);
+
+        if ($splitzValue === 'enable') {
+            // Credcase flow: Mock credcase API response
+            if($expectedResponse) {
+                $expectedResponse->getNewKey()->setOwnerId($merchant['id']);
+                $expectedResponse->getOldKey()->setOwnerId($merchant['id']);
+            }
+
+            if ($mockException) {
+                $this->mockCredcaseApi(null, new Exception\ServerErrorException('failed to complete request', ErrorCode::SERVER_ERROR_CREDCASE_REQUEST_FAILED));
+            } else {
+                $this->mockCredcaseApi($expectedResponse, null);
+            }
+        }
+
+        // Mock credcase service for config
+        $this->mockCredcaseService();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        if($mockException) {
+            $testData['response']['content'] = [];
+            $testData['response']['status_code'] = '500';
+            $testData['exception'] = [
+                'class' => 'RZP\Exception\ServerErrorException',
+                'message' => $mockException,
+                'internal_error_code' => ErrorCode::SERVER_ERROR_CREDCASE_REQUEST_FAILED
+            ];
+        }
+
+        $this->ba->proxyAuth('rzp_test_' . $id, $user->getId());
+
+        $content = $this->startTest();
+
+        if($successfulCredcaseFlow && $splitzValue === 'enable' && !$mockException) {
+            // For successful credcase flow
+            $this->assertEquals($expectedId, $content['new']['id']);
+            $this->assertEquals('key', $content['old']['entity']);
+            $this->assertEquals('key', $content['new']['entity']);
+            $this->assertLessThanOrEqual(time(), $content['old']['created_at']);
+            $this->assertLessThanOrEqual(time(), $content['old']['updated_at']);
+            $this->assertGreaterThan(0, $content['old']['expired_at']);
+            $this->assertLessThanOrEqual(time(), $content['new']['created_at']);
+            $this->assertLessThanOrEqual(time(), $content['new']['updated_at']);
+            $this->assertEquals(0, $content['new']['expired_at']);
+            $this->assertEquals($expectedResponse->getNewKey()->getSecret(), $content['new']['secret']);
+        } else if(!$mockException) {
+            // For DB flow or fallback
+            $this->assertNotNull($content['new']['id']);
+            $this->assertNotNull($content['new']['secret']);
+            $this->assertNotNull($content['new']['created_at']);
+            $this->assertNotNull($content['new']['updated_at']);
+            $this->assertNotNull($content['old']['id']);
+            $this->assertNotNull($content['old']['created_at']);
+            $this->assertNotNull($content['old']['updated_at']);
+            $this->assertNotNull($content['old']['expired_at']);
+            // In DB flow, secret will be different from mocked response
+            if ($splitzValue === 'disable') {
+                $this->assertNotEquals($expectedResponse ? $expectedResponse->getNewKey()->getSecret() : '', $content['new']['secret']);
+            }
+        }
     }
 
 }

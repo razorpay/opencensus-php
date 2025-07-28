@@ -6,6 +6,8 @@ use App;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Constants\Mode;
@@ -21,6 +23,11 @@ use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 
 class Service extends Base\Service
 {
+
+    const CREDCASE_API = 'credcase';
+
+    const CREDCASE_SERVICE = 'credcaseService';
+
     const MIGRATE_TO_CREDCASE_INPUT_RULES = [
         'dry_run'            => 'required|boolean',
         'source'             => 'array',
@@ -103,7 +110,12 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
-        $response = (new Core)->rollKey($merchantId, $keyId, $input, $this->mode);
+        $delay = false;
+        if (isset($input[Constants::DELAY_ROLL])) {
+            $delay = $input[Constants::DELAY_ROLL] === '1';
+        }
+        unset($input[Constants::DELAY_ROLL]);
+        $response =(new Core)->rollKey($merchantId, $keyId, $this->mode, $delay);
 
         $this->sendSelfServeSuccessAnalyticsEventToSegmentForApiKeyRegeneration();
 
@@ -126,7 +138,12 @@ class Service extends Base\Service
             $this->merchant,
             $this->user,
             $this->mode === Mode::TEST);
-        return (new Core)->rollKey($merchantId, $keyId, $input, $this->mode);
+        $delay = false;
+        if (isset($input[Constants::DELAY_ROLL])) {
+            $delay = $input[Constants::DELAY_ROLL] === '1';
+        }
+        unset($input[Constants::DELAY_ROLL]);
+        return (new Core)->rollKey($merchantId, $keyId, $this->mode, $delay);
     }
 
     /**
@@ -179,7 +196,7 @@ class Service extends Base\Service
 
         $keyId = $key->getPublicId();
 
-        (new Core)->rollKey($merchantId, $keyId, [], $this->mode);
+        (new Core)->rollKey($merchantId, $keyId, $this->mode,false);
 
         $args = [
             MerchantConstants::MERCHANT                   => $merchantEntity,
@@ -324,7 +341,7 @@ class Service extends Base\Service
     public function logRouteName(string $keyId, string $action, string $tracecode, string $metric)
     {
         $app = App::getFacadeRoot();
-        $routeName = $app['request.ctx']->getRoute();
+        $routeName = Utils::getRoute();
 
         $this->trace->debug($tracecode, [
             'key_id' => $keyId,
@@ -336,5 +353,4 @@ class Service extends Base\Service
             'route_name' => $routeName,
         ]);
     }
-
 }
