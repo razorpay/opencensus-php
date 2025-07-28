@@ -6,6 +6,7 @@ use DB;
 use Mail;
 use Cache;
 use Carbon\Carbon;
+use RZP\Models\Admin\Service;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Models\Pricing\Fee;
@@ -4326,4 +4327,135 @@ class BankTransferTest extends TestCase
 
     }
 
+    public function testOnboardCollectxMerchantAdminActionForBankTransferSuccess()
+    {
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $this->ba->adminAuth('test');
+
+        (new AdminService())->setConfigKeys([
+            ConfigKey::COLLECTX_SERIES_PREFIX => [
+                '10000Demo' => 'RX1T',
+            ]
+        ]);
+
+        $oldRedisConfig = (new AdminService())->getConfigKey(['key' => ConfigKey::COLLECTX_SERIES_PREFIX]);
+
+        $request = [
+            'url'     => '/payouts/manual_action',
+            'method'  => 'post',
+            'content' => [
+                'reason' => "New Issue",
+                'action' => 'onboard_collectx_merchant',
+                'bulk_input' => [
+                    [
+                        'merchant_id' => '10000000000000',
+                        'gateway' => 'idfc',
+                        'series' => 'RX2T',
+                        'transfer_method' => 'bank_transfer'
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockCreateTerminalv3('RX2T', 'bt_idfc', 'idfc');
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('success', $response['status']);
+
+        $newRedisConfig = (new AdminService())->getConfigKey(['key' => ConfigKey::COLLECTX_SERIES_PREFIX]);
+
+        $this->assertArrayKeysExist($oldRedisConfig, ['10000Demo']);
+        $this->assertEquals('RX1T', $oldRedisConfig['10000Demo']);
+
+        $this->assertNotNull($newRedisConfig);
+        $this->assertNotEmpty($newRedisConfig);
+        $this->assertArrayKeysExist($newRedisConfig, ['10000Demo', '10000000000000']);
+
+        $this->assertEquals('RX1T', $newRedisConfig['10000Demo']);
+        $this->assertEquals('RX2T', $newRedisConfig['10000000000000']);
+
+        $this->assertCount(2, $newRedisConfig);
+        $this->assertNotEquals($oldRedisConfig, $newRedisConfig);
+
+        $feature = $this->getLastEntity('feature', true);
+        $this->assertEquals('10000000000000', $feature['entity_id']);
+        $this->assertEquals('collectx_enabled', $feature['name']);
+    }
+
+    public function testOnboardCollectxMerchantAdminActionForUpiTransferSuccess()
+    {
+        $this->addPermissionToBaAdmin('payout_manual_action');
+
+        $this->ba->adminAuth('test');
+
+        $request = [
+            'url'     => '/payouts/manual_action',
+            'method'  => 'post',
+            'content' => [
+                'reason' => "New Issue",
+                'action' => 'onboard_collectx_merchant',
+                'bulk_input' => [
+                    [
+                        'merchant_id' => '10000000000000',
+                        'gateway' => 'YESB',
+                        'series' => 'RX2T',
+                        'transfer_method' => 'upi_transfer'
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockCreateTerminalv3('RX2T', 'upi_yesbank', 'YESB');
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('success', $response['status']);
+
+        $virtualVPAPrefix = $this->getLastEntity('virtual_vpa_prefix', true);
+        $this->assertNotNull($virtualVPAPrefix);
+        $this->assertEquals('RX2T', $virtualVPAPrefix['prefix']);
+        $this->assertNotEmpty($virtualVPAPrefix['terminal_id']);
+
+        $feature = $this->getLastEntity('feature', true);
+        $this->assertEquals('10000000000000', $feature['entity_id']);
+        $this->assertEquals('collectx_enabled', $feature['name']);
+    }
+
+    public function mockCreateTerminalv3($series, $gateway, $gatewayAcquirer)
+    {
+        $terminalServiceMock = $this->getMockBuilder(\RZP\Services\TerminalsService::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['createTerminalV3'])
+            ->getMock();
+
+        $this->app->instance('terminals_service', $terminalServiceMock);
+
+        $response = [
+            "id" => "QxB4N3d3kMskWz",
+            "merchant_id" => "10000000000000",
+            "org_id" => "100000razorpay",
+            "procurer" => "razorpay",
+            "category" => "8220",
+            "network_category" => "pvt_education",
+            "enabled" => true,
+            "status" => "activated",
+            "gateway" => $gateway,
+            "gateway_merchant_id" => $series,
+            "gateway_acquirer" => $gatewayAcquirer,
+            "bank_transfer" => true,
+            "type" => [
+                "direct_settlement_with_refund",
+                "non_recurring",
+                "alpha_numeric_account"
+            ]
+        ];
+
+        $this->app->terminals_service
+            ->expects($this->once())
+            ->method('createTerminalV3')
+            ->willReturnCallback(function() use ($response) {
+                return $response;
+            });
+
+    }
 }

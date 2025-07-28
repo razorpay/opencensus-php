@@ -4042,5 +4042,203 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * 1. Assign new Terminal
+     * 2. If transfer method is bank_transfer: Add VA series in redis config: collectx_series_prefix
+     * 3. Else if transfer method is upi_transfer: Add VPA prefix in virtual_vpa_prefix table for upi_transfer
+     * 4. Enable collectx_enabled feature flag for the merchant
+     */
+    public function onboardCollectxMerchant($input) {
+        try {
+            $merchantId = $input['merchant_id'];
+            $gateway = $input['gateway'];
+            $series = $input['series'];
+            $method = $input['transfer_method'];
 
+            /** @var Merchant\Entity $merchant */
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $isBankTransfer = $method === \RZP\Models\BankTransfer\Collectx\Constants::BANK_TRANSFER;
+
+            $this->trace->info(TraceCode::ONBOARD_COLLECTX_MERCHANT_REQUEST_RECEIVED, [
+                'isBankTransfer' => $isBankTransfer,
+                'merchant' => $merchant
+            ]);
+
+            $this->checkDuplicateMerchantSeries($merchantId, $gateway, $series, $isBankTransfer);
+
+            $terminal = $this->createTerminal($merchantId, $gateway, $series, $merchant, $isBankTransfer);
+
+            $isBankTransfer ? $this->updateCollectxSeriesConfig($merchantId, $series) :
+                $this->createVirtualVpaPrefix($merchantId, $series, $terminal);
+
+            $this->addCollectxEnabledFeatureOnX($merchant);
+
+            $successResponse = [
+                "merchant_id" => $merchantId,
+                "terminal" => $terminal
+            ];
+            return response()->make($successResponse, 200, ['Content-Type' => 'text/plain']);
+        }
+        catch (BadRequestValidationFailureException $ex) {
+            $this->trace->error(TraceCode::ONBOARD_COLLECTX_MERCHANT_FAILED, [
+                'message' => $ex->getMessage(),
+                'input' => $input
+            ]);
+
+            $this->trace->traceException($ex);
+            return response()->make($ex->getMessage(), 400, ['Content-Type' => 'text/plain']);
+        }
+        catch (\Throwable $ex) {
+            $this->trace->error(TraceCode::ONBOARD_COLLECTX_MERCHANT_FAILED, [
+                'message' => $ex->getMessage(),
+                'input' => $input
+            ]);
+
+            $this->trace->traceException($ex);
+            return response()->make($ex->getMessage(), 500, ['Content-Type' => 'text/plain']);
+        }
+    }
+
+    private function checkDuplicateMerchantSeries($merchantId, $gateway, $series, $isBankTransfer)
+    {
+        if ($isBankTransfer)
+        {
+            $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::COLLECTX_SERIES_PREFIX]);
+
+            $this->trace->info(TraceCode::GET_COLLECTX_REDIS_CONFIG, [
+                'redis_config' => $config
+            ]);
+
+            if (array_key_exists($merchantId, $config))
+            {
+                throw new BadRequestValidationFailureException('VA Series already exist for the merchant for bank transfer');
+            }
+        }
+        else {
+            $existingVPAPrefix = $this->repo->virtual_vpa_prefix->fetchEntityByMerchantId($merchantId);
+
+            $this->trace->info(TraceCode::GET_EXISTING_VIRTUAL_VPA_PREFIXES, [
+                'existing_vpa_prefix' => $existingVPAPrefix
+            ]);
+
+            if ($existingVPAPrefix !== null) {
+                throw new BadRequestValidationFailureException('VPA Series already exist for the merchant for upi transfer');
+            }
+        }
+    }
+
+    private function addCollectxEnabledFeatureOnX($merchant): void
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::COLLECTX_ENABLED))
+        {
+            return;
+        }
+
+        $featureParams = [
+            Feature\Entity::ENTITY_ID => $merchant->getId(),
+            Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Feature\Entity::NAMES => [Feature\Constants::COLLECTX_ENABLED]
+        ];
+
+        $this->trace->info(TraceCode::ADDING_COLLECTX_ENABLED_FEATURE, [
+            'feature_params' => $featureParams
+        ]);
+
+        $featureService = (new Feature\Service());
+        $featureService->merchant = $merchant;
+        $featureService->addFeatures($featureParams);
+
+        $this->trace->info(TraceCode::COLLECTX_ENABLED_FEATURE_ADDED);
+    }
+
+    /**
+     * Create terminal for either bank transfer or UPI transfer
+     */
+    private function createTerminal($merchantId, $gateway, $series, $merchant, $isBankTransfer)
+    {
+        $createTerminalInput = $this->buildTerminalInput($gateway, $series, $merchant, $isBankTransfer);
+
+        $this->trace->info(TraceCode::COLLECTX_CREATE_TERMINAL_INPUT, [
+            'create_terminal_input' => $createTerminalInput
+        ]);
+
+        $terminal = $this->app['terminals_service']->createTerminalV3($merchantId, $createTerminalInput);
+        if ($terminal === null) {
+            throw new \Exception('Terminal creation failed');
+        }
+
+        $this->trace->info(TraceCode::COLLECTX_TERMINAL_CREATED, [
+            'terminal' => $terminal
+        ]);
+
+        return $terminal;
+    }
+
+    /**
+     * Update COLLECTX_SERIES_PREFIX config for bank_transfer method
+     * @throws BadRequestException
+     */
+    private function updateCollectxSeriesConfig($merchantId, $series): void
+    {
+        $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::COLLECTX_SERIES_PREFIX]);
+
+        $this->trace->info(TraceCode::GET_COLLECTX_REDIS_CONFIG, [
+            'config' => $config
+        ]);
+
+        $config[$merchantId] = $series;
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::COLLECTX_SERIES_PREFIX => $config]);
+
+        $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::COLLECTX_SERIES_PREFIX]);
+
+        $this->trace->info(TraceCode::GET_COLLECTX_REDIS_CONFIG, [
+            'config' => $config
+        ]);
+    }
+
+    /**
+     * Create VirtualVpaPrefix entry for upi_transfer method
+     * @throws \Exception
+     */
+    private function createVirtualVpaPrefix($merchantId, $series, $terminal): void
+    {
+        $virtualVpaPrefixInput = [
+            'merchant_id' => $merchantId,
+            'prefix' => $series,
+            'terminal_id' => $terminal['id'],
+        ];
+
+        $virtualVpaPrefix = (new \RZP\Models\VirtualVpaPrefix\Entity())->build($virtualVpaPrefixInput);
+
+        $this->trace->info(TraceCode::COLLECTX_VIRTUAL_VPA_PREFIX_ADDED, [
+            'vpa_prefix_input' => $virtualVpaPrefixInput,
+            'vpa_prefix_entity' => $virtualVpaPrefix
+        ]);
+
+        $this->repo->virtual_vpa_prefix->saveOrFail($virtualVpaPrefix);
+    }
+
+    private function buildTerminalInput($gateway, $series, $merchant, $isBankTransfer): array
+    {
+        $input = [
+            'gateway_acquirer' => $gateway,
+            'category' => $merchant->getCategory(),
+            'network_category' => $merchant->getCategory2(),
+            'gateway_merchant_id' => $series,
+            'status' => 'activated'
+        ];
+
+        if ($isBankTransfer) {
+            $input['gateway'] = Gateway::$bankTransferProviderGateway[$gateway];
+            $input['bank_transfer'] = true;
+            $input['type'] = BankTransferConstants::COLLECTX_TERMINAL_TYPE_FOR_BANK_TRANSFER;
+        } else {
+            $input['gateway'] = Gateway::$upiToGatewayMap[$gateway];
+            $input['upi'] = true;
+            $input['type'] = BankTransferConstants::COLLECTX_TERMINAL_TYPE_FOR_UPI_TRANSFER;
+        }
+
+        return $input;
+    }
 }

@@ -6,6 +6,7 @@ use App;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\BankTransfer\Constants as BankTransferConstants;
 use RZP\Models\User;
 use RZP\Models\Card;
 use RZP\Models\Batch;
@@ -182,7 +183,8 @@ class Validator extends Base\Validator
         'redis_get',
 //        'redis_set',
         'generate_merchant_invoice',
-        'manual_smart_collect_entity_creation'
+        'manual_smart_collect_entity_creation',
+        'onboard_collectx_merchant'
     ];
 
     const PAYOUTS_MANUAL_ACTION_DEFAULT_INPUT = 'payouts_manual_action_default_input';
@@ -196,6 +198,8 @@ class Validator extends Base\Validator
     const REDIS_GET = 'redis_get';
 
     const REDIS_SET = 'redis_set';
+
+    const ONBOARD_COLLECTX_MERCHANT = 'onboard_collectx_merchant';
 
     const GENERATE_MERCHANT_INVOICE = 'generate_merchant_invoice';
 
@@ -769,6 +773,30 @@ class Validator extends Base\Validator
         'bank_transfer_request_id' => 'sometimes|string',
         'request_payload' => 'sometimes|array'
     ];
+
+    protected static $onboardCollectxMerchantRules = [
+        'merchant_id' => 'required|string',
+        'gateway' => 'required|string|custom',
+        'series' => 'required|string',
+        'transfer_method' => 'required|string|custom'
+    ];
+
+    protected function validateGateway($attribute, $gateway)
+    {
+        if(!in_array($gateway, BankTransferConstants::COLLECTX_BANK_TRANSFER_GATEWAYS) and
+            !in_array($gateway, BankTransferConstants::COLLECTX_UPI_TRANSFER_GATEWAYS))
+        {
+            throw new BadRequestValidationFailureException('Invalid gateway');
+        }
+    }
+
+    protected function validateTransferMethod($attribute, $transferMethod)
+    {
+        if (!in_array($transferMethod, BankTransferConstants::COLLECTX_TRANSFER_METHOD_TYPES))
+        {
+            throw new BadRequestValidationFailureException('Transfer method can either be bank_transfer or upi_transfer');
+        }
+    }
 
     protected function getPayoutCore()
     {
@@ -2437,6 +2465,13 @@ class Validator extends Base\Validator
 //                    $this->setStrictFalse()->validateInput(self::REDIS_SET,$input);
 //                }
 //                break;
+
+            case 'onboard_collectx_merchant':
+
+                foreach ($bulkInput as $input) {
+                    $this->setStrictFalse()->validateInput(self::ONBOARD_COLLECTX_MERCHANT, $input);
+                }
+                break;
 
             case 'generate_merchant_invoice':
 

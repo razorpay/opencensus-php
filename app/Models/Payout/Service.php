@@ -6928,6 +6928,14 @@ class Service extends Base\Service
 //                    }, $bulk_input);
 //                    break;
 
+                case 'onboard_collectx_merchant':
+                    $processFunction(function($input)use (&$successResponse) {
+                        $res = (new \RZP\Models\BankTransfer\Service())->onboardCollectxMerchant($input);
+                        if($res)
+                            array_push($successResponse, $res);
+                    }, $bulk_input);
+                    break;
+
                 case 'manual_smart_collect_entity_creation':
                     $processFunction(function($input) use (&$successResponse) {
                        $res = (new BankTransferController())->manualProcessBankTransferRequest($input);

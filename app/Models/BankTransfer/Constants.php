@@ -2,6 +2,9 @@
 
 namespace RZP\Models\BankTransfer;
 
+use RZP\Models\Payment\Processor\Upi;
+use RZP\Models\VirtualAccount\Provider;
+
 class Constants
 {
     //Commission fee will always be in USD
@@ -105,4 +108,36 @@ class Constants
         self::TRANSFER_TYPE_UPI,
     ];
 
+    const COLLECTX_BANK_TRANSFER_GATEWAYS = [
+        Provider::YESBANK,
+        Provider::IDFC,
+        Provider::AXIS,
+        Provider::RBL,
+    ];
+
+    const COLLECTX_UPI_TRANSFER_GATEWAYS = [
+        Upi::YESB
+    ];
+
+    const COLLECTX_TRANSFER_METHOD_TYPES = [
+        \RZP\Models\BankTransfer\Collectx\Constants::BANK_TRANSFER,
+        \RZP\Models\BankTransfer\Collectx\Constants::UPI_TRANSFER
+    ];
+
+    const COLLECTX_TERMINAL_TYPE_FOR_BANK_TRANSFER = [
+        'direct_settlement_with_refund',
+        'non_recurring',
+        'alpha_numeric_account'
+    ];
+
+    /**
+     * todo: we need to remove 'pay' from terminal types because it is not needed for collectx.
+     * Need to discuss this with the terminals team and remove this check in terminals codebase.
+     */
+    const COLLECTX_TERMINAL_TYPE_FOR_UPI_TRANSFER = [
+        'direct_settlement_with_refund',
+        'non_recurring',
+        'alpha_numeric_account',
+        'pay'
+    ];
 }
