@@ -796,10 +796,7 @@ class FraudDetectionTest extends TestCase
                             return 'shield_on';
                         }
 
-                        if ($feature === 'save_txn_app_urls')
-                        {
-                            return 'on';
-                        }
+                        // save_txn_app_urls experiment removed - no longer in use
 
                         return 'shield_off';
                     }));
@@ -1406,141 +1403,7 @@ class FraudDetectionTest extends TestCase
         $this->runFraudDetectionTestWithVirtualDeviceId('');
     }
 
+    // SAVE_TXN_APP_URLS experiment tests removed - experiment no longer in use
+    // Removed: runFraudDetectionForAppUrl method and all testFraudDetectionTxnAppUrls* test methods
 
-
-    protected function runFraudDetectionForAppUrl($appUrls, $packageName = null, $platform = null, $os = null, $action = 'review')
-    {
-        $this->mockRazorx('save_txn_url');
-
-        $merchant_id = '10000000000000';
-
-        $this->fixtures->create('merchant_detail', [
-            'merchant_id'    => '10000000000000',
-        ]);
-
-        $merchantBusinessDetail = (new BusinessDetail\Service())->saveBusinessDetailsForMerchant($merchant_id, [
-            'app_urls'  => $appUrls,
-        ]);
-
-        $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient')->makePartial();
-
-        $shieldClient->shouldReceive('evaluateRules')
-                     ->andReturn([
-                                     "action"                => $action,
-                                     "max_rule_weight"       => 0,
-                                     "maxmind_score"         => null,
-                                     "triggered_rule_weight" => 0,
-                                 ]);
-
-        $this->app->instance('shield', $shieldClient);
-
-        $testPayment = $this->getDefaultPaymentArray();
-
-
-        $testPayment['card']['number'] = '341111111111111';
-
-        $testPayment['card']['cvv'] = '1234';
-
-        $testPayment['_'] = [
-            'package_name' => $packageName,
-            'platform'     => $platform,
-            'os'           => $os,
-        ];
-
-        $this->doAuthPayment($testPayment);
-
-        $response = (new BusinessDetail\Service())->fetchBusinessDetailsForMerchant($merchantBusinessDetail->getMerchantId());
-
-        return $response;
-    }
-
-    public function testFraudDetectionTxnAppUrlsWithAllNullValues()
-    {
-        $merchantBusinessDetail = $this->runFraudDetectionForAppUrl([]);
-
-        $appUrls = $merchantBusinessDetail->toArrayPublic()['app_urls'];
-
-        $this->assertEquals([], $appUrls);
-    }
-
-    public function testFraudDetectionTxnAppUrlsWithIncorrectPlatform()
-    {
-        $merchantBusinessDetail = $this->runFraudDetectionForAppUrl([], 'b', 'mac', 'android', 'review');
-
-        $appUrls = $merchantBusinessDetail->toArrayPublic()['app_urls'];
-
-        $this->assertEquals([], $appUrls);
-    }
-
-    public function testFraudDetectionTxnAppUrlsWithValidValues()
-    {
-        $merchantBusinessDetail = $this->runFraudDetectionForAppUrl([], 'b', 'mobile_sdk', 'android', 'review');
-
-        $expectedTxnUrls = [
-            sprintf('%s%s', BusinessDetail\Constants::PLAYSTORE_URL_PREFIX, 'b'),
-        ];
-
-        $txnUrls = $merchantBusinessDetail->toArrayPublic()['app_urls'][BusinessDetail\Constants::TXN_PLAYSTORE_URLS];
-
-        $this->assertEquals($expectedTxnUrls, $txnUrls);
-    }
-
-    public function testFraudDetectionTxnAppUrlsWithTxnUrlAlreadyPresentAndUrlsLimit()
-    {
-        $inputUrls = [];
-
-        for ($i = 0; $i < BusinessDetail\Constants::TXN_PLAYSTORE_URL_COUNT_LIMIT; $i++)
-        {
-            array_push($inputUrls, sprintf('%sx.%d', BusinessDetail\Constants::PLAYSTORE_URL_PREFIX, $i));
-        }
-
-        $merchantBusinessDetail = $this->runFraudDetectionForAppUrl([
-            BusinessDetail\Constants::TXN_PLAYSTORE_URLS    => $inputUrls
-        ], 'x.2', 'mobile_sdk', 'android', 'review');
-
-        $expectedLastUrl = sprintf('%sx.2', BusinessDetail\Constants::PLAYSTORE_URL_PREFIX);
-
-        $txnUrls = $merchantBusinessDetail->toArrayPublic()['app_urls'][BusinessDetail\Constants::TXN_PLAYSTORE_URLS];
-
-        $this->assertEquals($expectedLastUrl, end($txnUrls));
-    }
-
-    public function testFraudDetectionTxnAppUrlsWithTxnUrlNotPresentAndUrlsLimit()
-    {
-        $inputUrls = [];
-
-        for ($i = 0; $i < BusinessDetail\Constants::TXN_PLAYSTORE_URL_COUNT_LIMIT; $i++)
-        {
-            array_push($inputUrls, sprintf('%sx.%d', BusinessDetail\Constants::PLAYSTORE_URL_PREFIX, $i));
-        }
-
-        $merchantBusinessDetail = $this->runFraudDetectionForAppUrl([
-            BusinessDetail\Constants::TXN_PLAYSTORE_URLS    => $inputUrls
-        ], 'x.99', 'mobile_sdk', 'android', 'review');
-
-        $expectedFirstUrl = sprintf('%sx.1', BusinessDetail\Constants::PLAYSTORE_URL_PREFIX);
-
-        $expectedLastUrl = sprintf('%sx.99', BusinessDetail\Constants::PLAYSTORE_URL_PREFIX);
-
-        $txnUrls = $merchantBusinessDetail->toArrayPublic()['app_urls'][BusinessDetail\Constants::TXN_PLAYSTORE_URLS];
-
-        $this->assertEquals($expectedLastUrl, end($txnUrls));
-
-        $this->assertEquals($expectedFirstUrl, $txnUrls[0]);
-    }
-
-    public function testFraudDetectionTxnAppUrlsWithPlaystoreUrlPresent()
-    {
-        $inputUrls = [
-            BusinessDetail\Constants::PLAYSTORE_URL => sprintf('%s%s', BusinessDetail\Constants::PLAYSTORE_URL_PREFIX, 'c.s'),
-            BusinessDetail\Constants::APPSTORE_URL => null,
-        ];
-        $merchantBusinessDetail = $this->runFraudDetectionForAppUrl($inputUrls, 'b', 'mobile_sdk', 'android', 'review');
-
-        $appUrls = $merchantBusinessDetail->toArrayPublic()['app_urls'];
-
-        $this->assertArrayNotHasKey(BusinessDetail\Constants::TXN_PLAYSTORE_URLS, $appUrls);
-
-        $this->assertEquals($inputUrls, $appUrls);
-    }
 }

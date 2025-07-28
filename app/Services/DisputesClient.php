@@ -225,11 +225,54 @@ class DisputesClient
 
     }
 
+    public function isSplitzExperimentEnable(string $merchantId, string $experimentName, string $checkVariant): bool
+    {
+        $variant = $this->getSplitzResponse($merchantId, $experimentName);
+
+        if ($variant === $checkVariant)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function getSplitzResponse(string $merchantId, string $experimentName)
+    {
+        $experimentId = $this->app['config']->get($experimentName);
+        
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id'            => $merchantId,
+                'experiment_id' => $experimentId,
+            ]);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $experimentId ?? null,
+                'Result'        => $response ?? null
+            ]);
+
+            return $response['response']['variant']['name'] ?? '';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::SPLITZ_ERROR, [
+                'error'         => $e->getMessage(),
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $experimentId ?? null
+            ]);
+
+            return '';
+        }
+    }
+
     protected function shouldSendDualWrite($entityData, $table): bool
     {
-        $variant = $this->app['razorx']->getTreatment($table, RazorxTreatment::DISPUTES_DUAL_WRITE, $this->app['basicauth']->getMode() ?? Mode::LIVE);
+        $variantVal = $this->isSplitzExperimentEnable($table, RazorxTreatment::DISPUTES_DUAL_WRITE, RazorxTreatment::RAZORX_VAR_VARIANT_ON);
 
-        return $variant === RazorxTreatment::RAZORX_VARIANT_ON;
+        return $variantVal;
     }
 
     public function isShadowModeDualWrite($isInternationalPayment = true): bool
@@ -241,8 +284,9 @@ class DisputesClient
 
         $featureFlag = sprintf("%s_%s", RazorxTreatment::DISPUTES_DUAL_WRITE_SHADOW_MODE, $this->app['api.route']->getCurrentRouteName());
 
-        return $this->app['razorx']->getTreatment($this->app['request']->getTaskId(), $featureFlag, $this->app['basicauth']->getMode() ?? Mode::LIVE)
-            === RazorxTreatment::RAZORX_VARIANT_ON;
+        $experimentVal = $this->isSplitzExperimentEnable($this->app['request']->getTaskId(), $featureFlag, RazorxTreatment::RAZORX_VAR_VARIANT_ON);
+
+        return $experimentVal;
     }
 
     // reverse shadow enabled implies that dispute service will handle all the business logic, while only entity creation/updation happens on

@@ -1526,6 +1526,24 @@ return array(
 
     'source_request_id_mapping_experiment_id' => env('SOURCE_REQUEST_ID_MAPPING_EXPERIMENT_ID'),
 
+    'disputes_dual_write_shadow_mode_payment_dispute_create' => env('DISPUTES_DUAL_WRITE_SHADOW_MODE_PAYMENT_DISPUTE_CREATE'),
+
+    'disputes_dual_write' => env('DISPUTES_DUAL_WRITE'),
+
+    'disputes_decomp' => env('DISPUTES_DECOMP'),
+
+    'disputes_decomp_dispute_fetch' => env('DISPUTES_DECOMP_DISPUTE_FETCH'),
+
+    'disputes_decomp_dispute_fetch_multiple' => env('DISPUTES_DECOMP_DISPUTE_FETCH_MULTIPLE'),
+
+    'disputes_decomp_dispute_fetch_multiple_count' => env('DISPUTES_DECOMP_DISPUTE_FETCH_MULTIPLE_COUNT'),
+
+    'disputes_decomp_dispute_reason_fetch_internal' => env('DISPUTES_DECOMP_DISPUTE_REASON_FETCH_INTERNAL'),
+
+    'disputes_decomp_get_dispute_document_types_metadata' => env('DISPUTES_DECOMP_GET_DISPUTE_DOCUMENT_TYPES_METADATA'),
+
+    'disputes_decomp_dispute_fetch_multiple_aggregate' => env('DISPUTES_DECOMP_DISPUTE_FETCH_MULTIPLE_AGGREGATE'),
+
     'pgos_read_for_metadata_enabled' => env('PGOS_READ_FOR_METADATA_ENABLED'),
 
     'block_competitor_application' => env('BLOCK_COMPETITOR_APPLICATION'),

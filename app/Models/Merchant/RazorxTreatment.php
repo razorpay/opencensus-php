@@ -46,6 +46,7 @@ final class RazorxTreatment
 
     // the ON variant
     const RAZORX_VARIANT_ON     = 'on';
+    const RAZORX_VAR_VARIANT_ON = 'variant_on';
 
     //the enable variant
     const VARIANT_ENABLE = 'enable';
@@ -492,8 +493,7 @@ final class RazorxTreatment
     // Experiment to send merchant downtimes to checkout and in fetch api
     const SEND_MERCHANT_DOWNTIMES           = 'send_merchant_downtimes';
 
-    // Experiment to save transaction app urls in merchant business detail
-    const SAVE_TXN_APP_URLS = 'save_txn_app_urls';
+    // SAVE_TXN_APP_URLS experiment removed - no longer in use (experiment to save transaction app urls in merchant business detail)
 
     // Experiment for transfers state machine.
     const ROUTE_TRANSFER_STATE = 'route_transfer_state';
@@ -775,13 +775,13 @@ final class RazorxTreatment
     const DESCRIPTION_FIELD_CUSTOMER_FLAG = 'desc_customer_flag';
 
     // Experiment to migrate disputes routes from API to disputes service
-    const DISPUTES_DECOMP = 'disputes_decomp';
+    const DISPUTES_DECOMP = 'app.disputes_decomp';
 
     // Experiment to enable dual writes on dispute service
-    const DISPUTES_DUAL_WRITE = 'disputes_dual_write';
+    const DISPUTES_DUAL_WRITE = 'app.disputes_dual_write';
 
     // Experiment to enable dual writes on dispute service in shadow mode
-    const DISPUTES_DUAL_WRITE_SHADOW_MODE = 'disputes_dual_write_shadow_mode';
+    const DISPUTES_DUAL_WRITE_SHADOW_MODE = 'app.disputes_dual_write_shadow_mode';
 
     // Experiment to enable dual writes on dispute service in shadow mode
     const DISPUTES_REVERSE_SHADOW = 'disputes_reverse_shadow';

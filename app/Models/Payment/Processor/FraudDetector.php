@@ -112,51 +112,6 @@ trait FraudDetector
         }
     }
 
-    protected function isEligibleForStoringPackageName($riskData, $shieldPayload): bool
-    {
-        $shieldPayloadInput = $shieldPayload[Shield::INPUT] ?? [];
-
-        // note: platform might change from mobile_sdk to android_mobile_sdk in the future
-        return (
-            (isset($riskData[Risk\Entity::FRAUD_TYPE]) === false ||
-             $riskData[Risk\Entity::FRAUD_TYPE] !== Risk\Type::CONFIRMED)
-            && isset($shieldPayloadInput[Shield::PACKAGE_NAME]) === true
-            && isset($shieldPayloadInput[Shield::PLATFORM]) === true
-            && $shieldPayloadInput[Shield::PLATFORM] === Shield::MOBILE_SDK
-            && isset($shieldPayloadInput[Shield::OS]) === true
-            && $shieldPayloadInput[Shield::OS] === Shield::ANDROID
-        );
-    }
-
-    protected function savePackageNameIfApplicable(& $riskData, $merchant)
-    {
-        try {
-            $shieldPayload = $riskData[Shield::EVALUATION_PAYLOAD] ?? [];
-
-            unset($riskData[Shield::EVALUATION_PAYLOAD]);
-
-            $variant = $this->app->razorx->getTreatment($merchant->getId(), Merchant\RazorxTreatment::SAVE_TXN_APP_URLS, $this->mode);
-
-            if ($variant !== 'on' || $this->isEligibleForStoringPackageName($riskData, $shieldPayload) === false)
-            {
-                return;
-            }
-
-            $currentUrl = sprintf('%s%s', BusinessDetail\Constants::PLAYSTORE_URL_PREFIX, $shieldPayload[Shield::INPUT][Shield::PACKAGE_NAME]);
-
-            (new BusinessDetail\Service())->saveBusinessDetailsForMerchant($merchant->getId(), [
-                BusinessDetail\Constants::TXN_URL => $currentUrl,
-            ]);
-
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException($e, Trace::WARNING, TraceCode::TXN_APP_URL_NOT_SAVED, [
-                'merchant_id' => $merchant->getId(),
-            ]);
-        }
-    }
-
     protected function validateFraudDetectionV2(Payment\Entity $payment, Merchant\Entity $merchant, $input)
     {
         if (($this->app['config']->get('app.env') === Environment::PRODUCTION) and
@@ -187,7 +142,7 @@ trait FraudDetector
 
         $riskData = $this->app['shield.service']->getRiskAssessment($payment, $input);
 
-        $this->savePackageNameIfApplicable($riskData, $merchant);
+        // SAVE_TXN_APP_URLS experiment removed - savePackageNameIfApplicable call removed as no longer in use
 
         $triggeredRules = $riskData[Shield::TRIGGERED_RULES] ?? [];
 

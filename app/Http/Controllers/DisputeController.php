@@ -9,6 +9,7 @@ use RZP\Constants\Entity;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Dispute\Core;
 use RZP\Services\DisputesClient;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\Metric;
@@ -35,6 +36,50 @@ class DisputeController extends Controller
         $this->trace->count(Metric::DISPUTES_SERVICE_ERROR_COUNT);
     }
 
+
+    private function isSplitzExperimentEnable(string $merchantId, string $experimentName, string $checkVariant): bool
+    {
+        $variant = $this->getSplitzResponse($merchantId, $experimentName);
+
+        if ($variant === $checkVariant)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function getSplitzResponse(string $merchantId, string $experimentName)
+    {
+        $experimentId = $this->config->get($experimentName);
+        
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id'            => $merchantId,
+                'experiment_id' => $experimentId,
+            ]);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $experimentId,
+                'Result'        => $response
+            ]);
+
+            return $response['response']['variant']['name'] ?? '';
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::SPLITZ_ERROR, [
+                'error'         => $e->getMessage(),
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $experimentId ?? null
+            ]);
+
+            return '';
+        }
+    }
+
     protected function getDisputeServiceResponse(): array
     {
         $response = null;
@@ -43,9 +88,14 @@ class DisputeController extends Controller
         {
             $featureFlag = sprintf("%s_%s", RazorxTreatment::DISPUTES_DECOMP, $this->app['api.route']->getCurrentRouteName());
 
-            $variant = $this->app['razorx']->getTreatment($this->app['request']->getId(), $featureFlag, $this->app['basicauth']->getMode() ?? Mode::LIVE);
+            $variant = $this->isSplitzExperimentEnable($this->app['request']->getId(), $featureFlag, RazorxTreatment::RAZORX_VAR_VARIANT_ON);
 
-            if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+            $this->app['trace']->info(TraceCode::SPLITZ_RESPONSE_FOR_DISPUTES,[
+                'variant_val' => $variant,
+                'feature_flag' => $featureFlag,
+            ]);
+
+            if ($variant)
             {
                 $response = $this->app['disputes']->forwardToDisputesService();
             }
