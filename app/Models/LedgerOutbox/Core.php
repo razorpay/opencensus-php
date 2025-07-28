@@ -2172,12 +2172,19 @@ class Core extends Base\Core
         }
     }
 
-    public function findTransferPaymentFromNotes($transfer)
+    public function findTransferPaymentFromNotes($transfer, $useTidb = false)
     {
 
         $payloadName = $this->getPayloadName($transfer->getPublicId(),LedgerConstants::TRANSFER);
 
-        $outboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadNameWithTrashedOrderByNewest($payloadName);
+        if ($useTidb === true)
+        {
+            $outboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadNameWithTrashedOrderByNewestFromTiDB($payloadName);
+        }
+        else
+        {
+            $outboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadNameWithTrashedOrderByNewest($payloadName);
+        }
 
         if (count($outboxEntries) == 0)
         {

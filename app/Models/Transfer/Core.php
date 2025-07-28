@@ -790,6 +790,42 @@ class Core extends Base\Core
         $this->repo->saveOrFail($transferPayment);
     }
 
+    public function setPaymentAmountTransferred(Payment\Entity $payment, int $amount)
+    {
+        if ($payment->isTransferredInOldFlow())
+        {
+            $this->repo->payment->lockForUpdateAndReload($payment);
+
+            $this->trace->info(
+                TraceCode::PAYMENT_UPDATE_AMOUNT_TRANSFERRED,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'amount'        => $amount,
+                ]);
+
+            $payment->transferAmount($amount);
+
+            $this->repo->saveOrFail($payment);
+
+            return;
+        }
+
+        $transferPayment = (new TransferPaymentCore)->createOrFetch($payment);
+
+        $this->repo->transfer_payment->lockForUpdateAndReload($transferPayment);
+
+        $this->trace->info(
+            TraceCode::TRANSFER_PAYMENT_UPDATE_AMOUNT_TRANSFERRED,
+            [
+                'payment_id'    => $payment->getId(),
+                'amount'        => $amount,
+            ]);
+
+        $transferPayment->transferAmountFix($amount);
+
+        $this->repo->saveOrFail($transferPayment);
+    }
+
     /**
      * Create and process a transfer
      *

@@ -42,6 +42,7 @@ class PaymentUpdate extends Job
             [
                 'payment_id' => $this->payment->getId(),
                 'params'     => $params,
+                'attempts'   => $this->attempts()
             ]
         );
 
@@ -60,7 +61,8 @@ class PaymentUpdate extends Job
                 500,
                 TraceCode::SAVE_PAYMENT_VIA_ROUTE_SERVICE_FAILURE,
                 [
-                    'id' => $this->payment->getId()
+                    'id' => $this->payment->getId(),
+                    'attempts' => $this->attempts(),
                 ]);
 
             $this->traceFailureMetrics('paymentUpdateJob', millitime()-$startTime);
@@ -103,10 +105,26 @@ class PaymentUpdate extends Job
     {
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
+            $this->trace->info(
+                TraceCode::SAVE_PAYMENT_VIA_ROUTE_SERVICE_RETRY_EXHAUSTED,
+                [
+                    'payment_id' => $this->payment->getId(),
+                    'attempts'   => $this->attempts()
+                ]
+            );
+
             $this->delete();
         }
         else
         {
+            $this->trace->info(
+                TraceCode::SAVE_PAYMENT_VIA_ROUTE_SERVICE_RETRY,
+                [
+                    'payment_id' => $this->payment->getId(),
+                    'attempts'   => $this->attempts()
+                ]
+            );
+
             $this->release(self::RETRY_INTERVAL);
         }
     }

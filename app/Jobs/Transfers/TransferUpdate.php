@@ -42,7 +42,8 @@ class TransferUpdate extends Job
             TraceCode::SAVE_TRANSFER_VIA_ROUTE_SERVICE,
             [
                 'transfer_id' => $this->transfer->getId(),
-                'params'     => $params,
+                'params'      => $params,
+                'attempts'    => $this->attempts()
             ]
         );
 
@@ -61,7 +62,8 @@ class TransferUpdate extends Job
                 500,
                 TraceCode::SAVE_TRANSFER_VIA_ROUTE_SERVICE_FAILURE,
                 [
-                    'id' => $this->transfer->getId()
+                    'id' => $this->transfer->getId(),
+                    'attempts' => $this->attempts(),
                 ]);
 
             $this->traceFailureMetrics('transferUpdateJob', millitime()-$startTime);
@@ -104,10 +106,26 @@ class TransferUpdate extends Job
     {
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
+            $this->trace->info(
+                TraceCode::SAVE_TRANSFER_VIA_ROUTE_SERVICE_RETRY_EXHAUSTED,
+                [
+                    'transfer_id' => $this->transfer->getId(),
+                    'attempts'    => $this->attempts()
+                ]
+            );
+
             $this->delete();
         }
         else
         {
+            $this->trace->info(
+                TraceCode::SAVE_TRANSFER_VIA_ROUTE_SERVICE_RETRY,
+                [
+                    'transfer_id' => $this->transfer->getId(),
+                    'attempts'    => $this->attempts()
+                ]
+            );
+
             $this->release(self::RETRY_INTERVAL);
         }
     }

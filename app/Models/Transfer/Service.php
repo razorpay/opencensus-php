@@ -1743,7 +1743,7 @@ class Service extends Base\Service
      * This route is used to manually process the transfers from dark env currently.
      *
      * @param array $input
-     * @return void
+     * @return array[]
      * @throws BadRequestValidationFailureException
      * @throws LogicException
      */
@@ -1907,13 +1907,14 @@ class Service extends Base\Service
 
                     $transfer->setAttempts(1);
 
-                    $transfer->saveOrFail();
+                    $this->repo->transfer->saveOrFail($transfer);
                 }
 
                 break;
             }
 
             case 'mark_failed':
+            case 'mark_invalid_transfer':
             {
                 // To update the status of transfers to failed state
                 // Data should be array of transfer IDs
@@ -1923,7 +1924,7 @@ class Service extends Base\Service
                 $this->trace->info(
                     TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
                     [
-                        'option' => 'mark_failed',
+                        'option' => $option,
                         'input'  => $input,
                     ]
                 );
@@ -1937,6 +1938,15 @@ class Service extends Base\Service
                     $transfer->setStatus(Status::FAILED);
 
                     $transfer->setFailed();
+
+                    $transfer->setErrorCode(ErrorCode::BAD_REQUEST_ERROR);
+
+                    $transfer->setMessage("Manually failed");
+
+                    if ($option === 'mark_invalid_transfer')
+                    {
+                        $transfer->setMessage("Invalid transfer, adjustment done on CLS and manually failed. Do not retry");
+                    }
 
                     $source = $transfer->getSourceType();
 
@@ -1959,13 +1969,14 @@ class Service extends Base\Service
 
                     (new \RZP\Models\LedgerOutbox\Core())->softDelete($transfer->getPublicId(), \RZP\Models\Ledger\Constants::TRANSFER);
 
-                    $transfer->saveOrFail();
+                    $this->repo->transfer->saveOrFail($transfer);
                 }
 
                 break;
             }
 
             case 'mark_processed':
+            case 'mark_processed_skip_amount_trf':
             {
                 // To update the status of transfers to processed state
                 // Data should be array of transfer IDs
@@ -1975,7 +1986,7 @@ class Service extends Base\Service
                 $this->trace->info(
                     TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
                     [
-                        'option' => 'mark_processed',
+                        'option' => $option,
                         'input'  => $input,
                     ]
                 );
@@ -1984,7 +1995,7 @@ class Service extends Base\Service
 
                 foreach ($transferIds as $transferId)
                 {
-                    $this->repo->transaction(function () use ($transferId) {
+                    $this->repo->transaction(function () use ($option, $transferId) {
                         $transfer = $this->repo->transfer->findOrFail($transferId);
 
                         if (($transfer->getStatus() === Status::PENDING) or ($transfer->getStatus() === Status::FAILED))
@@ -2034,7 +2045,11 @@ class Service extends Base\Service
                                 $sourcePayment = $this->repo->payment->findOrFail($sourcePayment->getId());
                             }
 
-                            (new Core())->updatePaymentAmountTransferred($sourcePayment, $totalTransferAmount);
+                            if ($option === 'mark_processed')
+                            {
+                                (new Core())->updatePaymentAmountTransferred($sourcePayment, $totalTransferAmount);
+                            }
+
 
                             $transfer->setProcessed();
 
@@ -2217,7 +2232,20 @@ class Service extends Base\Service
                         $transferProcessor = new OrderTransfer($sourcePayment);
                     }
 
-                    $transferPaymentId = (new \RZP\Models\LedgerOutbox\Core())->findTransferPaymentFromNotes($transfer);
+                    $transferPaymentId = (new \RZP\Models\LedgerOutbox\Core())->findTransferPaymentFromNotes($transfer, true);
+
+                    if ($transferPaymentId === null)
+                    {
+                        $this->trace->error(TraceCode::TRANSFER_PAYMENT_NOT_FOUND_FOR_TRANSFER, [
+                            'transfer_id'    => $transfer->getId(),
+                        ]);
+
+                        throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
+                            null,
+                            [
+                                'transfer_id'      => $transfer->getId(),
+                            ]);
+                    }
 
                     $transferPayment = $transferProcessor->createTransferredEntity($transfer, $sourcePayment, $transferPaymentId);
 
@@ -2505,6 +2533,112 @@ class Service extends Base\Service
                 return $resp;
             }
 
+            case 'retry_rearch_transfer':
+            {
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'retry_rearch_transfer',
+                        'input'  => $input,
+                    ]
+                );
+                $transferIds = $input['data'];
+
+                $successIds = [];
+
+                $failedIds = [];
+
+                foreach ($transferIds as $transferId)
+                {
+                    try
+                    {
+                        // make request to micro service
+                        $resp = App::getFacadeRoot()['route']->retryRearchTransfer($transferId);
+
+                        $this->trace->info(
+                            TraceCode::RETRY_TRANSFER_RESPONSE,
+                            [
+                                'transfer_id'      => $input,
+                                'response'         => $resp,
+                            ]
+                        );
+
+                       if ($resp['success'] == true)
+                       {
+                           $successIds[] = $transferId;
+                       }
+                       else
+                       {
+                           $failedIds[] = $transferId;
+                       }
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $failedIds[] = $transferId;
+
+                        $this->trace->traceException(
+                            $e,
+                            Logger::ERROR,
+                            TraceCode::RETRY_TRANSFER_EXCEPTION,
+                            [
+                                'transfer_id'       => $transferId,
+                            ]
+                        );
+                    }
+                }
+
+                $response = [
+                    'success' => $successIds,
+                    'failed'  => $failedIds,
+                ];
+
+                $this->trace->info(
+                    TraceCode::RESPONSE,
+                    [
+                        'input'      => $input,
+                        'response'   => $response,
+                    ]
+                );
+
+                return $response;
+            }
+
+            case 'set_amount_transferred':
+            {
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                    [
+                        'option' => 'set_amount_transferred',
+                        'input'  => $input,
+                    ]
+                );
+
+                $inputDta = $input['data'];
+
+                foreach ($inputDta as $data)
+                {
+                    $amount = $data['amount'];
+
+                    $paymentId = $data['payment_id'];
+
+                    $sourcePayment = $this->repo->payment->findOrFail($paymentId);
+
+                    (new Core())->setPaymentAmountTransferred($sourcePayment, $amount);
+
+                    $this->trace->info(
+                        TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION,
+                        [
+                            'option' => 'set_amount_transferred',
+                            'amount' => $amount,
+                            'payment_id' => $paymentId,
+                            'status' => 'success',
+                        ]
+                    );
+                }
+
+                break;
+            }
+
             case 'reverse_transfer':
             {
                 $this->trace->info(
@@ -2523,7 +2657,7 @@ class Service extends Base\Service
 
                     $reversalInput = $reversalData['input'];
 
-                    $transfer = $this->repo->transfer->findOrFail($transferId);
+                    $transfer = $this->repo->transfer->findByPublicId($transferId);
 
                     $this->merchant = $this->repo->merchant->findOrFail($transfer->getMerchantId());
 

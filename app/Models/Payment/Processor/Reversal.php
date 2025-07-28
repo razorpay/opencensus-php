@@ -408,6 +408,13 @@ trait Reversal
                 if ($transfer->isRearch() && in_array($transfer->getStatus(), [Transfer\Status::PENDING, Transfer\Status::CREATED]))
                 {
                     // For rearch transfer, wait till transfer reaches terminaL state
+                    $this->trace->info(TraceCode::REVERSAL_ALL_FOR_PENDING_REARCH_TRANSFER_NOT_ALLOWED, [
+                        'transfer_id'   => $transfer->getId(),
+                        'status'        => $transfer->getStatus(),
+                        'payment_id'    => $payment->getId(),
+                        'merchant_id'   => $transfer->getMerchantId(),
+                    ]);
+
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSFER_IN_PROGRESS);
                 }
 
@@ -440,6 +447,12 @@ trait Reversal
                     if ($transfer->isRearch() && in_array($transfer->getStatus(), [Transfer\Status::PENDING, Transfer\Status::CREATED]))
                     {
                         // For rearch transfer, wait till transfer reaches terminaL state
+                        $this->trace->info(TraceCode::REVERSAL_ALL_FOR_PENDING_REARCH_TRANSFER_NOT_ALLOWED, [
+                            'transfer_id'   => $transfer->getId(),
+                            'status'        => $transfer->getStatus(),
+                            'payment_id'    => $payment->getId(),
+                            'merchant_id'   => $transfer->getMerchantId(),
+                        ]);
                         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSFER_IN_PROGRESS);
                     }
 

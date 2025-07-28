@@ -2017,7 +2017,10 @@ class Service extends Base\Service
             $amountTransferredFromPayment = $amountTransferredDetailsFromPayment['amount_transferred'];
         }
 
-        $amountTransferredDetailsFromOrder = $this->repo->transfer->fetchAmountTransferred($payment->getApiOrderId());
+        if (empty($payment->getApiOrderId()) === false)
+        {
+            $amountTransferredDetailsFromOrder = $this->repo->transfer->fetchAmountTransferred($payment->getApiOrderId());
+        }
 
         if (empty($amountTransferredDetailsFromOrder) === true or empty($amountTransferredDetailsFromOrder['amount_transferred']) === true)
         {

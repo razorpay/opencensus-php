@@ -4,6 +4,7 @@ namespace RZP\Models\LedgerOutbox;
 
 use App;
 use DB;
+use RZP\Base\ConnectionType;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -94,6 +95,16 @@ class Repository extends Base\Repository
     public function fetchOutboxEntriesByPayloadNameWithTrashedOrderByNewest($payloadName) : PublicCollection
     {
         return $this->newQuery()
+            ->from(\DB::raw('`ledger_outbox`'))
+            ->where(Entity::PAYLOAD_NAME,'=', $payloadName)
+            ->withTrashed()
+            ->orderBy(Entity::CREATED_AT, 'DESC')
+            ->get();
+    }
+
+    public function fetchOutboxEntriesByPayloadNameWithTrashedOrderByNewestFromTiDB($payloadName) : PublicCollection
+    {
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT))
             ->from(\DB::raw('`ledger_outbox`'))
             ->where(Entity::PAYLOAD_NAME,'=', $payloadName)
             ->withTrashed()

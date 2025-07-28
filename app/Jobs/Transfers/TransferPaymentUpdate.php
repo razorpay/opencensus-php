@@ -43,6 +43,7 @@ class TransferPaymentUpdate extends Job
                 'transfer_payment_id' => $this->transferPayment->getId(),
                 'payment_id'          => $this->transferPayment->getPaymentId(),
                 'params'              => $params,
+                'attempts'            => $this->attempts(),
             ]
         );
 
@@ -63,6 +64,7 @@ class TransferPaymentUpdate extends Job
                 [
                     'id'         => $this->transferPayment->getId(),
                     'payment_id' => $this->transferPayment->getPaymentId(),
+                    'attempts'   => $this->attempts(),
                 ]);
 
             $this->traceFailureMetrics('transferPaymentUpdateJob', millitime()-$startTime);
@@ -105,10 +107,26 @@ class TransferPaymentUpdate extends Job
     {
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
+            $this->trace->info(
+                TraceCode::SAVE_TRANSFER_PAYMENT_VIA_ROUTE_SERVICE_EXHAUSTED,
+                [
+                    'transfer_payment_id' => $this->transferPayment->getId(),
+                    'attempts'    => $this->attempts()
+                ]
+            );
+
             $this->delete();
         }
         else
         {
+            $this->trace->info(
+                TraceCode::SAVE_TRANSFER_VIA_ROUTE_SERVICE_RETRY,
+                [
+                    'transfer_payment_id' => $this->transferPayment->getId(),
+                    'attempts'    => $this->attempts()
+                ]
+            );
+
             $this->release(self::RETRY_INTERVAL);
         }
     }

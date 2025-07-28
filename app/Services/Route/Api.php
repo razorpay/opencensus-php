@@ -292,6 +292,19 @@ class Api extends Base
         return $this->sendRequest(Constant::UPDATE_FEATURE_ENDPOINT, Requests::POST, $input);
     }
 
+    /**
+     * To retry rearch transfer
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function retryRearchTransfer($transferId) : array
+    {
+        $endpoint = sprintf(Constant::RETRY_REARCH_TRANSFER_ENDPOINT, $transferId);
+
+        return $this->sendRequest($endpoint, Requests::POST);
+    }
+
+
     private function forceFillTransferFromResponse($response)
     {
         if (empty($response) === false)
