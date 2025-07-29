@@ -23,6 +23,10 @@ class Metric extends Base\Core
     const FAV_UPDATE_FROM_FTS_WEBHOOK_FAILED_COUNT       = 'fav_update_from_fts_webhook_failed';
     const FTS_FAILURE_EXCEPTION_COUNT                    = 'fts_failure_exception_count';
 
+    const FAV_SYNC_SUCCESS_COUNT                   = 'fav_sync_success_count';
+
+    const FAV_SYNC_FAILURE_COUNT                   = 'fav_sync_failure_count';
+
     // FAV Service Metrics/Alerts
     const INVALID_FAV_CREATE_REQUEST_TO_FAV_SERVICE      = 'invalid_fav_create_request_to_fav_service';
 
@@ -47,6 +51,8 @@ class Metric extends Base\Core
     const RBL_VPA_VALIDATE_GATEWAY_TIME_DURATION = 'rbl_vpa_validate_gateway_time_duration';
     const RBL_VPA_VALIDATE_GATEWAY_AUTH_TOKEN_FETCH_TIME_DURATION = 'rbl_vpa_validate_gateway_auth_token_fetch_time_duration';
     const RBL_VPA_VALIDATE_SESSION_TOKEN_FETCH_TIME_DURATION = 'rbl_vpa_validate_session_token_fetch_time_duration';
+
+    const FAV_SYNC_POLLING_IN_SECONDS = 'fav_sync_polling_in_seconds';
 
     public function pushCreatedMetrics(string $fundAccountType)
     {

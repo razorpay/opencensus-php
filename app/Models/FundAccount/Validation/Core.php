@@ -2444,6 +2444,9 @@ class Core extends Base\Core
 
     public function getSyncResponseForFav(string $favId, Merchant\Entity $merchant): ?Entity
     {
+
+        $startTime = millitime();
+
         $this->trace->info(TraceCode::FAV_POLLING_STARTED, [
             'fav_id' => $favId,
             'merchant_id' => $merchant->getId(),
@@ -2466,6 +2469,11 @@ class Core extends Base\Core
 
                     $this->trace->info(TraceCode::FAV_POLLING_SUCCESS, [
                         'fav_id' => $favId,
+                        'merchant_id' => $merchant->getId(),
+                        'attempt' => $attempt,
+                        'status' => $polledEntity->getStatus()
+                    ]);
+                    $this->trace->count(Metric::FAV_SYNC_SUCCESS_COUNT, [
                         'merchant_id' => $merchant->getId(),
                         'attempt' => $attempt,
                         'status' => $polledEntity->getStatus()
@@ -2493,6 +2501,11 @@ class Core extends Base\Core
         }
 
         if (empty($polledEntity) === true) {
+
+            $this->trace->count(Metric::FAV_SYNC_FAILURE_COUNT, [
+                'merchant_id' => $merchant->getId(),
+            ]);
+
             $this->trace->error(TraceCode::FAV_POLLING_FAILED, [
                 'fav_id' => $favId,
                 'merchant_id' => $merchant->getId(),
@@ -2501,6 +2514,9 @@ class Core extends Base\Core
 
             return null;
         }
+        $timeTaken = (millitime() - $startTime)/1000; // Convert to seconds
+
+        $this->trace->histogram(Metric::FAV_SYNC_POLLING_IN_SECONDS, $timeTaken);
 
         return $polledEntity;
     }
