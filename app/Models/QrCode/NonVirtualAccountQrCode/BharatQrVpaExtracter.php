@@ -221,5 +221,84 @@ class BharatQrVpaExtracter
         // Return null if TR not found
         return null;
     }
+
+    public static function removeCardDetails(string $qrString): string
+    {
+        try {
+            // Strip the CRC (last 4 characters)
+            $qrData = substr($qrString, 0, -4);
+            self::$qrString = $qrData;
+
+            // Parse TLVs
+            $tlvs = self::findTags(0);
+
+            // Replace tag 08 (card info)
+            foreach ($tlvs as $index => $tlv) {
+                if ($tlv->getTagNumber() === '08') {
+                    $dummyValue = 'ABCD00000000000000000000000'; // 11-char IFSC + 16-digit account
+                    $tlvs[$index] = new TLV('08', $dummyValue);
+                    break;
+                }
+            }
+
+            // Sort TLVs by tag number (numerical order) before rebuilding the QR string
+            usort($tlvs, function ($a, $b) {
+                return intval($a->getTagNumber()) <=> intval($b->getTagNumber());
+            });
+
+            // Rebuild QR string
+            $rebuiltQR = self::rebuildQRFromTLVs($tlvs);
+
+            // Add CRC tag and calculate CRC
+            $rebuiltQRWithCRCHeader = $rebuiltQR . '6304';
+            $crc = strtoupper(self::calculateCRC16($rebuiltQRWithCRCHeader));
+
+            return $rebuiltQRWithCRCHeader . $crc;
+        } catch (\Throwable $e) {
+            $app = App::getFacadeRoot();
+            $trace = $app['trace'];
+            $trace->traceException($e, Trace::ERROR, TraceCode::INVALID_BQR_STRING, [
+                'qrString' => $qrString,
+            ]);
+            return $qrString;
+        }
+    }
+
+    private static function rebuildQRFromTLVs(array $tlvs): string
+    {
+        $result = '';
+
+        foreach ($tlvs as $tlv) {
+            $tagValue = $tlv->getTagValue();
+            $length = strlen($tagValue);
+            $result .= $tlv->getTagNumber();
+            $result .= sprintf('%02d', $length);
+            $result .= $tagValue;
+        }
+
+        return $result;
+    }
+
+    private static function calculateCRC16(string $input): string
+    {
+        $crc = 0xFFFF;
+        $polynomial = 0x1021;
+        $bytes = unpack('C*', $input);
+
+        foreach ($bytes as $b) {
+            $crc ^= ($b << 8);
+            for ($i = 0; $i < 8; $i++) {
+                if (($crc & 0x8000) !== 0) {
+                    $crc = ($crc << 1) ^ $polynomial;
+                } else {
+                    $crc = $crc << 1;
+                }
+                $crc &= 0xFFFF;
+            }
+        }
+
+        return strtoupper(sprintf('%04X', $crc));
+    }
+
 }
 

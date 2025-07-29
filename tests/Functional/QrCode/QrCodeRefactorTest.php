@@ -3716,4 +3716,38 @@ class QrCodeRefactorTest extends TestCase
         $this->assertEquals($payment->getStoreId(), $qrCode->getAttribute('store_id'));
     }
 
+    public function testHDFCBankSQRCreationViaMerchantQRMigrateRouteWithDemoVPA()
+    {
+        $this->config['applications.ezetap-notification.mock'] = true;
+        $this->fixtures->merchant->addFeatures(['omni_enabled'], 'LiveAccountMer');
+        $this->getDedicatedTerminalSplitzResponseForVariantON();
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_code_create_refactor_gateway') => 'on',
+                $this->config->get('app.qr_payment_refactor_gateway')=> 'on',
+            ]
+        );
+
+        $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal', [
+            'gateway_merchant_id2' => 'demo@hdfcbank'
+        ]);
+
+        $qrCode = $this->migrateMerchantQrCode(
+            [
+                'merchant_id'        => 'LiveAccountMer',
+                'request_source'     => 'ezetap',
+                'vpa'                => 'demo@hdfcbank',
+                'device_id'          => '12345Test',
+                'qrString'           => 'upi://pay?ver=01&pa=demo@hdfcbank&tr=bankTr&pn=TestJk2&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
+                'type'               => "upi_qr",
+            ]);
+
+        $this->assertNotNull($qrCode);
+        $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
+        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
+        $this->assertEquals('demo@hdfcbank', $intentParam['pa']);
+        $this->assertEquals('bankTr', $intentParam['tr']);
+        $this->assertEquals('bankTr', $qrCodeEntity['reference']);
+        $this->assertEquals('12345Test', $qrCodeEntity['device_id']);
+    }
 }

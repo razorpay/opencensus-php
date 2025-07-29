@@ -63,6 +63,17 @@ class QrCodeController extends Controller
         return ApiResponse::json($entity);
     }
 
+    public function migrateQrForMerchant()
+    {
+        $input = Request::all();
+
+        $entity = Tracer::inspan(['name' => HyperTrace::QR_CODE_MIGRATE], function () use ($input) {
+            return (new NonVAQrCodeService())->migrateQrForMerchant($input);
+        });
+
+        return ApiResponse::json($entity);
+    }
+
     public function createTerminalAndMapQrToDevice()
     {
         $input = Request::all();

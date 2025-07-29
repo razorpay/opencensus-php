@@ -3531,4 +3531,92 @@ class QrCodeOnDedicatedTerminalTest extends TestCase
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
+
+    // HDFC Bank Migration Tests for /payments/merchant/migrate/qr_codes API
+    // These tests mirror the creation tests but for migration with HDFC Bank specific requirements
+
+    public function testSQRMigrationViaMerchantQRCreateRouteWithValidOauthAppID()
+    {
+        $this->getDedicatedTerminalSplitzResponseForVariantON();
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_gateway_unrecognised_payment_process') => 'on',
+                $this->config->get('app.recon_unexpected_qr_payment_via_upi_route')=> 'on',
+            ]
+        );
+
+        [$application, $accessMap, $partner] = $this->createPurePlatFormMerchantAndSubMerchant();
+        $this->fixtures->on('live')->merchant->enableMethod(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, 'upi');
+        $this->fixtures->on('live')->merchant->addFeatures(['qr_codes'], Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+
+        $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal',['merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID]);
+
+        $qrCode = $this->migrateMerchantQrCode(
+            [
+                'merchant_id'        => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                'vpa'                => 'rzp.qrtest@icici',
+                'oauth_application_id'         => $application['id'],
+                'usage'              => 'multiple_use',
+                'type'               => 'upi_qr',
+                'qrString'           => 'upi://pay?ver=01&pa=rzp.qrtest@icici&tr=test123&pn=TestMerchant&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
+            ]);
+
+        $this->assertNotNull($qrCode);
+        $qrCodeId = $qrCode['id'];
+        $this->fixtures->stripSign($qrCodeId);
+        $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
+        $this->assertEquals('api', $qrCodeEntity['request_source']);
+        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
+        $this->assertEquals('rzp.qrtest@icici', $intentParam['pa']);
+
+        $qcc   = $this->getDbLastEntity('qr_code_config','live');
+        $this->assertNotNull($qcc);
+        $this->assertStringContainsString($qrCodeId,$qcc['config_value']);
+        $this->assertStringContainsString(Shared::UPI_ICICI_TERMINAL_DEDICATED,$qcc['config_value']);
+
+        $entityOrigin   = $this->getDbLastEntity('entity_origin','live');
+        $this->assertNotNull($entityOrigin);
+        $this->assertEquals($qrCodeId, $entityOrigin['entity_id']);
+        $this->assertEquals($application['id'], $entityOrigin['origin_id']);
+    }
+
+    public function testSQRMigrationViaMerchantQRCreateRouteWithInvalidOauthAppID()
+    {
+        $this->getDedicatedTerminalSplitzResponseForVariantON();
+        $this->setMockSplitzTreatment(
+            [
+                $this->config->get('app.qr_gateway_unrecognised_payment_process') => 'on',
+                $this->config->get('app.recon_unexpected_qr_payment_via_upi_route')=> 'on',
+            ]
+        );
+
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $qrCode = $this->migrateMerchantQrCode(
+            [
+                'merchant_id'        => 'LiveAccountMer',
+                'vpa'                => 'rzp.qrTest@icici',
+                'oauth_application_id'         => 'random',
+                'usage'              => 'multiple_use',
+                'type'               => 'upi_qr',
+                'qrString'           => 'upi://pay?ver=01&pa=rzp.qrtest@icici&tr=test123&pn=TestMerchant&cu=INR&mc=5817&qrMedium=04&tn=PaymenttoTest',
+            ]);
+
+        $this->assertNotNull($qrCode);
+        $qrCodeId = $qrCode['id'];
+        $this->fixtures->stripSign($qrCodeId);
+        $qrCodeEntity = $this->getDbLastEntity('qr_code','live');
+        $this->assertEquals('api', $qrCodeEntity['request_source']);
+        $intentParam = $this->getIntentParamsFromQRString($qrCodeEntity['qr_string']);
+        $this->assertEquals('rzp.qrtest@icici', $intentParam['pa']);
+
+        $qcc   = $this->getDbLastEntity('qr_code_config','live');
+        $this->assertNotNull($qcc);
+        $this->assertStringContainsString($qrCodeId,$qcc['config_value']);
+        $this->assertStringContainsString(Shared::UPI_ICICI_TERMINAL_DEDICATED,$qcc['config_value']);
+
+        $entityOrigin   = $this->getDbLastEntity('entity_origin','live');
+        $this->assertNull($entityOrigin);
+    }
+
 }

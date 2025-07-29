@@ -273,6 +273,68 @@ class Core extends QrCode\Core
 
     }
 
+    public function migrateQrCodeForMerchant(array $input, array $additionalData = null)
+    {
+        $qrCode = (new Entity())->build($input);
+        if ($qrCode->getProvider() === Provider::BHARAT_QR and
+            $qrCode->getRequestSource() !== RequestSource::EZETAP)
+        {
+            throw new BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);
+        }
+
+        if ($qrCode->getDeviceId() !== null)
+        {
+            $deviceEntity = $this->app['pos.deviceservice']->fetchDevice($qrCode->getDeviceId());
+
+            if (empty($deviceEntity['store_id']) === false) {
+                $qrCode->setStoreId($deviceEntity['store_id']);
+            }
+        }
+
+        $this->checkFeatureEnabled($input);
+
+        $customer = $this->getCustomerIfGiven($input);
+
+        $terminal = $this->validateAndFetchTerminalIfAvailable($input, $additionalData);
+
+        //return existing QR CODE for terminal, if already exists.
+        $existingQrCodeId = (new BharatQrService())->findQrCodeIdFromQrCodeConfig($terminal);
+
+        if (empty($existingQrCodeId) === false)
+        {
+            $existingQrCode = $this->repo->qr_code->find($existingQrCodeId);
+
+            if (empty($existingQrCode) === false)
+            {
+                $this->trace->info(
+                    TraceCode::QR_CODE_ALREADY_EXIST_IN_QR_CONFIG,
+                    [
+                        'message' => 'QR_CODE_ALREADY_EXIST_IN_QR_CONFIG',
+                        'qrCode'  => $qrCode,
+                    ]
+                );
+                return $existingQrCode;
+            }
+        }
+
+        $qrCode->customer()->associate($customer);
+
+        $qrCode->merchant()->associate($this->merchant);
+
+        $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE_BUILD_QR_CODE], function () use ($terminal, $qrCode, $additionalData) {
+            return $this->migrate($qrCode, $terminal, $additionalData);
+        });
+        // Creates entity origin when QR code is created
+        // QR code creation won't be failed even if origin is not set.
+        if(isset($additionalData['oauth_application_id']) === true)
+        {
+            (new EntityOrigin\Core)->createEntityOriginByOauthAppId($qrCode, $additionalData['oauth_application_id']);
+        }
+
+        return $qrCode;
+
+    }
+
     private function build(Entity $qrCode, $terminal = null, $additionalData = null)
     {
         Tracer::inspan(['name' => HyperTrace::QR_CODE_BUILD_GENERATE_QR_STRING], function() use ($terminal, $qrCode, $additionalData)
@@ -285,6 +347,32 @@ class Core extends QrCode\Core
             else
             {
                 $qrCode->generateQrString($terminal);
+            }
+        });
+
+        Tracer::inspan(['name' => HyperTrace::QR_CODE_BUILD_SET_SHORT_URL], function () use ($qrCode)
+        {
+            $this->setShortUrl($qrCode);
+        });
+
+        Tracer::inspan(['name' => HyperTrace::QR_CODE_BUILD_SAVE_OR_FAIL], function () use ($qrCode)
+        {
+            $this->repo->saveOrFail($qrCode);
+        });
+
+        $this->addStaticQRinQRCodeConfig($qrCode, $terminal);
+
+        return $qrCode;
+    }
+
+    private function migrate(Entity $qrCode, $terminal = null, $additionalData = null)
+    {
+        Tracer::inspan(['name' => HyperTrace::QR_CODE_BUILD_GENERATE_QR_STRING], function() use ($terminal, $qrCode, $additionalData)
+        {
+            if (empty($additionalData['qrString']) === false or
+                empty($qrCode->getQrString()) === false)
+            {
+                $this->setQrStringFromRequestV2($qrCode, $additionalData,$terminal);
             }
         });
 
@@ -341,6 +429,84 @@ class Core extends QrCode\Core
                 }
             }
 
+            $qrCode->setQrString($qrString);
+            if(empty($tr) === false) {
+                $qrCode->setReference($tr);
+            }
+
+            //register the qrcode in switch
+            if ($terminal?->getGateway() === Gateway::UPI_RZPAPB)
+            {
+                $upiMode = (new Generator())->getQrCodeModeAccountingForOnlineAndOfflineRequestSource($qrCode, $terminal);
+                (new QrGatewayModule($this->app))->generateIntentQrForUpiRzpApb($qrCode, $terminal, $upiMode);
+            }
+
+            return $qrString;
+        }
+
+        return null;
+    }
+
+    public function setQrStringFromRequestV2(Entity $qrCode, $additionalData = null, $terminal=null)
+    {
+        $qrString = $additionalData['qrString'] ?? $qrCode->getQrString() ?? null;
+
+        if (empty($qrString) === false)
+        {
+            $this->trace->info(TraceCode::QR_CODE_REQUEST_VPA_QR_STRING_AVAILABLE, [
+                'message'  => 'QR_CODE_REQUEST_VPA_QR_STRING_AVAILABLE',
+                'qrString' => $qrString,
+            ]);
+
+            $tr = str_starts_with($qrString, 'upi')
+                ? $this->getTransactionReferenceFromQrString($qrString)
+                : BharatQrVpaExtracter::getTr($qrString);
+
+            if (str_starts_with($tr,  QrCode\Constants::QR_CODE_V2_ICICI_PREFIX) or str_starts_with($tr,  QrCode\Constants::QR_CODE_V2_HDFC_PREFIX))
+            {
+                $tr = substr($tr, 3); // Remove first 3 characters
+            }
+
+            if (str_ends_with($tr, QrCode\Constants::QR_CODE_V2_TR_SUFFIX))
+            {
+                $tr = mb_substr($tr, 0, -mb_strlen(QrCode\Constants::QR_CODE_V2_TR_SUFFIX));
+            }
+
+            $this->trace->info(
+                TraceCode::QR_CODE_EXTRACTED_TR,
+                [
+                    'transaction_reference' => $tr
+                ]
+            );
+
+            if(empty($tr)===true){
+                if($qrCode->getUsageType() !== UsageType::MULTIPLE_USE)
+                {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_REFERENCE_REQUIRED);
+                }
+
+                if($terminal?->getGateway() !== 'upi_jkbank' and $terminal?->getGateway() !== 'upi_airtel' )
+                {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_REFERENCE_REQUIRED);
+                }
+
+                if($terminal?->getGateway() === 'upi_jkbank')
+                {
+                    $tr = $qrCode->getId() . 'qrv2';
+                    $qrString = $this->updateTrIdInQrString($tr, $additionalData['qrString']);
+                }
+            }
+
+            $qrString = str_starts_with($qrString, 'upi')
+                      ? $qrString
+                      : BharatQrVpaExtracter::removeCardDetails($qrString);
+
+            $this->trace->info(
+                TraceCode::QR_CODE_EXTRACTED_CARD_DETAILS,
+                [
+                    'qr_string' => $qrString,
+                ]
+            );
             $qrCode->setQrString($qrString);
             if(empty($tr) === false) {
                 $qrCode->setReference($tr);

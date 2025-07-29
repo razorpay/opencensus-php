@@ -95,6 +95,20 @@ trait NonVirtualAccountQrCodeTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    private function migrateMerchantQrCode(array $input = [],$mode = 'test', $merchantId = '10000000000000', array $headers = [])
+    {
+        $this->ba->appAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/internal/payments/merchant/migrate/qr_codes',
+            'content' => $input,
+            'headers' => $headers,
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     private function updateDeviceIdForQrCode(array $input = [], array $headers = [])
     {
         $this->ba->appAuth();

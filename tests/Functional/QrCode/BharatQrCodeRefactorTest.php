@@ -1445,4 +1445,38 @@ class BharatQrCodeRefactorTest extends TestCase
         $this->assertEquals($qrCode['id'],$response['id']);
         $this->assertNull($qrCode->getDeviceId());
     }
+
+    public function testUpiHdfcMultipleUseMigrateUPIQrCode()
+    {
+        $count = 0;
+        $this->mockUpiQrMozartResponse();
+
+        $this->fixtures->create('terminal:dedicated_upi_mindgate_terminal', [
+            'gateway_merchant_id2' => 'demo@hdfcbank'
+        ]);
+        $this->migrateMerchantQrCode(
+            [
+                'merchant_id'    => 'LiveAccountMer',
+                'request_source' => 'ezetap',
+                'tid' => '222333',
+                'usage'          => 'multiple_use',
+                'type'           => 'bharat_qr',
+                "vpa" => "demo@hdfcbank",
+                'fixed_amount'   => true,
+                'payment_amount' => 100,
+                "qrString" => "0002010102110216440384980097730304165220240980097732061661000309800977300825HDFC00000990077202000058026310010A0000005240113demo@hdfcbank27430010A0000005240125STQ220224071009914I0134515204601053033565802IN5905Gagan6006Mysore610657001662410525STQ220224071009914I01345107087865453463047ee0",
+            ],
+            'live',
+            'LiveAccountMer'
+        );
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->assertEquals('LiveAccountMer', $qrCode->getMerchantId());
+        $this->assertEquals('bharat_qr', $qrCode->getProvider());
+        $this->assertEquals('multiple_use', $qrCode->getUsageType());
+        $this->assertEquals('active', $qrCode->getStatus());
+        $this->assertEquals('220224071009914I013451', $qrCode->getReference());
+        $this->assertEquals('000201010211021644038498009773030415522024098009773061661000309800977300827ABCD0000000000000000000000026310010A0000005240113demo@hdfcbank27430010A0000005240125STQ220224071009914I0134515204601053033565802IN5905Gagan6006Mysore610657001662410525STQ220224071009914I01345107087865453463040039', $qrCode->getQrString());
+    }
 }

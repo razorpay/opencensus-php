@@ -10,6 +10,7 @@ use RZP\Models\Order\Entity as Order;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Models\QrCode\Type;
 use RZP\Models\QrPayment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -252,6 +253,60 @@ class Service extends QrCode\Service
         return $qrCode->toArrayPublic();
     }
 
+    public function migrateQrForMerchant($input)
+    {
+        $startTimeMs = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::QR_CODE_MIGRATE_REQUEST, $input);
+
+        $errorMessage = null;
+
+        $metric = new Metric();
+
+        try
+        {
+            $qrCreateReq = [];
+
+            $this->setMerchantContextForQrCreate($input);
+
+            $qrCreateReq = $this->getInputForPartnerSqrMigrate($input);
+
+            $this->validateQrStringMigrateRequest($input);
+
+            (new Validator)->validateQrOnDedicatedTerminal($qrCreateReq);
+
+            $this->validateVpaInMigrateRequest($input);
+
+            $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_MIGRATE], function () use ($qrCreateReq, $input) {
+                return (new Core)->migrateQrCodeForMerchant($qrCreateReq, $input);
+            });
+
+            $this->publishQrCodeEvent($qrCode, Event::CREATED);
+
+            $gateway = $qrCode->getGatewayFromQrString();
+
+            $qrCreateReq[Entity::GATEWAY] = $gateway;
+        }
+        catch (\Exception $ex)
+        {
+            $errorMessage = $ex->getMessage();
+
+            $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::QR_CODE_CREATE_REQUEST_FAILED, $qrCreateReq);
+
+            throw $ex;
+        }
+        finally
+        {
+            $metric->pushCreateMetrics($qrCreateReq, $errorMessage);
+        }
+
+        $this->trace->info(TraceCode::QR_CODE_CREATED, $qrCode->toArrayPublic());
+
+        $metric->pushCreateLatencyMetrics($qrCreateReq, $startTimeMs, $qrCode->getGatewayLatencyForQrCreate());
+
+        return $qrCode->toArrayPublic();
+    }
+
     public function createSqrWithVPA($input)
     {
         $startTimeMs = microtime(true) * 1000;
@@ -363,6 +418,58 @@ class Service extends QrCode\Service
         }
     }
 
+    public function validateQrStringMigrateRequest($input)
+    {
+        if (isset($input['qrString']) === true) {
+            $qrString = $input['qrString'];
+
+            $tr = str_starts_with($qrString, 'upi')
+                ? (new Core)->getTransactionReferenceFromQrString($qrString)
+                : BharatQrVpaExtracter::getTr($qrString);
+
+            if (str_starts_with($tr,  QrCode\Constants::QR_CODE_V2_ICICI_PREFIX) or str_starts_with($tr,  QrCode\Constants::QR_CODE_V2_HDFC_PREFIX))
+            {
+                $tr = substr($tr, 3); // Remove first 3 characters
+            }
+
+            if (str_ends_with($tr, QrCode\Constants::QR_CODE_V2_TR_SUFFIX))
+            {
+                $tr = mb_substr($tr, 0, -mb_strlen(QrCode\Constants::QR_CODE_V2_TR_SUFFIX));
+            }
+
+            $this->trace->info(TraceCode::QR_CODE_EXTRACTED_TR, [
+                    'message'           => 'QR_CODE_EXTRACTED_TR',
+                    'tr for validation' => $tr,
+                ]
+            );
+
+            $gateway = (new Core)->fetchGatewayFromVpa($input['vpa']);
+            if ((empty($tr) === true) and
+                ($gateway !== "upi_jkbank"))
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_STRING_TR_EMPTY_ERROR);
+            }
+            if ($gateway !== 'upi_jkbank')
+            {
+                [$qrCode, $mode] = $this->app['repo']->qr_code->returnLiveOrTestModeQrCodeByMerchantReference($tr);
+
+                if (empty($mode) === false)
+                {
+                    $this->trace->info(
+                        TraceCode::QR_CODE_ALREADY_EXIST,
+                        [
+                            'message' => 'QR_CODE_ALREADY_EXIST',
+                            'qrCode'  => $qrCode,
+                            'mode'    => $mode,
+                        ]
+                    );
+
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_REQUEST);
+                }
+            }
+        }
+    }
+
     /**
      * Validates the request vpa with qrString pa[Payee Address]
      * @param array $input
@@ -380,6 +487,29 @@ class Service extends QrCode\Service
         //validated vpa from request and pa in qr string
         $pa=(new Core)->getPayeeVpaFromQrString($input['qrString']);
 
+        if($pa !== strtolower($input['vpa']))
+        {
+            $this->trace->info(TraceCode::QR_PAYEE_VPA_VALIDATION_FAILED, [
+                'message' => 'QR_PAYEE_VPA_VALIDATION_FAILED',
+            ]);
+            throw new BadRequestException(ErrorCode::QR_PAYEE_VPA_VALIDATION_FAILED);
+        }
+    }
+
+    public function validateVpaInMigrateRequest(array $input): void
+    {
+        if (empty($input['qrString']) === true)
+        {
+            return;
+        }
+
+        if ($input[Entity::REQ_PROVIDER] === Type::BHARAT_QR) {
+            $pa = BharatQrVpaExtracter::getVPA($input['qrString']);
+        } else {
+            $pa=(new Core)->getPayeeVpaFromQrString($input['qrString']);
+        }
+
+        //validated vpa from request and pa in qr string
         if($pa !== strtolower($input['vpa']))
         {
             $this->trace->info(TraceCode::QR_PAYEE_VPA_VALIDATION_FAILED, [
@@ -440,6 +570,38 @@ class Service extends QrCode\Service
         if (isset($input[NonVAQrCodeEntity::REQUEST_SOURCE]) === true)
         {
             $qrCreateReq[NonVAQrCodeEntity::REQUEST_SOURCE] = $input[NonVAQrCodeEntity::REQUEST_SOURCE];
+        }
+        if (isset($input[NonVAQrCodeEntity::DEVICE_ID]) === true)
+        {
+            $qrCreateReq[NonVAQrCodeEntity::DEVICE_ID] = $input[NonVAQrCodeEntity::DEVICE_ID];
+        }
+
+        return $qrCreateReq;
+    }
+
+    protected function getInputForPartnerSqrMigrate($input)
+    {
+
+        if (isset($input['vpa']) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_VPA_DOESNT_EXIST);
+        }
+
+        $qrCreateReq = [
+            'usage'        => 'multiple_use',
+            'fixed_amount' => false,
+            'vpa'          => $input['vpa']
+        ];
+
+        $qrCreateReq[NonVAQrCodeEntity::REQUEST_SOURCE] = RequestSource::API;
+
+        if (isset($input[NonVAQrCodeEntity::REQUEST_SOURCE]) === true)
+        {
+            $qrCreateReq[NonVAQrCodeEntity::REQUEST_SOURCE] = $input[NonVAQrCodeEntity::REQUEST_SOURCE];
+        }
+        if (isset($input[NonVAQrCodeEntity::REQ_PROVIDER]) === true)
+        {
+            $qrCreateReq[NonVAQrCodeEntity::REQ_PROVIDER] = $input[NonVAQrCodeEntity::REQ_PROVIDER];
         }
         if (isset($input[NonVAQrCodeEntity::DEVICE_ID]) === true)
         {

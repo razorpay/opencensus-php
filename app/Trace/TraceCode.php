@@ -3348,6 +3348,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_CODE_REQUEST_VPA_QR_STRING_AVAILABLE               = 'QR_CODE_REQUEST_VPA_QR_STRING_AVAILABLE';
     const QR_CODE_BAD_REQUEST_VPA_EXPERIMENT_NOT_ENABLED        = 'QR_CODE_BAD_REQUEST_VPA_EXPERIMENT_NOT_ENABLED';
     const QR_CODE_EXTRACTED_TR                                  = 'QR_CODE_EXTRACTED_TR';
+    const QR_CODE_EXTRACTED_CARD_DETAILS                        = 'QR_CODE_EXTRACTED_CARD_DETAILS';
     const QR_CODE_ALREADY_EXIST                                 = 'QR_CODE_ALREADY_EXIST';
     const QR_CODE_ALREADY_EXIST_IN_QR_CONFIG                    = 'QR_CODE_ALREADY_EXIST_IN_QR_CONFIG';
     const POS_QR_CODE_FEATURE_ENABLE_PAYLOAD                    = 'POS_QR_CODE_FEATURE_ENABLE_PAYLOAD';
@@ -5401,6 +5402,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CLOUDFRONT_EXPERIMENT_ENABLED                         = 'CLOUDFRONT_EXPERIMENT_ENABLED';
     const QR_CODE_UPI_GATEWAY_CALL_FOR_INTENT_URL               = 'QR_CODE_UPI_GATEWAY_CALL_FOR_INTENT_URL';
     const QR_CODE_CREATE_REQUEST                                = 'QR_CODE_CREATE_REQUEST';
+    const QR_CODE_MIGRATE_REQUEST                               = 'QR_CODE_MIGRATE_REQUEST';
     const QR_CODE_EDIT_REQUEST                                  = 'QR_CODE_EDIT_REQUEST';
     const QR_CODE_CHECKOUT_CREATE_REQUEST                       = 'QR_CODE_CHECKOUT_CREATE_REQUEST';
     const QR_CODE_PAYMENT_LINKS_CREATE_REQUEST                  = 'QR_CODE_PAYMENT_LINKS_CREATE_REQUEST';
