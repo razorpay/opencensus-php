@@ -121,13 +121,14 @@ class PayoutShadowService
 
             // Snapshot the request information immediately to avoid modifications by other middleware
             $requestMethod = $method;
-            $requestContent = $body;
+            $requestContent = json_encode($body);
             $requestHeaders = self::getHeadersToForward($headers);
 
             // Add tracking header to identify mirrored requests
             $requestHeaders['X-Mirrored-Request'] = 'true';
             $requestHeaders[RequestHeader::X_RAZORPAY_REQUEST_ID] = $requestId;
             $requestHeaders[RequestHeader::X_AMAZON_TRACE_ID] = $awsTraceId;
+            $requestHeaders['X-Request-Body'] = $requestContent;
 
             $url = rtrim($config['payouts_shadow_router_url'], '/') . '/' . ltrim($path, '/');
 
