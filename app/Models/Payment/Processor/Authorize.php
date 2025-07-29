@@ -10878,7 +10878,7 @@ trait Authorize
         //    key doesn't exist, then skip calculating signatures.
         // Otherwise, we calculate signature with secret from either API keys or OAuth client or partner's dummy client.
         if (($this->ba->isPublicAuth() || $this->ba->isDirectAuth()) and
-            ($this->ba->getKeyEntity() === null) and
+            (empty($this->ba->getKeyEntity()) === true) and
             ($this->ba->getOAuthClientId() === null) and
             ($this->ba->isPartnerAuth() === false))
         {

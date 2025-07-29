@@ -903,6 +903,9 @@ class PGRouter
 
             $response['body']['bank_account_data'] = $response['body']['bank_account'] ?? [];
             $response['body']['products_data'] = $response['body']['products'] ?? [];
+            $response['body']['checkout'] = $response['body']['checkout'] ?? null;
+            $response['body']['description'] = $response['body']['description'] ?? null;
+            
             $order = (new Order\Entity())->forceFill($response['body']);
 
             $this->setNotificationInOrder($response, $order);

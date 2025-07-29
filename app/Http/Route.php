@@ -13583,6 +13583,7 @@ class Route
             'payment_fetch_refund_by_id',
             'payment_fetch_refunds',
             'payment_fetch_transaction',
+            'order_fetch_by_id',
             'payment_fetch_transfers',
             'payment_get_flows',
             'payment_get_flows_private',
@@ -17733,6 +17734,7 @@ class Route
             'payment_links_cancel',
             'payment_links_notify_by_medium',
             'payment_links_get',
+            'order_fetch_by_id',
         ],
 
         'billme' => [

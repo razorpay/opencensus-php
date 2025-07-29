@@ -196,7 +196,12 @@ class Entity extends Base\PublicEntity
 
     const APPLIED_OFFERS     = 'applied_offers';
 
+    const DESCRIPTION = 'description';
+
+    const CHECKOUT = 'checkout';
+
     const OFFERS_APPLIED    = 'offers_applied';
+
 
     //paginated fetch params
     const FROM         = 'from';
@@ -279,6 +284,8 @@ class Entity extends Base\PublicEntity
         self::NOTIFICATION,
         self::CHECKOUT_CONFIG_ID,
         self::TAX_INVOICE,
+        self::DESCRIPTION,
+        self::CHECKOUT,
         OrderMeta\Order1cc\Fields::PROMOTIONS,
         OrderMeta\Order1cc\Fields::COD_FEE,
         OrderMeta\Order1cc\Fields::SHIPPING_FEE,
@@ -475,6 +482,18 @@ class Entity extends Base\PublicEntity
             }
         }
 
+        // Add description if it exists
+        if (empty($this->attributes[self::DESCRIPTION]) === false)
+        {
+            $arrayPublic[self::DESCRIPTION] = $this->attributes[self::DESCRIPTION];
+        }
+
+        // Add the checkout object if it exists
+        if (empty($this->attributes[self::CHECKOUT]) === false)
+        {
+            $arrayPublic[self::CHECKOUT] = $this->attributes[self::CHECKOUT];
+        }
+
         return $arrayPublic;
     }
 
@@ -615,6 +634,16 @@ class Entity extends Base\PublicEntity
     public function setReceipt($receipt)
     {
         $this->setAttribute(self::RECEIPT, $receipt);
+    }
+
+    public function setDescription($description)
+    {
+        $this->setAttribute(self::DESCRIPTION, $description);
+    }
+
+    public function setCheckout(array $checkout)
+    {
+        $this->setAttribute(self::CHECKOUT, $checkout);
     }
 
     public function getLateAuthConfigId()
@@ -871,6 +900,16 @@ class Entity extends Base\PublicEntity
         }
 
         return $apiBankAccount;
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getCheckout()
+    {
+        return $this->getAttribute(self::CHECKOUT);
     }
 
     /** End Setters And Getters */
