@@ -2087,6 +2087,41 @@ class Header
 
     const JK_MODIFIED_QR_STRING = "Modified QR string";
 
+    // headers for store entity action
+    const STORE_ACTION_TYPE = "actionType";
+    const STORE_ACTION_MERCHANT_ID = "merchantId";
+    const STORE_ACTION_STORE_CODE = "storeCode";
+    const STORE_ACTION_BILLING_LABEL = "billingLabel";
+    const STORE_ACTION_STORE_NAME = "storeName";
+    const STORE_ACTION_LINKED_PRODUCTS = "linkedProducts";
+    const STORE_ACTION_PINCODE = "pincode";
+    const STORE_ACTION_COUNTRY = "country";
+    const STORE_ACTION_STATE = "state";
+    const STORE_ACTION_CITY = "city";
+    const STORE_ACTION_ADDRESS = "address";
+
+    // headers for store hierarchy action
+    const STORE_HIERARCHY_ACTION_TYPE = "actionType";
+    const STORE_HIERARCHY_MERCHANT_ID = "merchantId";
+    const STORE_HIERARCHY_NAME = "name";
+    const STORE_HIERARCHY_LABEL = "label";
+    const STORE_HIERARCHY_PARENT = "parent";
+
+    // headers for store user group mapping creation
+    const STORE_USER_GROUP_MAPPING_ACTION_TYPE = "actionType";
+    const STORE_USER_GROUP_MAPPING_MERCHANT_ID = "merchantId";
+    const STORE_USER_GROUP_MAPPING_GROUP = "group";
+    const STORE_USER_GROUP_MAPPING_USER_ID = "userId";
+    const STORE_USER_GROUP_MAPPING_STATUS = "status";
+
+
+    // headers for device store mapping
+    const DEVICE_STORE_MAPPING_DEVICE_ID = "deviceId";
+    const DEVICE_STORE_MAPPING_STORE_ID = "storeId";
+    const DEVICE_STORE_MAPPING_SUCCESS = "success";
+    const DEVICE_STORE_MAPPING_ID = "id";
+    const DEVICE_STORE_MAPPING_ERROR_MESSAGE = "error_message";
+
     // headers for IDFC fund loading
     const IDFC_ECOLLECT_UTR_NUMBER = 'txnRefNumber';
     const IDFC_ECOLLECT_SENDER_IFSC = 'remitterIfscCode';
@@ -7319,6 +7354,82 @@ class Header
                 self::ERROR_DESCRIPTION,
                 self::JK_RAZORPAY_MID,
                 self::JK_MODIFIED_QR_STRING
+            ]
+        ],
+
+        Type::STORE_CREATION => [
+            self::INPUT => [
+                self::STORE_ACTION_TYPE,
+                self::STORE_ACTION_MERCHANT_ID,
+                self::STORE_ACTION_STORE_CODE,
+                self::STORE_ACTION_BILLING_LABEL,
+                self::STORE_ACTION_STORE_NAME,
+                self::STORE_ACTION_LINKED_PRODUCTS,
+                self::STORE_ACTION_PINCODE,
+                self::STORE_ACTION_COUNTRY,
+                self::STORE_ACTION_STATE,
+                self::STORE_ACTION_CITY,
+                self::STORE_ACTION_ADDRESS,
+            ],
+            self::OUTPUT => [
+                self::STORE_ACTION_TYPE,
+                self::STORE_ACTION_MERCHANT_ID,
+                self::STORE_ACTION_STORE_CODE,
+                self::STORE_ACTION_BILLING_LABEL,
+                self::STORE_ACTION_STORE_NAME,
+                self::STORE_ACTION_LINKED_PRODUCTS,
+                self::STORE_ACTION_PINCODE,
+                self::STORE_ACTION_COUNTRY,
+                self::STORE_ACTION_STATE,
+                self::STORE_ACTION_CITY,
+                self::STORE_ACTION_ADDRESS,
+            ]
+        ],
+
+        Type::STORE_HIERARCHY_CREATION => [
+            self::INPUT => [
+                self::STORE_HIERARCHY_LABEL,
+                self::STORE_HIERARCHY_ACTION_TYPE,
+                self::STORE_HIERARCHY_MERCHANT_ID,
+                self::STORE_HIERARCHY_NAME,
+                self::STORE_HIERARCHY_PARENT,
+            ],
+            self::OUTPUT => [
+                self::STORE_HIERARCHY_LABEL,
+                self::STORE_HIERARCHY_ACTION_TYPE,
+                self::STORE_HIERARCHY_MERCHANT_ID,
+                self::STORE_HIERARCHY_NAME,
+                self::STORE_HIERARCHY_PARENT,
+            ]
+        ],
+
+        Type::USER_GROUP_MAPPING => [
+            self::INPUT => [
+                self::STORE_USER_GROUP_MAPPING_ACTION_TYPE,
+                self::STORE_USER_GROUP_MAPPING_MERCHANT_ID,
+                self::STORE_USER_GROUP_MAPPING_USER_ID,
+                self::STORE_USER_GROUP_MAPPING_GROUP,
+            ],
+            self::OUTPUT => [
+                self::STORE_USER_GROUP_MAPPING_ACTION_TYPE,
+                self::STORE_USER_GROUP_MAPPING_MERCHANT_ID,
+                self::STORE_USER_GROUP_MAPPING_USER_ID,
+                self::STORE_USER_GROUP_MAPPING_GROUP,
+                self::STORE_USER_GROUP_MAPPING_STATUS,
+            ]
+        ],
+
+        Type::DEVICE_STORE_MAPPING => [
+            self::INPUT => [
+                self::DEVICE_STORE_MAPPING_DEVICE_ID,
+                self::DEVICE_STORE_MAPPING_STORE_ID,
+            ],
+            self::OUTPUT => [
+                self::DEVICE_STORE_MAPPING_DEVICE_ID,
+                self::DEVICE_STORE_MAPPING_STORE_ID,
+                self::DEVICE_STORE_MAPPING_SUCCESS,
+                self::DEVICE_STORE_MAPPING_ID,
+                self::DEVICE_STORE_MAPPING_ERROR_MESSAGE,
             ]
         ],
 

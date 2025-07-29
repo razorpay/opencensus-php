@@ -152,6 +152,11 @@ class Type
 
     const HDFC_SMS_PAY_ONBOARDING = 'hdfc_sms_pay_onboarding';
 
+    const STORE_CREATION = 'store_creation';
+    const STORE_HIERARCHY_CREATION = 'store_hierarchy_creation';
+    const USER_GROUP_MAPPING = 'user_group_mapping';
+    const DEVICE_STORE_MAPPING = 'device_store_mapping';
+
     const  HDFC_ONBOARDING  = 'hdfc_onboarding';
 
     const  INDIAN_BANK_ONBOARDING  = 'indian_bank_onboarding';
@@ -420,6 +425,10 @@ class Type
         self::PGOS_RMDETAILS_BULK,
         self::JAMMU_AND_KASHMIR_ONBOARDING,
         self::HDFC_SMS_PAY_ONBOARDING,
+        self::STORE_CREATION,
+        self::STORE_HIERARCHY_CREATION,
+        self::USER_GROUP_MAPPING,
+        self::DEVICE_STORE_MAPPING,
         self::HDFC_ONBOARDING,
         self::INDIAN_BANK_ONBOARDING,
         self::HDFC_BANK_ACQUIRED_TERMINAL_ONBOARDING,
@@ -742,6 +751,10 @@ class Type
         self::PGOS_RMDETAILS_BULK,
         self::JAMMU_AND_KASHMIR_ONBOARDING,
         self::HDFC_SMS_PAY_ONBOARDING,
+        self::STORE_CREATION,
+        self::STORE_HIERARCHY_CREATION,
+        self::USER_GROUP_MAPPING,
+        self::DEVICE_STORE_MAPPING,
         self::HDFC_ONBOARDING,
         self::INDIAN_BANK_ONBOARDING,
         self::HDFC_BANK_ACQUIRED_TERMINAL_ONBOARDING,
@@ -921,6 +934,10 @@ class Type
         self::PGOS_RMDETAILS_BULK                => Name::ADMIN_BATCH_CREATE,
         self::JAMMU_AND_KASHMIR_ONBOARDING       => Name::ADMIN_BATCH_CREATE,
         self::HDFC_SMS_PAY_ONBOARDING           => Name::ADMIN_BATCH_CREATE,
+        self::STORE_CREATION                     => Name::ADMIN_BATCH_CREATE,
+        self::STORE_HIERARCHY_CREATION           => Name::ADMIN_BATCH_CREATE,
+        self::USER_GROUP_MAPPING                 => Name::ADMIN_BATCH_CREATE,
+        self::DEVICE_STORE_MAPPING               => Name::ADMIN_BATCH_CREATE,
         self::HDFC_ONBOARDING                    => Name::ADMIN_BATCH_CREATE,
         self::INDIAN_BANK_ONBOARDING             => Name::ADMIN_BATCH_CREATE,
         self::EARLY_SETTLEMENT_TRIAL             => Name::ADMIN_BATCH_CREATE,
