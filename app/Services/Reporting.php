@@ -342,7 +342,7 @@ class Reporting implements ExternalService
 
         $data = $this->filterConfigsByFeatureAndTags($configs);
 
-        //log filtered configs to coralogix for recon 
+        //log filtered configs to coralogix for recon
         try {
             $requestHeaders = $this->headers;
             unset($requestHeaders[self::ADMIN_TOKEN_HEADER]);
@@ -1832,7 +1832,7 @@ class Reporting implements ExternalService
             $data = random_bytes(16);
             // Set version to 0100
             $data[6] = chr((ord($data[6]) & 0x0f) | 0x40);
-    
+
             // Set bits 6-7 to 10
             $data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
 
@@ -1848,7 +1848,7 @@ class Reporting implements ExternalService
 
     /**
      * Swap config_id if account statements new report experiment is enabled
-     * 
+     *
      * Flow:
      * 1. Check if config_id in request equals OLD_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID
      * 2. If YES, make splitz experiment call for the merchant
@@ -1861,14 +1861,14 @@ class Reporting implements ExternalService
     protected function swapConfigIdIfExperimentEnabled(array $input): array
     {
         // Only proceed if config_id equals config_EWkl7gyPYK5ET2 (OLD_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID)
-        if (empty($input['config_id']) === true || 
+        if (empty($input['config_id']) === true ||
             $input['config_id'] !== self::OLD_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID)
         {
             return $input; // No experiment call made - different config_id
         }
 
         $merchantId = $this->ba->getMerchantId();
-        
+
         if (empty($merchantId) === true)
         {
             return $input;
@@ -1878,7 +1878,7 @@ class Reporting implements ExternalService
         if ($this->isAccountStatementsNewReportEnabled($merchantId) === true)
         {
             $input['config_id'] = self::NEW_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID;
-            
+
             $this->trace->info(TraceCode::REPORTING_CONFIG_ID_MODIFIED_BY_EXPERIMENT, [
                 'merchant_id' => $merchantId,
                 'original_config_id' => self::OLD_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID,
@@ -1903,11 +1903,12 @@ class Reporting implements ExternalService
         {
             $requestPayload = [
                 'id'            => $merchantId,
-                'experiment_id' => $this->config->get('app.' . RazorxTreatment::IS_ACCOUNT_STATEMENTS_NEW_REPORT_ENABLED),
+                'experiment_name' => Merchant\RazorxTreatment::IS_ACCOUNT_STATEMENTS_NEW_REPORT_ENABLED,
+                'request_data'  => json_encode(['id' =>  $merchantId])
             ];
 
             return (new Merchant\Core())->isSplitzExperimentEnable(
-                $requestPayload, 
+                $requestPayload,
                 RazorxTreatment::VARIANT_ENABLE
             );
         }
@@ -1917,7 +1918,7 @@ class Reporting implements ExternalService
                 'merchant_id' => $merchantId,
                 'experiment' => RazorxTreatment::IS_ACCOUNT_STATEMENTS_NEW_REPORT_ENABLED,
             ]);
-            
+
             return false;
         }
     }
