@@ -4349,10 +4349,7 @@ class Processor
         }
         catch (\Throwable $ex)
         {
-            $this->trace->traceException($ex, null, TraceCode::EMANDATE_SERVICE_REARCH_ERROR, [
-                "merchant_id" => $merchant->getId(),
-                "token_id"    => $token->getId()
-            ]);
+            $this->trace->traceException($ex, null, TraceCode::EMANDATE_SERVICE_REARCH_ERROR);
         }
 
         return false;

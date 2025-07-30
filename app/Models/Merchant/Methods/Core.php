@@ -994,6 +994,13 @@ class Core extends Base\Core
                     }
                 }
             }
+
+            if (empty($recurringData[self::EMANDATE])) {
+                $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                    'empty_response_for_recurring_emandate_banks' => $recurringData[self::EMANDATE],
+                ]);
+                $recurringData[self::EMANDATE] = (object)[];
+            }
         }
     }
 

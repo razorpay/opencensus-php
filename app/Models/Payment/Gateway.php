@@ -5696,12 +5696,22 @@ class Gateway
 
         // If data is not in the cache, call the external API
         if ($cachedData === null) {
-            $data = (new \RZP\Services\EmandateService)->fetchNpciData();
-            $data = json_decode($data, true);
-            $data = $data['bank_data'] ?? [];
+            try {
+                $data = (new \RZP\Services\EmandateService)->fetchNpciData();
+                $data = json_decode($data, true);
+                $data = $data['bank_data'] ?? [];
 
-            // Store the data in the cache
-            $app['cache']->put($cacheKey, $data, 14400); // Cache for 4 hour
+                // Only store the data in the cache if it's not empty
+                if (!empty($data)) {
+                    $app['cache']->put($cacheKey, $data, 14400); // Cache for 4 hour
+                }
+            } catch (\Exception $e) {
+                $app['trace']->error(
+                    TraceCode::EMANDATE_SERVICE_ERROR, [
+                    'error' => $e->getMessage()
+                ]);
+                $data = [];
+            }
         } else {
             $data = $cachedData ?? [];
         }
