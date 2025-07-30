@@ -1585,4 +1585,6 @@ return array(
     'update_existing_user_email_exp' => env('UPDATE_EXISTING_USER_EMAIL_EXP'),
 
     'merchant_id_in_udd_query' => env('MERCHANT_ID_IN_UDD_QUERY'),
+
+    'is_account_statements_new_report_enabled' => env('IS_ACCOUNT_STATEMENTS_NEW_REPORT_ENABLED'),
 );

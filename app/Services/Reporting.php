@@ -28,6 +28,7 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Feature\Service as FeatureService;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Services\Reporting\Constants;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Admin\Role\TenantRoles;
 use RZP\Services\Reporting\Validators\Factory as ValidationFactory;
 
@@ -62,6 +63,10 @@ class Reporting implements ExternalService
     const FILE_STORE    = 'file_store';
 
     const REPORT_TYPE = 'report_type';
+
+    // Account Statements Report Config IDs
+    const OLD_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID = 'config_EWkl7gyPYK5ET2';
+    const NEW_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID = 'config_NewAccountStatementsReport';
 
     // REPORT_TYPE constants
     const MERCHANT      = 'merchant';
@@ -547,6 +552,9 @@ class Reporting implements ExternalService
 
             $path = self::LOG_PATH_FOR_MERCHANT;
         }
+
+        // Apply splitz experiment to swap config_id only if request has OLD_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID
+        $input = $this->swapConfigIdIfExperimentEnabled($input);
 
         return $this->createAndSendRequest(Requests::GET, $path, $input, $headers);
     }
@@ -1835,6 +1843,82 @@ class Reporting implements ExternalService
                     'error' => $e->getMessage(),
                 ]);
             return '';
+        }
+    }
+
+    /**
+     * Swap config_id if account statements new report experiment is enabled
+     * 
+     * Flow:
+     * 1. Check if config_id in request equals OLD_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID
+     * 2. If YES, make splitz experiment call for the merchant
+     * 3. If experiment is enabled, swap to NEW_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID
+     * 4. If NO or experiment disabled, return original input unchanged
+     *
+     * @param array $input
+     * @return array
+     */
+    protected function swapConfigIdIfExperimentEnabled(array $input): array
+    {
+        // Only proceed if config_id equals config_EWkl7gyPYK5ET2 (OLD_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID)
+        if (empty($input['config_id']) === true || 
+            $input['config_id'] !== self::OLD_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID)
+        {
+            return $input; // No experiment call made - different config_id
+        }
+
+        $merchantId = $this->ba->getMerchantId();
+        
+        if (empty($merchantId) === true)
+        {
+            return $input;
+        }
+
+        // Make experiment call only for OLD_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID
+        if ($this->isAccountStatementsNewReportEnabled($merchantId) === true)
+        {
+            $input['config_id'] = self::NEW_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID;
+            
+            $this->trace->info(TraceCode::REPORTING_CONFIG_ID_MODIFIED_BY_EXPERIMENT, [
+                'merchant_id' => $merchantId,
+                'original_config_id' => self::OLD_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID,
+                'new_config_id' => self::NEW_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID,
+                'experiment' => RazorxTreatment::IS_ACCOUNT_STATEMENTS_NEW_REPORT_ENABLED,
+            ]);
+        }
+
+        return $input;
+    }
+
+    /**
+     * Check if account statements new report experiment is enabled for merchant
+     * This method is only called when config_id equals OLD_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID
+     *
+     * @param string $merchantId
+     * @return bool
+     */
+    private function isAccountStatementsNewReportEnabled(string $merchantId): bool
+    {
+        try
+        {
+            $requestPayload = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->config->get('app.' . RazorxTreatment::IS_ACCOUNT_STATEMENTS_NEW_REPORT_ENABLED),
+            ];
+
+            return (new Merchant\Core())->isSplitzExperimentEnable(
+                $requestPayload, 
+                RazorxTreatment::VARIANT_ENABLE
+            );
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id' => $merchantId,
+                'experiment' => RazorxTreatment::IS_ACCOUNT_STATEMENTS_NEW_REPORT_ENABLED,
+            ]);
+            
+            return false;
         }
     }
 }

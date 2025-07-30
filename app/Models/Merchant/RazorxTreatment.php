@@ -687,6 +687,9 @@ final class RazorxTreatment
     // Experiment to ramp up the refund credits fetch mechanism with locking
     public const REFUND_CREDITS_WITH_LOCK = 'refund_credits_with_lock';
 
+    // Experiment to enable account statements new report
+    public const IS_ACCOUNT_STATEMENTS_NEW_REPORT_ENABLED = 'is_account_statements_new_report_enabled';
+
     // Experiment to ramp up the disable amount credits for greater than txn amount
     public const DISABLE_AMOUNT_CREDITS_FOR_GREATER_THAN_TXN_AMOUNT = 'disable_amount_credits_for_greater_than_txn_amount';
 
