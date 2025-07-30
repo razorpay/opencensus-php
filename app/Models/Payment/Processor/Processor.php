@@ -1746,7 +1746,7 @@ class Processor
             if ($this->isRearchBVTRequest() === true || $this->isRearchDarkRequest() === true)
             {
                 if ((empty($input[Payment\Entity::METHOD]) === true) or
-                ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD))
+                ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD and $input[Payment\Entity::METHOD] !== Payment\METHOD::EMI))
                 {
                     return false;
                 }
@@ -16418,8 +16418,8 @@ public function isLibrarySupportedForNbplusRearch($library): bool
                 return false;
             }
 
-//          // test mode payments are not supported
-            if ($this->mode === Mode::TEST)
+            if ((app()->isEnvironmentProduction() === true) and
+                ($this->mode === Mode::TEST))
             {
                 return false;
             }

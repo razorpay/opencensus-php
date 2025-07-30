@@ -265,7 +265,7 @@ class Sbi extends Base
 
                     $terminalsByGateway = $this->getTerminalsByGateway($terminals);
 
-                    $terminal = $gateway === 'hdfc' ? $terminalsByGateway[$gateway] : $terminalsByGateway['hitachi'];
+                    $terminal = $terminalsByGateway[$gateway] ?? $terminalsByGateway['hitachi'];
 
                     if ($terminal === null) {
                         throw new LogicException(
