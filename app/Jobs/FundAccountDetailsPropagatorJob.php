@@ -29,15 +29,18 @@ class FundAccountDetailsPropagatorJob extends Job
 
     protected $merchant;
 
+    protected $app;
+
     protected $cfaService;
 
     public function __construct(string $mode, string $fundAccountId, MerchantEntity $merchant)
     {
         parent::__construct($mode);
 
+        $this->app = App::getFacadeRoot();
         $this->fundAccountId = $fundAccountId;
         $this->merchant = $merchant;
-        $this->cfaService = new CFAService();
+        $this->cfaService = $this->app['cfa'];
     }
 
     public function handle()

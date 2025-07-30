@@ -314,48 +314,56 @@ class CFAService
      */
     public function getContact(string $contactId, MerchantEntity $merchant)
     {
-        $cfaResponse = $this->sendRequest(
-            '/v1/contacts/' . $this->trimPrefixForEntity($contactId, 'cont_'),
-            $merchant->getId(),
-            Requests::GET,
-            null,
-            null,
-            'get_contact'
-        );
-
-        if($cfaResponse === null) {
-            $data = [
-                'attributes' => $contactId,
-                'operation' => 'find'
-            ];
-
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+        try {
+            $cfaResponse = $this->sendRequest(
+                '/v1/contacts/' . $this->trimPrefixForEntity($contactId, 'cont_'),
+                $merchant->getId(),
+                Requests::GET,
+                null,
+                null,
+                'get_contact'
+            );
+    
+            if($cfaResponse === null) {
+                $data = [
+                    'attributes' => $contactId,
+                    'operation' => 'find'
+                ];
+    
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+            }
+    
+            return $this->convertCFAResponseToContactEntity($cfaResponse, $merchant);
+        } catch (\Throwable $ex) {
+            return null;
         }
-
-        return $this->convertCFAResponseToContactEntity($cfaResponse, $merchant);
     }
 
     public function getFundAccount(string $fundAccountId, string $merchantId)
     {
-        $cfaResponse = $this->sendRequest(
-            '/v1/fund_accounts/' . $this->trimPrefixForEntity($fundAccountId, 'fa_'),
-            $merchantId,
-            Requests::GET,
-            null,
-            null,
-            'get_fund_account'
-        );
-
-        if ($cfaResponse['id']) {
-            $cfaResponse['id'] = 'fa_' . $cfaResponse['id'];
+        try {
+            $cfaResponse = $this->sendRequest(
+                '/v1/fund_accounts/' . $this->trimPrefixForEntity($fundAccountId, 'fa_'),
+                $merchantId,
+                Requests::GET,
+                null,
+                null,
+                'get_fund_account'
+            );
+    
+            if ($cfaResponse['id']) {
+                $cfaResponse['id'] = 'fa_' . $cfaResponse['id'];
+            }
+    
+            if ($cfaResponse['contact_id']) {
+                $cfaResponse['contact_id'] = 'cont_' . $cfaResponse['contact_id'];
+            }
+    
+            return $cfaResponse;
+        } catch (\Throwable $ex) {
+            return null;
         }
-
-        if ($cfaResponse['contact_id']) {
-            $cfaResponse['contact_id'] = 'cont_' . $cfaResponse['contact_id'];
-        }
-
-        return $cfaResponse;
     }
 
     public function createContact(array $input, MerchantEntity $merchant)
@@ -391,7 +399,9 @@ class CFAService
             return null;
         }
 
-        return $this->convertCFAResponseToFundAccountEntity($cfaResponse, $merchant);
+        $fundAccount = $this->convertCFAResponseToFundAccountEntity($cfaResponse, $merchant);
+
+        return $fundAccount;
     }
 
     // Private helper functions
@@ -456,79 +466,83 @@ class CFAService
 
     public function convertCFAResponseToFundAccountEntity($cfaResponse, $merchant): FundAccountEntity
     {
-        // Extract only the fields that build() allows for FundAccount (user-editable fields)
-        $allowedFundAccountFields = [
-            'idempotency_key',
-            'linked_number',
-            'customer_name',
-            'bank_ifsc'
-        ];
+        try {
+            // Extract only the fields that build() allows for FundAccount (user-editable fields)
+            $allowedFundAccountFields = [
+                'idempotency_key',
+                'linked_number',
+                'customer_name',
+                'bank_ifsc'
+            ];
 
-        $buildData = array_intersect_key($cfaResponse, array_flip($allowedFundAccountFields));
-        
-        // Add account_type which is required
-        if (isset($cfaResponse['account_type'])) {
-            $buildData['account_type'] = $cfaResponse['account_type'];
+            $buildData = array_intersect_key($cfaResponse, array_flip($allowedFundAccountFields));
             
-            // Add the account details field that matches the account_type
-            // This is required by the Fund Account validator
-            if (isset($cfaResponse[$cfaResponse['account_type']])) {
-                $buildData[$cfaResponse['account_type']] = $cfaResponse[$cfaResponse['account_type']];
+            // Add account_type which is required
+            if (isset($cfaResponse['account_type'])) {
+                $buildData['account_type'] = $cfaResponse['account_type'];
+                
+                // Add the account details field that matches the account_type
+                // This is required by the Fund Account validator
+                if (isset($cfaResponse[$cfaResponse['account_type']])) {
+                    $buildData[$cfaResponse['account_type']] = $cfaResponse[$cfaResponse['account_type']];
+                }
             }
-        }
 
-        // Create fund account entity using build() with filtered data
-        $fundAccount = (new FundAccountEntity)->build($buildData);
+            // Create fund account entity using build() with filtered data
+            $fundAccount = (new FundAccountEntity)->build($buildData);
 
-        // Associate with merchant
-        $fundAccount->merchant()->associate($merchant);
+            // Associate with merchant
+            $fundAccount->merchant()->associate($merchant);
 
-        // Now manually set the system fields we need to preserve
-        if (str_starts_with($cfaResponse['id'], 'fa_'))
-        {
-            $cfaResponse['id'] = substr($cfaResponse['id'], 3); // Remove 'fa_' prefix
-        }
-        $fundAccount->setId($cfaResponse['id']);
-
-        if (isset($cfaResponse['created_at'])) {
-            $fundAccount->setAttribute(FundAccountEntity::CREATED_AT, $cfaResponse['created_at']);
-        }
-
-        if (isset($cfaResponse['active'])) {
-            $fundAccount->setAttribute(FundAccountEntity::ACTIVE, $cfaResponse['active']);
-        }
-
-        // Create and associate the account based on account_type
-        if (isset($cfaResponse['account_type']) && isset($cfaResponse[$cfaResponse['account_type']])) {
-            $accountType = $cfaResponse['account_type'];
-            $accountData = $cfaResponse[$accountType];
-            
-            $account = $this->createAccountFromCFAResponse($accountType, $accountData, $merchant);
-            
-            if ($account !== null) {
-                $fundAccount->account()->associate($account);
-            }
-        }
-
-        // Set source if contact_id is present
-        if (isset($cfaResponse['contact_id'])) {
-            // For now, we'll set the source_type and source_id manually
-            // In a real scenario, you might want to fetch the actual contact entity
-            $fundAccount->setAttribute(FundAccountEntity::SOURCE_TYPE, 'contact');
-            if (str_starts_with($cfaResponse['contact_id'], 'cont_'))
+            // Now manually set the system fields we need to preserve
+            if (str_starts_with($cfaResponse['id'], 'fa_'))
             {
-                $cfaResponse['contact_id'] = substr($cfaResponse['contact_id'], 5); // Remove 'cont_' prefix
+                $cfaResponse['id'] = substr($cfaResponse['id'], 3); // Remove 'fa_' prefix
             }
-            $fundAccount->setAttribute(FundAccountEntity::SOURCE_ID, $cfaResponse['contact_id']);
+            $fundAccount->setId($cfaResponse['id']);
 
-            //Call CFA to get the contact entity
-            $contact = $this->getContact($cfaResponse['contact_id'], $merchant);
-            $fundAccount->source()->associate($contact);
+            if (isset($cfaResponse['created_at'])) {
+                $fundAccount->setAttribute(FundAccountEntity::CREATED_AT, $cfaResponse['created_at']);
+            }
+
+            if (isset($cfaResponse['active'])) {
+                $fundAccount->setAttribute(FundAccountEntity::ACTIVE, $cfaResponse['active']);
+            }
+
+            // Create and associate the account based on account_type
+            if (isset($cfaResponse['account_type']) && isset($cfaResponse[$cfaResponse['account_type']])) {
+                $accountType = $cfaResponse['account_type'];
+                $accountData = $cfaResponse[$accountType];
+                
+                $account = $this->createAccountFromCFAResponse($accountType, $accountData, $merchant);
+                
+                if ($account !== null) {
+                    $fundAccount->account()->associate($account);
+                }
+            }
+
+            // Set source if contact_id is present
+            if (isset($cfaResponse['contact_id'])) {
+                // For now, we'll set the source_type and source_id manually
+                // In a real scenario, you might want to fetch the actual contact entity
+                $fundAccount->setAttribute(FundAccountEntity::SOURCE_TYPE, 'contact');
+                if (str_starts_with($cfaResponse['contact_id'], 'cont_'))
+                {
+                    $cfaResponse['contact_id'] = substr($cfaResponse['contact_id'], 5); // Remove 'cont_' prefix
+                }
+                $fundAccount->setAttribute(FundAccountEntity::SOURCE_ID, $cfaResponse['contact_id']);
+
+                //Call CFA to get the contact entity
+                $contact = $this->getContact($cfaResponse['contact_id'], $merchant);
+                $fundAccount->source()->associate($contact);
+            }
+
+            $fundAccount->wasRecentlyCreated = $cfaResponse['is_created'];
+
+            return $fundAccount;
+        } catch (\Throwable $ex) {
+            return null;
         }
-
-        $fundAccount->wasRecentlyCreated = $cfaResponse['is_created'];
-
-        return $fundAccount;
     }
 
     /**
@@ -594,6 +608,10 @@ class CFAService
         
         $buildData = array_intersect_key($accountData, array_flip($allowedBankAccountFields));
         $bankAccount = $bankAccount->build($buildData, 'add_fund_account_bank_account');
+
+        if ($accountData['id'] != null) {
+            $bankAccount->setId($accountData['id']);
+        }
         
         return $bankAccount;
     }
@@ -613,6 +631,10 @@ class CFAService
         
         $buildData = array_intersect_key($accountData, array_flip($allowedVpaFields));
         $vpa = $vpa->build($buildData);
+
+        if ($accountData['id'] != null) {
+            $vpa->setId($accountData['id']);
+        }
         
         return $vpa;
     }
@@ -635,6 +657,10 @@ class CFAService
         
         $buildData = array_intersect_key($accountData, array_flip($allowedWalletFields));
         $walletAccount = $walletAccount->build($buildData);
+
+        if ($accountData['id'] != null) {
+            $walletAccount->setId($accountData['id']);
+        }
         
         return $walletAccount;
     }

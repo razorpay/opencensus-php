@@ -5,6 +5,7 @@ namespace RZP\Models\FundAccount;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
+use App;
 use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Base;

@@ -2,9 +2,15 @@
 
 namespace RZP\Models\FundTransfer\Attempt;
 
+use App;
 use RZP\Models\Base;
+use RZP\Models\Vpa;
+use RZP\Models\BankAccount;
+use RZP\Models\WalletAccount;
 use RZP\Models\Card;
 use RZP\Models\Payout;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Payment\Refund;
 use RZP\Constants\Entity as E;
@@ -148,6 +154,10 @@ class Entity extends Base\PublicEntity
 
     protected $ignoredRelations = [
         'source',
+        'bankAccount',
+        'vpa',
+        'card',
+        'walletAccount',
     ];
 
     /**
@@ -421,6 +431,147 @@ class Entity extends Base\PublicEntity
         }
 
         return null;
+    }
+
+    public function getBankAccountAttribute() {
+        if ($this->hasBankAccount() == false) {
+            return null;
+        }
+
+        if ($this->relationLoaded('bankAccount') === true) {
+            $bankAccount = $this->getRelation('bankAccount');
+            if ($bankAccount != null) {
+                return $bankAccount;
+            }
+        }
+
+        $isCFAExperimentEnabled = false;
+        $payoutId = $this->getSourceId();
+
+        if ($this->merchant != null && $payoutId != null && $this->getSourceType() == Type::PAYOUT)
+        {
+            $app = App::getFacadeRoot();
+            $properties = [
+                'id'            => $this->merchant->getId(),
+                'experiment_id' => $app['config']->get('app.cfa_service_get_control_experiment_id'),
+                'request_data' => json_encode(['merchant_id' => $this->merchant->getId()])
+            ];
+            $isCFAExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable', TraceCode::CONTACT_CFA_EXPERIMENT_CHECK);
+
+            if ($isCFAExperimentEnabled === true)
+            {
+                // fetch the fund account from New Flow
+                $payout = $app['repo']->payout->findByPublicId($payoutId);
+                $fundAccountId = $payout->getFundAccountId();
+
+                $fundAccountArray = $app['cfa']->getFundAccount($fundAccountId, $this->merchant->getId());
+                if($fundAccountArray != null)
+                {
+                    $fundAccount = $app['cfa']->convertCFAResponseToFundAccountEntity($fundAccountArray, $this->merchant);
+                    $bankAccount = $fundAccount->account;
+
+                    $this->bankAccount()->associate($bankAccount);
+                    $this->setRelation('bankAccount', $bankAccount);
+                    return $bankAccount;
+                }
+            }
+        }
+
+        return (new BankAccount\Repository())->find($this->getBankAccountId());
+    }
+
+    public function getVpaAttribute() {
+        if ($this->hasVpa() == false) {
+            return null;
+        }
+
+        if ($this->relationLoaded('vpa') === true) {
+            $vpa = $this->getRelation('vpa');
+            if ($vpa != null) {
+                return $vpa;
+            }
+        }
+
+        $isCFAExperimentEnabled = false;
+        $payoutId = $this->getSourceId();
+
+        if ($this->merchant != null && $payoutId != null && $this->getSourceType() == Type::PAYOUT)
+        {
+            $app = App::getFacadeRoot();
+            $properties = [
+                'id'            => $this->merchant->getId(),
+                'experiment_id' => $app['config']->get('app.cfa_service_get_control_experiment_id'),
+                'request_data' => json_encode(['merchant_id' => $this->merchant->getId()])
+            ];
+            $isCFAExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable', TraceCode::CONTACT_CFA_EXPERIMENT_CHECK);
+
+            if ($isCFAExperimentEnabled === true)
+            {
+                // fetch the fund account from New Flow
+                $payout = $app['repo']->payout->findByPublicId($payoutId);
+                $fundAccountId = $payout->getFundAccountId();
+
+                $fundAccountArray = $app['cfa']->getFundAccount($fundAccountId, $this->merchant->getId());
+                if($fundAccountArray != null)
+                {
+                    $fundAccount = $app['cfa']->convertCFAResponseToFundAccountEntity($fundAccountArray, $this->merchant);
+                    $vpa = $fundAccount->account;
+
+                    $this->vpa()->associate($vpa);
+                    $this->setRelation('vpa', $vpa);
+                    return $vpa;
+                }
+            }
+        }
+
+        return (new Vpa\Repository())->find($this->getVpaId());
+    }
+
+    public function getWalletAccountAttribute() {
+        if ($this->hasWalletAccount() == false) {
+            return null;
+        }
+
+        if ($this->relationLoaded('walletAccount') === true) {
+            $walletAccount = $this->getRelation('walletAccount');
+            if ($walletAccount != null) {
+                return $walletAccount;
+            }
+        }
+
+        $isCFAExperimentEnabled = false;
+        $payoutId = $this->getSourceId();
+
+        if ($this->merchant != null && $payoutId != null && $this->getSourceType() == Type::PAYOUT)
+        {
+            $app = App::getFacadeRoot();
+            $properties = [
+                'id'            => $this->merchant->getId(),
+                'experiment_id' => $app['config']->get('app.cfa_service_get_control_experiment_id'),
+                'request_data' => json_encode(['merchant_id' => $this->merchant->getId()])
+            ];
+            $isCFAExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable', TraceCode::CONTACT_CFA_EXPERIMENT_CHECK);
+
+            if ($isCFAExperimentEnabled === true)
+            {
+                // fetch the fund account from New Flow
+                $payout = $app['repo']->payout->findByPublicId($payoutId);
+                $fundAccountId = $payout->getFundAccountId();
+
+                $fundAccountArray = $app['cfa']->getFundAccount($fundAccountId, $this->merchant->getId());
+                if($fundAccountArray != null)
+                {
+                    $fundAccount = $app['cfa']->convertCFAResponseToFundAccountEntity($fundAccountArray, $this->merchant);
+                    $walletAccount = $fundAccount->account;
+
+                    $this->walletAccount()->associate($walletAccount);
+                    $this->setRelation('walletAccount', $walletAccount);
+                    return $walletAccount;
+                }
+            }
+        }
+
+        return (new WalletAccount\Repository())->find($this->getWalletAccountId());
     }
 
     public function getSourceAttribute()

@@ -701,7 +701,7 @@ class Service extends Base\Service
         }
 
         if ($isMobileNumberPayout) {
-            $fundAccount = $this->repo->fund_account->findByPublicId($input[Entity::FUND_ACCOUNT_ID]);
+            $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($input[Entity::FUND_ACCOUNT_ID], $this->merchant);
 
             $vpaHandle = $fundAccount->account->getHandle();
 
@@ -4206,6 +4206,10 @@ class Service extends Base\Service
 
             $compositePayout = $compositePayout->load('fundAccount.contact');
 
+            // Specifically adding here for handling the case of adding contact details in the composite payout
+            // because load will not work for CFA payout
+            $compositePayout->fundAccount->contact;
+
             // Specifically adding here for card fund account to preserve card Meta Data, since
             // loading fundAccount.contact relation was overriding all the existing relations
             // This was causing us to make a network call to vault to again fetch card Meta Data
@@ -7032,7 +7036,7 @@ class Service extends Base\Service
             return isset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE]) && $input[Entity::FUND_ACCOUNT][FundAccount\Entity::ACCOUNT_TYPE] === FundAccount\Entity::MOBILE;
         } else {
             $fundAccountId = $input[Entity::FUND_ACCOUNT_ID];
-            $fundAccount = $this->repo->fund_account->findByPublicId($fundAccountId);
+            $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
 
 
             if ($fundAccount->getLinkedNumber() != null && $fundAccount->getCustomerName() != null) {

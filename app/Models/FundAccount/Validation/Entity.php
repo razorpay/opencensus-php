@@ -2,18 +2,23 @@
 
 namespace RZP\Models\FundAccount\Validation;
 
+use App;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Contact;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\Reversal;
 use RZP\Models\Bank\Name;
 use RZP\Models\Base\Traits;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\FundAccount\Entity as FundAccount;
 use RZP\Models\Transaction\Entity as Transaction;
 use RZP\Models\Merchant\Acs\Traits\AsvGetAttribute;
 use RZP\Models\Feature\Constants as MerchantFeature;
+use RZP\Exception\BadRequestValidationFailureException;
 
 
 /**
@@ -763,6 +768,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FUND_ACCOUNT_TYPE);
     }
 
+    public function getFundAccountId()
+    {
+        return $this->getAttribute(self::FUND_ACCOUNT_ID);
+    }
+
     public function isStatusFailed()
     {
         return ($this->getAccountStatus() === AccountStatus::INVALID);
@@ -779,5 +789,47 @@ class Entity extends Base\PublicEntity
     {
         return ($this->isCompositeResponse === true);
     }
+
+    // public function getFundAccountAttribute()
+    // {
+    //     if ($this->relationLoaded('fundAccount') === true) {
+    //         return $this->getRelation('fundAccount');
+    //     }
+
+    //     $app = App::getFacadeRoot();
+
+    //     $isCFAExperimentEnabled = false;
+    //     $fundAccountId = $this->getFundAccountId();
+
+    //     if ($this->merchant != null && $fundAccountId != null)
+    //     {
+    //         $properties = [
+    //             'id'            => $this->merchant->getId(),
+    //             'experiment_id' => $app['config']->get('app.cfa_service_get_control_experiment_id'),
+    //             'request_data' => json_encode(['merchant_id' => $this->merchant->getId()])
+    //         ];
+    //         $isCFAExperimentEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable', TraceCode::CONTACT_CFA_EXPERIMENT_CHECK);
+
+    //         if ($isCFAExperimentEnabled === true) 
+    //         {
+    //             // fetch the fund account from New Flow
+    //             $fundAccountArray = $app['cfa']->getFundAccount($fundAccountId, $this->merchant->getId());
+    //             if($fundAccountArray === null) 
+    //             {
+    //                 $data = [
+    //                     'attributes' => $fundAccountId,
+    //                     'operation' => 'find'
+    //                 ];
+
+    //                 throw new BadRequestValidationFailureException(
+    //                     ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    //             }
+    //             $fundAccount = $app['cfa']->convertCFAResponseToFundAccountEntity($fundAccountArray, $this->merchant);
+    //             $this->setRelation('fundAccount', $fundAccount);
+
+    //             return $fundAccount;
+    //         }
+    //     }
+    // }
 
 }

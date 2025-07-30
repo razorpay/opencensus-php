@@ -3886,4 +3886,49 @@ class Entity extends Base\PublicEntity
 
         return $payoutSource == null;
     }
+
+    public function getFundAccountAttribute()
+    {
+        // Check if the fundAccount relation is already loaded
+        if ($this->relationLoaded('fundAccount')) {
+            $fundAccount = $this->getRelation('fundAccount');
+            if ($fundAccount !== null) {
+                return $fundAccount;
+            }
+        }
+
+        $app = App::getFacadeRoot();
+        $fundAccountId = $this->getFundAccountId();
+
+        // Ensure merchant and fundAccountId are available
+        if ($this->merchant !== null && $fundAccountId !== null) {
+            $properties = [
+                'id'            => $this->merchant->getId(),
+                'experiment_id' => $app['config']->get('app.cfa_service_get_control_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $this->merchant->getId()])
+            ];
+
+            // Check if CFA experiment is enabled
+            $isCFAExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable', TraceCode::CONTACT_CFA_EXPERIMENT_CHECK);
+
+            if ($isCFAExperimentEnabled) {
+                // Fetch the fund account using the new flow
+                $fundAccountArray = $app['cfa']->getFundAccount($fundAccountId, $this->merchant->getId());
+                if ($fundAccountArray !== null) {
+                    $fundAccount = $app['cfa']->convertCFAResponseToFundAccountEntity($fundAccountArray, $this->merchant);
+                }
+            }
+
+            // Fallback to fetching from the database if not found
+            if (!isset($fundAccount)) {
+                $fundAccount = $app['repo']->fund_account->find($fundAccountId);
+            }
+
+            // Cache the relation for future access
+            $this->setRelation('fundAccount', $fundAccount);
+            return $fundAccount;
+        }
+
+        return null;
+    }
 }

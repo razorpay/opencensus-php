@@ -589,4 +589,62 @@ class Repository extends Base\Repository
 
         return $result ? $result->toArray() : null;
     }
+
+    public function findByPublicIdAndMerchant(
+        string $id,
+        Merchant\Entity $merchant,
+        array $params = [],
+        string $connectionType = null
+    ): Base\PublicEntity {
+        if ($merchant != null && $merchant->getId() != null && $id != null)
+        {
+            $properties = [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.cfa_service_get_control_experiment_id'),
+                'request_data' => json_encode(['merchant_id' => $merchant->getId()])
+            ];
+            $isCFAExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable', TraceCode::CONTACT_CFA_EXPERIMENT_CHECK);
+
+            if ($isCFAExperimentEnabled === true)
+            {
+                // fetch the fund account from New Flow
+                $fundAccountArray = $this->app['cfa']->getFundAccount($id, $merchant->getId());
+                if($fundAccountArray != null)
+                {
+                    return $this->app['cfa']->convertCFAResponseToFundAccountEntity($fundAccountArray, $merchant);
+                }
+            }
+        }
+
+        return parent::findByPublicIdAndMerchant($id, $merchant, $params, $connectionType);
+    }
+
+    public function findByIdAndMerchant(
+        string $id,
+        Merchant\Entity $merchant,
+        array $params = [],
+        string $connectionType = null
+    ): Base\PublicEntity {
+        if ($merchant != null && $merchant->getId() != null && $id != null)
+        {
+            $properties = [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.cfa_service_get_control_experiment_id'),
+                'request_data' => json_encode(['merchant_id' => $merchant->getId()])
+            ];
+            $isCFAExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable', TraceCode::CONTACT_CFA_EXPERIMENT_CHECK);
+
+            if ($isCFAExperimentEnabled === true)
+            {
+                // fetch the fund account from New Flow
+                $fundAccountArray = $this->app['cfa']->getFundAccount($id, $merchant->getId());
+                if($fundAccountArray != null)
+                {
+                    return $this->app['cfa']->convertCFAResponseToFundAccountEntity($fundAccountArray, $merchant);
+                }
+            }
+        }
+
+        return parent::findByIdAndMerchant($id, $merchant, $params, $connectionType);
+    }
 }

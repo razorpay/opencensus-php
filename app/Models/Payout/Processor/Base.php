@@ -2587,12 +2587,12 @@ class Base extends BaseCore
 
                 $isCFAExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable', TraceCode::CONTACT_CFA_EXPERIMENT_CHECK);
             }
-            
-            if ($isCFAExperimentEnabled === true) 
+
+            if ($isCFAExperimentEnabled === true)
             {
                 // fetch the fund account from New Flow
                 $fundAccountArray = $this->cfaService->getFundAccount($fundAccountId, $this->merchant->getId());
-                if($fundAccountArray === null) 
+                if($fundAccountArray === null)
                 {
                     $data = [
                         'attributes' => $fundAccountId,
@@ -2603,8 +2603,8 @@ class Base extends BaseCore
                         ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
                 }
                 $fundAccount = $this->cfaService->convertCFAResponseToFundAccountEntity($fundAccountArray, $this->merchant);
-            } 
-            else 
+            }
+            else
             {
                 $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
             }

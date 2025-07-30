@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundAccount;
 
+use App;
 use RZP\Constants;
 use RZP\Constants\Entity as E;
 use RZP\Models\Customer\Account\SplitzExperimentEvaluator;
@@ -341,6 +342,40 @@ class Entity extends Base\PublicEntity
         if ($this->getSourceType() == self::CUSTOMER && (new SplitzExperimentEvaluator())->isLazyReadOverrideToCmsEnabled($this->entity))
         {
             return (new ImplicitJoinHelper())->getCustomerAttributeByCustomerId($this, 'source', 'getSourceId');
+        }
+
+        if ($this->getSourceType() == self::CONTACT) {
+            $app = App::getFacadeRoot();
+
+            $isCFAExperimentEnabled = false;
+            $contactId = $this->getSourceId();
+
+            if ($this->relationLoaded('contact') === true) {
+                $contact = $this->getRelation('contact');
+                if ($contact != null) {
+                    return $contact;
+                }
+            }
+    
+            if ($this->merchant != null && $contactId != null)
+            {
+                $properties = [
+                    'id'            => $this->merchant->getId(),
+                    'experiment_id' => $app['config']->get('app.cfa_service_get_control_experiment_id'),
+                    'request_data' => json_encode(['merchant_id' => $this->merchant->getId()])
+                ];
+                $isCFAExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable', TraceCode::CONTACT_CFA_EXPERIMENT_CHECK);
+    
+                if ($isCFAExperimentEnabled === true) 
+                {
+                    // fetch the fund account from New Flow
+                    $contact = $app['cfa']->getContact($contactId, $this->merchant);
+                    if ($contact != null) {
+                        $this->setRelation('contact', $contact);    
+                        return $contact;
+                    }
+                }
+            }
         }
 
         return parent::getRelationValue($fallbackRelation ?? 'source');
