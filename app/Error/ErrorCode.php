@@ -81,6 +81,7 @@ class ErrorCode
     const GATEWAY_ERROR_INSTITUTION_ID_MISMATCH                                     = 'GATEWAY_ERROR_INSTITUTION_ID_MISMATCH';
     const GATEWAY_ERROR_TERMINAL_ACTION_NOT_ENABLED                                 = 'GATEWAY_ERROR_TERMINAL_ACTION_NOT_ENABLED';
     const GATEWAY_ERROR_INVALID_RESPONSE                                            = 'GATEWAY_ERROR_INVALID_RESPONSE';
+    const GATEWAY_ERROR_NO_RESPONSE                                                 = 'GATEWAY_ERROR_NO_RESPONSE';
     const GATEWAY_ERROR_PAYMENT_ALREADY_SETTLED                                     = 'GATEWAY_ERROR_PAYMENT_ALREADY_SETTLED';
     const GATEWAY_ERROR_PAYMENT_VOID_FAILED                                         = 'GATEWAY_ERROR_PAYMENT_VOID_FAILED';
     const GATEWAY_ERROR_PAYMENT_REFUND_FAILED                                       = 'GATEWAY_ERROR_PAYMENT_REFUND_FAILED';

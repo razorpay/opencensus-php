@@ -101,6 +101,8 @@ class Service
 
     const PRE_PROCESS = 'pre_process';
 
+    const UPS_PRE_PROCESS = 'ups_pre_process';
+
     const ENTITY_FETCH = 'entity_fetch';
 
     const RECON_ENTITY_UPDATE = 'recon_entity_update';
@@ -191,6 +193,23 @@ class Service
         $this->addTerminalToServerCallback($input, $gateway);
 
         return $this->action(self::PRE_PROCESS, $input, $gateway);
+    }
+
+    public function qrPreProcessServerCallback($input, string $gateway)
+    {
+        $gatewayData = [
+            'payload' => $input,
+            'gateway' => $gateway,
+        ];
+
+        $input = [
+            'gateway' => $gatewayData,
+        ];
+
+        $this->addTerminalToServerCallback($input, $gateway);
+        $actions = $this->action(self::UPS_PRE_PROCESS, $input, $gateway);
+
+        return $actions;
     }
 
     /** Updates the gateway entity attributes during recon flow
@@ -401,6 +420,7 @@ class Service
                 $data = $this->getRequestBodyForAuthorize($input);
                 break;
             case self::PRE_PROCESS:
+            case self::UPS_PRE_PROCESS:
                 $data = [
                     'data'      => $input,
                     'body'      => $input['gateway']['payload'],
@@ -806,6 +826,8 @@ class Service
                 }
 
                 return $response[Response::DATA];
+            case self::UPS_PRE_PROCESS:
+                return $response;
             case self::PRE_PROCESS:
                 return $response[Response::DATA];
             case Payment\Action::CALLBACK:
@@ -1028,7 +1050,7 @@ class Service
             }
 
             throw new Exception\BadRequestException(
-                $error['internal']['code'],
+                $code,
                 null,
                 $error,
                 $description);
@@ -1081,7 +1103,7 @@ class Service
         }
 
         // We do not process gateway failures for pre-process
-        if ($this->action === self::PRE_PROCESS)
+        if ($this->action === self::PRE_PROCESS || $this->action === self::UPS_PRE_PROCESS)
         {
             return;
         }
@@ -1392,6 +1414,7 @@ class Service
                 $traceData += $this->getAuthorizeTraceData($request[Request::CONTENT]);
                 break;
             case self::PRE_PROCESS:
+            case self::UPS_PRE_PROCESS:
                 $traceData += $this->getPreProcessTraceData($request[Request::CONTENT]);
                 break;
             case Payment\Action::CALLBACK:
@@ -1589,6 +1612,11 @@ class Service
         if ($action === Payment\Action::RECURRING_CALLBACK)
         {
             return sprintf('%s/recurring/callback', $version);
+        }
+
+        if ($action === self::UPS_PRE_PROCESS)
+        {
+            return sprintf('%s/action/preprocess_callback/upi', $version);
         }
 
         return sprintf('%s/%s', $version, $action);

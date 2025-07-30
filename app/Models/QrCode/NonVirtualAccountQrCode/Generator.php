@@ -117,6 +117,7 @@ class Generator extends QrCode\Generator
             {
                 case Gateway::HDFC_MINTOAK:
                 case Gateway::UPI_YESBANK:
+                case Gateway::UPI_INDIANBANK:
                 {
 
                     $vpa = $terminal->getVpa();
@@ -261,6 +262,7 @@ class Generator extends QrCode\Generator
                 break;
 
             case Gateway::HDFC_MINTOAK:
+            case Gateway::UPI_INDIANBANK:
                 $refId = $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
                 $qrCode->setReference($refId);
                 break;

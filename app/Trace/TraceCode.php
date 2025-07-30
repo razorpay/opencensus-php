@@ -2593,6 +2593,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_PAYMENT_DUPLICATE_NOTIFICATION                     = 'QR_PAYMENT_DUPLICATE_NOTIFICATION';
     const QR_PAYMENT_CALLBACK_SKIPPED                           = 'QR_PAYMENT_CALLBACK_SKIPPED';
     const QR_PAYMENT_GATEWAY_CALLBACK                           = 'QR_PAYMENT_GATEWAY_CALLBACK';
+    const QR_PAYMENT_POST_PROCESS_STATUS_NOT_FOUND              = 'QR_PAYMENT_POST_PROCESS_STATUS_NOT_FOUND';
     const PROCESS_QR_PAYMENT_REQUEST                            = 'PROCESS_QR_PAYMENT_REQUEST';
 
     const COLLECTX_YESB_VALIDATE_RESPONSE                       = "COLLECTX_YESB_VALIDATE_RESPONSE";

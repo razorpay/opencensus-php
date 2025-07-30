@@ -639,6 +639,52 @@ trait NonVirtualAccountQrCodeTrait
         return $this->makeS2SCallbackAndGetContent(json_encode($request['content']), $this->gateway);
     }
 
+    private function makeUpiIndianBankPayment($qrCodeEntity)
+    {
+        $this->ba->directAuth();
+        $request = [
+            'url' => '/callback/upi_indianbank',
+            'method' => 'POST',
+            'header' => [
+                'content_type' => 'application/json',
+            ],
+            'content' => [
+                'id' => str_after($qrCodeEntity['id'], 'qr_') . 'qrv2',
+                'amount' => 100,
+                'description' => 'create_collect_success',
+                'gateway' => 'upi_indianbank',
+                'terminal_id' => '101IndbkTermnl',
+                'vpa' => 'payervpa@upi',
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    private function makeUpiIndianBankPaymentForFailedStatus($qrCodeEntity)
+    {
+        $this->ba->directAuth();
+
+        $request = [
+            'url' => '/callback/upi_indianbank',
+            'method' => 'POST',
+            'header' => [
+                'content_type' => 'application/json',
+            ],
+            // TODO: Refactor this to match actual indian bank callback
+            'content' => [
+                'id' => str_after($qrCodeEntity['id'], 'qr_') . 'qrv2',
+                'amount' => 100,
+                'description' => 'payment_failed',
+                'gateway' => 'upi_indianbank',
+                'terminal_id' => '101IndbkTermnl',
+                'vpa' => 'payervpa@upi',
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
     private function getIntentParamsFromQRString($qrString)
     {
         $queryString = parse_url($qrString, PHP_URL_QUERY);

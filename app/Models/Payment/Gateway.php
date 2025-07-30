@@ -140,6 +140,7 @@ class Gateway
     const UPI_RZPAPB             = 'upi_rzpapb';
     const UPI_RZPAXIS            = 'upi_rzpaxis';
     const UPI_MINDEED            = 'upi_mindeed';
+    const UPI_INDIANBANK         = 'upi_indianbank';
     const AEPS_ICICI             = 'aeps_icici';
     const ISG                    = 'isg';
     const PAYSECURE              = 'paysecure';
@@ -6539,7 +6540,7 @@ class Gateway
 
         return false;
     }
-    
+
     public static function emandateCUGBankGatewayRouting($gateway, $method): bool
     {
         $gateways = [
@@ -6819,6 +6820,7 @@ class Gateway
             self::UPI_AIRTEL,
             self::UPI_MINDGATE,
             self::UPI_JUSPAY,
+            self::UPI_INDIANBANK,
         ];
 
         return (in_array($gateway, $gateways, true));

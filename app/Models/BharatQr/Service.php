@@ -492,6 +492,10 @@ class Service extends Base\Service
                 $terminal = $this->getTerminalForAirtelPaymentBank($gatewayResponse, $gateway);
                 break;
 
+            case Gateway::UPI_INDIANBANK:
+                $terminal = $this->getTerminalForIndianBank($gatewayResponse, $gateway);
+                break;
+
             default:
                 $terminal = $this->getTerminalDefaultCase($gatewayResponse, $gateway);
         }
@@ -716,5 +720,14 @@ class Service extends Base\Service
         }
 
         return true;
+    }
+
+    protected function getTerminalForIndianBank($gatewayResponse, $gateway)
+    {
+        $terminalDetails[TerminalEntity::VPA] = $gatewayResponse[GatewayResponseParams::PAYEE_VPA];
+
+        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails);
+
+        return $terminal;
     }
 }

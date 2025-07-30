@@ -4,9 +4,10 @@ namespace RZP\Gateway\Mozart\Mock;
 
 use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Merchant\RazorxTreatment;
 use \RZP\Gateway\Upi\Sbi\Mock\Server as Sbi;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use \RZP\Gateway\Upi\Axis\Mock\Gateway as Axis;
@@ -630,7 +631,7 @@ class PreProcess extends Base\Mock\Server
 
         $response->setPayment([
             'currency' => 'INR',
-            'amount_authorized' => $amount
+            'amount_authorized' => $amount,
         ]);
 
         $response->setTerminal([
@@ -744,6 +745,75 @@ class PreProcess extends Base\Mock\Server
             'next' => [],
             'success' => true
         ];
+
+        return $response;
+    }
+
+    public function upsPreProcess(array $entities): array
+    {
+        assertTrue($entities['gateway']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE);
+
+        $payload = json_decode($entities['gateway']['payload']['payload'], true);
+
+        $response = MozartUpiResponse::getDefaultInstanceForV2();
+        $payerVPA = 'vishnu@icici';
+        $statusCode = '00';
+        $amount = (string) $payload['amount'];
+
+        switch ($payload[Payment\Entity::DESCRIPTION])
+        {
+            case 'payment_failed':
+                $statusCode = 'U30';
+                $response->setSuccess(false);
+                $response->setError([
+                    'description'               => 'Debit has been failed',
+                    'gateway_error_code'        => 'U30',
+                    'gateway_error_description' => 'Debit has been failed',
+                    'gateway_status_code'       => 200,
+                    'internal_error_code'       => 'GATEWAY_ERROR_DEBIT_FAILED',
+                ]);
+                $response['data']['failure'] = "Custom Failure Response From Gateway";
+                break;
+            case 'amount_mismatch':
+                $amount = '1001';
+        }
+
+        $response->mergeUpi([
+            'vpa' => $payload['vpa'] ?? $payerVPA,
+            'status_code' => $statusCode,
+            'npci_reference_id' => '002002002002',
+            'merchant_reference' => $payload['id'],
+        ]);
+
+        $response->setPayment([
+            'currency' => 'INR',
+            'amount_authorized' => $amount,
+            'method' => 'upi',
+            Payment\Entity::PAYER_ACCOUNT_TYPE => 'bank_account',
+        ]);
+
+        $response->setTerminal([
+            'id' => $payload['terminal_id'],
+        ]);
+
+        if ($payload[Payment\Entity::DESCRIPTION] === 'create_success_for_offer')
+        {
+            $response->setOffer();
+        }
+
+        if ($payload[Payment\Entity::DESCRIPTION] === 'create_success_for_emi')
+        {
+            $response->setEmi();
+        }
+
+        $response = $response->toArray();
+
+        unset($response['next']);
+
+        if($payload[Payment\Entity::DESCRIPTION] != 'payment_failed')
+        {
+            $response['data']['success'] = "Custom Success Response From Gateway";
+        }
 
         return $response;
     }

@@ -4,6 +4,7 @@ namespace RZP\Services\UpiPayment\Mock;
 
 use RZP\Models\Payment;
 use Psr\Http\Message\RequestInterface;
+use RZP\Gateway\Mozart\Mock\PreProcess;
 use RZP\Services\UpiPayment\Service as UpiPaymentService;
 
 /**
@@ -701,6 +702,14 @@ class Service extends UpiPaymentService
         ];
 
         return [$response, 200];
+    }
+
+    protected function upsPreProcess(array $content): array
+    {
+        $mockService = new PreProcess();
+        $content['data']['gateway']['cps_route'] = Payment\Entity::UPI_PAYMENT_SERVICE;
+        $data = $mockService->upsPreProcess($content['data']);
+        return [$data, 200];
     }
 
     protected function callback(array $content): array

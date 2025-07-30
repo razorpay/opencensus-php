@@ -161,6 +161,7 @@ return [
         "upi_rzpapb",
         'axis_wibmo',
         "upi_rzpaxis",
+        'upi_indianbank',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -289,6 +290,7 @@ return [
     'mock_upi_rzprbl'             => env('UPI_RZPRBL_MOCK'),
     'mock_upi_rzpapb'             => env('UPI_RZPAPB_MOCK'),
     'mock_upi_rzpaxis'            => env('UPI_RZPAXIS_MOCK'),
+    'mock_upi_indianbank'         => env('UPI_INDIANBANK_MOCK'),
     'mock_bt_ibl'                 => env('BT_IBL_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),

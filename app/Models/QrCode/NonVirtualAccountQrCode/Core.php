@@ -3,12 +3,9 @@
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
-
-use RZP\Constants\Entity as EntityConstants;
-use RZP\Exception\ServerErrorException;
-use RZP\Models\QrGatewayModule\QrGatewayModule;
 use RZP\Trace\Tracer;
 use RZP\Models\QrCode;
+use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
@@ -26,15 +23,18 @@ use RZP\Models\QrPaymentRequest\Type;
 use RZP\Models\Order\Entity as Order;
 use RZP\Exception\BadRequestException;
 use RZP\Models\VirtualAccount\Provider;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Reconciliator\Base\Reconciliate;
+use RZP\Constants\Entity as EntityConstants;
 use \RZP\Models\Terminal\Type as TerminalType;
+use RZP\Models\QrGatewayModule\QrGatewayModule;
 use RZP\Models\Terminal\Entity as TerminalEntity;
+use RZP\Models\BharatQr\Service as BharatQrService;
 use RZP\Models\QrPayment\Service as QrPaymentService;
 use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\QrCodeConfig\Service as QrCodeConfigService;
-use RZP\Models\BharatQr\Service as BharatQrService;
 use function PHPUnit\Framework\isEmpty;
 
 class Core extends QrCode\Core
@@ -910,7 +910,7 @@ class Core extends QrCode\Core
         {
             $terminalDetails[TerminalEntity::GATEWAY_MERCHANT_ID2] = $vpa;
         }
-        elseif (in_array($gateway, ['upi_jkbank', 'upi_rzpapb']))
+        elseif (in_array($gateway, ['upi_jkbank', 'upi_rzpapb', 'upi_indianbank']))
         {
             $terminalDetails[TerminalEntity::VPA] = $vpa;
         }
@@ -960,6 +960,9 @@ class Core extends QrCode\Core
                 case 'rxairtel':
                 case 'rairtel':
                     $gateway = 'upi_rzpapb';
+                    break;
+                case 'indianbk':
+                    $gateway = 'upi_indianbank';
                     break;
                 default:
                     $gateway = null;

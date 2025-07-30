@@ -235,6 +235,7 @@ trait CommonGatewayTrait
             Payment\Gateway::UPI_RZPAXIS,
             Payment\Gateway::UPI_JUSPAY,
             Payment\Gateway::UPI_YESBANK,
+            Payment\Gateway::UPI_INDIANBANK,
             ];
 
         return (in_array($gateway, $gateways, true));

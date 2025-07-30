@@ -521,6 +521,10 @@ class Entity extends QrCode\Entity
                 {
                     return 'upi_jkbank';
                 }
+                if(isset($vpa[1]) === true && ($vpa[1] === 'indianbk'))
+                {
+                    return 'upi_indianbank';
+                }
                 return 'upi_' . $vpa[1];
             }
             else if ($this->getProvider() === Provider::BHARAT_QR)

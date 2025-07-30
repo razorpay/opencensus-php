@@ -435,10 +435,12 @@ class Service extends Base\Service
         {
             // We are passing $success as true as failure cases are handled in the exceptions above already
             // We assume that the integration with Mozart v2 throws an exception when the status is a failure
-            return $this->processQrPaymentForNewGatewayFlow($qrCode, $resp, $gateway, true);
+            $processQrPayment = $this->processQrPaymentForNewGatewayFlow($qrCode, $resp, $gateway, true);
+            return (new QrGatewayModule($this->app))->postProcessQrCallback($processQrPayment, $resp, $gateway);
         }
 
-        return $this->processNonQrCallback($resp, $gateway);
+        $processNonQrResponse = $this->processNonQrCallback($resp, $gateway);
+        return (new QrGatewayModule($this->app))->postProcessQrCallback($processNonQrResponse, $resp, $gateway);
     }
 
     // This function assumes that we are getting the response in the mozart holy grail format

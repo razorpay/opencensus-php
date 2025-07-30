@@ -6320,4 +6320,28 @@ class Terminal extends Base
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+
+    public function createDedicatedUpiIndianBankTerminal($attributes)
+    {
+        $defaultValues = [
+            'id'                        => '101IndbkTermnl',
+            'merchant_id'               => 'LiveAccountMer',
+            'gateway'                   => 'upi_indianbank',
+            'gateway_merchant_id'       => '1357901',
+            'vpa'                       => 'rzp.qrtest@indianbk',
+            'gateway_merchant_id2'      => 'rzp.qrtest@indianbk',
+            'upi'                       => true,
+            'type'                      => [
+                Type::PAY               => '1',
+                Type::NON_RECURRING     => '1',
+                Type::COLLECT           => '1',
+                Type::OFFLINE            => '1',
+                Type::DIRECT_SETTLEMENT_WITH_REFUND => '1'
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 }

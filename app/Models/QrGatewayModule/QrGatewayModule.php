@@ -6,20 +6,23 @@ use App;
 use Cache;
 use Carbon\Carbon;
 
+use RZP\Exception;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BharatQr;
 use RZP\Models\QrPayment;
+use Razorpay\Trace\Logger;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Gateway;
+use RZP\Exception\GatewayErrorException;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\QrCode\Entity as QrCodeEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVaQrCodeEntity;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\InvoiceDetails as InvoiceDetails;
-use RZP\Exception;
-use RZP\Exception\BadRequestValidationFailureException;
 
 
 /**
@@ -477,15 +480,47 @@ class QrGatewayModule
             ];
 
         }
+        if ($gateway === Gateway::UPI_INDIANBANK)
+        {
+            try
+            {
+                $response = $this->app['upi.payments']->qrPreProcessServerCallback($input, $gateway);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Logger::ERROR,
+                    TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_FAILURE);
 
-        $response = $this->app['mozart']->sendMozartRequest(
-            namespace  : Namespaces::PAYMENTS,
-            gateway    : $gateway,
-            action     : Action::QR_PRE_PROCESS,
-            input      : $input,
-            addEntities: false
-        );
+                // Re-throw the exception to be caught by the calling code
+                throw $e;
+            }
+        }
+        else
+        {
+            $response = $this->app['mozart']->sendMozartRequest(
+                namespace  : Namespaces::PAYMENTS,
+                gateway    : $gateway,
+                action     : Action::QR_PRE_PROCESS,
+                input      : $input,
+                addEntities: false
+            );
+        }
+
         // REF: https://docs.google.com/document/d/1mGep0btVixd-tcOU0F7Y0cCsDuGReUMgCXQDGQzGTEk/edit?tab=t.0#heading=h.itwx71h7nr3n
+        if (isset($response) === false)
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_NO_RESPONSE,
+                'NO_RESPONSE_FROM_GATEWAY',
+                "No response received from the gateway",
+                [
+                    'gateway' => $gateway,
+                ]
+            );
+        }
+
         if (($response['data']['payment']['method'] ?? '') === 'card')
         {
             $errorData = [
@@ -496,7 +531,7 @@ class QrGatewayModule
                 ],
             ];
 
-            throw new Exception\GatewayErrorException(
+            throw new GatewayErrorException(
                 'Card payment not supported by QR',
                 'CARD_PAYMENT_IN_CALLBACK',
                 null,
@@ -504,7 +539,40 @@ class QrGatewayModule
             );
         }
 
+        if($response['success'] === false){
+            $errorData = $response['data'];
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                'INVALID_RESPONSE',
+                'Invalid Response from Gateway',
+                $errorData
+            );
+        }
+
         return $response['data'];
+    }
+
+    public function postProcessQrCallback($qrPaymentResponse, $preProcessResponse, string $gateway): array|string
+    {
+        if($gateway === Gateway::UPI_INDIANBANK)
+        {
+            // Check if status field exists in qrPaymentResponse
+            if (!isset($qrPaymentResponse['status'])) {
+                $app = App::getFacadeRoot();
+                $app->trace->info(
+                    TraceCode::QR_PAYMENT_POST_PROCESS_STATUS_NOT_FOUND,
+                    [
+                        'gateway' => $gateway,
+                        'qr_payment_response' => $qrPaymentResponse,
+                        'message' => 'Status field missing in qrPaymentResponse, returning success response'
+                    ]
+                );
+                return $preProcessResponse['success'];
+            }
+            return ($qrPaymentResponse['status'] === "SUCCESS") ? $preProcessResponse['success'] : $preProcessResponse['failure'];
+        }
+
+        return $qrPaymentResponse;
     }
 
 
