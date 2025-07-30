@@ -1725,6 +1725,10 @@ class Processor
             // Merchants with both v1 and v2 QR codes have to do re-arch separately
             if((new QrPayment\Core)->checkPaymentViaQRv1($this->merchant) === true)
             {
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "checkPaymentViaQRv1_failed",
+                    'merchant_id' => $merchant->getId(),
+                ]);
                 return false;
             }
 
@@ -2203,6 +2207,15 @@ class Processor
                         $card_number = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
                         $iinId = substr($card_number, 0, 8);
                         $iin = $this->repo->iin->find($iinId);
+
+                        if ($iin == null) {
+                            $this->trace->info(TraceCode::PAYMENT_CARD_IIN_MISSING, [
+                                'reason' => "iin_null_v1",
+                                'iinId' => $iinId,
+                                'merchant_id' => $merchant->getId(),
+                            ]);
+                        }
+
                         $isInternational = IIN\IIN::isInternational($iin->getCountry(), $merchant->getCountry());
                         // Block domestic non-INR traffic
                         if ($this->inputCurrencyNotINR($input) && !$isInternational) {
@@ -2301,6 +2314,14 @@ class Processor
             $card_number = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
             $iinId = substr($card_number, 0, 8);
             $iin = $this->repo->iin->find($iinId);
+
+            if ($iin == null) {
+                $this->trace->info(TraceCode::PAYMENT_CARD_IIN_MISSING, [
+                    'reason' => "iin_null_v2",
+                    'iinId' => $iinId,
+                    'merchant_id' => $merchant->getId(),
+                ]);
+            }
 
             if ((empty($input['currency']) === false and
                 $input['currency'] !== Currency\Currency::INR) and
@@ -2426,6 +2447,10 @@ class Processor
                                 }
 
                                 if($this->inputCurrencyNotINR($input)){
+                                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                                        'reason' => "saved_card_input_currency_not_inr",
+                                        'merchant_id' => $merchant->getId(),
+                                    ]);
                                     return false;
                                 }
 
@@ -2556,6 +2581,10 @@ class Processor
                                 {
                                     $cardInput = $this->getCardInputWithoutCryptogramForRearch($card, $input, $token, $tokenRearchResult);
                                     if($this->inputCurrencyNotINR($input)){
+                                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                                            'reason' => "saved_card_input_currency_not_inr_v2",
+                                            'merchant_id' => $merchant->getId(),
+                                        ]);
                                         return false;
                                     }
                                     //modify input for cards
@@ -2584,6 +2613,10 @@ class Processor
                                         $input[Payment\Entity::API_VAULT] = $card->getVault();
                                     }
                                     if($this->inputCurrencyNotINR($input)){
+                                        $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                                            'reason' => "saved_card_input_currency_not_inr_v3",
+                                            'merchant_id' => $merchant->getId(),
+                                        ]);
                                         return false;
                                     }
                                     //modify input for cards
@@ -2619,6 +2652,7 @@ class Processor
                     'reason' => "not_enagaged_in_saved_card_token_payments_via_pg_router",
                     'merchant_id' => $merchant->getId(),
                     'razorx_result' => $result,
+                    'is_app_env_prod' => app()->isEnvironmentProduction(),
                 ]);
                 return false;
             }
@@ -2652,6 +2686,14 @@ class Processor
             if($input[Payment\Entity::METHOD] == Payment\METHOD::CARD &&
                 $this->merchant->isFeatureEnabled(Feature::ROUTING_INT_WIBMO_REARCH) === true) {
                 return true;
+            }
+
+            if ($iin == null) {
+                $this->trace->info(TraceCode::PAYMENT_CARD_IIN_MISSING, [
+                    'reason' => "iin_null_v3",
+                    'iinId' => $iinId,
+                    'merchant_id' => $merchant->getId(),
+                ]);
             }
 
             if (($iin->isAmex() === false) and
@@ -2734,36 +2776,6 @@ class Processor
             if ($iin->getNetworkCode() === Card\Network::DICL && $this->isPaymentViaTokenisedCard($input)) {
                 $input[E::CARD][E::TOKEN_REFERENCE_NUMBER ]=  $input[E::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REFERENCE_NUMBER] ?? null;
                 $input[E::CARD][E::TOKEN_REFERENCE_ID ]= $input[E::CARD][Card\Entity::SERVICE_PROVIDER_TOKEN_DATA][Card\Entity::REQUESTOR_ID] ?? null;
-            }
-
-
-            if ($this->isPaymentViaTokenisedCard($input))
-            {
-                $result = 'off';
-                if($this->mode == MODE::LIVE && app()->isEnvironmentProduction()){
-                    $result = 'on';
-                }
-                return ($result === 'on');
-            }
-
-            if (($merchant->isFeatureEnabled(Feature::JSON_V2) === true))
-            {
-                if($this->mode == MODE::LIVE && app()->isEnvironmentProduction()){
-                    $result = 'on';
-                }
-                return ($result === 'on');
-            }
-
-            if ($this->app['basicauth']->isPrivateAuth() === false)
-            {
-                $result = 'off';
-                if($this->mode == Mode::LIVE && app()->isEnvironmentProduction()){
-                    $result = 'on';
-                }
-            }
-            else
-            {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::S2S_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
             }
 
             $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_SUCCESS_REASON, [
