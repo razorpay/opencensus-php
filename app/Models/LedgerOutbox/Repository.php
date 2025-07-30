@@ -37,7 +37,7 @@ class Repository extends Base\Repository
 
     public function fetchOldOutboxEntriesForRetry($limit, $startTimestamp, $endTimestamp)
     {
-        return  $this->newQuery()
+        $results =  $this->newQueryWithConnection($this->getSlaveConnection())
             ->from(\DB::raw('`ledger_outbox`'))
             ->where(Entity::IS_DELETED, '=', false)
             ->where(Entity::CREATED_AT, '>=', $startTimestamp)
@@ -53,6 +53,12 @@ class Repository extends Base\Repository
             ->orderBy(Entity::CREATED_AT, 'ASC')
             ->limit($limit)
             ->get();
+
+        $oldConnection = empty($this->app['rzp.mode']) ? EnvMode::TEST : $this->app['rzp.mode'];
+
+        $this->resetConnectionOnModels($results, $oldConnection);
+
+        return $results;
     }
 
     public function fetchOldOutboxEntriesForRetryByEntityType($limit, $startTimestamp, $endTimestamp, $entityType, $maxRetryCount)

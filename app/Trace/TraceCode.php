@@ -10991,6 +10991,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LIVE_AND_TEST_AND_ASV_DB_ERROR_IN_ROLLBACK            = 'LIVE_AND_TEST_AND_ASV_DB_ERROR_IN_ROLLBACK';
     const LIVE_AND_TEST_AND_ASV_DB_ERROR_IN_COMMIT              = 'LIVE_AND_TEST_AND_ASV_DB_ERROR_IN_COMMIT';
 
+    const API_TXN_SAVE_BAD_REQUEST_RECEIVED                     = 'API_TXN_SAVE_BAD_REQUEST_RECEIVED';
+    const API_TXN_SAVE_EXPERIMENT_EVALUATION                    = 'API_TXN_SAVE_EXPERIMENT_EVALUATION';
+    const API_TXN_SAVE_EVALUATION_EXCEPTION                     = 'API_TXN_SAVE_EVALUATION_EXCEPTION';
+    const API_TXN_SAVE_INFO                                     = 'API_TXN_SAVE_INFO';
+    const API_TXN_POST_SAVE_FETCH_FAILED                        = 'API_TXN_POST_SAVE_FETCH_FAILED';
+
     const ASV_SPLITZ_RESPONSE_ERROR                             = 'ASV_SPLITZ_RESPONSE_ERROR';
     const ASV_SPLITZ_ERROR                                      = 'ASV_SPLITZ_ERROR';
     const ASV_COULD_NOT_FIND_ACCOUNT                            = 'ASV_COULD_NOT_FIND_ACCOUNT';

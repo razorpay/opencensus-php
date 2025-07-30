@@ -1475,6 +1475,8 @@ return array(
 
     'cross_border_pacb_tagging_experiment_id'   => env('CROSS_BORDER_PACB_TAGGING_EXPERIMENT_ID'),
 
+    'splitz_txn_dual_write_save_experiment_id'          => env('SPLITZ_TXN_DUAL_WRITE_SAVE_EXPERIMENT_ID'),
+
     'update_upi_late_auth_status'   => env('UPDATE_UPI_LATE_AUTH_STATUS'),
 
     'is_balance_separation_experiment_id' => env('IS_BALANCE_SEPARATION_EXPERIMENT_ID'),

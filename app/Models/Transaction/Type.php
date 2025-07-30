@@ -4,6 +4,7 @@ namespace RZP\Models\Transaction;
 
 use RZP\Constants\Entity as E;
 use RZP\Exception\InvalidArgumentException;
+use RZP\Models\Transaction\Type as TransactionTypes;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Type
@@ -70,6 +71,20 @@ class Type
         self::CHARGE,
         self::INTEREST_WAIVER
     ];
+
+    const PG_TYPE =[
+        self::PAYMENT,
+        self::ADJUSTMENT,
+        self::DISPUTE,
+        self::REFUND,
+        self::REVERSAL,
+        self::SETTLEMENT,
+        self::TRANSFER,
+        self::BUNDLE_FEE,
+        self::PRODUCT_CHARGE,
+        self::SETTLEMENT_TRANSFER,
+        self::SETTLEMENT_ONDEMAND
+        ];
 
     public static function validateType(string $type)
     {

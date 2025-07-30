@@ -7,6 +7,12 @@ use Cache;
 use Carbon\Carbon;
 
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use Razorpay\Trace\Logger;
+use RZP\Constants\Country;
+use RZP\Constants\Environment;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Base\ConnectionType;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -35,6 +41,7 @@ use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Modules\Acs\QueryShadowModeEvent;
 use RZP\Constants\Entity as ConstantEntity;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Transaction\Type as TransactionTypes;
 
 class Repository extends Base\Repository
 {
@@ -410,6 +417,54 @@ class Repository extends Base\Repository
 
         return $txns;
     }
+
+    public function save($entity, array $options = array())
+    {
+        $dbSaveAllowed = $this->checkIfTxnDbSaveIsAllowed($entity);
+
+        if ($dbSaveAllowed === false)
+        {
+            $ex =  new Exception\ServerErrorException('Error_txn_db_save_not_allowed', ErrorCode::SERVER_ERROR_TXN_DB_SAVE_DENIED);
+
+            $this->app['trace']->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::API_TXN_SAVE_BAD_REQUEST_RECEIVED, [
+                    'info' => "Error throw in saveorfail commit in db",
+                    'entity' => $entity,
+                    'options'=> $options
+                ]);
+            throw $ex;
+
+        }
+        parent::save($entity, $options);
+    }
+
+    public function saveOrFail($entity, array $options = array())
+    {
+        $dbSaveAllowed = $this->checkIfTxnDbSaveIsAllowed($entity);
+
+        if ($dbSaveAllowed === false)
+        {
+            $ex =  new Exception\ServerErrorException('Error_txn_db_save_not_allowed', ErrorCode::SERVER_ERROR_TXN_DB_SAVE_DENIED);
+
+
+            $this->app['trace']->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::API_TXN_SAVE_BAD_REQUEST_RECEIVED, [
+                    'info' => "Error throw in saveorfail commit in db",
+                    'entity' => $entity,
+                    'options'=> $options
+                ]);
+
+            throw $ex;
+
+        }
+
+        parent::saveOrFail($entity, $options);
+    }
+
 
     public function fetchEntitiesForDSPReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap)
     {
@@ -974,6 +1029,140 @@ class Repository extends Base\Repository
 
 
         return $txn;
+    }
+
+    // checkIfTxnDbSaveIsAllowed : for IN merchants on LIVE Mode, Txn save requests for $pgBalances will return false.
+    public function checkIfTxnDbSaveIsAllowed($entity)
+    {
+        $isExpEnabled = false;
+
+        $routeOrWorker = '';
+
+        $experimentId = '';
+
+        try {
+            if ($this->shouldAllowTxnWritesEnvCheck() === true)
+            {
+                // allow db txn saves if env is BVT/Automation or Unit Tests are being run
+                return true;
+            }
+        }
+        catch (\Throwable $e) {}
+
+        try
+        {
+            $routeOrWorker = app()->runningInQueue() ? app('worker.ctx')->getJobName() : app('request.ctx')->getRoute();
+
+            $experimentId = $this->app['config']->get('app.splitz_txn_dual_write_save_experiment_id');
+
+            $properties = [
+                "id" => $routeOrWorker,
+                "experiment_id" => $experimentId,
+            ];
+
+            $isExpEnabled= (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+        }
+        catch (\Throwable $e) {}
+
+        $this->trace->info(
+            TraceCode::API_TXN_SAVE_EXPERIMENT_EVALUATION,
+            [
+                'experiment_evaluated' => $isExpEnabled,
+                'id'                   => $routeOrWorker,
+                'experiment_id'        => $experimentId
+            ]);
+
+        if ($isExpEnabled===false)
+        {
+            // allow db saves, not throw 5xx
+            return true;
+        }
+
+        try
+        {
+
+            $merchantId = $entity->getAttribute(Transaction\Entity::MERCHANT_ID);
+
+            $merchant =  $this->repo->merchant->findOrFail($merchantId);
+
+            $countryCode = $merchant->getAttribute(Merchant\Entity::COUNTRY_CODE);
+
+            $type = $entity->getAttribute(Transaction\Entity::TYPE);
+
+            $mode =  app('rzp.mode');
+
+            if($countryCode!=='IN' || $mode !== Mode::LIVE)
+            {
+                // allow db saves, not throw 5xx
+                return true;
+            }
+
+            if ((in_array($type, [Transaction\Type::ADJUSTMENT, Transaction\Type::REVERSAL, Transaction\Type::SETTLEMENT]) === true) and
+                ($entity->source !== null) and
+                (isset($entity->source->balance)=== true) and
+                ($entity->source->balance->getType() !== Balance\Type::PRIMARY))
+            {
+                // allow db saves, not throw 5xx
+                return true;
+            }
+
+            // if balance entity is not associated, allowing txn saves.
+            if ((in_array($type, [Transaction\Type::ADJUSTMENT, Transaction\Type::REVERSAL, Transaction\Type::SETTLEMENT]) === true) and
+                (($entity->source === null) or (isset($entity->source->balance)=== false)))
+            {
+                return true;
+            }
+
+             if( $type === Transaction\Type::PAYOUT &&
+                ($entity->source !== null) &&
+                (isset($entity->source->balance)===true) &&
+               in_array($entity->source->balance->getType(), Balance\Type::$pgBalances)===true)
+            {
+                //payout of pg balance, save not allowed. Throw 5xx
+               return false;
+            }
+
+             // if balance not associated, do not throw 5xx
+            if($type === Transaction\Type::PAYOUT &&
+               (($entity->source === null) or (isset($entity->source->balance) === false)))
+            {
+                return true;
+            }
+
+            //irrespective of balance associated or not [except for adjustment,reversal,settlement], the below types are always on pg balances.
+            if(in_array($type,TransactionTypes::PG_TYPE) === true)
+            {
+                return false ;
+            }
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Logger::ERROR,
+             TraceCode::API_TXN_SAVE_EVALUATION_EXCEPTION,
+             [
+                 'entity'     => $entity,
+                 'message'    => 'db save evaluation failed'
+             ]);
+        }
+        return true;
+
+    }
+
+    // shouldAllowTxnWritesEnvCheck : checks if its lower envs.
+    // Txn for pg allowed for db save
+    public function shouldAllowTxnWritesEnvCheck()
+    {
+        if (app()->runningUnitTests() === true) {
+            return true;
+        }
+
+        if (app()->isEnvironmentQA() === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function txnReference3Update($txnId, $value)
