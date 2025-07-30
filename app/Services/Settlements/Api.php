@@ -389,6 +389,11 @@ class Api extends Base
         return $this->makeRequest(self::HOLD_REASON_CODE_MAPPING_INTERNAL, $input, self::SERVICE_API, null, Requests::GET);
     }
 
+    public function getDcsAuditDetails(array $input) : array
+    {
+        return $this->makeRequest(self::DCS_AUDIT_DETAILS, $input, self::SERVICE_API, null, Requests::POST);
+    }
+
     public function updateFOH(array $input) : array
     {
         return $this->makeRequest(self::UPDATE_FOH, $input, self::SERVICE_API,null, Requests::POST);

@@ -72,6 +72,8 @@ class Base
       dashboard, Risk. */
     const HOLD_REASON_CODE_MAPPING = '/v1/settlements/on_hold/reason_codes';
     const HOLD_REASON_CODE_MAPPING_INTERNAL = '/v1/settlements/internal/on_hold/reason_codes';
+    const DCS_AUDIT_DETAILS = '/v1/settlements/dcs_audit_details';
+    const DCS_AUDIT_DETAILS_INTERNAL = '/v1/settlements/internal/dcs_audit_details';
     const UPDATE_FOH = '/v1/settlements/updateFOH';
     protected $trace;
 

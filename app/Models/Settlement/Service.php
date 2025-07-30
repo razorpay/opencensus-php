@@ -2241,6 +2241,12 @@ class Service extends Base\Service
         return app('settlements_api')->getHoldReasonCodeMappingsInternal($input);
     }
 
+    public function getDcsAuditDetails(array $input) : array
+    {
+        return app('settlements_api')->getDcsAuditDetails($input);
+    }
+
+
     public function updateFOH(array $input) : array
     {
         return app('settlements_api')->updateFOH($input);

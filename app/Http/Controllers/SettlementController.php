@@ -1037,6 +1037,16 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+
+    public function fetchDcsAuditDetailsAdmin()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getDcsAuditDetails($input);
+
+        return ApiResponse::json($data);
+    }
+
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('1024M');
