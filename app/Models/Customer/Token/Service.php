@@ -2641,10 +2641,14 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($tokenCard);
 
+        // Limit payment notes to maximum 15 keys for token validation
+        $paymentNotes = $payment->getNotes()->toArray();
+        $limitedNotes = array_slice($paymentNotes, 0, 15, true);
+
         $saveMethodInput = [
             Token\Entity::METHOD => $payment->getMethod(),
             Token\Entity::CARD_ID => $tokenCard->getId(),
-            Token\Entity::NOTES => $payment->getNotes()->toArray(),
+            Token\Entity::NOTES => $limitedNotes,
         ];
 
         $token = null;

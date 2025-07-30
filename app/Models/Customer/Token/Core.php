@@ -484,7 +484,8 @@ class Core extends Base\Core
         $createInput = [
             Entity::METHOD      => $token->getMethod(),
             Entity::CARD_ID     => $token->getCardId(),
-            Entity::STATUS      => $token->getStatus()
+            Entity::STATUS      => $token->getStatus(),
+            Entity::NOTES       => $token->getNotes()->toArray()
         ];
 
         $order = $payment->order;
