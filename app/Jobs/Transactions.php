@@ -112,7 +112,7 @@ class Transactions extends Job
 
                 case Entity::FUND_ACCOUNT_VALIDATION :
                     $response = (new FavCore)
-                        ->createTransactionInLedgerReverseShadowFlow($this->entityId, $this->ledgerResponse, $this->feeSplit);
+                        ->createTransactionInLedgerReverseShadowFlow($this->entityId, $this->ledgerResponse, feeSplit: $this->feeSplit);
 
                     break;
 

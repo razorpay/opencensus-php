@@ -60,7 +60,7 @@ class Service extends Base\Service
         }
         catch (\Exception $ex)
         {
-            if ($this->core->shouldFetchFavByIdViaMicroservice($this->merchant))
+            if (Utils::isFavServiceForwardingApplicable($this->merchant))
             {
                 try
                 {

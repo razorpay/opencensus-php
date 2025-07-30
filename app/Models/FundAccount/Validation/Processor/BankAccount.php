@@ -17,6 +17,7 @@ use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
 use RZP\Models\FundAccount\Validation\Core;
+use RZP\Models\FundAccount\Validation\Utils;
 use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\BankAccount\OldNewIfscMapping;
@@ -341,7 +342,7 @@ class BankAccount extends Base
                 // Will do nothing for reverse shadow
                 (new Core)->processLedgerFav($this->validation, Attempt\Status::REVERSED, $ftsSourceAccountInformation);
 
-                if (Core::shouldFavGoThroughLedgerReverseShadowFlow($this->validation) === true)
+                if (Utils::shouldFavGoThroughLedgerReverseShadow($this->validation) === true)
                 {
                     try
                     {
@@ -439,7 +440,7 @@ class BankAccount extends Base
         // In reverse shadow, nothing happens here
         (new Core)->processLedgerFav($this->validation, null, $ftsSourceAccountInformation);
 
-        if (Core::shouldFavGoThroughLedgerReverseShadowFlow($this->validation) === true)
+        if (Utils::shouldFavGoThroughLedgerReverseShadow($this->validation) === true)
         {
             try
             {

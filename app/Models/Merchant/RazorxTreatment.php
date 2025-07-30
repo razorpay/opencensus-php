@@ -80,6 +80,9 @@ final class RazorxTreatment
     //It is used to maintain backward compatibility for fav composite api response.
     const FAV_COMPOSITE_SERVICE_FORWARDING = 'fav_composite_service_forwarding';
 
+    // Experiment used to disable txn entity creation in ledger reverse shadow
+    const FAV_DISABLE_TRANSACTION_CREATION = 'fav_disable_transaction_creation';
+
     // experiment to enable fee deduction for fav of type vpa
     const FAV_LEDGER_FEE_DEDUCTION_FOR_VPA_ENABLE = 'fav_ledger_fee_deduction_for_vpa_enable';
 

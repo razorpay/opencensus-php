@@ -3195,7 +3195,7 @@ return [
             'url'     => '/fund_accounts/validations/webhook/citi',
             'method'  => 'post',
             'headers' => [
-                'xorgtoken' => 'RANDOM_CITI_WEBHOOK_SECRET'
+                'client_id' => 'RANDOM_CITI_WEBHOOK_SECRET'
             ],
             'content' => [
                 'id' => 'fav_00000000000001',

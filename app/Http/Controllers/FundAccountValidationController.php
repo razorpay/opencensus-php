@@ -102,7 +102,7 @@ class FundAccountValidationController extends Controller
     {
         $headers = Request::header();
 
-        if (empty($headers['xorgtoken']) === true)
+        if (empty($headers['client_id']) === true)
         {
             $this->trace->error(TraceCode::CITI_WEBHOOK_INVALID_CALLBACK_DATA, [
                 'message'   => 'empty token',
@@ -115,7 +115,7 @@ class FundAccountValidationController extends Controller
             ], 401);
         }
 
-        $actualToken = Request::header('xorgtoken');
+        $actualToken = Request::header('client_id');
         $expectedToken = $this->config['applications.citi_webhook.org_token'];
 
         if (hash_equals($expectedToken, $actualToken) === false)

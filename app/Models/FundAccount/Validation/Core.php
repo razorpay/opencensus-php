@@ -3,7 +3,6 @@
 namespace RZP\Models\FundAccount\Validation;
 
 use FuzzyWuzzy\Fuzz;
-use RZP\Constants\Mode;
 use RZP\Error\Error;
 use RZP\Exception;
 use Carbon\Carbon;
@@ -28,6 +27,7 @@ use RZP\Jobs\FaVpaValidation;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
+use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
@@ -49,7 +49,6 @@ use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Services\FTS\Transfer\RequestFields as FtsRequestFields;
 use RZP\Models\Transaction\Processor\Ledger\FundAccountValidation as FavLedgerProcessor;
-use RZP\Models\FundAccount\Validation\Utils;
 
 class Core extends Base\Core
 {
@@ -137,37 +136,6 @@ class Core extends Base\Core
         return $input;
     }
 
-    public function isFavServiceForwardingApplicable(Merchant\Entity $merchant): bool
-    {
-        $isFavServiceFlagEnabled = $merchant->isFeatureEnabled(Feature\Constants::FAV_SERVICE_ENABLED);
-
-        $isFavServiceExperimentEnabled = $this->isFavServiceForwardExperimentEnabled($merchant->getId());
-
-        if(($isFavServiceExperimentEnabled === true) and
-            ($isFavServiceFlagEnabled === true))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    public function isFavServiceForwardExperimentEnabled(string $merchantId): bool
-    {
-        $requestPayload = [
-            "id" =>  $merchantId,
-            "experiment_name" => RazorxTreatment::FAV_COMPOSITE_SERVICE_FORWARDING,
-            'request_data'  => json_encode(['id' =>  $merchantId])
-        ];
-
-        if((new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     /**
      * @param array $input
      * @param Merchant\Entity $merchant
@@ -204,7 +172,7 @@ class Core extends Base\Core
                 $input = $this->modifyCompositeRequestToStandardFormat($input, $merchant);
             }
 
-            $isFavServiceForwardingApplicable = $this->isFavServiceForwardingApplicable($merchant);
+            $isFavServiceForwardingApplicable = Utils::isFavServiceForwardingApplicable($merchant);
 
             $this->trace->info(TraceCode::FAV_REQUEST_CURRENT_STATUS, [
                 'merchant_id' => $merchant->getId(),
@@ -320,13 +288,9 @@ class Core extends Base\Core
      */
     protected function getFeesAndTaxForValidation(Merchant\Entity $merchant, array $input, Entity $validation, $validationType): array
     {
-        $requestPayload = [
-            "id" =>  $validation->merchant->getId(),
-            "experiment_name" => RazorxTreatment::FAV_POSTPAID_DISABLE,
-            'request_data'  => json_encode(['id' =>  $validation->merchant->getId()])
-        ];
-
-        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
+        $isExperimentEnabled = Utils::isExperimentEnabled(
+            $validation->merchant->getId(),
+            RazorxTreatment::FAV_POSTPAID_DISABLE);
 
         // For postpaid merchants for which experiment is not enabled, fees and tax will be 0
         if (($merchant->isPostPaid() === true) and
@@ -427,7 +391,8 @@ class Core extends Base\Core
             $validation->setRegisteredName($input['registered_name']);
             $validation->setNameMatchScore($input['name_match_score']);
         }
-        else if($input['status'] === 'failed') {
+
+        if(empty(['error_code']) === false) {
             $validation->setErrorCode($input['error_code']);
         }
 
@@ -788,12 +753,9 @@ class Core extends Base\Core
 
         $input[Entity::FUND_ACCOUNT][Entity::ID] = $fundAccount->getId();
 
-        if ((self::shouldFavGoThroughLedgerReverseShadowFlow($validation) === true) or
-            Utils::shouldVpaFavGoThroughLedgerReverseShadowFlow($validation) === true)
+        if (Utils::shouldFavGoThroughLedgerReverseShadow($validation) === true)
         {
-            $validation = $this->processFavThroughLedger($validation, $merchant, $input, $validationRequestType);
-
-            return $validation;
+            return $this->processFavThroughLedger($validation, $merchant, $input, $validationRequestType);
         }
 
         $validation = $this->repo->transaction(function () use ($input, $validation, $merchant, $validationRequestType)
@@ -908,6 +870,15 @@ class Core extends Base\Core
         try
         {
             $ledgerResponse = (new Ledger\FundAccountValidation())->processValidationAndCreateJournalEntry($validation, [], null, $feesSplit);
+
+            if (Utils::isExperimentEnabled(
+                $validation->getMerchantId(),
+                RazorxTreatment::FAV_DISABLE_TRANSACTION_CREATION) === true)
+            {
+                $validation->setTransactionId($ledgerResponse['body'][Entity::ID]);
+
+                $this->repo->saveOrFail($validation);
+            }
         }
         catch (BadRequestException | Exception\IntegrationException $ex)
         {
@@ -936,21 +907,6 @@ class Core extends Base\Core
         return $validation;
     }
 
-    /**
-     * @param array $input
-     * @return bool
-     */
-    public function shouldFetchFavByIdViaMicroservice(Merchant\Entity $merchant): bool
-    {
-        // Doing it this way so that we can avoid as many db calls as possible for fetching features.
-//        if ($this->mode !== Mode::LIVE)
-//        {
-//            return false;
-//        }
-
-        return $this->isFavServiceForwardingApplicable($merchant);
-    }
-
     public function processFavAfterLedgerStatusCheck($validation, $ledgerResponse, $feesSplit = null)
     {
         $this->trace->info(
@@ -976,18 +932,6 @@ class Core extends Base\Core
 
         $processor = Processor\Factory::get($validation);
         $processor->markValidationAsFailed();
-    }
-
-    public static function shouldFavGoThroughLedgerReverseShadowFlow($validation)
-    {
-        if (($validation->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) and
-            ($validation->isBalanceTypeBanking() === true) and
-            ($validation->getFundAccountType() !== FundAccount\Type::VPA))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -1343,13 +1287,9 @@ class Core extends Base\Core
 
     protected function handleExceptionalPGBalanceFAV(Entity $fundAccValidation)
     {
-        $requestPayload = [
-            "id" =>  $fundAccValidation->merchant->getId(),
-            "experiment_name" => RazorxTreatment::FAV_PG_LEDGER_CUTOFF,
-            'request_data'  => json_encode(['id' =>  $fundAccValidation->merchant->getId()])
-        ];
-
-        $isExperimentEnabled = (new Merchant\Core)->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE);
+        $isExperimentEnabled = Utils::isExperimentEnabled(
+            $fundAccValidation->merchant->getId(),
+            RazorxTreatment::FAV_PG_LEDGER_CUTOFF);
 
         $shouldAllowPGBalance = ($isExperimentEnabled === true) ? 'enable' : 'disable';
 
@@ -1504,7 +1444,7 @@ class Core extends Base\Core
         }
 
         // return if reverse shadow is enabled
-        if (self::shouldFavGoThroughLedgerReverseShadowFlow($fundAccountValidation) === true)
+        if (Utils::shouldFavGoThroughLedgerReverseShadow($fundAccountValidation) === true)
         {
             return;
         }
@@ -1984,7 +1924,7 @@ class Core extends Base\Core
                 $this->updateFavInFAVService($input);
             }
             elseif (($fav != null) and
-                ($this->isFavServiceForwardingApplicable($fav->merchant)) and
+                (Utils::isFavServiceForwardingApplicable($fav->merchant)) and
                    (str_contains($fav->getReceipt(), 'validx_')))
             {
                 $this->updateFavInFAVService($input);
@@ -2133,16 +2073,25 @@ class Core extends Base\Core
         $source->transaction->saveOrFail();
     }
 
-    public function createTransactionInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse, PublicCollection $feeSplit = null)
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws LogicException
+     * @throws \Throwable
+     */
+    public function createTransactionInLedgerReverseShadowFlow(
+        string $entityId,
+        array $ledgerResponse,
+        PublicCollection $feeSplit = null): array
     {
         $fav = $this->repo->fund_account_validation->find($entityId);
 
-        if(self::shouldFavGoThroughLedgerReverseShadowFlow($fav) === false)
-        {
-            throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'
-                ,ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
-            ['merchant_id' => $fav->getMerchantId()]);
+        if ($fav === null) {
+            return [
+                "message" => "Transaction creation skipped since fav creation in new service"
+            ];
         }
+
+        Utils::validateLedgerReverseShadowEnabled($fav);
 
         if (Utils::shouldVpaFavBypassTransactionCreation($fav) === true)
         {
@@ -2202,19 +2151,24 @@ class Core extends Base\Core
      * @param PublicCollection|null $feeSplit
      * @return mixed
      * @throws Exception\LogicException
+     * @throws BadRequestValidationFailureException
      */
-    public function updateBalanceAndTransactionIDInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse, PublicCollection $feeSplit = null)
+    public function updateBalanceAndTransactionIDInLedgerReverseShadowFlow(
+        string $entityId,
+        array $ledgerResponse,
+        PublicCollection $feeSplit = null): mixed
     {
         $fav = $this->repo->fund_account_validation->find($entityId);
 
-        if(self::shouldFavGoThroughLedgerReverseShadowFlow($fav) === false)
-        {
-            throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'
-                ,ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
-                ['merchant_id' => $fav->getMerchantId()]);
+        if ($fav === null){
+            return [
+                "message" => "Transaction creation skipped since fav creation in new service"
+            ];
         }
 
-        if ($fav->getFundAccountType() === FundAccount\Type::VPA)
+        Utils::validateLedgerReverseShadowEnabled($fav);
+
+        if (Utils::shouldVpaFavBypassTransactionCreation($fav))
         {
             $this->trace->info(
                 TraceCode::LEDGER_TRANSACTIONS_QUEUE_VPA_BASED_FAV_NOT_ALLOWED,

@@ -214,17 +214,27 @@ class LedgerJournalBase extends Job
                     break;
 
                 case Entity::FUND_ACCOUNT_VALIDATION :
-                    if (strpos($transactorEvent, Ledger\FundAccountValidation::FAV_INITIATED) !== false)
+                    if (str_contains($transactorEvent, Ledger\FundAccountValidation::FAV_INITIATED))
                     {
-                        if ($skipTransactionCreation === true)
+                        $isFavTxnCreationDisabled = $this->isExperimentEnabled(Merchant\RazorxTreatment::FAV_DISABLE_TRANSACTION_CREATION);
+
+                        // If txn creation is disabled then txn id must have been already set in validation before
+                        // therefore skipping here
+                        if ($isFavTxnCreationDisabled === true)
                         {
-                            $response = (new FavCore)
-                                ->updateBalanceAndTransactionIDInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                            $response = [
+                                "message" => "skipping txn and merchant update because it is disabled."
+                            ];
                         }
                         else
                         {
-                            $response = (new FavCore)
-                                ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                            if ($skipTransactionCreation === true) {
+                                $response = (new FavCore)
+                                    ->updateBalanceAndTransactionIDInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                            } else {
+                                $response = (new FavCore)
+                                    ->createTransactionInLedgerReverseShadowFlow($entityId, $this->ledgerResponse);
+                            }
                         }
                     }
                     break;

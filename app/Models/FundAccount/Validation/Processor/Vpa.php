@@ -27,6 +27,8 @@ use RZP\Models\FundAccount\Validation\Entity as FavEntity;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
 use RZP\Models\BankingAccount\Gateway\Rbl\Fields as Fields;
 use RZP\Models\BankingAccount\Service as BankingAccountService;
+use RZP\Models\Transaction\Processor\Ledger\FundAccountValidation;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class Vpa extends Base
 {
@@ -452,7 +454,10 @@ class Vpa extends Base
 
     public function setDefaultValuesForValidation()
     {
-        if (Utils::isLedgerFeeDeductionForVpaTypeFavEnabled($this->validation->getMerchantId())) {
+        if (Utils::isExperimentEnabled(
+            $this->validation->getMerchantId(),
+            RazorxTreatment::FAV_LEDGER_FEE_DEDUCTION_FOR_VPA_ENABLE) === true)
+        {
             if ($this->validation->getAmount() === null) {
                 $this->validation->setAmount(Constants::DEFAULT_VPA_VALIDATION_AMOUNT);
             }
@@ -461,5 +466,22 @@ class Vpa extends Base
                 $this->validation->setCurrency(Constants::DEFAULT_PENNY_TESTING_CURRENCY);
             }
         }
+    }
+
+    public function createTransactionForLedger(array $ledgerResponse)
+    {
+        $txnId   = $ledgerResponse[Entity::ID];
+        $newBalance = FundAccountValidation::getMerchantBalanceFromLedgerResponse($ledgerResponse);
+
+        $txn = (new \RZP\Models\Transaction\Processor\FundAccountValidation($this->validation))
+            ->createTransactionForLedger($txnId, $newBalance);
+
+        return $txn;
+    }
+
+    public function updateBalanceForLedgerReverseShadow($entityId, $txnId, $newBalance): void
+    {
+        (new \RZP\Models\Transaction\Processor\FundAccountValidation($this->validation))
+            ->updateBalanceForLedgerReverseShadow($entityId, $txnId, $newBalance);
     }
 }

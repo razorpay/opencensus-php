@@ -15,6 +15,7 @@ use RZP\Exception\LogicException;
 use RZP\Exception\RuntimeException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayErrorException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\Reversal\Core as ReversalCore;
@@ -230,7 +231,9 @@ class FaVpaValidation extends Job
                         $vpaProcessor->markValidationAsFailed();
 
                         // If we have deducted fee for vpa type fav, we have to refund it back
-                        if (FavUtils::isLedgerFeeDeductionForVpaTypeFavEnabled($faValidation->getMerchantId()) === true)
+                        if (FavUtils::isExperimentEnabled(
+                            $faValidation->getMerchantId(),
+                            RazorxTreatment::FAV_LEDGER_FEE_DEDUCTION_FOR_VPA_ENABLE) === true)
                         {
                             (new ReversalCore())->reverseForFundAccountValidation($faValidation);
                         }

@@ -325,6 +325,13 @@
       "description": "Account Validation rejected by the beneficiary bank. Please contact the beneficiary bank."
     }
   },
+  "BANK_RESPONSE_TIMEOUT": {
+    "failed": {
+      "source": "beneficiary_bank",
+      "reason": "bank_timeout",
+      "description": "Response time out from bank. Please retry fund account validation."
+    }
+  },
   "TXN_LIMIT_EXCEEDED": {
     "failed": {
       "source": "gateway",

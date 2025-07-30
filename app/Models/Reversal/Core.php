@@ -752,8 +752,7 @@ class Core extends Base\Core
         {
             // we still want to send a request to ledger even though a reversal was not created
             // This is to make sure that other chart of accounts get balanced
-            if ((FundAccountValidation\Core::shouldFavGoThroughLedgerReverseShadowFlow($fav) === true) or
-                (FavUtils::shouldVpaFavGoThroughLedgerReverseShadowFlow($fav) === true))
+            if (FavUtils::shouldFavGoThroughLedgerReverseShadow($fav) === true)
             {
                 try
                 {
@@ -796,8 +795,7 @@ class Core extends Base\Core
 
         $reversal->balance()->associate($fav->balance);
 
-        if ((FundAccountValidation\Core::shouldFavGoThroughLedgerReverseShadowFlow($fav) === true) or
-            (FavUtils::shouldVpaFavGoThroughLedgerReverseShadowFlow($fav) === true))
+        if (FavUtils::shouldFavGoThroughLedgerReverseShadow($fav) === true)
         {
             $this->repo->saveOrFail($reversal);
 
