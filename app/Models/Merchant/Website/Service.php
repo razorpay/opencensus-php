@@ -2706,28 +2706,35 @@ class Service extends Base\Service
 
         foreach ($adminWebsiteDetail as $urlType => $data)
         {
-            if(empty($data) === false and is_array($data))
+            if (empty($data) === true or !is_array($data))
             {
-                foreach ($data as $url => $websiteDetail)
-                {
-                    if(empty($websiteDetail) === false and is_array($websiteDetail))
-                    {
-                        foreach (explode(',', Constants::VALID_MERCHANT_SECTIONS) as $sectionName)
-                        {
-                            if($this->isSectionPresent($sectionName, $websiteDetail) === false)
-                            {
-                                $isAdminWebsiteDetailPresent = false;
-                                break;
-                            }
-                        }
+                $isAdminWebsiteDetailPresent = false;
+                continue;
+            }
 
-                        if($isAdminWebsiteDetailPresent === true)
-                        {
-                            return true;
-                        }
+            foreach ($data as $url => $websiteDetail)
+            {
+                if(empty($websiteDetail) === true or !is_array($websiteDetail))
+                {
+                    $isAdminWebsiteDetailPresent = false;
+                    continue;
+                }
+
+                foreach (explode(',', Constants::VALID_MERCHANT_SECTIONS) as $sectionName)
+                {
+                    if($this->isSectionPresent($sectionName, $websiteDetail) === false)
+                    {
+                        $isAdminWebsiteDetailPresent = false;
+                        break;
                     }
                 }
+
+                if($isAdminWebsiteDetailPresent === true)
+                {
+                    return true;
+                }
             }
+
         }
 
         return $isAdminWebsiteDetailPresent;
