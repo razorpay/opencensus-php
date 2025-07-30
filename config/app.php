@@ -1549,7 +1549,7 @@ return array(
     'block_competitor_application' => env('BLOCK_COMPETITOR_APPLICATION'),
 
     'workflow_segregation_store_user_signup_state' => env('WORKFLOW_SEGREGATION_STORE_USER_SIGNUP_STATE'),
-    
+
     'optimizer_bank_transfer_enable' => env('OPTIMIZER_BANK_TRANSFER_ENABLE_EXPERIMENT_ID'),
 
     'merchant_with_qr_expiry_gt_2_hours' => env('MERCHANT_WITH_QR_EXPIRY_GT_2_HOURS'),
@@ -1581,4 +1581,6 @@ return array(
     'update_existing_user_email_exp' => env('UPDATE_EXISTING_USER_EMAIL_EXP'),
 
     'merchant_id_in_udd_query' => env('MERCHANT_ID_IN_UDD_QUERY'),
+
+    'is_account_statements_new_report_enabled' => env('IS_ACCOUNT_STATEMENTS_NEW_REPORT_ENABLED'),
 );
