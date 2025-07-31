@@ -537,9 +537,9 @@ class Core extends Base\Core
         $merchantId        = $input[Entity::MERCHANT_ID];
         $offer             = $input[Entity::OFFER];
 
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
         if (empty($offer[Entity::PAYMENT_METHOD]) === false)
         {
-            $merchant                           = $this->repo->merchant->findOrFailPublic($merchantId);
             $response[Entity::MERCHANT_METHODS] = $merchant->methods;
         }
         if ($offer[Entity::IS_NO_COST_EMI])
@@ -551,10 +551,19 @@ class Core extends Base\Core
 
             foreach ($emiPlans as $emiPlan)
             {
-                $tenureDiscountMap[$emiPlan[Emi\Entity::DURATION]] = $emiPlan[Emi\Entity::MERCHANT_PAYBACK];
+                if ($emiPlan->getMerchantId() !== $merchantId)
+                {
+                    continue;
+                }
+                $tenureDiscountMap[$emiPlan[Emi\Entity::DURATION]] = $emiPlan;
             }
             $response[Entity::TENURE_DISCOUNT_MAP] = $tenureDiscountMap;
         }
+
+        $hasBlockingFeature = $merchant->isFeatureEnabled("block_offer_creation");
+
+        $response[Entity::BLOCK_OFFER_CREATION] = $hasBlockingFeature;
+
         $this->trace->info(TraceCode::FETCH_OFFER_CREATE_INFO_RESPONSE, $response);
 
         return $response;
@@ -1163,6 +1172,15 @@ class Core extends Base\Core
         if ($offerCreateReadsMigrationExpResult === false)
         {
             $this->validateMerchant($merchant, $input);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::SKIPPING_VALIDATE_MERCHANT_IN_API,
+                [
+                    'message'  => "Skipping validateMerchant Validation in API",
+                    'merchant_id' => $merchant->getId(),
+                    'experiment_value' => $offerCreateReadsMigrationExpResult,
+                ]);
         }
 
         $this->repo->transaction(

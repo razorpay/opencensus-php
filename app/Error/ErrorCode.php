@@ -451,6 +451,7 @@ class ErrorCode
 
     // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
+    const BAD_REQUEST_INVALID_MIN_AMOUNT                                            = 'BAD_REQUEST_INVALID_MIN_AMOUNT';
     const BAD_REQUEST_REFUNDS_UNAVAILABLE_FOR_COLLECTX                              = 'BAD_REQUEST_REFUNDS_UNAVAILABLE_FOR_COLLECTX';
     const BAD_REQUEST_INVALID_TERMINAL_ID                                           = 'BAD_REQUEST_INVALID_TERMINAL_ID';
     const BAD_REQUEST_INVALID_IDS                                                   = 'BAD_REQUEST_INVALID_IDS';

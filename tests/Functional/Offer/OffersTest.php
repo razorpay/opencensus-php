@@ -2233,14 +2233,13 @@ class OffersTest extends TestCase
     {
         $this->ba->offersEngineAuth();
 
-        $response = $this->startTest();
+        $this->startTest();
 
-        $this->assertEmpty($response);
     }
 
     public function testFetchOffersCreateInfoWithoutMethods()
     {
-        $this->fixtures->create('emi_plan', ['bank' => 'HDFC', 'duration' => '6', 'rate' => '1399']);
+        $this->fixtures->create('emi_plan', ['merchant_id' => '10000000000000','bank' => 'HDFC', 'duration' => '6', 'rate' => '1399']);
 
         $this->ba->offersEngineAuth();
 
@@ -2249,7 +2248,7 @@ class OffersTest extends TestCase
 
     public function testFetchOffersCreateInfoSuccess()
     {
-        $this->fixtures->create('emi_plan', ['bank' => 'HDFC', 'duration' => '6', 'rate' => '1399']);
+        $this->fixtures->create('emi_plan', ['merchant_id' => '10000000000000','bank' => 'HDFC', 'duration' => '6', 'rate' => '1399']);
 
         $this->ba->offersEngineAuth();
 

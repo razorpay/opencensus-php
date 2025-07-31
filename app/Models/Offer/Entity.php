@@ -30,6 +30,7 @@ class Entity extends Base\PublicEntity
     const IS_LOW_COST_OFFER   = 'is_low_cost_offer';
     const IS_NO_COST_EMI      = 'is_no_cost_emi';
     const TENURE_DISCOUNT_MAP = 'tenure_discount_map';
+    const BLOCK_OFFER_CREATION = 'block_offer_creation';
     const OFFER               = 'offer';
     const MERCHANT_METHODS    = 'merchant_methods';
     const HAS_IINS            = 'has_iins';

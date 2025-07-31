@@ -2930,7 +2930,9 @@ return [
             'method'  => 'POST'
         ],
         'response' => [
-            'content' => []
+            'content' => [
+                'block_offer_creation' => false // or true, depending on merchant's config
+            ]
         ]
     ],
     'testFetchOffersCreateInfoWithoutMethods' => [
@@ -2954,8 +2956,25 @@ return [
         'response' => [
             'content' => [
                 "tenure_discount_map" => [
-                    "6" => 518,
-                ]
+                    6 =>  [
+                        'id'                => '10101010101010',
+                        'merchant_id'      => '10000000000000',
+                        'bank'             => 'HDFC',
+                        'network'          => null,
+                        'cobranding_partner' => null,
+                        'type'             => 'credit',
+                        'rate'             => 1399,
+                        'duration'         => 6,
+                        'methods'          => 'card',
+                        'min_amount'       => 500000,
+                        'issuer_plan_id'   => null,
+                        'subvention'       => 'customer',
+                        'merchant_payback' => 518,
+                        'source_channel'   => 'online',
+                        'issuer'           => 'HDFC',
+                    ],
+                ],
+                'block_offer_creation' => false
             ]
         ]
     ],
@@ -3142,8 +3161,25 @@ return [
                     "razorpay_giftcard"            => 0
                 ],
                 "tenure_discount_map" => [
-                    "6" => 518,
-                ]
+                    6 =>  [
+                        'id'                => '10101010101010',
+                        'merchant_id'      => '10000000000000',
+                        'bank'             => 'HDFC',
+                        'network'          => null,
+                        'cobranding_partner' => null,
+                        'type'             => 'credit',
+                        'rate'             => 1399,
+                        'duration'         => 6,
+                        'methods'          => 'card',
+                        'min_amount'       => 500000,
+                        'issuer_plan_id'   => null,
+                        'subvention'       => 'customer',
+                        'merchant_payback' => 518,
+                        'source_channel'   => 'online',
+                        'issuer'           => 'HDFC',
+                    ],
+                ],
+                'block_offer_creation' => false
             ]
         ]
     ],

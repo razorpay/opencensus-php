@@ -19,6 +19,7 @@ use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Gateway\Upi\Base as upi;
 use RZP\Models\PaymentsUpi;
 use RZP\Models\Offer\Constants as OfferConstants;
+use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
 {
@@ -727,6 +728,24 @@ class Validator extends Base\Validator
         {
             return;
         }
+
+        if ($this->entity->getOfferCreateExpValue() and
+            (isset($input[Entity::EMI_SUBVENTION])) === true and
+            $input[Entity::EMI_SUBVENTION] == 1)
+        {
+
+            if (isset($input[Entity::PERCENT_RATE]) === false)
+            {
+                $this->getTrace()->info(
+                    TraceCode::SKIPPING_NO_COST_EMI_OFFER_VALIDATION_IN_API,
+                    [
+                        "input" => $input
+                    ]
+                );
+                return;
+            }
+        }
+
 
         $minAmount = $input[Entity::MIN_AMOUNT] ?? null;
 

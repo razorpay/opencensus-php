@@ -387,8 +387,7 @@ class OffersEngine extends Base\Core
     private function getTenureDiscountMapForEMI(Entity $offer)
     {
         // get merchant_paybacks if offer is emi_subvention
-        if (($offer->isNoCostEmi() === true) and
-            ($offer->getOfferCreateExpValue() === false))
+        if ($offer->isNoCostEmi() === true)
         {
             // fetch payback map for only no cost emi
             return $this->getMerchantPaybackMap($offer);
