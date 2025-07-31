@@ -133,6 +133,7 @@ class Limit
         Type::TOKEN_CONTINUITY                    => 1000000,
         Type::CUSTOMER_MIGRATION                    => 1000000,
         Type::OFFERS_ENGINE_MERCHANT_RAMP_CONTROL => 1000000,
+        Type::UPI_ONBOARDED_TERMINAL_EDIT         => 5000,
     ];
 
     /**
