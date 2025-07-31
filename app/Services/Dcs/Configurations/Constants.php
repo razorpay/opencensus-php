@@ -44,6 +44,8 @@ class Constants
 
     const DormancyPeriod = 'dormancy_period';
 
+    const LateAuthConfig = 'late_auth';
+
     /**
      * Stores the mapping of the configurations to their corresponding dcs keys
      */
@@ -66,6 +68,7 @@ class Constants
         self::RectangularLogoUrl             => "rzp/pg/merchant/onboarding/banking_program/MerchantConfigDetails",
         self::DisabledCurrencies             => "rzp/pg/org/cross_border/Currency",
         self::DormancyPeriod                 => "rzp/pg/org/dashboard/banking_program/DormancyPeriodConfig",
+        self::LateAuthConfig                 => "rzp/pg/merchant/payment_lifecycle/CaptureSettings",
     ];
 
 }

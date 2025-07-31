@@ -16,4 +16,6 @@ final class Metric
     const LEDGER_FEATURE_REMOVAL_COUNT = 'ledger_feature_removal_count';
 
     const DCS_FEATURE_SYNC_FAIL = 'dcs_feature_sync_fail';
+
+    const DCS_LATE_AUTH_CONFIG_SYNC_FAIL = 'dcs_late_auth_sync_fail';
 }

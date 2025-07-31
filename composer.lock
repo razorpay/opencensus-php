@@ -11019,12 +11019,12 @@
       "source": {
         "type": "git",
         "url": "git@github.com:razorpay/config-proto.git",
-        "reference": "1296abc23d85805f49763b40516a1ccc462df88d"
+        "reference": "b7c3edc8340ada6ae0c6bb41fbc959506137b069"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/razorpay/config-proto/zipball/1296abc23d85805f49763b40516a1ccc462df88d",
-        "reference": "1296abc23d85805f49763b40516a1ccc462df88d",
+        "url": "https://api.github.com/repos/razorpay/config-proto/zipball/b7c3edc8340ada6ae0c6bb41fbc959506137b069",
+        "reference": "b7c3edc8340ada6ae0c6bb41fbc959506137b069",
         "shasum": ""
       },
       "require": {
@@ -11049,7 +11049,7 @@
         "dcs-config",
         "razorpay"
       ],
-      "time": "2025-03-11T12:01:31+00:00"
+      "time": "2025-07-30T12:11:45+00:00"
     },
     {
       "name": "razorpay/dcs-php-sdk",
@@ -18962,32 +18962,32 @@
   "aliases": [],
   "minimum-stability": "dev",
   "stability-flags": {
+    "razorpay/razorpay": 20,
+    "razorpay/spine": 20,
     "anlutro/l4-settings": 20,
-    "fideloper/proxy": 20,
-    "fntneves/laravel-transactional-events": 20,
-    "laracasts/testdummy": 20,
-    "maclof/kubernetes-client": 20,
-    "opencensus/opencensus-exporter-jaeger": 20,
     "php-http/guzzle7-adapter": 20,
+    "razorpay/upi-clients": 20,
+    "razorpay/password-strength": 20,
+    "razorpay/slack-laravel": 20,
+    "rtconner/laravel-tagging": 20,
+    "razorpay/oauth": 20,
+    "fideloper/proxy": 20,
+    "razorpay/hodor": 20,
+    "razorpay/trace": 20,
+    "maclof/kubernetes-client": 20,
+    "razorpay/lqext": 20,
+    "razorpay/edge-passport-php": 20,
+    "opencensus/opencensus-exporter-jaeger": 20,
+    "razorpay/outbox-php": 20,
+    "fntneves/laravel-transactional-events": 20,
+    "symfony/http-client": 20,
+    "razorpay/wda-php-sdk": 20,
+    "razorpay/dcs-php-sdk": 20,
     "razorpay/account-service-php-sdk": 20,
     "razorpay/config-proto": 20,
-    "razorpay/dcs-php-sdk": 20,
-    "razorpay/edge-passport-php": 20,
-    "razorpay/hodor": 20,
-    "razorpay/lqext": 20,
-    "razorpay/no-leaks": 20,
-    "razorpay/oauth": 20,
-    "razorpay/outbox-php": 20,
-    "razorpay/password-strength": 20,
-    "razorpay/razorpay": 20,
     "razorpay/redis-counting-semaphore": 20,
-    "razorpay/slack-laravel": 20,
-    "razorpay/spine": 20,
-    "razorpay/trace": 20,
-    "razorpay/upi-clients": 20,
-    "razorpay/wda-php-sdk": 20,
-    "rtconner/laravel-tagging": 20,
-    "symfony/http-client": 20
+    "laracasts/testdummy": 20,
+    "razorpay/no-leaks": 20
   },
   "prefer-stable": false,
   "prefer-lowest": false,

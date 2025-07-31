@@ -12,6 +12,17 @@ class Entity extends Base\PublicEntity
 {
     use AsvGetAttribute;
 
+    // DCS Configuration Mapping Constants
+    const DCS_FIELD_CAPTURE = 'capture';
+    const DCS_FIELD_AUTO_EXPIRY = 'automatic_expiry_period';
+    const DCS_FIELD_MANUAL_EXPIRY = 'manual_expiry_period';
+
+    // Source Configuration Field Constants
+    const CONFIG_FIELD_CAPTURE = 'capture';
+    const CONFIG_FIELD_CAPTURE_OPTIONS = 'capture_options';
+    const CONFIG_FIELD_AUTO_EXPIRY = 'automatic_expiry_period';
+    const CONFIG_FIELD_MANUAL_EXPIRY = 'manual_expiry_period';
+
     const ID                  = 'id';
     const MERCHANT_ID         = 'merchant_id';
     const NAME                = 'name';

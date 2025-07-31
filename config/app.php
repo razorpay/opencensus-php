@@ -1381,6 +1381,8 @@ return array(
 
     'external_updates_enabled_for_tokens' => env('EXTERNAL_UPDATES_ENABLED_FOR_TOKENS'),
 
+    'late_auth_config_dcs_sync_experiment' => env('LATE_AUTH_CONFIG_DCS_SYNC_EXPERIMENT'),
+
     'insufficient_fund_tng' => env('INSUFFICIENT_FUND_TNG'),
 
     'generate_bene_hash_experiment_id' => env('GENERATE_BENE_HASH_EXPERIMENT_ID'),
@@ -1551,7 +1553,7 @@ return array(
     'block_competitor_application' => env('BLOCK_COMPETITOR_APPLICATION'),
 
     'workflow_segregation_store_user_signup_state' => env('WORKFLOW_SEGREGATION_STORE_USER_SIGNUP_STATE'),
-    
+
     'optimizer_bank_transfer_enable' => env('OPTIMIZER_BANK_TRANSFER_ENABLE_EXPERIMENT_ID'),
 
     'merchant_with_qr_expiry_gt_2_hours' => env('MERCHANT_WITH_QR_EXPIRY_GT_2_HOURS'),
