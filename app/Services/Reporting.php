@@ -1867,7 +1867,8 @@ class Reporting implements ExternalService
             return $input; // No experiment call made - different config_id
         }
 
-        $merchantId = $this->ba->getMerchantId();
+        // Get merchant_id from request payload instead of basic auth
+        $merchantId = $input['generated_by'] ;
 
         if (empty($merchantId) === true)
         {
