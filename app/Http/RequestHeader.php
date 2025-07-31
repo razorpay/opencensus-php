@@ -145,4 +145,6 @@ class RequestHeader
 
     const RECON_JOB_SYNC = 'recon-job-sync';
 
+    const X_SHADOW_MERCHANT_ID = 'x-shadow-merchant-id';
+
 }

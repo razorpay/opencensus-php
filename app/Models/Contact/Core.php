@@ -64,7 +64,7 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::CONTACT_CREATE_REQUEST, ['input' => $input]);
 
         (new Validator)->validateInput('create', $input);
-        
+
         // Check if CFA service experiment is enabled
         $isCFAExperimentEnabled = false;
 
@@ -84,7 +84,7 @@ class Core extends Base\Core
             // Create a temporary contact entity for type validation
             $tempContact = (new Entity)->build($input);
             $tempContact->merchant()->associate($merchant);
-            
+
             // Apply type validation logic before sending to CFA
             if (($allowRZPFeesContactCreation === true) or
                 ((Contact\Type::isInInternalNonRZPFees($tempContact->getType()) === true) and
@@ -97,7 +97,7 @@ class Core extends Base\Core
             {
                 $this->setTypeIfApplicable($tempContact, $input);
             }
-            
+
             // Update input with validated type
             $input[Entity::TYPE] = $tempContact->getType();
 
@@ -111,7 +111,7 @@ class Core extends Base\Core
                         'input'       => $input
                     ]);
             }
-            
+
             $contact = $this->cfaService->createContact($input, $merchant);
         } else {
             // Old flow of Contact creation
@@ -226,9 +226,12 @@ class Core extends Base\Core
      */
     protected function isSourceRequestIdMappingEnabled(Entity $contact): bool
     {
+        $eventExperimentName = Merchant\RazorxTreatment::PAYOUTS_CAPTURE_SOURCE_REQUEST_ID;
+        $eventExperimentIdConfigKey = 'app.'.$eventExperimentName.'_id';
+
         $properties = [
             "id"            => $contact->merchant->getId(),
-            "experiment_id" => $this->app['config']->get('app.source_request_id_mapping_experiment_id'),
+            'experiment_id' => $this->app['config']->get($eventExperimentIdConfigKey),
         ];
 
         return (new Merchant\Core())->isSplitzExperimentEnable($properties, RazorxTreatment::VARIANT_ENABLE);
@@ -508,7 +511,7 @@ class Core extends Base\Core
             ];
             $isCFAExperimentEnabled = $this->isSplitzExperimentEnabled($properties, 'enable', TraceCode::CONTACT_CFA_EXPERIMENT_CHECK);
         }
-        
+
         if ($isCFAExperimentEnabled && $input == []) {
             // New flow: Use CFA service
             $contact = $this->cfaService->getContact($id, $merchant);
@@ -527,7 +530,7 @@ class Core extends Base\Core
                     'input' => $input
                 ]);
             }
-            
+
             $contact = $this->repo->contact->findByPublicIdAndMerchant($id, $merchant, $input);
         }
 

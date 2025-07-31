@@ -1927,7 +1927,7 @@ class Core extends Base\Core
     {
         try
         {
-            $eventExperimentName = 'payouts_source_request_id_mapping';
+            $eventExperimentName = Merchant\RazorxTreatment::PAYOUTS_CAPTURE_SOURCE_REQUEST_ID;
             $eventExperimentIdConfigKey = 'app.'.$eventExperimentName.'_id';
 
             $properties = [

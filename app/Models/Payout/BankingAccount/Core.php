@@ -10,6 +10,7 @@ use RZP\Models\BankingAccount;
 use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RazorxTreatment;
+use Throwable;
 
 class Core extends Base
 {
@@ -200,22 +201,35 @@ class Core extends Base
             'request_data'  => json_encode(['id' =>  $merchantId])
         ];
 
-        if ($this->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE) !== true)
+        try
         {
-            if (empty($merchant) || $merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === false)
+            if ($this->isSplitzExperimentEnable($requestPayload,RazorxTreatment::VARIANT_ENABLE) !== true)
             {
+                if (empty($merchant) || $merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === false)
+                {
 
-                $this->trace->info(
-                    TraceCode::SPLITZ_PAYOUT_SERVICE_FEATURE_NOT_ENABLED,
-                    ['merchant_id' => $merchantId]
-                );
+                    $this->trace->info(
+                        TraceCode::SPLITZ_PAYOUT_SERVICE_FEATURE_NOT_ENABLED,
+                        ['merchant_id' => $merchantId]
+                    );
 
-                return false;
+                    return false;
+                }
+
+                return true;
             }
-
-            return true;
         }
+        catch (Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::SPLITZ_PAYOUT_SERVICE_EXPERIMENT_FETCH_FAILURE,
+                ['merchant_id' => $merchantId, 'balance_id' => $balanceId]
+            );
 
+            return $this->fetchPSEnabledStatusFromBASOnBalanceID($merchantId, $balanceId);
+        }
 
         if (empty($merchant) || $merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === false)
         {
@@ -227,7 +241,6 @@ class Core extends Base
 
             return false;
         }
-
 
         $payoutServiceBankingAccount = $this->getPayoutServiceBankingAccountByMerchantIdAndBalanceId($merchantId, $balanceId);
 
@@ -312,20 +325,36 @@ class Core extends Base
             'request_data'  => json_encode(['id' =>  $merchantId])
         ];
 
-        if ($this->isSplitzExperimentEnable($requestPayload, RazorxTreatment::VARIANT_ENABLE) !== true)
+        try
         {
-            if (empty($merchant) || $merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === false)
+            if ($this->isSplitzExperimentEnable($requestPayload, RazorxTreatment::VARIANT_ENABLE) !== true)
             {
+                if (empty($merchant) || $merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === false)
+                {
 
-                $this->trace->info(
-                    TraceCode::SPLITZ_PAYOUT_SERVICE_FEATURE_NOT_ENABLED,
-                    ['merchant_id' => $merchantId]
-                );
+                    $this->trace->info(
+                        TraceCode::SPLITZ_PAYOUT_SERVICE_FEATURE_NOT_ENABLED,
+                        ['merchant_id' => $merchantId]
+                    );
 
-                return false;
+                    return false;
+                }
+
+                return true;
             }
 
-            return true;
+        }
+
+        catch (Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::SPLITZ_PAYOUT_SERVICE_EXPERIMENT_FETCH_FAILURE,
+                ['merchant_id' => $merchantId]
+            );
+
+            return $this->fetchPSEnabledStatusFromBAS($merchantId);
         }
 
 
@@ -346,6 +375,37 @@ class Core extends Base
     public function fetchPSEnabledStatusFromBAS($merchantId)
     {
         $payoutServiceBankingAccount = $this->getPayoutServiceBankingAccountByMerchantId($merchantId);
+
+        if (empty($payoutServiceBankingAccount))
+        {
+
+            $this->trace->info(
+                TraceCode::PAYOUT_SERVICE_BANKING_ACCOUNT_GET_BY_MERCHANT_ID_NOT_FOUND,
+                ['merchant_id' => $merchantId]
+            );
+
+            return false;
+        }
+
+        foreach ($payoutServiceBankingAccount as $bankingAccount)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_MIGRATION_TO_PAYOUT_SERVICE_BY_MERCHANT_ID,
+                ['merchant_id' => $merchantId, 'balance_id' => $bankingAccount[Entity::BALANCE_ID],'payout_service_enabled' => $bankingAccount[Entity::PAYOUT_SERVICE_ENABLED]]
+            );
+
+            if ($bankingAccount[Entity::PAYOUT_SERVICE_ENABLED] === 1)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function fetchPSEnabledStatusFromBASOnBalanceID($merchantId, $balanceId)
+    {
+        $payoutServiceBankingAccount = $this->getPayoutServiceBankingAccountByMerchantIdAndBalanceId($merchantId, $balanceId);
 
         if (empty($payoutServiceBankingAccount))
         {
@@ -540,39 +600,17 @@ class Core extends Base
 
     public function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode = null): bool
     {
-        $merchantId = $properties['id'] ?? null;
+        $response = $this->app['splitzService']->evaluateRequest($properties);
 
-        try
+        $variant = $response['response']['variant']['name'] ?? null;
+
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+        if ($variant === $checkVariant)
         {
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $variant = $response['response']['variant']['name'] ?? null;
-
-            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
-
-            if ($variant === $checkVariant)
-            {
-                return true;
-            }
+            return true;
         }
-        catch (\Throwable $e)
-        {
-            $id = $properties['id'] ?? null;
 
-            $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
-
-            $this->trace->traceException($e, Trace::ERROR, $traceCode, ['id' => $id]);
-
-            if (!empty($merchantId))
-            {
-                $this->trace->info(
-                    TraceCode::SPLITZ_EXCEPTION_BAS_FALLBACK_TRIGGERED,
-                    ['merchant_id' => $merchantId]
-                );
-
-                $this->fetchPSEnabledStatusFromBAS($merchantId);
-            }
-        }
 
         return false;
     }

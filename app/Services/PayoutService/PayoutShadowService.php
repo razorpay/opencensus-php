@@ -70,7 +70,42 @@ class PayoutShadowService
         $trace = $app['trace'];
         $url = null;
 
-        $merchantId = $body['merchant_id'];
+        try
+        {
+            $merchantId = $body['merchant_id'];
+            if (empty($merchantId))
+            {
+                $merchantId = $app['basicauth']?->getMerchantId();
+
+                if (empty($merchantId))
+                {
+                    $merchantId = $app['request']->headers?->get(RequestHeader::X_SHADOW_MERCHANT_ID);
+
+                    if (empty($merchantId))
+                    {
+                        $trace->info(
+                            TraceCode::SHADOW_REQUEST_MERCHANT_ID_NOT_FOUND,
+                            [
+                                'request_id' => $requestId,
+                                'path' => $path,
+                            ]
+                        );
+
+                        return;
+                    }
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $trace->info(
+                TraceCode::SHADOW_REQUEST_MERCHANT_FETCH,
+                [
+                    'request_id' => $requestId,
+                    'path' => $path,
+                ]
+            );
+        }
 
         $trace->info(
             TraceCode::SHADOW_REQUEST_MIRROR_START,
