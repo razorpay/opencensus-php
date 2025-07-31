@@ -223,6 +223,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::AMOUNT,
         self::CURRENCY,
+        self::BASE_CURRENCY,
         self::AMOUNT_DEDUCTED,
         self::GATEWAY_DISPUTE_ID,
         self::REASON_CODE,
