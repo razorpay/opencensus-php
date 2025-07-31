@@ -3056,6 +3056,24 @@ return [
         ],
     ],
 
+    'testUpdateFreePayoutsCountAndMode_DirectAccount' => [
+        'request'  => [
+            'url'     => '/balance/{id}/free_payout',
+            'method'  => 'post',
+            'content' => [
+                'free_payouts_count'           => 12,
+                'free_payouts_supported_modes' => ['IMPS']
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'free_payouts_count'           => 12,
+                'free_payouts_supported_modes' => ['IMPS']
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testUpdateFreePayoutsServiceFailure' => [
         'request'   => [
             'method'  => 'POST',
@@ -3095,6 +3113,20 @@ return [
         'status_code' => 200,
     ],
 
+    'testAdminGetFreePayoutsAttributes_DirectAccount' => [
+        'request'  => [
+            'url'     => '/admin/payouts/{id}/free_payout',
+            'method'  => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'free_payouts_count'             => 12,
+                'free_payouts_supported_modes'   => ['IMPS']
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
     'testXDashboardGetFreePayoutsCountFromPS' => [
         'request'  => [
             'url'     => '/admin/payouts/{id}/free_payout',
@@ -3108,6 +3140,21 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testXDashboardGetFreePayoutsAttributes_DirectAccount' => [
+        'request'  => [
+            'url'     => '/admin/payouts/{id}/free_payout',
+            'method'  => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'free_payouts_count'             => 12,
+                'free_payouts_supported_modes'   => ['IMPS']
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
 
     'testBulkPayout_NotesAsEmptyArray' => [
         'request'   => [

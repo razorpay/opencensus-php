@@ -1563,7 +1563,7 @@ class PayoutServiceTest extends TestCase
         return $response;
     }
 
-    public function mockPayoutServiceFreePayoutSet($fail = false, $request = [])
+    public function mockPayoutServiceFreePayoutSet($fail = false, $currentAccount = false, $request = [])
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
         // are going to be sent to payout service.
@@ -1595,13 +1595,13 @@ class PayoutServiceTest extends TestCase
             // We are returning this response only as we don't have a use case of supporting
             // response based on $request, if needed, that can also be added here using
             // andReturnUsing method instead of andReturn
-                $this->freePayoutSetResponseForPayoutServiceMock($fail)
+                $this->freePayoutSetResponseForPayoutServiceMock($fail, $currentAccount)
             );
 
         $this->app->instance(PayoutServiceFreePayout::PAYOUT_SERVICE_FREE_PAYOUT, $freePayoutSetMock);
     }
 
-    public function freePayoutSetResponseForPayoutServiceMock($fail)
+    public function freePayoutSetResponseForPayoutServiceMock($fail, $currentAccount)
     {
         $response = new \WpOrg\Requests\Response();
 
@@ -1618,6 +1618,16 @@ class PayoutServiceTest extends TestCase
                 ]);
             $response->status_code = 400;
             $response->success     = true;
+        }
+        else if ($currentAccount)
+        {
+            $response->body = json_encode(
+                [
+                    'free_payouts_count'           => 122,
+                    'free_payouts_supported_modes' => ['IMPS']
+                ]);
+            $response->status_code = 200;
+            $response->success = true;
         }
         else
         {
@@ -1657,7 +1667,7 @@ class PayoutServiceTest extends TestCase
         return $updateFreePayoutMock;
     }
 
-    public function mockPayoutServiceGetFreePayout($fail = false, $request = [])
+    public function mockPayoutServiceGetFreePayout($fail = false, $currentAccount = false, $request = [])
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
         // are going to be sent to payout service.
@@ -1689,13 +1699,13 @@ class PayoutServiceTest extends TestCase
                              // We are returning this response only as we don't have a use case of supporting
                              // response based on $request, if needed, that can also be added here using
                              // andReturnUsing method instead of andReturn
-                                 $this->freePayoutGetResponseForPayoutServiceMock($fail)
+                                 $this->freePayoutGetResponseForPayoutServiceMock($fail, $currentAccount)
                              );
 
         $this->app->instance(PayoutServiceGet::PAYOUT_SERVICE_GET, $payoutServiceGetMock);
     }
 
-    public function freePayoutGetResponseForPayoutServiceMock($fail)
+    public function freePayoutGetResponseForPayoutServiceMock($fail, $currentAccount)
     {
         $response = new \WpOrg\Requests\Response();
 
@@ -1711,6 +1721,17 @@ class PayoutServiceTest extends TestCase
                         ]
                 ]);
             $response->status_code = 400;
+            $response->success     = true;
+        }
+        else if ($currentAccount)
+        {
+            $response->body        = json_encode(
+                [
+                    'free_payouts_count'           => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1,
+                    'free_payouts_consumed'        => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1,
+                    'free_payouts_supported_modes' => FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES,
+                ]);
+            $response->status_code = 200;
             $response->success     = true;
         }
         else
@@ -8499,7 +8520,10 @@ class PayoutServiceTest extends TestCase
 
     public function testUpdateFreePayoutsCountAndMode_DirectAccount()
     {
-        $this->mockPayoutServiceUpdateFreePayoutShouldNotBeInvoked();
+        $this->mockPayoutServiceFreePayoutSet(false, true);
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $balance = $this->fixtures->create('balance',
             [
@@ -8507,14 +8531,31 @@ class PayoutServiceTest extends TestCase
                 Balance::TYPE         => Type::BANKING,
             ]);
 
+        $bankingAccount = [
+            'id'          => 'randomid111123',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $balance->getId(),
+            'channel' => Channel::YESBANK,
+            'status'    => 'active',
+            'account_number' => '2224440041626905',
+            'account_type' => 'direct',
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+
+        \DB::connection('live')->table('ps_banking_accounts')->insert($bankingAccount);
+
         $this->ba->adminAuth();
 
-        $this->testData[__FUNCTION__] = $this->testData['testUpdateFreePayoutsCountAndMode'];
+        $this->testData[__FUNCTION__]['request']['free_payouts_count'] = 122;
 
         $this->testData[__FUNCTION__]['request']['url'] =
             '/balance/' . $balance[Balance::ID] . '/free_payout';
 
-        $this->testData[__FUNCTION__]['response']['content']['free_payouts_count'] = '12';
+        $this->testData[__FUNCTION__]['response']['content']['free_payouts_count'] = 122;
 
         $this->startTest();
     }
@@ -8695,7 +8736,10 @@ class PayoutServiceTest extends TestCase
 
     public function testAdminGetFreePayoutsAttributes_DirectAccount()
     {
-        $getFreePayoutsMock = $this->mockPayoutServiceGetFreePayoutShouldNotBeInvoked();
+        $this->mockPayoutServiceGetFreePayout(false, true);
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $balance = $this->fixtures->create('balance',
             [
@@ -8704,15 +8748,30 @@ class PayoutServiceTest extends TestCase
                 Balance::CHANNEL      => Channel::RBL,
             ]);
 
-        $this->testData[__FUNCTION__] = $this->testData['testAdminGetFreePayoutsCountFromPS'];
+        $bankingAccount = [
+            'id'          => 'randomid111123',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $balance->getId(),
+            'channel' => Channel::RBL,
+            'status'    => 'active',
+            'account_number' => '2224440041626907',
+            'account_type' => 'direct',
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
+
+        ];
+
+        \DB::connection('live')->table('ps_banking_accounts')->insert($bankingAccount);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/admin/payouts/' . $balance[Balance::ID] . '/free_payout';
 
         $this->testData[__FUNCTION__]['response']['content']['free_payouts_count'] =
-            FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB3;
+            FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1;
 
         $this->testData[__FUNCTION__]['response']['content']['free_payouts_consumed'] =
-            FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB3;
+            FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1;
 
         $this->testData[__FUNCTION__]['response']['content']['free_payouts_supported_modes'] =
             FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
@@ -8721,12 +8780,15 @@ class PayoutServiceTest extends TestCase
 
         $this->startTest();
 
-        $getFreePayoutsMock->shouldNotHaveReceived('getFreePayoutAttributesViaMicroservice');
     }
 
     public function testXDashboardGetFreePayoutsAttributes_DirectAccount()
     {
-        $getFreePayoutsMock = $this->mockPayoutServiceGetFreePayoutShouldNotBeInvoked();
+
+        $this->mockPayoutServiceGetFreePayout(false, true);
+
+        $this->setMockSplitzTreatmentEvaluate([RazorxTreatment::ENABLE_CA_FLOW_VIA_PAYOUTS_SERVICE => 'enable',
+            RazorxTreatment::PS_API_MERCHANT_MIGRATION_ON_BALANCE_ID => 'enable']);
 
         $balance = $this->fixtures->create('balance',
             [
@@ -8736,24 +8798,39 @@ class PayoutServiceTest extends TestCase
 
             ]);
 
-        $this->ba->proxyAuth();
+        $bankingAccount = [
+            'id'          => 'randomid111123',
+            'merchant_id'   => $this->bankingBalance->getMerchantId(),
+            'balance_id'   => $balance->getId(),
+            'channel' => Channel::RBL,
+            'status'    => 'active',
+            'account_number' => '2224440041626907',
+            'account_type' => 'direct',
+            'fts_fund_account_id' =>'random',
+            'payout_service_enabled' => 1,
+            'created_at'  => 1000000002,
+            'updated_at'  => 1000000001
 
-        $this->testData[__FUNCTION__] = $this->testData['testXDashboardGetFreePayoutsCountFromPS'];
+        ];
+
+        \DB::connection('live')->table('ps_banking_accounts')->insert($bankingAccount);
+
+
+        $this->ba->proxyAuth();
 
         $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . $balance[Balance::ID] . '/free_payout';
 
         $this->testData[__FUNCTION__]['response']['content']['free_payouts_count'] =
-            FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB3;
+            FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1;
 
         $this->testData[__FUNCTION__]['response']['content']['free_payouts_consumed'] =
-            FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB3;
+            FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1;
 
         $this->testData[__FUNCTION__]['response']['content']['free_payouts_supported_modes'] =
             FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
 
         $this->startTest();
 
-        $getFreePayoutsMock->shouldNotHaveReceived('getFreePayoutAttributesViaMicroservice');
     }
 
     public function testBulkPayout_NotesAsEmptyArray()

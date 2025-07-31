@@ -257,8 +257,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        if (((new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($merchantId, $balanceId)) &&
-            ($balance->isAccountTypeShared() === true))
+        if ((new BankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($merchantId, $balanceId))
         {
             return $this->payoutServiceFreePayoutClient->updateFreePayoutAttributesViaMicroservice($balanceId, $input);
         }

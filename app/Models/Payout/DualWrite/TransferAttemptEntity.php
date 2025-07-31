@@ -108,6 +108,9 @@ class TransferAttemptEntity extends Base
 
                 $transferAttemptEntity->generateId();
 
+                // Explicitly setting the connection.
+                $transferAttemptEntity->setConnection($this->mode);
+
                 $this->trace->info(
                     TraceCode::PAYOUT_SERVICE_DUAL_WRITE_TRANSFER_ATTEMPT_ENTITY_CREATION,
                     [
@@ -120,6 +123,9 @@ class TransferAttemptEntity extends Base
             else
             {
                 $transferAttemptEntity->setRawAttributes($transferAttemptAttribute);
+
+                // Explicitly setting the connection.
+                $transferAttemptEntity->setConnection($this->mode);
 
                 $this->trace->info(
                     TraceCode::PAYOUT_SERVICE_DUAL_WRITE_TRANSFER_ATTEMPT_ENTITY_UPDATION,

@@ -6693,8 +6693,7 @@ class Core extends Base\Core
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        if (((new PayoutsBankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($merchantId, $balanceId)) &&
-            ($balance->isAccountTypeShared() === true))
+        if ((new PayoutsBankingAccount\Core())->merchantMigratedToPayoutServiceByMerchantIdAndBalanceId($merchantId, $balanceId))
         {
             return $this->payoutGetApiServiceClient->getFreePayoutAttributesViaMicroservice($balanceId);
         }
