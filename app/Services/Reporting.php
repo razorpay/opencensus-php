@@ -66,7 +66,6 @@ class Reporting implements ExternalService
 
     // Account Statements Report Config IDs
     const OLD_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID = 'config_EWkl7gyPYK5ET2';
-    const NEW_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID = 'config_NewAccountStatementsReport';
 
     // REPORT_TYPE constants
     const MERCHANT      = 'merchant';
@@ -141,6 +140,12 @@ class Reporting implements ExternalService
      */
     private $repo;
 
+    /**
+     * Holds the new account statements reporting config id loaded from env
+     * Acts like a constant for the lifetime of the process/request
+     */
+    private static ?string $newAccountStatementsReportingConfigId = null;
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -154,6 +159,12 @@ class Reporting implements ExternalService
         // TODO: This service should(to discuss) not depend on BA, better to pass
         // or set merchant context on the instance before using.
         $this->ba     = $app['basicauth'];
+
+        // Initialize the new config id from env once
+        if (self::$newAccountStatementsReportingConfigId === null)
+        {
+            self::$newAccountStatementsReportingConfigId = env('APP_NEW_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID');
+        }
 
         $this->setHeaders();
     }
@@ -1852,7 +1863,7 @@ class Reporting implements ExternalService
      * Flow:
      * 1. Check if config_id in request equals OLD_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID
      * 2. If YES, make splitz experiment call for the merchant
-     * 3. If experiment is enabled, swap to NEW_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID
+     * 3. If experiment is enabled, swap to env('APP_NEW_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID')
      * 4. If NO or experiment disabled, return original input unchanged
      *
      * @param array $input
@@ -1878,12 +1889,13 @@ class Reporting implements ExternalService
         // Make experiment call only for OLD_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID
         if ($this->isAccountStatementsNewReportEnabled($merchantId) === true)
         {
-            $input['config_id'] = self::NEW_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID;
+            $newConfigId = self::$newAccountStatementsReportingConfigId;
+            $input['config_id'] = $newConfigId;
 
             $this->trace->info(TraceCode::REPORTING_CONFIG_ID_MODIFIED_BY_EXPERIMENT, [
                 'merchant_id' => $merchantId,
                 'original_config_id' => self::OLD_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID,
-                'new_config_id' => self::NEW_ACCOUNT_STATEMENTS_REPORTING_CONFIG_ID,
+                'new_config_id' => $newConfigId,
                 'experiment' => RazorxTreatment::IS_ACCOUNT_STATEMENTS_NEW_REPORT_ENABLED,
             ]);
         }
