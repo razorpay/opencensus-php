@@ -31,7 +31,7 @@
         "php-http/guzzle6-adapter": "^2.0",
         "guzzlehttp/guzzle": "^5 || ^6 || ^7",
         "jcchavezs/httptest": "~0.2",
-        "guzzlehttp/psr7": "^1.4"},
+        "guzzlehttp/psr7": "^1.4 || ^2.0"},
     "conflict": {
         "ext-opencensus": "< 0.1.0"
     },
