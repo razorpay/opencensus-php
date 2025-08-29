@@ -131,6 +131,7 @@ class Redis implements IntegrationInterface
             'redis.args_length'    => count($arguments),
             'service.name'         => 'redis',
             'span.kind'            => 'client',
+            'query'                => $query
         ];
 
         return [
