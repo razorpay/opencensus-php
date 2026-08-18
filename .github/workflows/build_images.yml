@@ -5,6 +5,18 @@ jobs:
     name: Cancel Previous Runs
     if: always()
     steps:
+      # PMG (Package Manager Guard) blocks malicious packages at install time.
+      # Must come after every language/toolchain setup action so its shims land
+      # first on PATH. See https://docs.safedep.io/package-security/pmg/github-actions
+      # This job installs nothing today; the guard is here so any package manager
+      # added later is covered by default.
+      - name: Set up PMG
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.SAFEDEP_API_KEY }}
+          tenant-id: ${{ secrets.SAFEDEP_TENANT_ID }}
+
       - uses: styfle/cancel-workflow-action@d57d93c3a8110b00c3a2c0b64b8516013c9fd4c9
         if: github.ref != 'refs/heads/master'
         name: cancel old workflows
@@ -17,6 +29,12 @@ jobs:
         id: dont_cancel
         run: |
           echo "Don't cancel old workflow"
+
+      # Must run even when earlier steps fail, otherwise the job won't fail on a
+      # policy violation and the most recent events are never flushed.
+      - name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
   build-web:
     name: Extension Build
     runs-on: ubuntu-latest
@@ -25,6 +43,19 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+
+      # PMG (Package Manager Guard) blocks malicious packages at install time.
+      # Must come after every language/toolchain setup action so its shims land
+      # first on PATH. See https://docs.safedep.io/package-security/pmg/github-actions
+      # Note: PMG only sees package managers run on the runner, not those run
+      # inside `docker build`. Dockerfile.rzp installs no packages today.
+      - name: Set up PMG
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.SAFEDEP_API_KEY }}
+          tenant-id: ${{ secrets.SAFEDEP_TENANT_ID }}
+
       - name: Login to Dockerhub
         uses: docker/login-action@v1
         with:
@@ -40,3 +71,8 @@ jobs:
           dockerfile: Dockerfile.rzp
           build_args: GIT_COMMIT_HASH=${{ github.sha }},GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }},GIT_USERNAME=rzp
 
+      # Must run even when earlier steps fail, otherwise the job won't fail on a
+      # policy violation and the most recent events are never flushed.
+      - name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation

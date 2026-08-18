@@ -25,6 +25,16 @@ jobs:
           php-version: "${{ matrix.php }}"
           coverage: xdebug
 
+      # PMG (Package Manager Guard) blocks malicious packages at install time.
+      # Must come after every language/toolchain setup action so its shims land
+      # first on PATH. See https://docs.safedep.io/package-security/pmg/github-actions
+      - name: Set up PMG
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.SAFEDEP_API_KEY }}
+          tenant-id: ${{ secrets.SAFEDEP_TENANT_ID }}
+
       - name: Install build tools
         run: |
           autoconf -V || \
@@ -86,6 +96,12 @@ jobs:
           files: build/clover.xml
           verbose: true
 
+      # Must run even when earlier steps fail, otherwise the job won't fail on a
+      # policy violation and the most recent events are never flushed.
+      - name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
+
   integration:
     runs-on: ubuntu-latest
     env:
@@ -106,6 +122,16 @@ jobs:
           php-version: 8.0
           extensions: memcached, pdo_mysql, mysqli, pdo_pgsql, pcntl
           ini-values: extension=opencensus.so
+
+      # PMG (Package Manager Guard) blocks malicious packages at install time.
+      # Must come after every language/toolchain setup action so its shims land
+      # first on PATH. See https://docs.safedep.io/package-security/pmg/github-actions
+      - name: Set up PMG
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.SAFEDEP_API_KEY }}
+          tenant-id: ${{ secrets.SAFEDEP_TENANT_ID }}
 
       - uses: niden/actions-memcached@v7
 
@@ -151,6 +177,11 @@ jobs:
             files: build/clover.xml
             verbose: true
 
+      # Must run even when earlier steps fail, otherwise the job won't fail on a
+      # policy violation and the most recent events are never flushed.
+      - name: Enforce PMG policy
+        if: always()
+        run: pmg proxy stop --fail-on-violation
 
     services:
       mysql:
