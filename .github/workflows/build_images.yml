@@ -14,8 +14,8 @@ jobs:
         uses: safedep/pmg@v1
         with:
           server-mode: true
-          api-key: ${{ secrets.SAFEDEP_API_KEY }}
-          tenant-id: ${{ secrets.SAFEDEP_TENANT_ID }}
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
 
       - uses: styfle/cancel-workflow-action@d57d93c3a8110b00c3a2c0b64b8516013c9fd4c9
         if: github.ref != 'refs/heads/master'
@@ -53,8 +53,8 @@ jobs:
         uses: safedep/pmg@v1
         with:
           server-mode: true
-          api-key: ${{ secrets.SAFEDEP_API_KEY }}
-          tenant-id: ${{ secrets.SAFEDEP_TENANT_ID }}
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
 
       - name: Login to Dockerhub
         uses: docker/login-action@v1
