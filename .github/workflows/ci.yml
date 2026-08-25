@@ -19,21 +19,19 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "${{ matrix.php }}"
-          coverage: xdebug
-
-      # PMG (Package Manager Guard) blocks malicious packages at install time.
-      # Must come after every language/toolchain setup action so its shims land
-      # first on PATH. See https://docs.safedep.io/package-security/pmg/github-actions
-      - name: Set up PMG
+      - name: Setup PMG proxy
+        id: pmg-setup
         uses: safedep/pmg@v1
         with:
           server-mode: true
           api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
           tenant-id: ${{ secrets.PMG_TENANT_ID }}
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "${{ matrix.php }}"
+          coverage: xdebug
 
       - name: Install build tools
         run: |
@@ -96,11 +94,14 @@ jobs:
           files: build/clover.xml
           verbose: true
 
-      # Must run even when earlier steps fail, otherwise the job won't fail on a
-      # policy violation and the most recent events are never flushed.
       - name: Enforce PMG policy
         if: always()
-        run: pmg proxy stop --fail-on-violation
+        run: |
+          if [ "${{ steps.pmg-setup.outcome }}" = "success" ]; then
+            pmg proxy stop --fail-on-violation
+          else
+            pmg proxy stop || true
+          fi
 
   integration:
     runs-on: ubuntu-latest
@@ -116,22 +117,20 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Setup PMG proxy
+        id: pmg-setup
+        uses: safedep/pmg@v1
+        with:
+          server-mode: true
+          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
+          tenant-id: ${{ secrets.PMG_TENANT_ID }}
+
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.0
           extensions: memcached, pdo_mysql, mysqli, pdo_pgsql, pcntl
           ini-values: extension=opencensus.so
-
-      # PMG (Package Manager Guard) blocks malicious packages at install time.
-      # Must come after every language/toolchain setup action so its shims land
-      # first on PATH. See https://docs.safedep.io/package-security/pmg/github-actions
-      - name: Set up PMG
-        uses: safedep/pmg@v1
-        with:
-          server-mode: true
-          api-key: ${{ secrets.PMG_PUBLIC_REPOS_TOKEN }}
-          tenant-id: ${{ secrets.PMG_TENANT_ID }}
 
       - uses: niden/actions-memcached@v7
 
@@ -177,11 +176,15 @@ jobs:
             files: build/clover.xml
             verbose: true
 
-      # Must run even when earlier steps fail, otherwise the job won't fail on a
-      # policy violation and the most recent events are never flushed.
       - name: Enforce PMG policy
         if: always()
-        run: pmg proxy stop --fail-on-violation
+        run: |
+          if [ "${{ steps.pmg-setup.outcome }}" = "success" ]; then
+            pmg proxy stop --fail-on-violation
+          else
+            pmg proxy stop || true
+          fi
+
 
     services:
       mysql:
