@@ -19,7 +19,11 @@
 #include "Zend/zend_builtin_functions.h"
 #include "Zend/zend_exceptions.h"
 #include "standard/php_math.h"
+#if PHP_VERSION_ID >= 80400
+#include "ext/random/php_random.h"
+#else
 #include "standard/php_rand.h"
+#endif
 
 /**
  * True globals for storing the original zend_execute_ex and
